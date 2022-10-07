@@ -18,9 +18,10 @@ package org.smartregister.fhircore.geowidget.di.config
 
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.sync.SyncStrategyTag
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 22-08-2022. */
 class FakeConfigService @Inject constructor() : ConfigService {
@@ -34,27 +35,41 @@ class FakeConfigService @Inject constructor() : ConfigService {
     )
   }
 
-  override fun provideSyncStrategy() =
-    SyncStrategy().apply {
-      careTeamTag.tag =
-        Coding().apply {
-          system = "http://fake.tag.com/CareTeam#system"
-          display = "Practitioner CareTeam"
-        }
-      locationTag.tag =
-        Coding().apply {
-          system = "http://fake.tag.com/Location#system"
-          display = "Practitioner Location"
-        }
-      organizationTag.tag =
-        Coding().apply {
-          system = "http://fake.tag.com/Organization#system"
-          display = "Practitioner Organization"
-        }
-      practitionerTag.tag =
-        Coding().apply {
-          system = "http://fake.tag.com/Practitioner#system"
-          display = "Practitioner"
-        }
-    }
+  override fun provideSyncStrategyTags() =
+    listOf(
+      SyncStrategyTag(
+        type = ResourceType.CareTeam.name,
+        tag =
+          Coding().apply {
+            system = "http://fake.tag.com/CareTeam#system"
+            display = "Practitioner CareTeam"
+          }
+      ),
+      SyncStrategyTag(
+        type = ResourceType.Location.name,
+        tag =
+          Coding().apply {
+            system = "http://fake.tag.com/Location#system"
+            display = "Practitioner Location"
+          }
+      ),
+      SyncStrategyTag(
+        type = ResourceType.Organization.name,
+        tag =
+          Coding().apply {
+            system = "http://fake.tag.com/Organization#system"
+            display = "Practitioner Organization"
+          }
+      ),
+      SyncStrategyTag(
+        type = ResourceType.Practitioner.name,
+        tag =
+          Coding().apply {
+            system = "http://fake.tag.com/Practitioner#system"
+            display = "Practitioner"
+          }
+      )
+    )
+
+  override fun provideSyncStrategies(): List<String> = listOf("Location")
 }

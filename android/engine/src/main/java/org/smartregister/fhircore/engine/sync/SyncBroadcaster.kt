@@ -28,9 +28,11 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
@@ -66,29 +68,29 @@ constructor(
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
     val syncStateFlow = MutableSharedFlow<State>()
-    coroutineScope.launch(dispatcherProvider.main()) {
-      syncStateFlow.collect {
-        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
-      }
+    coroutineScope.launch {
+      syncStateFlow
+        .onEach {
+          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+            onSyncListener.onSync(it)
+          }
+        }
+        .handleErrors()
+        .launchIn(this)
     }
 
     coroutineScope.launch(dispatcherProvider.io()) {
-      try {
-        syncJob.run(
-          fhirEngine = fhirEngine,
-          downloadManager =
-            ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams().toMap()),
-          subscribeTo = syncStateFlow,
-          resolver = AcceptLocalConflictResolver
-        )
-      } catch (exception: Exception) {
-        Timber.e(exception)
-        Timber.e("Error syncing data", exception)
-      } finally {
-        coroutineScope.cancel()
-      }
+      syncJob.run(
+        fhirEngine = fhirEngine,
+        downloadManager =
+          ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams().toMap()),
+        subscribeTo = syncStateFlow,
+        resolver = AcceptLocalConflictResolver
+      )
     }
   }
+
+  private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
 
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
@@ -138,7 +140,7 @@ constructor(
       // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
       // ],..]
       if (relatedResourceTypes.isNullOrEmpty()) {
-          sp.base.map { it.code }
+          sp.base.mapNotNull { it.code }
         } else {
           relatedResourceTypes
         }
@@ -155,7 +157,8 @@ constructor(
           } else {
             expressionValue?.let {
               // add another parameter if there is a matching resource type
-              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
+              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
+              // _count=100})]
               val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
               val index = pairs.indexOfFirst { it.first == resourceType }
               pairs.set(index, Pair(resourceType, updatedPair))

@@ -233,7 +233,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
 
-    runBlocking { defaultRepository.create(resource) }
+    runBlocking { defaultRepository.create(true, resource) }
 
     verify { resource.generateMissingId() }
 

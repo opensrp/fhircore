@@ -72,5 +72,5 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       )
     )
 
-  override fun provideSyncStrategies(): List<String> = listOf("Location")
+  override fun provideSyncStrategies(): List<String> = listOf("Location", "Organization")
 }

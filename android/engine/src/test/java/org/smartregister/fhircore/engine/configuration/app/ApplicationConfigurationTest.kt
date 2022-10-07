@@ -21,16 +21,11 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -52,7 +47,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
-        syncStrategy = listOf("CareTeam", "Location", "Organization", "Practitioner"),
         appTitle = "Test App",
         remoteSyncPageSize = 100
       )
@@ -66,71 +60,5 @@ class ApplicationConfigurationTest : RobolectricTest() {
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)
-    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.CareTeam.name))
-    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Location.name))
-    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Organization.name))
-    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Practitioner.name))
-  }
-
-  @Test
-  fun getMandatoryTags() {
-    val careTeamIds = listOf("948", "372")
-    sharedPreferenceHelper.write(ResourceType.CareTeam.name, careTeamIds)
-
-    val organizationIds = listOf("400", "105")
-    sharedPreferenceHelper.write(ResourceType.Organization.name, organizationIds)
-
-    val locationIds = listOf("728", "899")
-    sharedPreferenceHelper.write(ResourceType.Location.name, locationIds)
-
-    runBlocking {
-      val syncStrategyTag =
-        SyncStrategy().apply {
-          careTeamTag.tag =
-            Coding().apply {
-              system = application.getString(R.string.sync_strategy_careteam_system)
-              display = application.getString(R.string.sync_strategy_careteam_display)
-            }
-          locationTag.tag =
-            Coding().apply {
-              system = application.getString(R.string.sync_strategy_location_system)
-              display = application.getString(R.string.sync_strategy_location_display)
-            }
-          organizationTag.tag =
-            Coding().apply {
-              system = application.getString(R.string.sync_strategy_organization_system)
-              display = application.getString(R.string.sync_strategy_organization_display)
-            }
-          practitionerTag.tag =
-            Coding().apply {
-              system = application.getString(R.string.sync_strategy_practitioner_system)
-              display = application.getString(R.string.sync_strategy_practitioner_display)
-            }
-        }
-      val mandatoryTags = appConfig.getMandatoryTags(sharedPreferenceHelper, syncStrategyTag)
-
-      Assert.assertEquals(
-        careTeamIds,
-        mandatoryTags
-          .filter { it.display == application.getString(R.string.sync_strategy_careteam_display) }
-          .map { it.code }
-      )
-
-      Assert.assertEquals(
-        organizationIds,
-        mandatoryTags
-          .filter {
-            it.display == application.getString(R.string.sync_strategy_organization_display)
-          }
-          .map { it.code }
-      )
-
-      Assert.assertEquals(
-        locationIds,
-        mandatoryTags
-          .filter { it.display == application.getString(R.string.sync_strategy_location_display) }
-          .map { it.code }
-      )
-    }
   }
 }

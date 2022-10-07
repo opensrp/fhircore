@@ -247,6 +247,13 @@
                     ]
                   },
                   {
+                    "name": "taskFor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+                    ]
+                  },
+                  {
                     "name": "taskQuestionnaireId",
                     "condition": "true",
                     "actions": [
@@ -305,7 +312,7 @@
                             "title": "@{taskDescription}",
                             "saveButtonText": "Save",
                             "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{patientLogicalId}"
+                            "resourceIdentifier": "@{taskFor}"
                           }
                         }
                       ]
