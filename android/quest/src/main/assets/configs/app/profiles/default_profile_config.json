@@ -274,7 +274,6 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "resourceIdentifier": "@{patientId}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
