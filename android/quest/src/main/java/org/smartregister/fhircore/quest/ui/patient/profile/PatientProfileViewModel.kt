@@ -28,7 +28,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -50,7 +49,6 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
-import org.smartregister.fhircore.engine.util.extension.toHealthStatusMetaTag
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
@@ -65,6 +63,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
+import javax.inject.Inject
 
 @HiltViewModel
 class PatientProfileViewModel
@@ -253,9 +252,9 @@ constructor(
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT,
-              patientCategory =
-                (patientProfileData as ProfileData.HivProfileData).healthStatus.display
-                  .toHealthStatusMetaTag()
+//              patientCategory =
+//                (patientProfileData as ProfileData.HivProfileData).healthStatus.display
+//                  .toHealthStatusMetaTag()
             )
           R.id.viral_load_results ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(

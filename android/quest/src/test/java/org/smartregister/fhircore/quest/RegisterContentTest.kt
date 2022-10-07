@@ -16,14 +16,12 @@
 
 package org.smartregister.fhircore.quest
 
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.*
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -107,4 +105,31 @@ class RegisterContentTest : RobolectricTest() {
 
     assertResourceContent(condition, sampleCondition)
   }
+
+  @Test
+  fun testMwCorePopulationResources() = runTest{
+    val questionnaire = "mwcore-registration/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    //Patient().apply { addTags(listOf(Coding("https://www.d-tree.org", "p-category", "P Category"))) }
+    val patient = Patient().apply {
+      val codingList = arrayListOf<Coding>()
+      codingList.add(Coding("https://www.d-tree.org", "p-category", "hello"))
+      meta.tag.apply { addAll(codingList) }
+    }
+    val result = ResourceMapper.populate(questionnaire, patient)
+    Assert.assertEquals("p-category", result.item.first().itemFirstRep.answerFirstRep.valueCoding.code)
+  }
+
+  @Test
+  fun testMwCorePopulationResources2() = runTest{
+
+    val structureMap = "mwcore-registration/patient-edit-profile-structure-map.txt".readFile()
+    val response = "mwcore-registration/questionnaire-resposne.json".readFile()
+
+    val scu = buildStructureMapUtils()
+    val targetResource = transform(scu, structureMap, response, "TestResults")
+
+    Assert.assertEquals(2, targetResource.entry.size)
+
+  }
+
 }
