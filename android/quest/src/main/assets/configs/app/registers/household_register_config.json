@@ -1,5 +1,5 @@
 {
-  "appId": "app",
+  "appId": "cha",
   "configType": "register",
   "id": "householdRegister",
   "fhirResource": {
@@ -74,6 +74,13 @@
         ]
       },
       {
+        "name": "familyVillage",
+        "condition": "true",
+        "actions": [
+          "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+        ]
+      },
+      {
         "name": "taskCount",
         "condition": "true",
         "actions": [
@@ -109,15 +116,9 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{familyId}",
+                "primaryText": "@{familyVillage} - HH No: @{familyId}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "Village/Address",
-                "fontSize": 14.0,
-                "primaryTextColor": "#5A5A5A"
               }
             ],
             "showVerticalDivider": true,

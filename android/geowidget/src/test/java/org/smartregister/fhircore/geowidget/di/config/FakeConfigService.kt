@@ -72,4 +72,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
     )
 
   override fun provideSyncStrategies(): List<String> = listOf("Location")
+  override fun provideConfigurationSyncPageSize(): String {
+    return "100"
+  }
 }

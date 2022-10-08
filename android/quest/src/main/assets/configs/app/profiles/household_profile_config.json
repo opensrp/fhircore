@@ -121,6 +121,13 @@
       "actions": [
         "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
       ]
+    },
+    {
+      "name": "familyVillage",
+      "condition": "true",
+      "actions": [
+        "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+      ]
     }
   ],
   "views": [
@@ -140,7 +147,7 @@
             },
             {
               "viewType": "COMPOUND_TEXT",
-              "primaryText": "ID: @{familyId}",
+              "primaryText": "@{familyVillage} - HH No: @{familyId}",
               "primaryTextColor": "#FFFFFF",
               "fontSize": 20.0
             }

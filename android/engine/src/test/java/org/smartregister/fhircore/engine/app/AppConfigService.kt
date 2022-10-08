@@ -73,4 +73,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
     )
 
   override fun provideSyncStrategies(): List<String> = listOf("Location", "Organization")
+  override fun provideConfigurationSyncPageSize(): String {
+    return "100"
+  }
 }

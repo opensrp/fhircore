@@ -71,4 +71,6 @@ interface ConfigService {
 
     return tags
   }
+
+  fun provideConfigurationSyncPageSize(): String
 }

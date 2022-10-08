@@ -76,7 +76,10 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
     )
 
   override fun provideSyncStrategies(): List<String> {
-
     return BuildConfig.SYNC_STRATEGIES.toList()
+  }
+
+  override fun provideConfigurationSyncPageSize(): String {
+    return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
   }
 }

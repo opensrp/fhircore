@@ -36,7 +36,8 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
-        buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
+        buildConfigField("String[]", "SYNC_STRATEGIES", '{"Location"}')
+        buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
@@ -140,7 +141,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.5"
+            versionName "0.1.5-rc1"
             buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 

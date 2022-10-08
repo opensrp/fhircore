@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -49,7 +50,8 @@ class AppSettingViewModel
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configService: ConfigService
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
@@ -101,7 +103,7 @@ constructor(
         .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
         .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
-          val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+          val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids" + "&_count=${configService.provideConfigurationSyncPageSize()}"
 
           Timber.d("Fetching config details $resourceUrlPath")
 
