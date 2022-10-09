@@ -103,7 +103,10 @@ constructor(
         .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
         .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
-          val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids" + "&_count=${configService.provideConfigurationSyncPageSize()}"
+          val resourceUrlPath =
+            entry.key +
+              "?${Composition.SP_RES_ID}=$ids" +
+              "&_count=${configService.provideConfigurationSyncPageSize()}"
 
           Timber.d("Fetching config details $resourceUrlPath")
 

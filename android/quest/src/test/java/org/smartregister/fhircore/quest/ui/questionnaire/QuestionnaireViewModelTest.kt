@@ -576,7 +576,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
     coEvery { defaultRepo.create(any()) } returns emptyList()
     questionnaireViewModel.saveResource(mockk())
-    coVerify(exactly = 1) { defaultRepo.create(any()) }
+    coVerify(exactly = 1) { defaultRepo.create(any(), any()) }
   }
 
   @Test
