@@ -279,8 +279,16 @@ constructor(
       label: String
     ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
+    /**
+     * This function extracts the patient's age from the patient resource
+     * */
     fun extractAge(patient: Patient): String = patient.extractAge()
 
+    /**
+     * This function extracts the gender from patient's reosurce.
+     *
+     * It the returns strings representation of the age.
+     * */
     fun extractGender(patient: Patient): String {
       return if (patient.hasGender()) {
         when (AdministrativeGender.valueOf(patient.gender.name)) {
@@ -292,7 +300,10 @@ constructor(
         }
       } else ""
     }
-
+  
+    /**
+     * This function extracts the patient's DOB from the FHIR resource
+     */
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
   }

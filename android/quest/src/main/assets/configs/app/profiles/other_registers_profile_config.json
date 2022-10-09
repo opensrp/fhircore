@@ -141,8 +141,12 @@
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{patientIdentifier}",
+                  "primaryText": "ID: #@{patientIdentifier}",
                   "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "SPACER",
+                  "height": 10
                 },
                 {
                   "viewType": "PERSONAL_DATA",

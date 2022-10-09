@@ -44,6 +44,10 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
+          },
+          {
+            "resource": "RelatedPerson",
+            "searchParameter": "patient"
           }
         ]
       },
@@ -211,6 +215,13 @@
                     ]
                   },
                   {
+                    "name": "patientActive",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+                    ]
+                  },
+                  {
                     "name": "patientGender",
                     "condition": "true",
                     "actions": [
@@ -277,14 +288,84 @@
                     "name": "serviceMemberIcons",
                     "condition": "true",
                     "actions": [
-                      "data.put('serviceMemberIcons', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': fhirPath.extractValue(Condition, \"Condition.code.text = 'Pregnant'\") == 'true'? 'PREGNANT_WOMAN': '')"
+                      "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                    ]
+                  },
+                  {
+                    "name": "getFamilyHeadStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getFamilyHeadStatus', service.mapResourcesToLabeledCSV(RelatedPerson, \"RelatedPerson.relationship[0].coding[0].code = '99990006'\", 'Family Head'))"
+                    ]
+                  },
+                  {
+                    "name": "getChildStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 5 'years')\") == 'true'? 'Child': '')"
+                    ]
+                  },
+                  {
+                    "name": "getPregnancyStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getPregnancyStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", 'Pregnant'))"
+                    ]
+                  },
+                  {
+                    "name": "getFPStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getFPStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99998888' and Condition.clinicalStatus.coding.code = 'active'\", 'Family Planning'))"
+                    ]
+                  },
+                  {
+                    "name": "getPNCStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getPNCStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '234234234' and Condition.clinicalStatus.coding.code = 'active'\", 'PNC'))"
+                    ]
+                  },
+                  {
+                    "name": "getMentalHeathStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getMentalHeathStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990004' and Condition.clinicalStatus.coding.code = 'active'\", 'Mental Health'))"
+                    ]
+                  },
+                  {
+                    "name": "getHIVStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getHIVStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990003' and Condition.clinicalStatus.coding.code = 'active'\", 'HIV'))"
+                    ]
+                  },
+                  {
+                    "name": "getCMNTDStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getCMNTDStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990000' and Condition.clinicalStatus.coding.code = 'active'\", 'CM-NTD'))"
+                    ]
+                  },
+                  {
+                    "name": "getTBStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getTBStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990005' and Condition.clinicalStatus.coding.code = 'active'\", 'TB'))"
+                    ]
+                  },
+                  {
+                    "name": "getSickChildStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getSickChildStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '275142008' and Condition.clinicalStatus.coding.code = 'active'\", 'Sick Child'))"
                     ]
                   },
                   {
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? '': fhirPath.extractValue(Condition, \"Condition.code.text = 'Pregnant'\") == 'true'? 'Pregnant': fhirPath.extractValue(Condition, \"Condition.code.text = 'Family Planning'\") == 'true'? 'Family Planning': '')"
+                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus')], ',').replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\"))"
                     ]
                   }
                 ],

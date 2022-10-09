@@ -37,7 +37,8 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Task"
+          "Task",
+          "RelatedPerson"
         ],
         "type": "token",
         "expression": "#organization"

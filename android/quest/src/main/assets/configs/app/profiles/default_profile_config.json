@@ -117,7 +117,7 @@
       "name": "isChildUnder2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'months')\"))"
+        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate > today() - 2 'months')\"))"
       ]
     },
     {
@@ -146,8 +146,12 @@
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{patientIdentifier}",
+                  "primaryText": "ID: #@{patientIdentifier}",
                   "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "SPACER",
+                  "height": 10
                 },
                 {
                   "viewType": "PERSONAL_DATA",
