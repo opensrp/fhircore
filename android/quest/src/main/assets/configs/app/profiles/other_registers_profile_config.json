@@ -28,21 +28,21 @@
       "name": "patientFirstName",
       "condition": "true",
       "actions": [
-        "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+        "data.put('patientFirstName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(given[0])\"))"
       ]
     },
     {
       "name": "patientMiddleName",
       "condition": "true",
       "actions": [
-        "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+        "data.put('patientMiddleName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(text)\"))"
       ]
     },
     {
       "name": "patientLastName",
       "condition": "true",
       "actions": [
-        "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+        "data.put('patientLastName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(family)\"))"
       ]
     },
     {
@@ -91,7 +91,7 @@
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
@@ -106,6 +106,20 @@
       "condition": "true",
       "actions": [
         "data.put('canEnrollToFp', data.get('canBearChild'))"
+      ]
+    },
+    {
+      "name": "isChildUnder2months",
+      "condition": "true",
+      "actions": [
+        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient.get(0), \"Patient.active and (Patient.birthDate >= today() - 2 'months')\"))"
+      ]
+    },
+    {
+      "name": "isChildOver2months",
+      "condition": "true",
+      "actions": [
+        "data.put('isChildOver2months',  fhirPath.extractValue(Patient.get(0), \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
       ]
     }
   ],
@@ -317,6 +331,44 @@
       ]
     },
     {
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "@{isChildOver2months}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "3276f55c-b25e-455b-ae4e-8846fb8fd039",
+            "title": "Record sick child",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "@{isChildUnder2months}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "58fbddae-c5a0-4b86-832e-f516c96f3b85",
+            "title": "Record sick child",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "title": "Enroll to FP",
       "titleColor": "#000000",
       "visible": "@{canEnrollToFp}",
@@ -367,6 +419,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+            "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
             "saveButtonText": "Update registration"
           }
