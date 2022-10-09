@@ -47,7 +47,7 @@
           },
           {
             "resource": "RelatedPerson",
-            "searchParameter": "patient"
+            "fhirPathExpression": "patient"
           }
         ]
       },
@@ -292,10 +292,17 @@
                     ]
                   },
                   {
+                    "name": "relatedPersonCount",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('relatedPersonCount', size(RelatedPerson))"
+                    ]
+                  },
+                  {
                     "name": "getFamilyHeadStatus",
                     "condition": "true",
                     "actions": [
-                      "data.put('getFamilyHeadStatus', service.mapResourcesToLabeledCSV(RelatedPerson, \"RelatedPerson.relationship[0].coding[0].code = '99990006'\", 'Family Head'))"
+                      "data.put('getFamilyHeadStatus', service.mapResourcesToLabeledCSV(RelatedPerson, \"RelatedPerson.relationship = '99990006'\", 'Family Head'))"
                     ]
                   },
                   {
@@ -365,7 +372,7 @@
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus')], ',').replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceFirst(\"^,\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\").replaceAll(\",$\", \"\"))"
+                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
                     ]
                   }
                 ],
