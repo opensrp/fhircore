@@ -260,7 +260,9 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() || !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()) {
+    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
+        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
+    ) {
       extractCqlOutput(questionnaire, questionnaireResponse, bundle)
       extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
     }

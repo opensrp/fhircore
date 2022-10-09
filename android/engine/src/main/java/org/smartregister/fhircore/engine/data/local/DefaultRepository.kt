@@ -179,7 +179,8 @@ constructor(
         this.telecom = patient.telecom
         this.address = patient.address
         this.gender = patient.gender
-        this.relationshipFirstRep.codingFirstRep.system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.relationshipFirstRep.codingFirstRep.system =
+          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
         this.relationshipFirstRep.codingFirstRep.code = "99990006"
         this.relationshipFirstRep.codingFirstRep.display = "Family Head"
         this.patient = patient.asReference()
