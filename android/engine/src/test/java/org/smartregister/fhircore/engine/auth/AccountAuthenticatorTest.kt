@@ -475,7 +475,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testLastLoggedInUsernameShouldNotNull() {
+  fun testLastLoggedInUsernameShouldReturnSessionUsername() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "abc"
     Assert.assertEquals("abc", accountAuthenticator.retrieveLastLoggedInUsername())
   }
