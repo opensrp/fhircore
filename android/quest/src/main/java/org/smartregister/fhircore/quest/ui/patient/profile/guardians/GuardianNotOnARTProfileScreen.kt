@@ -149,10 +149,7 @@ fun GuardianRelatedPersonProfileScreen(
                     PatientProfileEvent.OpenTaskForm(
                       context = context,
                       taskFormId = taskFormId,
-                      taskId = taskId,
-                      patientId = profileViewData.logicalId,
-                      carePlans = profileViewData.carePlans,
-                      patientConditions = profileViewData.conditions
+                      taskId = taskId
                     )
                   )
                 }
