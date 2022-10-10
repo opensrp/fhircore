@@ -25,7 +25,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Config(sdk = [Build.VERSION_CODES.M])
+@Config(sdk = [Build.VERSION_CODES.N])
 class AndroidExtensionApi23Test : RobolectricTest() {
 
   @Test
