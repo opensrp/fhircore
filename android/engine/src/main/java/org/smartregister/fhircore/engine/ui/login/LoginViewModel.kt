@@ -274,7 +274,7 @@ constructor(
   }
 
   fun loadLastLoggedInUsername() {
-    _username.postValue(accountAuthenticator.secureSharedPreference.retrieveSessionUsername() ?: "")
+    _username.postValue(accountAuthenticator.retrieveLastLoggedInUsername() ?: "")
   }
 
   companion object {

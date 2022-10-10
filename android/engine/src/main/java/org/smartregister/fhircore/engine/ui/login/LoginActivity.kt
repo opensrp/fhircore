@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.accounts.AccountManager
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -80,7 +81,7 @@ class LoginActivity :
         } else if (isUpdatingCurrentAccount) {
           configurationRegistry.fetchNonWorkflowConfigResources()
           syncBroadcaster.get().runSync() // restart/resume sync
-          setResult(RESULT_OK)
+          setResult(Activity.RESULT_OK)
           finish() // Return to the previous activity
         } else {
           configurationRegistry.fetchNonWorkflowConfigResources()
