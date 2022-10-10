@@ -273,6 +273,10 @@ constructor(
     }
   }
 
+  fun loadLastLoggedInUsername() {
+    _username.postValue(accountAuthenticator.secureSharedPreference.retrieveSessionUsername() ?: "")
+  }
+
   companion object {
     const val IDENTIFIER = "identifier"
   }

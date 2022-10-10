@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.accounts.AccountManager
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -56,6 +55,7 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
+      loadLastLoggedInUsername()
       navigateToHome.observe(this@LoginActivity) {
         val isUpdatingCurrentAccount =
           intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&
@@ -80,7 +80,7 @@ class LoginActivity :
         } else if (isUpdatingCurrentAccount) {
           configurationRegistry.fetchNonWorkflowConfigResources()
           syncBroadcaster.get().runSync() // restart/resume sync
-          setResult(Activity.RESULT_OK)
+          setResult(RESULT_OK)
           finish() // Return to the previous activity
         } else {
           configurationRegistry.fetchNonWorkflowConfigResources()
