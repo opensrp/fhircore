@@ -39,6 +39,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -54,8 +55,16 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+  private val configService = mockk<ConfigService>()
   private val appSettingViewModel =
-    spyk(AppSettingViewModel(fhirResourceDataSource, defaultRepository, sharedPreferencesHelper))
+    spyk(
+      AppSettingViewModel(
+        fhirResourceDataSource,
+        defaultRepository,
+        sharedPreferencesHelper,
+        configService
+      )
+    )
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -135,6 +144,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       }
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+    coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
     appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
 
