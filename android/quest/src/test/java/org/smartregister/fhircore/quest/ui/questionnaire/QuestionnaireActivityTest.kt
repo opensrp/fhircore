@@ -43,6 +43,8 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -423,6 +425,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         addAnswer().apply { this.value = StringType("v1") }
         linkId = "1"
       }
+      addItem().apply {
+        addAnswer().apply { this.value = StringType("") }
+        linkId = "3"
+      }
     }
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
@@ -438,6 +444,42 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val questionnaireResponse = QuestionnaireResponse()
     questionnaireResponse.apply { addItem().apply { linkId = "1" } }
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    val result = questionnaireActivity.validQuestionnaireResponse(questionnaireResponse)
+
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testValidQuestionnaireResponseShouldReturnFalseForInvalidDataWhenHiddenIsFalse() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+    questionnaire.apply {
+      addItem().apply {
+        required = true
+        linkId = "4"
+        type = Questionnaire.QuestionnaireItemType.STRING
+        addExtension(
+          Extension(
+            "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+            BooleanType(false)
+          )
+        )
+      }
+    }
+
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireResponse.apply {
+      addItem().apply {
+        addAnswer().apply { this.value = StringType("v1") }
+        linkId = "1"
+      }
+      addItem().apply {
+        addAnswer().apply { this.value = StringType("") }
+        linkId = "4"
+      }
+    }
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
 
@@ -539,6 +581,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         maxLength = 4
         linkId = "2"
         type = Questionnaire.QuestionnaireItemType.STRING
+      }
+      addItem().apply {
+        required = true
+        linkId = "3"
+        type = Questionnaire.QuestionnaireItemType.STRING
+        addExtension(
+          Extension(
+            "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+            BooleanType(true)
+          )
+        )
       }
     }
   }
