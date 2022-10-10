@@ -473,4 +473,10 @@ class AccountAuthenticatorTest : RobolectricTest() {
     verify { accountManager.peekAuthToken(account, accountType) }
     verify { accountManager.invalidateAuthToken(accountType, token) }
   }
+
+  @Test
+  fun testLastLoggedInUsernameShouldNotNull() {
+    every { secureSharedPreference.retrieveSessionUsername() } returns "abc"
+    Assert.assertEquals("abc", accountAuthenticator.retrieveLastLoggedInUsername())
+  }
 }
