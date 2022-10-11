@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -33,6 +36,7 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -75,5 +79,32 @@ class AndroidExtensionTest : RobolectricTest() {
 
     // Fixes a compose and activity test failure
     Shadows.shadowOf(Looper.getMainLooper()).idle()
+  }
+
+  @Test
+  fun launchQuestionnaireCallsStartActivity() {
+    val ctx = mockk<Context>()
+    every { ctx.packageName } returns context.packageName
+    every { ctx.startActivity(any()) } just runs
+    ctx.launchQuestionnaire<QuestionnaireActivity>(
+      "testQuestionnaire",
+      clientIdentifier = null,
+      populationResources = arrayListOf()
+    )
+
+    verify { ctx.startActivity(any()) }
+  }
+
+  @Test
+  fun launchQuestionnaireForResultCallsStartActivityForResultWithRequestCode() {
+    val ctx = spyk<Activity>()
+    every { ctx.packageName } returns context.packageName
+    every { ctx.startActivityForResult(any(), any()) } just runs
+    ctx.launchQuestionnaireForResult<QuestionnaireActivity>(
+      "testQuestionnaire",
+      clientIdentifier = null,
+      populationResources = arrayListOf()
+    )
+    verify { ctx.startActivityForResult(any(), withArg { assertEquals(0, it) }) }
   }
 }

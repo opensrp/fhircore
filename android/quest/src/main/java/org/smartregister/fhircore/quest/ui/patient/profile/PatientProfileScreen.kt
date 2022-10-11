@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -74,7 +76,8 @@ fun PatientProfileScreen(
 ) {
 
   val context = LocalContext.current
-  val profileViewData = patientProfileViewModel.patientProfileViewData.value
+  val profileViewDataState = patientProfileViewModel.patientProfileViewData.collectAsState()
+  val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
 
@@ -104,15 +107,7 @@ fun PatientProfileScreen(
                 onClick = {
                   showOverflowMenu = false
                   patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(
-                      navController,
-                      context,
-                      it.id,
-                      profileViewData.logicalId,
-                      patientProfileViewModel.familyId,
-                      carePlans = profileViewData.carePlans,
-                      patientConditions = profileViewData.conditions
-                    )
+                    PatientProfileEvent.OverflowMenuClick(navController, context, it.id)
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -125,11 +120,19 @@ fun PatientProfileScreen(
                         else Color.Transparent
                     )
               ) {
-                val titleTextResource = it.titleResource
-                if (it.id == org.smartregister.fhircore.quest.R.id.view_children) {
-                  Text(text = profileViewData.viewChildText, color = it.titleColor)
-                } else {
-                  Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                when (it.id) {
+                  R2.id.view_children -> {
+                    Text(text = profileViewData.viewChildText, color = it.titleColor)
+                  }
+                  R2.id.view_guardians -> {
+                    Text(
+                      text = stringResource(it.titleResource, profileViewData.guardians.size),
+                      color = it.titleColor
+                    )
+                  }
+                  else -> {
+                    Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                  }
                 }
               }
             }
@@ -178,10 +181,7 @@ fun PatientProfileScreen(
                       PatientProfileEvent.OpenTaskForm(
                         context = context,
                         taskFormId = taskFormId,
-                        taskId = taskId,
-                        patientId = profileViewData.logicalId,
-                        carePlans = profileViewData.carePlans,
-                        patientConditions = profileViewData.conditions
+                        taskId = taskId
                       )
                     )
                   }

@@ -34,6 +34,9 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
+import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -78,4 +81,13 @@ class CoreModule {
   @Provides
   fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
     FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
+
+  @Singleton
+  @Provides
+  @HivPatient
+  fun providePatientDao(
+    fhirEngine: FhirEngine,
+    defaultRepository: DefaultRepository,
+    configurationRegistry: ConfigurationRegistry
+  ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
 }

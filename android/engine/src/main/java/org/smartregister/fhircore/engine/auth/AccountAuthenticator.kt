@@ -223,6 +223,8 @@ constructor(
     return secureSharedPreference.retrieveSessionPin()?.isNotBlank() == true
   }
 
+  fun retrieveLastLoggedInUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
     return secureSharedPreference.retrieveCredentials()?.let {

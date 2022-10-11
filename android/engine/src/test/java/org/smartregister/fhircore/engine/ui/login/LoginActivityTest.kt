@@ -88,6 +88,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     coEvery { accountAuthenticator.hasActivePin() } returns false
 
+    coEvery { accountAuthenticator.retrieveLastLoggedInUsername() } returns ""
+
     fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
     loginViewModel =
