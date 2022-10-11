@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.Guardian
@@ -64,8 +65,11 @@ sealed class ProfileViewData(
 
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
 
-    val populationResources: ArrayList<Resource> =
-      ArrayList(carePlans + conditions + guardiansRelatedPersonResource + observations)
+    val populationResources: ArrayList<Resource> by lazy {
+      val resources = carePlans + conditions + guardiansRelatedPersonResource + observations
+      val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      arrayListOf(resourcesAsBundle)
+    }
   }
 
   data class FamilyProfileViewData(
