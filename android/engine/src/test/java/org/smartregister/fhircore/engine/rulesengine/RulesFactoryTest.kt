@@ -161,6 +161,56 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals("Patient", result!!.resourceType.name)
     Assert.assertEquals("patient-1", result.logicalId)
   }
+
+  @Test
+  fun extractGenderReturnsCorrectGender() {
+    Assert.assertEquals(
+      "Male",
+      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.MALE))
+    )
+    Assert.assertEquals(
+      "Female",
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.FEMALE)
+      )
+    )
+    Assert.assertEquals(
+      "Other",
+      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.OTHER))
+    )
+    Assert.assertEquals(
+      "Unknown",
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.UNKNOWN)
+      )
+    )
+    Assert.assertEquals("", rulesEngineService.extractGender(Patient()))
+  }
+
+  @Test
+  fun extractDOBReturnsCorrectDate() {
+    Assert.assertEquals(
+      "03/10/2015",
+      rulesEngineService.extractDOB(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        "dd/MM/YYYY"
+      )
+    )
+  }
+
+  @Test
+  fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
+    val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
+    val resources =
+      listOf(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("2020-10-03").toDate())
+      )
+
+    val result = rulesEngineService.mapResourcesToLabeledCSV(resources, fhirPathExpression, "CHILD")
+    Assert.assertEquals("CHILD,CHILD", result)
+  }
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())
     val patientRelatedResource = mutableListOf(populateTestPatient())
