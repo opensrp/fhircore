@@ -18,11 +18,6 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.content.Context
 import androidx.navigation.NavHostController
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -33,38 +28,14 @@ sealed class PatientProfileEvent {
   data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
     PatientProfileEvent()
 
-  data class OpenTaskForm(
-    val context: Context,
-    val taskFormId: String,
-    val taskId: String,
-    val patientId: String,
-    val carePlans: List<CarePlan> = emptyList(),
-    val patientConditions: List<Condition> = emptyList(),
-    val patientObservations: List<Observation> = emptyList()
-  ) : PatientProfileEvent() {
-    fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = carePlans + patientConditions + patientObservations
-      val resourcesBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
-      return arrayListOf(resourcesBundle)
-    }
-  }
+  data class OpenTaskForm(val context: Context, val taskFormId: String, val taskId: String) :
+    PatientProfileEvent()
 
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,
-    val menuId: Int,
-    val patientId: String,
-    val familyId: String? = null,
-    val carePlans: List<CarePlan> = emptyList(),
-    val patientConditions: List<Condition> = emptyList(),
-    val patientObservations: List<Observation> = emptyList()
-  ) : PatientProfileEvent() {
-    fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = carePlans + patientConditions + patientObservations
-      val resourcesBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
-      return arrayListOf(resourcesBundle)
-    }
-  }
+    val menuId: Int
+  ) : PatientProfileEvent()
 
   data class OpenChildProfile(val patientId: String, val navController: NavHostController) :
     PatientProfileEvent()

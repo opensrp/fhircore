@@ -37,9 +37,16 @@ enum class HealthStatus(var display: String = "") {
   COMMUNITY_POSITIVE {
     override fun priority(): StatusPriority = 3
   },
+  NOT_ON_ART(display = Constant.NOT_ON_ART) {
+    override fun priority(): StatusPriority = Int.MAX_VALUE - 1
+  },
   DEFAULT {
     override fun priority(): StatusPriority = Int.MAX_VALUE
   };
 
   abstract fun priority(): StatusPriority
+
+  object Constant {
+    const val NOT_ON_ART = "Not on ART"
+  }
 }

@@ -56,6 +56,7 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
+      loadLastLoggedInUsername()
       navigateToHome.observe(this@LoginActivity) {
         val isUpdatingCurrentAccount =
           intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&

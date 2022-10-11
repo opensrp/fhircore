@@ -18,9 +18,11 @@ package org.smartregister.fhircore.quest.ui.shared.models
 
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -52,12 +54,18 @@ sealed class ProfileViewData(
     val conditions: List<Condition> = emptyList(),
     val otherPatients: List<Resource> = emptyList(),
     val viewChildText: String = "",
+    val guardians: List<Guardian> = emptyList(),
     val observations: List<Observation> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
       carePlans.isNotEmpty() &&
         tasks.isNotEmpty() &&
         tasks.all { it.subtitleStatus == Task.TaskStatus.COMPLETED.name }
+
+    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
+
+    val populationResources: ArrayList<Resource> =
+      ArrayList(carePlans + conditions + guardiansRelatedPersonResource + observations)
   }
 
   data class FamilyProfileViewData(
