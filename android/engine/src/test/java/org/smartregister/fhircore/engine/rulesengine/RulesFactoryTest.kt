@@ -211,6 +211,31 @@ class RulesFactoryTest : RobolectricTest() {
     val result = rulesEngineService.mapResourcesToLabeledCSV(resources, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD,CHILD", result)
   }
+
+  @Test
+  fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+
+    patients.add(Patient().setActive(false))
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+  }
+
+  @Test
+  fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsFalse() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
+
+    patients.add(Patient().setActive(false))
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
+  }
+
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())
     val patientRelatedResource = mutableListOf(populateTestPatient())
