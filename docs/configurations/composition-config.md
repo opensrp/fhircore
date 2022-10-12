@@ -1,8 +1,9 @@
-# Documentation of Quest Configuration
+## Composition config
+
 <img src="https://user-images.githubusercontent.com/62053304/169209957-e59780e8-4e68-49fc-8167-a247d696d09b.jpg" width="512">
 The configurations in *Quest* use a combination of a single `Composition` and multiple `Binary` resource.
 
-## Composition
+
 The `Composition` config is identified using a unique `appId` string and is the entry point to access all the `Binary` configs associated with that `appId`.
 
 ### Structure of Composition Config
