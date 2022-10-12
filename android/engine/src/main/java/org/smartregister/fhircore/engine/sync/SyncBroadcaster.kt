@@ -131,7 +131,7 @@ constructor(
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
-          // e.g. #organization -> 123
+          // e.g. #organization -> 123//582
           // e.g. patient.organization eq #organization -> patient.organization eq 123
           paramExpression.replace(paramLiteral, it)
         }
