@@ -65,12 +65,12 @@ At the core is Android FHIR SDK which provides Data Access API, Search API, Sync
 
 ### Project Structure
 
-The project currently consists of single application module (`quest`)and an two Android library modules (`engine` and `geowidget`). 
+The project currently consists an application module (`quest`) and two Android library modules (`engine` and `geowidget`). The `geowidget` module contains implementation for intergrating Map views to FHIR Core. `engine` module contains shared code.
 
 
 ### Package structure
 
-`quest` application module packages are grouped based on features. `engine` module on the other hand uses a hybrid approach, combining both layered and feature based package structure.
+`quest` and `geowidget` modules packages are grouped based on features. `engine` module on the other hand uses a hybrid approach, combining both layered and feature based package structure.
 
 At a higher level every module is at least organized into three main packages, namely:
 
@@ -85,7 +85,7 @@ This package mostly contains Android `Activity`, `Fragment`, `ViewModel`, and `C
 
 #### `util`
 
-This package is used to hold any internally shared utility functions typically implemented as Kotlin extensions. Other utilities use kotlin `object` to implement singletons.
+This package is used to hold any code that shared internally typically implemented as Kotlin extensions. Other utilities use kotlin `object` to implement singletons.
 
 
 Conventionally, classes are further organized into more cohesive directories within the main packages mentioned above. This should allow minimal updates when code is refactored by moving directories.
