@@ -92,7 +92,8 @@ constructor(
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
-  val extractionProgress = MutableLiveData<Boolean>()
+  val extractionProgress = MutableLiveData<ExtractionProgress>()
+  val questionnaireResponseLiveData = MutableLiveData<QuestionnaireResponse?>(null)
 
   private val saveButtonEnabledMutableLiveData = MutableLiveData<Boolean>()
   val saveButtonEnabledLiveData: LiveData<Boolean> = saveButtonEnabledMutableLiveData
@@ -256,7 +257,7 @@ constructor(
     viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
-
+      val extras = mutableListOf<Resource>()
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
@@ -303,6 +304,10 @@ constructor(
             }
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
+
+          if (bundleEntry.resource is Encounter) {
+            extras.add(bundleEntry.resource)
+          }
         }
 
         if (questionnaire.experimental) {
@@ -316,7 +321,7 @@ constructor(
         }
 
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-
+        questionnaireResponseLiveData.postValue(questionnaireResponse)
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
         // might have generated other flow in subsequent followups
@@ -331,7 +336,9 @@ constructor(
         extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
 
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      viewModelScope.launch(Dispatchers.Main) {
+        extractionProgress.postValue(ExtractionProgress.Success(extras))
+      }
     }
   }
 

@@ -32,6 +32,7 @@ import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
 import org.smartregister.fhircore.eir.ui.patient.details.ordinalOf
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.questionnaire.ExtractionProgress
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import timber.log.Timber
 
@@ -63,7 +64,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
           // method below triggers save success automatically
           questionnaireViewModel.saveBundleResources(bundle)
-          questionnaireViewModel.extractionProgress.postValue(true)
+          questionnaireViewModel.extractionProgress.postValue(ExtractionProgress.Success())
         } else dismissSaveProcessing()
       } else handleExtractionError(questionnaireResponse)
     }
