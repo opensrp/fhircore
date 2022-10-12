@@ -3,81 +3,76 @@ map "https://fhir.labs.smartregister.org/fhir/StructureMap/219527e8-44a1-11ed-b8
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
-group newFpRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+group FPRoutineVisit(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> evaluate(src, $this.subject) as refPatient then ExtractObservation(src, bundle, refPatient) "r_obs_entry";
 }
 
 group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
-    src.item as any_risk where(linkId ='d67585d7-ae6b-4ede-83c1-80980bc9481f' and answer.value.exists() and answer.value.code = 'no') then {
-        src.item as available_method where(linkId ='aea83698-5a14-48d9-8345-3076bbb576ee' and answer.value.exists() and answer.value.code = 'yes') then {
 
-            // if selected method is male condom
-            src.item as male_condom where(linkId ='55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and answer.value.code = 'male-condoms') then {
-                src.item as male_condom_count where(linkId ='d67e3038-fb94-411b-8f34-046401319877' and answer.value.exists() and answer.value.toInteger() > 0) then {
-                    src -> create('Quantity') as qty then {
-                        src -> qty.value = evaluate(male_condom_count, $this.answer.value),
-                            qty.unit = 'Pieces',
-                            qty.system = 'http://snomed.info/sct',
-                            qty.code = '767525000' "r_obs_qty";
-                        src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_male_condom_obs";
-                    } "r_obs_value";
-                } "r_male_condom_count";
-            } "r_male_condom";
+    // if selected method is male condom
+    src.item as male_condom where(linkId ='f2ae569c-5ff1-436a-eb35-bd8887e6ee2d' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as male_condom_count where(linkId ='a6fb10ac-dccd-4e5d-cc6e-ded342821554' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> create('Quantity') as qty then {
+                src -> qty.value = evaluate(male_condom_count, $this.answer.value),
+                    qty.unit = 'Pieces',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+                src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_male_condom_obs";
+            } "r_obs_value";
+        } "r_male_condom_count";
+    } "r_male_condom";
 
-            // if selected method is female condom
-            src.item as female_condom where(linkId ='55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and answer.value.code = 'female-condoms') then {
-                src.item as female_condom_count where(linkId ='cb942faa-5f6a-4426-878e-930596fd752e' and answer.value.exists() and answer.value.toInteger() > 0) then {
-                    src -> create('Quantity') as qty then {
-                        src -> qty.value = evaluate(female_condom_count, $this.answer.value),
-                            qty.unit = 'Pieces',
-                            qty.system = 'http://snomed.info/sct',
-                            qty.code = '767525000' "r_obs_qty";
-                        src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_female_condom_obs";
-                    } "r_obs_value";
-                } "r_female_condom_count";
-            } "r_female_condom";
+    // if selected method is female condom
+    src.item as female_condom where(linkId ='2b257a07-1968-4794-8d28-fc92078a3f6a' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as female_condom_count where(linkId ='e453b6dd-3050-428e-8934-3bf42f02d9bf' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> create('Quantity') as qty then {
+                src -> qty.value = evaluate(female_condom_count, $this.answer.value),
+                    qty.unit = 'Pieces',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+                src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_female_condom_obs";
+            } "r_obs_value";
+        } "r_female_condom_count";
+    } "r_female_condom";
 
-            // if selected method is microlut
-            src.item as microlut where(linkId ='55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and answer.value.code = 'microlut') then {
-                src.item as microlut_count where(linkId ='deebaa95-b9b4-41e5-883c-24023ed3693c' and answer.value.exists() and answer.value.toInteger() > 0) then {
-                    src -> create('Quantity') as qty then {
-                        src -> qty.value = evaluate(microlut_count, $this.answer.value),
-                            qty.unit = 'Cycles',
-                            qty.system = 'http://snomed.info/sct',
-                            qty.code = '767525000' "r_obs_qty";
-                        src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_microlut_obs";
-                    } "r_obs_value";
-                } "r_microlut_count";
-            } "r_microlut";
+    // if selected method is microlut
+    src.item as microlut where(linkId ='678c70aa-f016-4f20-ab0e-d0260301c9b8' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as microlut_count where(linkId ='ba220c6d-dc78-4e74-82a3-ed06497e6b0c' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> create('Quantity') as qty then {
+                src -> qty.value = evaluate(microlut_count, $this.answer.value),
+                    qty.unit = 'Cycles',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+                src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_microlut_obs";
+            } "r_obs_value";
+        } "r_microlut_count";
+    } "r_microlut";
 
-            // if selected method is microgynon
-            src.item as microgynon where(linkId ='55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and answer.value.code = 'microgynon') then {
-                src.item as microgynon_count where(linkId ='c0b1c27b-d7e1-41ef-80f9-3e2e9774ed7a' and answer.value.exists() and answer.value.toInteger() > 0) then {
-                    src -> create('Quantity') as qty then {
-                        src -> qty.value = evaluate(microgynon_count, $this.answer.value),
-                            qty.unit = 'Cycles',
-                            qty.system = 'http://snomed.info/sct',
-                            qty.code = '767525000' "r_obs_qty";
-                        src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_microgynon_obs";
-                    } "r_obs_value";
-                } "r_microgynon_count";
-            } "r_microgynon";
+    // if selected method is microgynon
+    src.item as microgynon where(linkId ='ac74c719-0fda-46cf-8247-a511cfdb76e1' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as microgynon_count where(linkId ='d36754c9-9e1d-4b59-873d-2fb07a5ff191' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> create('Quantity') as qty then {
+                src -> qty.value = evaluate(microgynon_count, $this.answer.value),
+                    qty.unit = 'Cycles',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+                src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_microgynon_obs";
+            } "r_obs_value";
+        } "r_microgynon_count";
+    } "r_microgynon";
 
-            // if selected method is depo
-            src.item as depo where(linkId ='55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and answer.value.code = 'depo') then {
-                //src.item as depo_count where(linkId ='' and answer.value.exists() and answer.value.toInteger() > 0) then {
-                    src -> create('Quantity') as qty then {
-                        src -> qty.value = 1,
-                            qty.unit = 'Ampoules',
-                            qty.system = 'http://snomed.info/sct',
-                            qty.code = '767525000' "r_obs_qty";
-                        src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_depo_obs";
-                    } "r_obs_value";
-                //} "r_depo_count";
-            } "r_depo";
-
-        } "r_available_method";
-    } "r_any_risk_factor_check";
+    // if selected method is depo
+    src.item as depo where(linkId ='53f1fd4a-51e1-42a8-9fb0-96721e591697' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as depo_count where(linkId ='0e161856-fe58-4a57-8cf8-e0481940a67e' and answer.value.exists() and answer.value = true) then {
+            src -> create('Quantity') as qty then {
+                src -> qty.value = 1,
+                    qty.unit = 'Ampoules',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+                src -> qty as valueQty then ExtractSpecificObservation(src, bundle, refPatient, valueQty) "r_extract_depo_obs";
+            } "r_obs_value";
+        } "r_depo_count";
+    } "r_depo";
 }
 
 group ExtractSpecificObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference, source valueQty: Quantity) {
@@ -101,27 +96,27 @@ group ExtractSpecificObservation(source src : QuestionnaireResponse, target bund
 group ExtractReference(source src: QuestionnaireResponse, target ref: Reference) {
 
     // male condom
-    src.item where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.code = 'male-condoms') then {
+    src.item where(linkId = 'f2ae569c-5ff1-436a-eb35-bd8887e6ee2d' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
     } "r_male_condom_type_check";
 
     // female condom
-    src.item where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.code = 'female-condoms') then {
+    src.item where(linkId = '2b257a07-1968-4794-8d28-fc92078a3f6a' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
     } "r_female_condom_type_check";
 
     // microlut
-    src.item where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.code = 'microlut') then {
+    src.item where(linkId = '678c70aa-f016-4f20-ab0e-d0260301c9b8' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681' "r_microlut_ref";
     } "r_microlut_type_check";
 
     // microgynon
-    src.item where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.code = 'microgynon') then {
+    src.item where(linkId = 'ac74c719-0fda-46cf-8247-a511cfdb76e1' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5' "r_microgynon_ref";
     } "r_microgynon_type_check";
 
     // depo
-    src.item where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.code = 'depo') then {
+    src.item where(linkId = '53f1fd4a-51e1-42a8-9fb0-96721e591697' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546' "r_depo_ref";
     } "r_depo_type_check";
 }

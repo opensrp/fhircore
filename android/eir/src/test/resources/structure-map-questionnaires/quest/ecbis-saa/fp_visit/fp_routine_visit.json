@@ -1,8 +1,8 @@
 {
     "resourceType": "StructureMap",
-    "id": "650943ec-3c61-42a7-86ef-12a4c9955d5d",
-    "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/650943ec-3c61-42a7-86ef-12a4c9955d5d",
-    "name": "New FP Registration",
+    "id": "219527e8-44a1-11ed-b878-0242ac120002",
+    "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/219527e8-44a1-11ed-b878-0242ac120002",
+    "name": "FP Routine Visit",
     "structure": [
         {
             "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
@@ -15,7 +15,7 @@
     ],
     "group": [
         {
-            "name": "newFpRegistration",
+            "name": "FPRoutineVisit",
             "typeMode": "none",
             "input": [
                 {
@@ -30,72 +30,6 @@
                 }
             ],
             "rule": [
-                {
-                    "name": "r_bundle_type",
-                    "source": [
-                        {
-                            "context": "src"
-                        }
-                    ],
-                    "target": [
-                        {
-                            "context": "bundle",
-                            "contextType": "variable",
-                            "element": "type",
-                            "transform": "copy",
-                            "parameter": [
-                                {
-                                    "valueString": "collection"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "r_fp_ext",
-                    "source": [
-                        {
-                            "context": "src",
-                            "element": "item",
-                            "variable": "isFPTriggered",
-                            "condition": "(((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)'))) or ((linkId = '7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec') and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)') or (answer.value.code = 'IUD') or (answer.value.code = 'Implant') or (answer.value.code = 'The standard day method (SDM) using Cycle Bead') or (answer.value.code = 'Lactational Amenorrhea Method (LAM)')))).exists()"
-                        }
-                    ],
-                    "rule": [
-                        {
-                            "name": "r_bundle_entries",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "variable": "refPatient",
-                                    "transform": "evaluate",
-                                    "parameter": [
-                                        {
-                                            "valueId": "src"
-                                        },
-                                        {
-                                            "valueString": "$this.subject"
-                                        }
-                                    ]
-                                }
-                            ],
-                            "dependent": [
-                                {
-                                    "name": "extractFPCondition",
-                                    "variable": [
-                                        "src",
-                                        "bundle",
-                                        "refPatient"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
                 {
                     "name": "r_obs_entry",
                     "source": [
@@ -131,291 +65,6 @@
             ]
         },
         {
-            "name": "extractFPCondition",
-            "typeMode": "none",
-            "input": [
-                {
-                    "name": "src",
-                    "type": "QuestionnaireResponse",
-                    "mode": "source"
-                },
-                {
-                    "name": "bundle",
-                    "type": "Bundle",
-                    "mode": "target"
-                },
-                {
-                    "name": "refPatient",
-                    "type": "Reference",
-                    "mode": "source"
-                }
-            ],
-            "rule": [
-                {
-                    "name": "r_cnd",
-                    "source": [
-                        {
-                            "context": "src"
-                        }
-                    ],
-                    "target": [
-                        {
-                            "context": "bundle",
-                            "contextType": "variable",
-                            "element": "entry",
-                            "variable": "entry"
-                        },
-                        {
-                            "context": "entry",
-                            "contextType": "variable",
-                            "element": "resource",
-                            "variable": "cnd",
-                            "transform": "create",
-                            "parameter": [
-                                {
-                                    "valueString": "Condition"
-                                }
-                            ]
-                        }
-                    ],
-                    "rule": [
-                        {
-                            "name": "r_cnd_id",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "id",
-                                    "transform": "uuid"
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_onset_date_val",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "onset",
-                                    "transform": "evaluate",
-                                    "parameter": [
-                                        {
-                                            "valueId": "src"
-                                        },
-                                        {
-                                            "valueString": "now()"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_clinical_st",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "clinicalStatus",
-                                    "transform": "cc",
-                                    "parameter": [
-                                        {
-                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
-                                        },
-                                        {
-                                            "valueString": "active"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_verif_st",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "verificationStatus",
-                                    "transform": "cc",
-                                    "parameter": [
-                                        {
-                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
-                                        },
-                                        {
-                                            "valueString": "confirmed"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_category",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "category",
-                                    "transform": "cc",
-                                    "parameter": [
-                                        {
-                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
-                                        },
-                                        {
-                                            "valueString": "problem-list-item"
-                                        },
-                                        {
-                                            "valueString": "Problem List Item"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_sub",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "subject",
-                                    "transform": "copy",
-                                    "parameter": [
-                                        {
-                                            "valueId": "refPatient"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_recorded",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "recordedDate",
-                                    "transform": "evaluate",
-                                    "parameter": [
-                                        {
-                                            "valueId": "src"
-                                        },
-                                        {
-                                            "valueString": "now()"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "name": "r_cnd_code",
-                            "source": [
-                                {
-                                    "context": "src"
-                                }
-                            ],
-                            "target": [
-                                {
-                                    "context": "cnd",
-                                    "contextType": "variable",
-                                    "element": "code",
-                                    "variable": "ccPreg",
-                                    "transform": "create",
-                                    "parameter": [
-                                        {
-                                            "valueString": "CodeableConcept"
-                                        }
-                                    ]
-                                }
-                            ],
-                            "rule": [
-                                {
-                                    "name": "r_cnd_code_coding",
-                                    "source": [
-                                        {
-                                            "context": "src"
-                                        }
-                                    ],
-                                    "target": [
-                                        {
-                                            "context": "ccPreg",
-                                            "contextType": "variable",
-                                            "element": "coding",
-                                            "transform": "c",
-                                            "parameter": [
-                                                {
-                                                    "valueString": "http://snomed.info/sct"
-                                                },
-                                                {
-                                                    "valueString": "99998888"
-                                                },
-                                                {
-                                                    "valueString": "Family Planning"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "name": "r_cnd_code_text",
-                                    "source": [
-                                        {
-                                            "context": "src"
-                                        }
-                                    ],
-                                    "target": [
-                                        {
-                                            "context": "ccPreg",
-                                            "contextType": "variable",
-                                            "element": "text",
-                                            "transform": "copy",
-                                            "parameter": [
-                                                {
-                                                    "valueString": "Family Planning"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
             "name": "ExtractObservation",
             "typeMode": "none",
             "input": [
@@ -443,7 +92,7 @@
                             "context": "src",
                             "element": "item",
                             "variable": "male_condom",
-                            "condition": "((linkId = 'e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51') and answer.value.exists() and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = 'f2ae569c-5ff1-436a-eb35-bd8887e6ee2d') and answer.value.exists() and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -454,7 +103,7 @@
                                     "context": "src",
                                     "element": "item",
                                     "variable": "male_condom_count",
-                                    "condition": "((linkId = 'd67e3038-fb94-411b-8f34-046401319877') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                    "condition": "((linkId = 'a6fb10ac-dccd-4e5d-cc6e-ded342821554') and answer.value.exists() and (answer.value.toInteger() > 0))"
                                 }
                             ],
                             "rule": [
@@ -577,7 +226,7 @@
                             "context": "src",
                             "element": "item",
                             "variable": "female_condom",
-                            "condition": "((linkId = 'ae2b3afe-68bc-46d9-fdb9-9c3322efd277') and answer.value.exists() and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '2b257a07-1968-4794-8d28-fc92078a3f6a') and answer.value.exists() and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -588,7 +237,7 @@
                                     "context": "src",
                                     "element": "item",
                                     "variable": "female_condom_count",
-                                    "condition": "((linkId = 'cb942faa-5f6a-4426-878e-930596fd752e') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                    "condition": "((linkId = 'e453b6dd-3050-428e-8934-3bf42f02d9bf') and answer.value.exists() and (answer.value.toInteger() > 0))"
                                 }
                             ],
                             "rule": [
@@ -711,7 +360,7 @@
                             "context": "src",
                             "element": "item",
                             "variable": "microlut",
-                            "condition": "((linkId = '07039905-2e06-49da-fd28-0d0a31f8c306') and answer.value.exists() and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '678c70aa-f016-4f20-ab0e-d0260301c9b8') and answer.value.exists() and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -722,7 +371,7 @@
                                     "context": "src",
                                     "element": "item",
                                     "variable": "microlut_count",
-                                    "condition": "((linkId = 'deebaa95-b9b4-41e5-883c-24023ed3693c') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                    "condition": "((linkId = 'ba220c6d-dc78-4e74-82a3-ed06497e6b0c') and answer.value.exists() and (answer.value.toInteger() > 0))"
                                 }
                             ],
                             "rule": [
@@ -845,7 +494,7 @@
                             "context": "src",
                             "element": "item",
                             "variable": "microgynon",
-                            "condition": "((linkId = '0a53e4a5-79b6-431d-d33f-56b05fbf3f46') and answer.value.exists() and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = 'ac74c719-0fda-46cf-8247-a511cfdb76e1') and answer.value.exists() and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -856,7 +505,7 @@
                                     "context": "src",
                                     "element": "item",
                                     "variable": "microgynon_count",
-                                    "condition": "((linkId = 'c0b1c27b-d7e1-41ef-80f9-3e2e9774ed7a') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                    "condition": "((linkId = 'd36754c9-9e1d-4b59-873d-2fb07a5ff191') and answer.value.exists() and (answer.value.toInteger() > 0))"
                                 }
                             ],
                             "rule": [
@@ -979,7 +628,7 @@
                             "context": "src",
                             "element": "item",
                             "variable": "depo",
-                            "condition": "((linkId = 'bda820d4-15dd-471b-b7a7-9aed02bb0558') and answer.value.exists() and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '53f1fd4a-51e1-42a8-9fb0-96721e591697') and answer.value.exists() and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -990,7 +639,7 @@
                                     "context": "src",
                                     "element": "item",
                                     "variable": "depo_count",
-                                    "condition": "((linkId = '451a7edc-348b-4859-c384-15da059adc47') and answer.value.exists() and (answer.value = true))"
+                                    "condition": "((linkId = '0e161856-fe58-4a57-8cf8-e0481940a67e') and answer.value.exists() and (answer.value = true))"
                                 }
                             ],
                             "rule": [
@@ -1421,7 +1070,7 @@
                         {
                             "context": "src",
                             "element": "item",
-                            "condition": "((linkId = 'e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51') and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = 'f2ae569c-5ff1-436a-eb35-bd8887e6ee2d') and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -1454,7 +1103,7 @@
                         {
                             "context": "src",
                             "element": "item",
-                            "condition": "((linkId = 'ae2b3afe-68bc-46d9-fdb9-9c3322efd277') and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '2b257a07-1968-4794-8d28-fc92078a3f6a') and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -1487,7 +1136,7 @@
                         {
                             "context": "src",
                             "element": "item",
-                            "condition": "((linkId = '07039905-2e06-49da-fd28-0d0a31f8c306') and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '678c70aa-f016-4f20-ab0e-d0260301c9b8') and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -1520,7 +1169,7 @@
                         {
                             "context": "src",
                             "element": "item",
-                            "condition": "((linkId = '0a53e4a5-79b6-431d-d33f-56b05fbf3f46') and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = 'ac74c719-0fda-46cf-8247-a511cfdb76e1') and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [
@@ -1553,7 +1202,7 @@
                         {
                             "context": "src",
                             "element": "item",
-                            "condition": "((linkId = 'bda820d4-15dd-471b-b7a7-9aed02bb0558') and (answer.value.code = 'yes'))"
+                            "condition": "((linkId = '53f1fd4a-51e1-42a8-9fb0-96721e591697') and (answer.value.code = 'yes'))"
                         }
                     ],
                     "rule": [

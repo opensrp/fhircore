@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"linkId": "f2ae569c-5ff1-436a-eb35-bd8887e6ee2d",
+			"linkId": "53f1fd4a-51e1-42a8-9fb0-96721e591697",
 			"answer": [
 				{
 					"valueCoding": {
@@ -47,6 +47,14 @@
 			"answer": [
 				{
 					"valueInteger": 3
+				}
+			]
+		},
+		{
+			"linkId": "0e161856-fe58-4a57-8cf8-e0481940a67e",
+			"answer": [
+				{
+					"valueBoolean": true
 				}
 			]
 		}
