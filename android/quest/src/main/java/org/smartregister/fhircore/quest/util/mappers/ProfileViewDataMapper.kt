@@ -80,6 +80,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           otherPatients = inputModel.otherPatients,
           viewChildText =
             context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
+          observations = inputModel.observations,
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
