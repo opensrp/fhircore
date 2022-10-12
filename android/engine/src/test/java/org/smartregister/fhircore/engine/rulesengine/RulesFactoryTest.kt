@@ -29,6 +29,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ContactPoint
@@ -43,6 +44,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
+import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
@@ -243,6 +245,59 @@ class RulesFactoryTest : RobolectricTest() {
 
     patients.add(Patient().setActive(false))
     Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
+  }
+
+  @Test
+  fun onFailureLogsWarningForJexlException_Variable() {
+    val exception = mockk<JexlException.Variable>()
+    every { exception.localizedMessage } returns "jexl exception"
+    every { exception.variable } returns "func"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onFailure",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify {
+      rulesFactory.logWarning(
+        "jexl exception, consider checking for null before usage: e.g func != null"
+      )
+    }
+  }
+
+  @Test
+  fun onFailureLogsErrorForException() {
+    val exception = mockk<Exception>()
+    every { exception.localizedMessage } returns "jexl exception"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onFailure",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify { rulesFactory.logError(exception) }
+  }
+
+  @Test
+  fun onEvaluationErrorLogsError() {
+    val exception = mockk<Exception>()
+    every { exception.localizedMessage } returns "jexl exception"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onEvaluationError",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify { rulesFactory.logError("Evaluation error", exception) }
   }
 
   private fun populateFactsWithResources() {

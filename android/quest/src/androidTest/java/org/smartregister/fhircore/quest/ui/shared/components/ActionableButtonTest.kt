@@ -50,7 +50,7 @@ class ActionableButtonTest {
         ActionableButton(
           buttonProperties =
             ButtonProperties(
-              status = "COMPLETED",
+              status = "DUE",
               text = "Button Text",
               actions =
                 listOf(

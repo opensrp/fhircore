@@ -88,17 +88,17 @@ constructor(
       when (exception) {
         // Just display error message for undefined variable; expected for missing facts
         is JexlException.Variable ->
-          Timber.w(
+          logWarning(
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
         else -> Timber.e(exception)
       }
     } else {
-      Timber.e(exception)
+      logError(exception)
     }
 
   override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
-    Timber.e("Evaluation error", exception)
+    logError("Evaluation error", exception)
   }
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
@@ -302,6 +302,18 @@ constructor(
     /** This function extracts the patient's DOB from the FHIR resource */
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+  }
+
+  fun logWarning(message: String) {
+    Timber.d(message)
+  }
+
+  fun logError(exception: Exception?) {
+    Timber.e(exception)
+  }
+
+  fun logError(message: String, exception: Exception?) {
+    Timber.e(message, exception)
   }
 
   companion object {
