@@ -213,6 +213,15 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun mapResourceToLabeledCSVReturnsCorrectLabels() {
+    val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
+    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+
+    val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
+    Assert.assertEquals("CHILD", result)
+  }
+
+  @Test
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
     val fhirPathExpression = "Patient.active"
     val patients =
