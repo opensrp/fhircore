@@ -29,6 +29,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
+import org.cqframework.cql.cql2elm.LibrarySourceProvider
 import org.cqframework.cql.cql2elm.ModelManager
 import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
@@ -46,8 +47,7 @@ import org.opencds.cqf.cql.engine.data.DataProvider
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
 import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 import org.opencds.cqf.cql.evaluator.CqlEvaluator
-import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
-import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibraryContentProvider
+import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibrarySourceProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
 import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
@@ -70,7 +70,7 @@ class LibraryEvaluator @Inject constructor() {
   private var adapterFactory = AdapterFactory()
   val bundleFactory = fhirContext.newBundleFactory()
   private var libraryVersionSelector = LibraryVersionSelector(adapterFactory)
-  private var contentProvider: LibraryContentProvider? = null
+  private var contentProvider: LibrarySourceProvider? = null
   private var terminologyProvider: BundleTerminologyProvider? = null
   private var bundleRetrieveProvider: BundleRetrieveProvider? = null
   private var cqlEvaluator: CqlEvaluator? = null
@@ -118,7 +118,7 @@ class LibraryEvaluator @Inject constructor() {
       null
     )
     contentProvider =
-      BundleFhirLibraryContentProvider(
+      BundleFhirLibrarySourceProvider(
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
@@ -303,7 +303,7 @@ class LibraryEvaluator @Inject constructor() {
     )
 
     val libraryProvider =
-      BundleFhirLibraryContentProvider(
+      BundleFhirLibrarySourceProvider(
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
@@ -326,7 +326,11 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        LibraryLoaderExt(modelManager, listOf(libraryProvider)),
+        TranslatingLibraryLoader(
+          modelManager,
+          listOf(libraryProvider),
+          CqlTranslatorOptions.defaultOptions()
+        ),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )

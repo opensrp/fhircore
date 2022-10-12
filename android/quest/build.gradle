@@ -198,6 +198,10 @@ tasks.withType(Test) {
     }
 }
 
+configurations {
+    all*.exclude group: 'xpp3'
+}
+
 dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
@@ -211,8 +215,9 @@ dependencies {
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
-    implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.measure:1.4.2'
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+        exclude group: 'xpp3'
+    }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
 
     //Hilt - Dependency Injection
