@@ -50,7 +50,6 @@ fun Search.filterBy(filter: DataQuery) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING -> filterString(filter)
-    // Enumerations.SearchParamType.REFERENCE -> filterReference(filter)
     Enumerations.SearchParamType.DATE -> filterDate(filter)
     else ->
       throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")

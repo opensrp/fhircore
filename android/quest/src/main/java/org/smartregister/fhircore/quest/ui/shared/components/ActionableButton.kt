@@ -128,9 +128,12 @@ fun ActionableButton(
   }
 }
 
+/**
+ * This function determines the status color to display depending on the value of the service status
+ * @property computedValuesMap Contains data extracted from the resources to be used on the UI
+ */
 @Composable
 fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
-  // Status color is determined from the service status
   val interpolated = this.status.interpolate(computedValuesMap)
   val status =
     if (ServiceStatus.values().map { it.name }.contains(interpolated))

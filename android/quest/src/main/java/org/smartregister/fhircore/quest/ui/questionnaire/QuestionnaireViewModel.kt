@@ -204,10 +204,6 @@ constructor(
             }
           }
 
-          // response MUST have subject by far otherwise flow has issues
-          // if (!questionnaire.experimental) questionnaireResponse.assertSubject() // Disabled this
-          // because the subject is not required in the questionnaire response
-
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
@@ -372,10 +368,6 @@ constructor(
       )
       return
     }
-
-    // Disabled this check because the subject is not a required attribute on the
-    // QuestionnaireResponse
-    // questionnaireResponse.assertSubject() // should not allow further flow without subject
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
