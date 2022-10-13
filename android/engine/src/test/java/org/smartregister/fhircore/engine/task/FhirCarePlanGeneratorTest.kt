@@ -34,6 +34,7 @@ import java.time.LocalDate
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -719,6 +720,91 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               ) // 9th month
             }
           }
+      }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `Generate CarePlan should generate child immunization schedule`() = runTest {
+    val plandefinition =
+      "plans/child-immunization-schedule/plan-definition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/child-immunization-schedule/patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+
+    val structureMapScript =
+      "plans/child-immunization-schedule/structure-map-child-immunization-schedule.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
+        println(it.encodeResourceToString())
+      }
+
+    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { fhirEngine.get<StructureMap>("97cf9bfb-90be-4661-8810-1c60be88f593") } returns
+      structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Child Immunization", carePlan.title)
+        Assert.assertEquals(
+          "This scheduled will be used to track the child's immunization.",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+
+        Assert.assertEquals(
+          patient.birthDate.makeItReadable(),
+          carePlan.period.start.makeItReadable()
+        )
+        
+        Assert.assertEquals(
+          patient.birthDate.plusDays(1825).makeItReadable(),
+          carePlan.period.end.makeItReadable()
+        )
+
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .also { println(it.last().encodeResourceToString()) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+        Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
       }
   }
 }
