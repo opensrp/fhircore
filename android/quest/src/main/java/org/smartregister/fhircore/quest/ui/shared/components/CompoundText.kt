@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -30,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -41,8 +41,7 @@ fun CompoundText(
   compoundTextProperties: CompoundTextProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  Row(
-    verticalAlignment = Alignment.CenterVertically,
+  FlowRow(
     modifier =
       modifier
         .background(
@@ -53,9 +52,9 @@ fun CompoundText(
           vertical = compoundTextProperties.padding.div(2).dp
         ),
   ) {
-    if (compoundTextProperties.primaryText != null) {
+    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
       Text(
-        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
+        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap).trim(),
         color = compoundTextProperties.primaryTextColor.parseColor(),
         modifier =
           modifier
@@ -67,11 +66,11 @@ fun CompoundText(
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
-    if (compoundTextProperties.secondaryText != null) {
+    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
       // Separate the primary and secondary text
       Separator(separator = compoundTextProperties.separator ?: "-")
       Text(
-        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
+        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap).trim(),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
         modifier =
           modifier

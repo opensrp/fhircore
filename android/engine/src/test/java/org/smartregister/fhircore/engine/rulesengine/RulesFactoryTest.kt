@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -28,6 +29,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ContactPoint
@@ -42,6 +44,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
+import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
@@ -72,17 +75,21 @@ class RulesFactoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
+    rulesFactory =
+      spyk(
+        RulesFactory(
+          ApplicationProvider.getApplicationContext(),
+          configurationRegistry,
+          fhirPathDataExtractor
+        )
+      )
     rulesEngineService = rulesFactory.RulesEngineService()
   }
 
   @Test
-  fun initPopulatesFactsWithDataAndFhirPathValues() {
+  fun initClearsExistingFacts() {
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
-    Assert.assertEquals(3, facts.asMap().size)
-    Assert.assertNotNull(facts.get("data"))
-    Assert.assertNotNull(facts.get("fhirPath"))
-    Assert.assertNotNull(facts.get("service"))
+    Assert.assertEquals(0, facts.asMap().size)
   }
 
   @Test
@@ -156,6 +163,143 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals("Patient", result!!.resourceType.name)
     Assert.assertEquals("patient-1", result.logicalId)
   }
+
+  @Test
+  fun extractGenderReturnsCorrectGender() {
+    Assert.assertEquals(
+      "Male",
+      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.MALE))
+    )
+    Assert.assertEquals(
+      "Female",
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.FEMALE)
+      )
+    )
+    Assert.assertEquals(
+      "Other",
+      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.OTHER))
+    )
+    Assert.assertEquals(
+      "Unknown",
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.UNKNOWN)
+      )
+    )
+    Assert.assertEquals("", rulesEngineService.extractGender(Patient()))
+  }
+
+  @Test
+  fun extractDOBReturnsCorrectDate() {
+    Assert.assertEquals(
+      "03/10/2015",
+      rulesEngineService.extractDOB(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        "dd/MM/YYYY"
+      )
+    )
+  }
+
+  @Test
+  fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
+    val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
+    val resources =
+      listOf(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("2020-10-03").toDate())
+      )
+
+    val result = rulesEngineService.mapResourcesToLabeledCSV(resources, fhirPathExpression, "CHILD")
+    Assert.assertEquals("CHILD,CHILD", result)
+  }
+
+  @Test
+  fun mapResourceToLabeledCSVReturnsCorrectLabels() {
+    val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
+    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+
+    val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
+    Assert.assertEquals("CHILD", result)
+  }
+
+  @Test
+  fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+
+    patients.add(Patient().setActive(false))
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+  }
+
+  @Test
+  fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsFalse() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
+
+    patients.add(Patient().setActive(false))
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
+  }
+
+  @Test
+  fun onFailureLogsWarningForJexlException_Variable() {
+    val exception = mockk<JexlException.Variable>()
+    every { exception.localizedMessage } returns "jexl exception"
+    every { exception.variable } returns "func"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onFailure",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify {
+      rulesFactory.logWarning(
+        "jexl exception, consider checking for null before usage: e.g func != null"
+      )
+    }
+  }
+
+  @Test
+  fun onFailureLogsErrorForException() {
+    val exception = mockk<Exception>()
+    every { exception.localizedMessage } returns "jexl exception"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onFailure",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify { rulesFactory.logError(exception) }
+  }
+
+  @Test
+  fun onEvaluationErrorLogsError() {
+    val exception = mockk<Exception>()
+    every { exception.localizedMessage } returns "jexl exception"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      rulesFactory,
+      "onEvaluationError",
+      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
+      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
+      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
+    )
+
+    verify { rulesFactory.logError("Evaluation error", exception) }
+  }
+
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())
     val patientRelatedResource = mutableListOf(populateTestPatient())

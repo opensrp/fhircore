@@ -33,6 +33,8 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -66,20 +68,26 @@ class ConfigExtensionsKtTest : RobolectricTest() {
 
   @Test
   fun testLaunchProfileActionOnClick() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
     val clickAction =
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        resourceConfig = resourceConfig
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
-    Assert.assertEquals(2, slotBundle.captured.size())
+    Assert.assertEquals(3, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
     Assert.assertEquals(patient.logicalId, slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
+    Assert.assertEquals(
+      resourceConfig,
+      slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+    )
   }
 
   @Test
