@@ -41,9 +41,11 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -471,6 +473,35 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify { spiedActivity.postSaveSuccessful(qr) }
     verify { spiedActivity.dismissSaveProcessing() }
+  }
+
+  @Test
+  fun testFinishActivity() {
+    questionnaireActivity.finishActivity(QuestionnaireResponse(), null)
+
+    Assert.assertTrue(questionnaireActivity.isFinishing)
+  }
+
+  @Test
+  fun testFinishActivityWithEncounter() {
+    val spiedActivity = spyk(questionnaireActivity)
+    spiedActivity.finishActivity(
+      QuestionnaireResponse(),
+      listOf(Encounter().apply { status = Encounter.EncounterStatus.FINISHED })
+    )
+
+    verify {
+      spiedActivity.setResult(
+        Activity.RESULT_OK,
+        withArg {
+          Assert.assertEquals(
+            Encounter.EncounterStatus.FINISHED.toCode(),
+            it.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_RES_ENCOUNTER)
+          )
+        }
+      )
+    }
+    Assert.assertTrue(spiedActivity.isFinishing)
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {
