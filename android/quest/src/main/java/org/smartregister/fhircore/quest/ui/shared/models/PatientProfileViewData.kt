@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
@@ -53,7 +55,8 @@ sealed class ProfileViewData(
     val conditions: List<Condition> = emptyList(),
     val otherPatients: List<Resource> = emptyList(),
     val viewChildText: String = "",
-    val guardians: List<Guardian> = emptyList()
+    val guardians: List<Guardian> = emptyList(),
+    val observations: List<Observation> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
       carePlans.isNotEmpty() &&
@@ -62,8 +65,11 @@ sealed class ProfileViewData(
 
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
 
-    val populationResources: ArrayList<Resource> =
-      ArrayList(carePlans + conditions + guardiansRelatedPersonResource)
+    val populationResources: ArrayList<Resource> by lazy {
+      val resources = carePlans + conditions + guardiansRelatedPersonResource + observations
+      val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      arrayListOf(resourcesAsBundle)
+    }
   }
 
   data class FamilyProfileViewData(

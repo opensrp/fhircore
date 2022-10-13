@@ -24,6 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -131,7 +132,8 @@ constructor(
       services = patient.activeCarePlans(),
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
-      guardians = patient.guardians()
+      guardians = patient.guardians(),
+      observations = patient.observations()
     )
   }
 
@@ -228,6 +230,13 @@ constructor(
     defaultRepository.searchResourceFor<Condition>(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
+      subjectType = ResourceType.Patient
+    )
+
+  internal suspend fun Patient.observations() =
+    defaultRepository.searchResourceFor<Observation>(
+      subjectId = this.logicalId,
+      subjectParam = Observation.SUBJECT,
       subjectType = ResourceType.Patient
     )
 
