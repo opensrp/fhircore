@@ -21,8 +21,12 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
-import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.hl7.fhir.r4.model.Coding
+import org.smartregister.fhircore.engine.sync.SyncStrategyTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
 interface ConfigService {
@@ -30,8 +34,12 @@ interface ConfigService {
   /** Provide [AuthConfiguration] for the application */
   fun provideAuthConfiguration(): AuthConfiguration
 
-  /** Provide [SyncStrategy] for the application */
-  fun provideSyncStrategy(): SyncStrategy
+  /**
+   * [SyncStrategyTag] defines whether to sync resource based on the IDs of CareTeam, Location,
+   * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all
+   * synced resource.
+   */
+  fun provideSyncStrategyTags(): List<SyncStrategyTag>
 
   fun scheduleFhirTaskPlanWorker(context: Context) {
     WorkManager.getInstance(context)
@@ -41,4 +49,28 @@ interface ConfigService {
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
   }
+
+  fun provideSyncStrategies(): List<String>
+
+  fun provideMandatorySyncTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+    val syncStrategies = provideSyncStrategies()
+    val tags = mutableListOf<Coding>()
+    provideSyncStrategyTags().forEach { strategy ->
+      if (syncStrategies.contains(strategy.type)) {
+        if (strategy.type == SharedPreferenceKey.PRACTITIONER_ID.name) {
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)?.let { id ->
+            strategy.tag?.let { tags.add(it.copy().apply { code = id.extractLogicalIdUuid() }) }
+          }
+        } else {
+          sharedPreferencesHelper.read<List<String>>(strategy.type)?.forEach { id ->
+            strategy.tag?.let { tags.add(it.copy().apply { code = id.extractLogicalIdUuid() }) }
+          }
+        }
+      }
+    }
+
+    return tags
+  }
+
+  fun provideConfigurationSyncPageSize(): String
 }

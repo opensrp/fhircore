@@ -221,7 +221,8 @@ private fun OtherPatientsItem(
           navController = navController
         )
       )
-    }
+    },
+    menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig
   )
 }
 

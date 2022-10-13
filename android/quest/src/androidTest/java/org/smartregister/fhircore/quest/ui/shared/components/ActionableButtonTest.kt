@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.mockk.mockk
@@ -49,7 +50,7 @@ class ActionableButtonTest {
         ActionableButton(
           buttonProperties =
             ButtonProperties(
-              status = "COMPLETED",
+              status = "DUE",
               text = "Button Text",
               actions =
                 listOf(
@@ -73,5 +74,6 @@ class ActionableButtonTest {
       .onNodeWithText("Button Text", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
+      .performClick()
   }
 }

@@ -30,7 +30,8 @@ data class ActionConfig(
   val id: String? = null,
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
-  val params: List<ActionParameter> = emptyList()
+  val params: List<ActionParameter> = emptyList(),
+  val resourceConfig: FhirResourceConfig? = null
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
