@@ -305,9 +305,7 @@ constructor(
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
 
-          if (bundleEntry.resource is Encounter) {
-            extras.add(bundleEntry.resource)
-          }
+          if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
         }
 
         if (questionnaire.experimental) {
