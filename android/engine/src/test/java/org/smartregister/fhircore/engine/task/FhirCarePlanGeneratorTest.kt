@@ -778,7 +778,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate.makeItReadable(),
           carePlan.period.start.makeItReadable()
         )
-        
+
         Assert.assertEquals(
           patient.birthDate.plusDays(1825).makeItReadable(),
           carePlan.period.end.makeItReadable()
