@@ -30,6 +30,7 @@ import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -238,5 +239,47 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
       }
+  }
+
+  @Test
+  fun testCompleteTaskNoEncounter() = runTest {
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
+
+    coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
+
+    runBlocking {
+      fhirCarePlanGenerator.completeTask("12345", null)
+
+      val task = fhirEngine.get<Task>("12345")
+      Assert.assertEquals(Task.TaskStatus.COMPLETED, task.status)
+    }
+  }
+
+  @Test
+  fun testCompleteTaskWithEncounter() = runTest {
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
+
+    coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
+
+    runBlocking {
+      fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.FINISHED)
+
+      val task = fhirEngine.get<Task>("12345")
+      Assert.assertEquals(Task.TaskStatus.COMPLETED, task.status)
+    }
+  }
+
+  @Test
+  fun testCompleteTaskWithEncounter_TaskStatusFromCode() = runTest {
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
+
+    coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
+
+    runBlocking {
+      fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.INPROGRESS)
+
+      val task = fhirEngine.get<Task>("12345")
+      Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
+    }
   }
 }

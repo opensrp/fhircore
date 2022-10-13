@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.questionnaire.ExtractionProgress
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import timber.log.Timber
 
@@ -52,7 +53,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                 questionnaireViewModel.extractionProgress.observe(
                   this@AdverseEventQuestionnaireActivity
                 ) { result ->
-                  if (result) {
+                  if (result is ExtractionProgress.Success) {
                     alertDialog.dismiss()
                     finish()
                   } else {

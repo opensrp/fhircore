@@ -40,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -302,16 +303,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     handleQuestionnaireResponse(questionnaireResponse)
 
     questionnaireViewModel.extractionProgress.observe(this) { result ->
-      onPostSave(result, questionnaireResponse)
+      if (result is ExtractionProgress.Success) {
+        onPostSave(true, questionnaireResponse, result.extras)
+      } else {
+        onPostSave(false, questionnaireResponse)
+      }
     }
   }
 
-  fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
+  fun onPostSave(
+    result: Boolean,
+    questionnaireResponse: QuestionnaireResponse,
+    extras: List<Resource>? = null
+  ) {
     dismissSaveProcessing()
     if (result) {
       // Put Sync Here
       syncBroadcaster.runSync()
-      postSaveSuccessful(questionnaireResponse)
+      postSaveSuccessful(questionnaireResponse, extras)
     } else {
       Timber.e("An error occurred during extraction")
     }
@@ -319,7 +328,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
-  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+  open fun postSaveSuccessful(
+    questionnaireResponse: QuestionnaireResponse,
+    extras: List<Resource>? = null
+  ) {
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotEmpty() == true)
       AlertDialogue.showInfoAlert(
@@ -328,13 +340,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         getString(R.string.done),
         {
           it.dismiss()
-          finishActivity(questionnaireResponse)
+          finishActivity(questionnaireResponse, extras)
         }
       )
-    else finishActivity(questionnaireResponse)
+    else finishActivity(questionnaireResponse, extras)
   }
 
-  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
+  fun finishActivity(questionnaireResponse: QuestionnaireResponse, extras: List<Resource>? = null) {
     val parcelResponse = questionnaireResponse.copy()
     questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
       .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
@@ -347,6 +359,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           QUESTIONNAIRE_BACK_REFERENCE_KEY,
           intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
         )
+        extras?.map { res ->
+          if (res is Encounter) {
+            putExtra(QUESTIONNAIRE_RES_ENCOUNTER, res.status.toCode())
+          }
+        }
       }
     )
     finish()
@@ -408,6 +425,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
+    const val QUESTIONNAIRE_RES_ENCOUNTER = "questionnaire-encounter"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"

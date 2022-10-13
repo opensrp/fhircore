@@ -23,6 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Encounter.EncounterStatus
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Parameters
@@ -122,14 +123,31 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
     }
   }
 
-  suspend fun completeTask(id: String) {
+  suspend fun completeTask(id: String, encounterStatus: EncounterStatus?) {
     fhirEngine.run {
       create(
         get<Task>(id).apply {
-          this.status = Task.TaskStatus.COMPLETED
+          this.status = encounterStatusToTaskStatus(encounterStatus)
           this.lastModified = Date()
         }
       )
+    }
+  }
+
+  private fun encounterStatusToTaskStatus(encounterStatus: EncounterStatus?): Task.TaskStatus {
+    if (encounterStatus == null) return Task.TaskStatus.COMPLETED
+
+    return when (encounterStatus) {
+      EncounterStatus.PLANNED -> Task.TaskStatus.DRAFT
+      EncounterStatus.ARRIVED -> Task.TaskStatus.RECEIVED
+      EncounterStatus.TRIAGED -> Task.TaskStatus.ACCEPTED
+      EncounterStatus.ONLEAVE -> Task.TaskStatus.ONHOLD
+      EncounterStatus.UNKNOWN -> Task.TaskStatus.FAILED
+      EncounterStatus.INPROGRESS,
+      EncounterStatus.CANCELLED,
+      EncounterStatus.ENTEREDINERROR,
+      EncounterStatus.NULL -> Task.TaskStatus.fromCode(encounterStatus.toCode())
+      else -> Task.TaskStatus.COMPLETED
     }
   }
 }
