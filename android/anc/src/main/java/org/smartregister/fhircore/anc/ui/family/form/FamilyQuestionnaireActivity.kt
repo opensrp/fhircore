@@ -25,6 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
@@ -81,7 +82,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse, extras: List<Resource>?) {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
 
