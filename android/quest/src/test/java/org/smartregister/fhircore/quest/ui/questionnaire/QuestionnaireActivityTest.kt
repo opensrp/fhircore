@@ -272,7 +272,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnBackPressedShouldShowAlert() {
+  fun testOnBackPressedShouldShowConfirmAlert() {
     questionnaireActivity.onBackPressed()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -287,6 +287,53 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
   }
+
+  @Test
+  fun testOnBackPressedWithSaveDraftEnabledShouldShowCancelAlert() {
+    questionnaireConfig = questionnaireConfig.copy(saveDraft = true)
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+    questionnaireActivity.onBackPressed()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_in_progress_alert_back_pressed_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_back_pressed_save_draft_button_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
+  }
+
+  @Test
+  fun testHandleSaveDraftQuestionnaireShowsProgressAlertAndCallsHandlePartialResponse() {
+    questionnaireConfig = questionnaireConfig.copy(saveDraft = true)
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    questionnaireActivity.handleSaveDraftQuestionnaire()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.form_progress_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+
+    verify(timeout = 2000) { questionnaireActivity.handlePartialQuestionnaireResponse(any()) }
+  }
+
+  @Test
+  fun testHandlePartialQuestionnaireResponseCallsSavePartialResponse() {
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    questionnaireActivity.handlePartialQuestionnaireResponse(QuestionnaireResponse())
+    verify { questionnaireViewModel.savePartialQuestionnaireResponse(any(), any()) }
+  }
+
   @Test
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
     val qActivity = spyk(questionnaireActivity)
