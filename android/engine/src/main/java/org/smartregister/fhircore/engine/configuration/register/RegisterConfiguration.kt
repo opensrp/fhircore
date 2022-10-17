@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 
 @Serializable
 data class RegisterConfiguration(

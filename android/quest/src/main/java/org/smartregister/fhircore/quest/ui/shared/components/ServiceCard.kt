@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
@@ -92,10 +93,16 @@ fun ServiceCard(
               resourceData = resourceData
             )
           }
-          .padding(top = 24.dp, bottom = 24.dp)
-          .weight(0.75f)
+          .padding(top = 16.dp, bottom = 16.dp)
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
-      Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
+      // When show div
+      Column(
+        modifier =
+          modifier
+            .wrapContentWidth(Alignment.Start)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+      ) {
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
@@ -103,31 +110,47 @@ fun ServiceCard(
           )
         }
       }
-      ServiceMemberIcons(
-        modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-        serviceMemberIcons =
-          serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
-      )
+      if (serviceCardProperties.showVerticalDivider) {
+        ServiceMemberIcons(
+          modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
+          serviceMemberIcons =
+            serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+        )
+      }
     }
 
-    // Display a vertical divider to separate service card details from action button
+    // When divider is displayed member icons will not show
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
         modifier = modifier.fillMaxHeight().width(1.dp),
         thickness = 1.dp,
         color = DividerColor
       )
+    } else {
+      ServiceMemberIcons(
+        serviceMemberIcons =
+          serviceCardProperties
+            .serviceMemberIcons
+            ?.replace("\\s+".toRegex(), "")
+            ?.interpolate(resourceData.computedValuesMap)
+      )
     }
 
     // Show action button (occupies 25% of the row width)
     Box(
-      modifier = modifier.weight(0.25f).padding(top = 24.dp, bottom = 24.dp),
+      modifier =
+        modifier
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+          .padding(top = 16.dp, bottom = 16.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
         if (serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!.visible == true
+            serviceCardProperties.serviceButton!!
+              .visible
+              .interpolate(resourceData.computedValuesMap)
+              .toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
             ActionableButton(
@@ -164,8 +187,8 @@ fun ServiceCard(
 @Composable
 private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons: String?) {
   // Count member icons only show and display counter of the rest
-  val iconsSplit = remember { serviceMemberIcons?.split(",") } ?: listOf()
-  val twoMemberIcons = remember { iconsSplit.onEach { it.capitalize().trim() }.take(2) }
+  val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
+  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
   if (twoMemberIcons.isNotEmpty()) {
     Row(modifier.padding(horizontal = 8.dp)) {
       twoMemberIcons.forEach {
@@ -196,9 +219,7 @@ private fun BigServiceButton(
 ) {
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val extractedStatus = remember {
-    ServiceStatus.valueOf(buttonProperties.status.interpolate(resourceData.computedValuesMap))
-  }
+  val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
 
   Column(
     modifier =
@@ -220,11 +241,20 @@ private fun BigServiceButton(
   ) {
     Column(
       verticalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxSize().padding(8.dp),
+      modifier = modifier.fillMaxSize().padding(4.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       if (extractedStatus == ServiceStatus.COMPLETED)
-        Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
+        Icon(
+          modifier = modifier.size(16.dp),
+          imageVector = Icons.Filled.Check,
+          contentDescription = null,
+          tint =
+            when (extractedStatus) {
+              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+              else -> statusColor.copy(alpha = 0.9f)
+            }
+        )
       Text(
         text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
@@ -270,7 +300,7 @@ private fun ServiceCardServiceOverduePreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.OVERDUE.name,
                   text = "1",
                   smallSized = false
@@ -324,7 +354,7 @@ private fun ServiceCardServiceDuePreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
                   smallSized = false
@@ -378,11 +408,46 @@ private fun ServiceCardServiceUpcomingPreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
                   smallSized = false
                 )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ServiceCardServiceFamilyMemberPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "John Njoroge Mwangi, F",
+                    primaryTextColor = "#000000",
+                  ),
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = false
             )
           )
       )
@@ -431,9 +496,9 @@ private fun ServiceCardServiceCompletedPreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.COMPLETED.name,
-                  text = "Fully Vaccinated",
+                  text = "Fully Vaccinated against COVID 19 virus",
                   smallSized = false
                 )
             )
@@ -476,10 +541,11 @@ private fun ServiceCardANCServiceDuePreview() {
                     secondaryTextColor = "#555AAA"
                   )
                 ),
+              serviceMemberIcons = "CHILD",
               showVerticalDivider = false,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
                   smallSized = true
@@ -528,13 +594,13 @@ private fun ServiceCardANCServiceOverduePreview() {
               services =
                 listOf(
                   ButtonProperties(
-                    visible = true,
+                    visible = "true",
                     status = ServiceStatus.COMPLETED.name,
                     text = "Pregnancy Outcome 1",
                     smallSized = true
                   ),
                   ButtonProperties(
-                    visible = true,
+                    visible = "true",
                     status = ServiceStatus.OVERDUE.name,
                     text = "ANC Visit 2",
                     smallSized = true

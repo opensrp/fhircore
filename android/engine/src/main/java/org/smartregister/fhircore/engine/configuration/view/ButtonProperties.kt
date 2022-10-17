@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
-  val visible: Boolean? = null,
+  val visible: String = "true",
   val text: String? = null,
   val status: String,
   val smallSized: Boolean = false,

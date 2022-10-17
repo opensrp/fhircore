@@ -29,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.util.Date
@@ -130,7 +131,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -169,10 +173,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -213,7 +213,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -242,10 +245,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         Assert.assertNotNull(carePlan.period.start)
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -292,7 +291,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    // coEvery { defaultRepository.create(any(),any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("131900") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
@@ -331,8 +330,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(3, carePlan.activityFirstRep.outcomeReference.size)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -409,7 +409,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -422,8 +422,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertNull(it)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -454,7 +455,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -480,9 +484,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       .also {
         val carePlan = it
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
-
-        val resourcesSlot = mutableListOf<Resource>()
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -533,7 +534,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString())
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
 
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
@@ -544,9 +548,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )
       .also {
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot
@@ -596,7 +597,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
@@ -645,10 +649,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           6,
           carePlan.activityFirstRep.outcomeReference.size
         ) // 6 visits as 4th month is passing (15th day) as per lmp
-
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
