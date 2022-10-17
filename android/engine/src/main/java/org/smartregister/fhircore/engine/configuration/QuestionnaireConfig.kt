@@ -35,7 +35,7 @@ data class QuestionnaireConfig(
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
-  val saveDraft: Boolean = true
+  val saveDraft: Boolean = false
 ) : java.io.Serializable
 
 @Serializable
