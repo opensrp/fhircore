@@ -49,6 +49,7 @@ import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 import org.opencds.cqf.cql.evaluator.CqlEvaluator
 import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibrarySourceProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
+import org.opencds.cqf.cql.evaluator.engine.CqlEngineOptions
 import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
 import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
@@ -157,7 +158,8 @@ class LibraryEvaluator @Inject constructor() {
             )
           }
         },
-        terminologyProvider
+        terminologyProvider,
+        CqlEngineOptions.defaultOptions().options
       )
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
@@ -332,7 +334,8 @@ class LibraryEvaluator @Inject constructor() {
           CqlTranslatorOptions.defaultOptions()
         ),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
-        terminologyProvider
+        terminologyProvider,
+        CqlEngineOptions.defaultOptions().options
       )
 
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
