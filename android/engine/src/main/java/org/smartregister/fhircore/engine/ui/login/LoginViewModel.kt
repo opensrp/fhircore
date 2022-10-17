@@ -126,11 +126,13 @@ constructor(
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
     val careTeamIds =
-      defaultRepository.create(*careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
+      defaultRepository.create(true, *careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
     val organizationIds =
-      defaultRepository.create(*organizations.toTypedArray()).map { it.extractLogicalIdUuid() }
+      defaultRepository.create(true, *organizations.toTypedArray()).map {
+        it.extractLogicalIdUuid()
+      }
     val locationIds =
-      defaultRepository.create(*locations.toTypedArray()).map { it.extractLogicalIdUuid() }
+      defaultRepository.create(true, *locations.toTypedArray()).map { it.extractLogicalIdUuid() }
 
     sharedPreferences.write(
       key = SharedPreferenceKey.PRACTITIONER_ID.name,

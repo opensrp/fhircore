@@ -17,18 +17,5 @@
 package org.smartregister.fhircore.engine.sync
 
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.ResourceType
-
-/**
- * SyncStrategy defines whether to sync resource based on the IDs of CareTeam, Location,
- * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all synced
- * resource.
- */
-data class SyncStrategy(
-  var careTeamTag: SyncStrategyTag = SyncStrategyTag(type = ResourceType.CareTeam.name),
-  var locationTag: SyncStrategyTag = SyncStrategyTag(type = ResourceType.Location.name),
-  var organizationTag: SyncStrategyTag = SyncStrategyTag(type = ResourceType.Organization.name),
-  var practitionerTag: SyncStrategyTag = SyncStrategyTag(type = ResourceType.Practitioner.name)
-)
 
 data class SyncStrategyTag(val type: String, var tag: Coding? = null)

@@ -93,4 +93,11 @@ class FhirPathDataExtractorTest : RobolectricTest() {
     val result = fhirPathDataExtractor.extractValue(patientNoGivenName, expression)
     Assert.assertTrue(result.isEmpty())
   }
+
+  @Test
+  fun extractValueWithNullResourceShouldReturnEmptyString() {
+    val expression = "Patient.name.given" // would evaluate to empty
+    val result = fhirPathDataExtractor.extractValue(null, expression)
+    Assert.assertTrue(result.isEmpty())
+  }
 }

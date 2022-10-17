@@ -38,7 +38,6 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -191,35 +190,6 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_ID))
       Assert.assertEquals("12345", profileData.computedValuesMap[PATIENT_ID])
     }
-  }
-
-  @Test
-  fun filterActiveGroupsReturnsOnlyActiveGroups() {
-    val activeGroup =
-      Group().apply {
-        id = "12345"
-        name = "Snow"
-        active = true
-        addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
-      }
-
-    val inActiveGroup =
-      Group().apply {
-        id = "22222"
-        name = "Mordor"
-        active = false
-        addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
-      }
-
-    val search = Search(type = ResourceType.Group, count = 20, from = 20)
-    coEvery { fhirEngine.search<Group>(search) } returns listOf(activeGroup, inActiveGroup)
-
-    val actualGroups: List<Resource> = runBlocking {
-      registerRepository.filterActiveGroups(search = search)
-    }
-
-    Assert.assertEquals(1, actualGroups.size)
-    Assert.assertEquals("12345", actualGroups[0].id)
   }
 
   companion object {

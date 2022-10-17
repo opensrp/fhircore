@@ -24,6 +24,7 @@ object NavigationArg {
   const val FEATURE = "feature"
   const val SCREEN_TITLE = "screenTitle"
   const val RESOURCE_ID = "resourceId"
+  const val RESOURCE_CONFIG = "resourceConfig"
   const val CONFIG_ID = "configId"
 
   /** Create route paths */

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
@@ -23,6 +24,7 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.Code
@@ -48,6 +50,7 @@ fun Search.filterBy(filter: DataQuery) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING -> filterString(filter)
+    Enumerations.SearchParamType.DATE -> filterDate(filter)
     else ->
       throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
   }
@@ -85,6 +88,21 @@ fun Search.filterString(dataQuery: DataQuery) {
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
           this.value = dataQuery.valueBoolean.toString()
+        }
+      )
+    else ->
+      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
+  }
+}
+
+fun Search.filterDate(dataQuery: DataQuery) {
+  when (dataQuery.valueType) {
+    Enumerations.DataType.DATE ->
+      filter(
+        DateClientParam(dataQuery.key),
+        {
+          this.prefix = dataQuery.paramPrefix
+          this.value = of(DateType(dataQuery.valueDate))
         }
       )
     else ->
