@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
     id 'de.mannodermaus.android-junit5'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
@@ -35,6 +36,8 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
+        buildConfigField("String[]", "SYNC_STRATEGIES", '{"Location"}')
+        buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
@@ -130,26 +133,30 @@ android {
             applicationIdSuffix ".quest"
             versionNameSuffix "-quest"
             getIsDefault().set(true)
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         ecbis {
             dimension "apps"
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
-            versionCode 3
-            versionName "0.1.1"
+            versionCode 4
+            versionName "0.1.5-rc1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         g6pd {
             dimension "apps"
             applicationIdSuffix ".g6pd"
             versionNameSuffix "-g6pd"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         mwcore {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         afyayangu {
@@ -158,6 +165,7 @@ android {
             versionNameSuffix "-afyayangu"
             versionCode 1
             versionName "0.0.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         map {
@@ -166,6 +174,7 @@ android {
             versionNameSuffix "-map"
             versionCode 1
             versionName "0.0.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
     }
     sourceSets {
@@ -189,6 +198,10 @@ tasks.withType(Test) {
     }
 }
 
+configurations {
+    all*.exclude group: 'xpp3'
+}
+
 dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
@@ -203,7 +216,9 @@ dependencies {
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.measure:1.4.2'
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+        exclude group: 'xpp3'
+    }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
 
     //Hilt - Dependency Injection

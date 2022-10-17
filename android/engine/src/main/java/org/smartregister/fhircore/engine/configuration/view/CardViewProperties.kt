@@ -25,5 +25,8 @@ data class CardViewProperties(
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
-  val padding: Int = 16
+  val padding: Int = 0,
+  val header: CompoundTextProperties? = null,
+  val headerBackgroundColor: String = "#F2F4F7",
+  val viewAllAction: Boolean = false
 ) : ViewProperties()

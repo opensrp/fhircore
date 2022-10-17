@@ -2,7 +2,7 @@
   "library": {
     "annotation": [
       {
-        "translatorOptions": "EnableResultTypes",
+        "translatorOptions": "EnableAnnotations,EnableLocators,DisableListDemotion,DisableListPromotion",
         "type": "CqlToElmInfo"
       }
     ],

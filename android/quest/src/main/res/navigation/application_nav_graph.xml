@@ -44,6 +44,12 @@
             android:defaultValue=""
             app:argType="string"
             app:nullable="false" />
+
+        <argument
+            android:name="resourceConfig"
+            app:argType="org.smartregister.fhircore.engine.domain.model.FhirResourceConfig"
+            app:nullable="true" />
+
     </fragment>
 
     <fragment

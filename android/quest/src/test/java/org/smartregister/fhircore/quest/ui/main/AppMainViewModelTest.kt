@@ -49,7 +49,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -164,11 +166,13 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOpenProfile() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
     appMainViewModel.onEvent(
       AppMainEvent.OpenProfile(
         navController = navController,
         profileId = "profileId",
-        resourceId = "resourceId"
+        resourceId = "resourceId",
+        resourceConfig = resourceConfig
       )
     )
 
@@ -177,9 +181,13 @@ class AppMainViewModelTest : RobolectricTest() {
     verify { navController.navigate(capture(intSlot), capture(bundleSlot)) }
 
     Assert.assertEquals(MainNavigationScreen.Profile.route, intSlot.captured)
-    Assert.assertEquals(2, bundleSlot.captured.size())
+    Assert.assertEquals(3, bundleSlot.captured.size())
     Assert.assertEquals("profileId", bundleSlot.captured.getString(NavigationArg.PROFILE_ID))
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
+    Assert.assertEquals(
+      resourceConfig,
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+    )
   }
 
   @Test

@@ -91,7 +91,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     //    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     dispatcherProvider = DefaultDispatcherProvider()
-    fhirEngine = mockk()
+    fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     defaultRepository =
       DefaultRepository(
@@ -249,7 +249,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
 
-    runBlocking { defaultRepository.create(resource) }
+    runBlocking { defaultRepository.create(true, resource) }
 
     verify { resource.generateMissingId() }
 
@@ -424,5 +424,77 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepository.delete(resourceType = "Patient", resourceId = "123")
 
     coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
+  }
+
+  @Test
+  fun testRemoveGroupDeletesRelatedPersonAndUpdatesGroup() {
+    defaultRepository = spyk(defaultRepository)
+    val groupId = "73847"
+    val patientId = "6745"
+    val patient = Patient().setId(patientId)
+
+    val group =
+      Group().apply {
+        id = groupId
+        active = true
+        member = mutableListOf(Group.GroupMemberComponent(Reference("Patient/$patientId")))
+      }
+    coEvery { fhirEngine.loadResource<Group>("73847") } returns group
+    coEvery { fhirEngine.get(ResourceType.Patient, patientId) } returns patient
+
+    val relatedPersonId = "1234"
+    val relatedPerson = RelatedPerson().setId(relatedPersonId)
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { defaultRepository.delete(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+
+    runBlocking { defaultRepository.removeGroup(groupId, true) }
+
+    coVerify { defaultRepository.delete(relatedPerson) }
+    coVerify { defaultRepository.addOrUpdate(patient) }
+    coVerify { defaultRepository.addOrUpdate(group) }
+  }
+
+  @Test
+  fun removeGroupMemberDeletesRelatedPersonAndUpdatesGroup() {
+    defaultRepository = spyk(defaultRepository)
+    val groupId = "73847"
+    val memberId = "6745"
+    val groupMemberResourceType: String = ResourceType.Patient.name
+    val patient =
+      Patient().apply {
+        id = memberId
+        active = true
+      }
+    val relatedPersonId = "1234"
+    val relatedPerson =
+      RelatedPerson(Reference(patient).apply { id = memberId }).apply { id = relatedPersonId }
+
+    val group =
+      Group().apply {
+        id = groupId
+        active = true
+        member = mutableListOf(Group.GroupMemberComponent(Reference("Patient/$memberId")))
+        managingEntity = Reference("RelatedPerson/$relatedPersonId")
+      }
+    coEvery { fhirEngine.loadResource<Group>("73847") } returns group
+    coEvery { fhirEngine.get(ResourceType.Patient, memberId) } returns patient
+
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { defaultRepository.delete(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+
+    runBlocking {
+      defaultRepository.removeGroupMember(
+        memberId = memberId,
+        groupId = groupId,
+        groupMemberResourceType = groupMemberResourceType
+      )
+    }
+
+    coVerify { defaultRepository.delete(relatedPerson) }
+    coVerify { defaultRepository.addOrUpdate(group) }
   }
 }

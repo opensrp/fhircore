@@ -178,9 +178,9 @@ constructor(
       carePlan.contained.clear()
 
       // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) defaultRepository.create(carePlan)
+      if (output.hasActivity()) defaultRepository.create(true, carePlan)
 
-      dependents.forEach { defaultRepository.create(it) }
+      dependents.forEach { defaultRepository.create(true, it) }
 
       if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
         carePlan
@@ -203,6 +203,7 @@ constructor(
 
   suspend fun completeTask(id: String) {
     defaultRepository.create(
+      true,
       getTask(id).apply {
         this.status = Task.TaskStatus.COMPLETED
         this.lastModified = Date()
@@ -212,6 +213,7 @@ constructor(
 
   suspend fun cancelTask(id: String, reason: String) {
     defaultRepository.create(
+      true,
       getTask(id).apply {
         this.status = Task.TaskStatus.CANCELLED
         this.lastModified = Date()

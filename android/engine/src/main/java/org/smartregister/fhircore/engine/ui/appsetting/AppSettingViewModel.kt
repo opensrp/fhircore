@@ -29,12 +29,13 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -49,7 +50,8 @@ class AppSettingViewModel
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configService: ConfigService
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
@@ -101,16 +103,19 @@ constructor(
         .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
         .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
-          val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+          val resourceUrlPath =
+            entry.key +
+              "?${Composition.SP_RES_ID}=$ids" +
+              "&_count=${configService.provideConfigurationSyncPageSize()}"
 
           Timber.d("Fetching config details $resourceUrlPath")
 
-          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
-            defaultRepository.create(it.resource)
+          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+            defaultRepository.create(false, bundleEntryComponent.resource)
 
-            if (it.resource is Binary) {
-              val binary = it.resource as Binary
-              binary.data.decodeToString().decodeBase64()!!.string(Charset.defaultCharset()).let {
+            if (bundleEntryComponent.resource is Binary) {
+              val binary = bundleEntryComponent.resource as Binary
+              binary.data.decodeToString().decodeBase64()?.string(Charset.defaultCharset())?.let {
                 val config =
                   it.tryDecodeJson<RegisterConfiguration>()
                     ?: it.tryDecodeJson<ProfileConfiguration>()
@@ -131,7 +136,7 @@ constructor(
       saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
       // Save composition after fetching all the referenced section resources
-      defaultRepository.create(compositionResource)
+      defaultRepository.create(false, compositionResource)
 
       Timber.d("Done with all app configs and details")
 
