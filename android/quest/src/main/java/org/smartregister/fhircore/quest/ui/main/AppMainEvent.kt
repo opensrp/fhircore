@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.navigation.NavController
 import com.google.android.fhir.sync.State
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
@@ -43,7 +44,8 @@ sealed class AppMainEvent {
   data class OpenProfile(
     val navController: NavController,
     val profileId: String,
-    val resourceId: String
+    val resourceId: String,
+    val resourceConfig: FhirResourceConfig? = null
   ) : AppMainEvent()
 
   object Logout : AppMainEvent()

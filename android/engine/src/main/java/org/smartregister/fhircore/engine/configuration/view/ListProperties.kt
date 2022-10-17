@@ -25,7 +25,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 data class ListProperties(
   override val viewType: ViewType,
   val baseResource: String,
-  val relatedResources: List<ExtractedResource>,
+  val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
   val padding: Int = 0,

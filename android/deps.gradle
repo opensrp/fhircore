@@ -4,7 +4,7 @@
 // Entries in each section of this file should be sorted alphabetically.
 def sdk_versions = [:]
 sdk_versions.compile_sdk = 32
-sdk_versions.min_sdk = 21
+sdk_versions.min_sdk = 24
 sdk_versions.target_sdk = 32
 ext.sdk_versions = sdk_versions
 
@@ -13,7 +13,7 @@ ext.build_tool_version = build_tool_version
 
 def versions = [:]
 versions.activity = '1.2.1'
-versions.android_gradle_plugin = '7.1.2'
+versions.android_gradle_plugin = '7.1.3'
 versions.appcompat = '1.4.1'
 versions.atsl_core = '1.4.1-alpha04'
 versions.atsl_expresso = '3.4.0'

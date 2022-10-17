@@ -37,7 +37,8 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Task"
+          "Task",
+          "RelatedPerson"
         ],
         "type": "token",
         "expression": "#organization"
@@ -118,7 +119,10 @@
           "StructureMap",
           "Task",
           "Group",
-          "Location"
+          "Practitioner",
+          "PlanDefinition",
+          "Library",
+          "Measure"
         ],
         "type": "token",
         "expression": "#count"
