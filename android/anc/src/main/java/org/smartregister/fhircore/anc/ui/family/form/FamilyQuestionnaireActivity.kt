@@ -82,7 +82,10 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse, extras: List<Resource>?) {
+  override fun postSaveSuccessful(
+    questionnaireResponse: QuestionnaireResponse,
+    extras: List<Resource>?
+  ) {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
 
