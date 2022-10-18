@@ -27,11 +27,16 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.ocpsoft.prettytime.PrettyTime
 
-val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
-val SDF_DD_MMM = SimpleDateFormat("dd MMM")
-val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
-val SDF_MMM_YYYY = SimpleDateFormat("MMM-yyyy")
-val SDF_YYYY = SimpleDateFormat("yyyy")
+val SDF_DD_MMM_YYYY = simpleDateFormatFor("dd-MMM-yyyy")
+val SDF_DD_MMM = simpleDateFormatFor("dd MMM")
+val SDF_YYYY_MM_DD = simpleDateFormatFor("yyyy-MM-dd")
+val SDF_MMM_YYYY = simpleDateFormatFor("MMM-yyyy")
+val SDF_YYYY_MMM = simpleDateFormatFor("yyyy-MMM")
+val SDF_YYYY = simpleDateFormatFor("yyyy")
+val SDF_MMM = simpleDateFormatFor("MMM")
+
+fun simpleDateFormatFor(pattern: String, locale: Locale = Locale.getDefault()) =
+  SimpleDateFormat(pattern, locale)
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -50,6 +55,26 @@ fun Date?.asMmmYyyy(): String {
 fun Date?.asYyyy(): String {
   if (this == null) return ""
   return SDF_YYYY.format(this)
+}
+
+fun Date?.asMmm(): String {
+  if (this == null) return ""
+  return SDF_MMM.format(this)
+}
+
+fun SimpleDateFormat.tryParse(date: String): Date? =
+  kotlin.runCatching { parse(date) }.getOrNull() ?: tryParse(date, Locale.US)
+
+fun SimpleDateFormat.tryParse(date: String, locale: Locale): Date? =
+  kotlin.runCatching { SimpleDateFormat(this.toPattern(), locale).parse(date) }.getOrNull()
+
+fun List<SimpleDateFormat>.tryParse(date: String): Date? {
+  forEach { dateFormat ->
+    dateFormat.tryParse(date)?.let {
+      return it
+    }
+  }
+  return null
 }
 
 fun Date.asDdMmmYyyy(): String {
@@ -72,6 +97,12 @@ fun Date?.makeItReadable(): String {
 
 fun Date?.prettifyDate(): String =
   if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
+
+fun isSameMonthYear(yearMonthValue1: String, yearMonthValue2: String) =
+  listOf(SDF_MMM_YYYY, SDF_YYYY_MMM).let {
+    it.tryParse(yearMonthValue1)?.asMmmYyyy()?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) ==
+      true
+  }
 
 fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)

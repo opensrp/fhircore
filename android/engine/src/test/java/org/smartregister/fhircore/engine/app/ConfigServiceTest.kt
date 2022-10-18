@@ -16,22 +16,47 @@
 
 package org.smartregister.fhircore.engine.app
 
+import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.impl.WorkManagerImpl
+import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers.setStaticField
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.sync.SyncStrategyTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
 
-  private val configService = AppConfigService(ApplicationProvider.getApplicationContext())
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var gson: Gson
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+  }
 
   @Test
   fun testSchedulePlanShouldEnqueueUniquePeriodicWork() {
@@ -48,5 +73,37 @@ class ConfigServiceTest : RobolectricTest() {
         any()
       )
     }
+  }
+
+  @Test
+  fun testProvideMandatorySyncTags() {
+
+    val practitionerId = "practitioner-id"
+    sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
+    every { configService.provideSyncStrategies() } returns
+      listOf(SharedPreferenceKey.PRACTITIONER_ID.name)
+    every { configService.provideSyncStrategyTags() } returns
+      listOf(
+        SyncStrategyTag(
+          type = SharedPreferenceKey.PRACTITIONER_ID.name,
+          tag =
+            Coding().apply {
+              system = "http://fake.tag.com/Practitioner#system"
+              display = "Practitioner "
+            }
+        )
+      )
+
+    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    Assert.assertEquals(practitionerId, mandatorySyncTags[0].code)
+  }
+
+  @Test
+  fun testProvideMandatorySyncTagsForLocationSyncStrategy() {
+    val locationId = "location-id1"
+    sharedPreferencesHelper.write("Location", listOf(locationId))
+
+    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    Assert.assertEquals(locationId, mandatorySyncTags[0].code)
   }
 }
