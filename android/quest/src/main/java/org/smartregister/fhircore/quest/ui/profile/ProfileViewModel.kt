@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -52,12 +53,17 @@ constructor(
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
-  fun retrieveProfileUiState(profileId: String, resourceId: String) {
+  fun retrieveProfileUiState(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null
+  ) {
     if (resourceId.isNotEmpty()) {
       viewModelScope.launch(dispatcherProvider.io()) {
         profileUiState.value =
           ProfileUiState(
-            resourceData = registerRepository.loadProfileData(profileId, resourceId),
+            resourceData =
+              registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig),
             profileConfiguration = retrieveProfileConfiguration(profileId),
           )
       }

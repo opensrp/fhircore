@@ -35,23 +35,30 @@ import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 @Composable
 fun PersonalDataView(
   modifier: Modifier = Modifier,
-  personalDataCardProperties: PersonalDataProperties
+  personalDataCardProperties: PersonalDataProperties,
+  computedValuesMap: Map<String, Any> = emptyMap()
 ) {
   FlowRow(
     modifier =
       modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
-  ) { PersonalDataItem(personalDataCardProperties = personalDataCardProperties) }
+  ) {
+    PersonalDataItem(
+      personalDataCardProperties = personalDataCardProperties,
+      computedValuesMap = computedValuesMap
+    )
+  }
 }
 
 @Composable
 private fun PersonalDataItem(
   personalDataCardProperties: PersonalDataProperties,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  computedValuesMap: Map<String, Any> = emptyMap()
 ) {
   personalDataCardProperties.personalDataItems.forEach {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
-      CompoundText(compoundTextProperties = it.label, computedValuesMap = emptyMap())
-      CompoundText(compoundTextProperties = it.displayValue, computedValuesMap = emptyMap())
+      CompoundText(compoundTextProperties = it.label, computedValuesMap = computedValuesMap)
+      CompoundText(compoundTextProperties = it.displayValue, computedValuesMap = computedValuesMap)
     }
   }
 }

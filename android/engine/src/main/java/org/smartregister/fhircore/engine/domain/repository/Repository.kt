@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -37,7 +38,12 @@ interface Repository {
   /**
    * This function returns data used on the profile for the given [resourceId]. Profile
    * configuration is identified by the [profileId] and contains the queries for filtering the
-   * profile data.
+   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
+   * configurations identified by the [profileId] are used.
    */
-  suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData?
+  suspend fun loadProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null
+  ): ResourceData?
 }

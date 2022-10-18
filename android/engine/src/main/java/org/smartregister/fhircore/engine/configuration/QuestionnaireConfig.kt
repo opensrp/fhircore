@@ -55,6 +55,8 @@ data class GroupResourceConfig(
 
 fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
   this.copy(
+    id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
+    taskId = taskId?.interpolate(computedValuesMap),
     title = title?.interpolate(computedValuesMap),
     resourceIdentifier = resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
     groupResource =
