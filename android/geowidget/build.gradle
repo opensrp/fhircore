@@ -98,6 +98,10 @@ tasks.withType(Test) {
     }
 }
 
+configurations {
+    all*.exclude group: 'xpp3'
+}
+
 dependencies {
 
     coreLibraryDesugaring deps.desugar
