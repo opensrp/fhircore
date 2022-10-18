@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.engine.ui.components.register
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
