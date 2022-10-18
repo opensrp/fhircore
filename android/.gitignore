@@ -17,6 +17,12 @@ keystore.properties
 # IntelliJ
 *.iml
 .idea
+native
+wrapper
+workers
+daemon
+caches
+.tmp
 
 # Gradle Properties
 gradle.properties
