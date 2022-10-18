@@ -4,7 +4,7 @@
 // Entries in each section of this file should be sorted alphabetically.
 def sdk_versions = [:]
 sdk_versions.compile_sdk = 32
-sdk_versions.min_sdk = 24
+sdk_versions.min_sdk = 26
 sdk_versions.target_sdk = 32
 ext.sdk_versions = sdk_versions
 
