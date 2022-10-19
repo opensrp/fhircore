@@ -314,6 +314,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireViewModel.partialQuestionnaireResponseHasValues(any()) } returns true
     questionnaireActivity.handleSaveDraftQuestionnaire()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
