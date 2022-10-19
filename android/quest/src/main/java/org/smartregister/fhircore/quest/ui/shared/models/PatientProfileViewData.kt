@@ -66,9 +66,9 @@ sealed class ProfileViewData(
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
 
     val populationResources: ArrayList<Resource> by lazy {
-      val resources = carePlans + conditions + guardiansRelatedPersonResource + observations
+      val resources = conditions + guardiansRelatedPersonResource + observations
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
-      arrayListOf(resourcesAsBundle)
+      arrayListOf(*carePlans.toTypedArray(), resourcesAsBundle)
     }
   }
 
