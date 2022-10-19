@@ -187,11 +187,20 @@
           }
         },
         {
-          "title": "Other Patients profile configuration",
+          "title": "Other Registers profile configuration",
           "focus": {
-            "reference": "Binary/cbea524d-9d97-4e90-8376-01d336ba3bc3",
+            "reference": "Binary/a6d69650-4806-4bb1-bd2b-a60fa18418a0",
             "identifier": {
               "value": "otherRegistersProfile"
+            }
+          }
+        },
+        {
+          "title": "Inventory profile configuration",
+          "focus": {
+            "reference": "Binary/d5108b10-6270-4724-8f77-b7cbdf61090a",
+            "identifier": {
+              "value": "inventoryProfile"
             }
           }
         }
@@ -213,7 +222,7 @@
         {
           "title": "Translation Swahili",
           "focus": {
-            "reference": "Binary/f69cd250-d2c5-4118-8aa3-ec96c9b0a826",
+            "reference": "Binary/eee5f9c1-49f6-4b18-b088-8a52689a79d8",
             "identifier": {
               "value": "strings_sw"
             }
@@ -224,7 +233,7 @@
           "focus": {
             "reference": "Binary/43e6c036-bb83-481e-8ffd-f8fdb7ee54a0",
             "identifier": {
-              "value": "strings_sw"
+              "value": "strings_fr"
             }
           }
         }
@@ -320,6 +329,16 @@
             "reference": "Questionnaire/58fbddae-c5a0-4b86-832e-f516c96f3b85",
             "identifier": {
               "value": "sick-child-under-2m"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "Child Immunization Completion",
+          "focus": {
+            "reference": "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82",
+            "identifier": {
+              "value": "child-immunization-completion"
             }
           },
           "mode": "working"
@@ -490,6 +509,13 @@
       "title": "StructureMaps",
       "mode": "working",
       "section": [
+        {
+          "title": "Children Immunization",
+          "focus": {
+            "reference": "StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+          },
+          "mode": "working"
+        },
         {
           "title": "Sick Child Registration",
           "focus": {
