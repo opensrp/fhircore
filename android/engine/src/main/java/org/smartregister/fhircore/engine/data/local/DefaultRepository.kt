@@ -133,7 +133,9 @@ constructor(
   }
 
   suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.delete(resource.resourceType, resource.logicalId)
+    }
   }
 
   suspend fun <R : Resource> addOrUpdate(resource: R, addMandatoryTags: Boolean = true) {
