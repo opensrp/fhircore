@@ -100,20 +100,7 @@
               "status": "DUE",
               "fontSize": 14.0,
               "smallSized": false
-            },
-            "actions": [
-              {
-                "trigger": "ON_CLICK",
-                "workflow": "LAUNCH_QUESTIONNAIRE",
-                "questionnaire": {
-                  "id": "cfdba05b-fb46-4673-a1bd-e300ab1afe94",
-                  "title": "Stock Level Adjustment",
-                  "saveButtonText": "ADJUST STOCK LEVELS",
-                  "setPractitionerDetails": true,
-                  "setOrganizationDetails": true
-                }
-              }
-            ]
+            }
           }
         ]
       }

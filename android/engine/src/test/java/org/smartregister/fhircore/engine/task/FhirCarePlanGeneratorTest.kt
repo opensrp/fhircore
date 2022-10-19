@@ -743,7 +743,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString())
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("97cf9bfb-90be-4661-8810-1c60be88f593") } returns
       structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
@@ -786,15 +789,28 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
           .also { list -> Assert.assertTrue(list.isNotEmpty()) }
           .also { println(it.last().encodeResourceToString()) }
+          .also {
+            it.last().let { task ->
+              Assert.assertTrue(
+                task.reasonReference.reference ==
+                  "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+              )
+              Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
+              Assert.assertTrue(
+                task.reasonCode.text ==
+                  "Administration of vaccine to produce active immunity (procedure)"
+              )
+              Assert.assertTrue(task.reasonCode.hasCoding())
+              Assert.assertTrue(task.reasonCode.coding.get(0).code == "33879002")
+            }
+          }
           .all { task ->
             task.status == Task.TaskStatus.REQUESTED &&
               LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
@@ -805,6 +821,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
         Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
+        Assert.assertTrue(task1.description.isNotEmpty())
+        Assert.assertTrue(task1.description == "OPV at Birth Vaccine")
       }
   }
 }
