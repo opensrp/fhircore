@@ -429,9 +429,7 @@ class HivRegisterDaoTest : RobolectricTest() {
 
     coEvery { fhirEngine.get(ResourceType.RelatedPerson, guardianRelatedPerson.logicalId) } returns
       guardianRelatedPerson
-    val data =  runBlocking {
-      hivRegisterDao.loadRelatedPersonProfileData("9")
-    }
+    val data = runBlocking { hivRegisterDao.loadRelatedPersonProfileData("9") }
 
     val guardianProfileData = data as ProfileData.HivProfileData
     assertNotNull(data)
