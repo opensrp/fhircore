@@ -1,0 +1,2505 @@
+{
+	"resourceType": "StructureMap",
+	"id": "d65b7c69-209c-4b4b-95a4-32a968b8a21a",
+	"url": "https://fhir.labs.smartregister.org/fhir/StructureMap/d65b7c69-209c-4b4b-95a4-32a968b8a21a",
+	"name": "eCBIS Sick Child Registration",
+	"structure": [
+		{
+			"url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+			"mode": "source"
+		},
+		{
+			"url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+			"mode": "target"
+		}
+	],
+	"group": [
+		{
+			"name": "SickChild",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_bundle_type",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"context": "bundle",
+							"contextType": "variable",
+							"element": "type",
+							"transform": "copy",
+							"parameter": [
+								{
+									"valueString": "collection"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_bundle_entries",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"variable": "refPatient",
+							"transform": "evaluate",
+							"parameter": [
+								{
+									"valueId": "src"
+								},
+								{
+									"valueString": "$this.subject"
+								}
+							]
+						}
+					],
+					"dependent": [
+						{
+							"name": "ExtractSickChildCondition",
+							"variable": [
+								"src",
+								"bundle",
+								"refPatient"
+							]
+						},
+						{
+							"name": "ExtractObservation",
+							"variable": [
+								"src",
+								"bundle",
+								"refPatient"
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ExtractSickChildCondition",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				},
+				{
+					"name": "refPatient",
+					"type": "Reference",
+					"mode": "source"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_sick_check",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "sickCheck",
+							"condition": "((linkId = 'ba8ac52f-7fc2-4ab9-9e67-ee4473c57b48') and (answer.value.code = 'sick'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_cnd",
+							"source": [
+								{
+									"context": "sickCheck"
+								}
+							],
+							"target": [
+								{
+									"context": "bundle",
+									"contextType": "variable",
+									"element": "entry",
+									"variable": "entry"
+								},
+								{
+									"context": "entry",
+									"contextType": "variable",
+									"element": "resource",
+									"variable": "cnd",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "Condition"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_cnd_id",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "id",
+											"transform": "uuid"
+										}
+									]
+								},
+								{
+									"name": "r_cnd_onset_date_val",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "onset",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "now()"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_clinical_st",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "clinicalStatus",
+											"transform": "cc",
+											"parameter": [
+												{
+													"valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+												},
+												{
+													"valueString": "active"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_verif_st",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "verificationStatus",
+											"transform": "cc",
+											"parameter": [
+												{
+													"valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+												},
+												{
+													"valueString": "confirmed"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_category",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "category",
+											"transform": "cc",
+											"parameter": [
+												{
+													"valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+												},
+												{
+													"valueString": "problem-list-item"
+												},
+												{
+													"valueString": "Problem List Item"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_sub",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "subject",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "refPatient"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_recorded",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "recordedDate",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "now()"
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "r_cnd_code",
+									"source": [
+										{
+											"context": "sickCheck"
+										}
+									],
+									"target": [
+										{
+											"context": "cnd",
+											"contextType": "variable",
+											"element": "code",
+											"variable": "ccPreg",
+											"transform": "create",
+											"parameter": [
+												{
+													"valueString": "CodeableConcept"
+												}
+											]
+										}
+									],
+									"rule": [
+										{
+											"name": "r_cnd_code_coding",
+											"source": [
+												{
+													"context": "sickCheck"
+												}
+											],
+											"target": [
+												{
+													"context": "ccPreg",
+													"contextType": "variable",
+													"element": "coding",
+													"variable": "coding",
+													"transform": "c",
+													"parameter": [
+														{
+															"valueString": "http://snomed.info/sct"
+														},
+														{
+															"valueString": "275142008"
+														},
+														{
+															"valueString": "Sick Child"
+														}
+													]
+												},
+												{
+													"context": "coding",
+													"contextType": "variable",
+													"element": "display",
+													"transform": "copy",
+													"parameter": [
+														{
+															"valueString": "Sick Child"
+														}
+													]
+												}
+											]
+										},
+										{
+											"name": "r_cnd_code_text",
+											"source": [
+												{
+													"context": "sickCheck"
+												}
+											],
+											"target": [
+												{
+													"context": "ccPreg",
+													"contextType": "variable",
+													"element": "text",
+													"transform": "copy",
+													"parameter": [
+														{
+															"valueString": "Sick Child"
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ExtractObservation",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				},
+				{
+					"name": "refPatient",
+					"type": "Reference",
+					"mode": "source"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_infancy_act",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "infancy_act",
+							"condition": "((linkId = '1a6b70d7-9aae-4556-8730-49d0f7094c16') and answer.value.exists() and (answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(1x6)-tablets(2-11-months)'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '74abfd30-0b1e-4671-9262-429dc3bfc031') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_malaria_infancy_act",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "malaria_infancy_act",
+							"condition": "((linkId = 'c3e43a3c-d79b-41a7-95fd-d44308c38b0a') and answer.value.exists() and (answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(1x6)-tablets(2-11-months)'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '6d142ebd-c10e-4043-8bff-6ead88ce77f1') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_toddler_act",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "toddler_act",
+							"condition": "((linkId = '2cc8de99-3482-4348-894f-222e40dad14f') and answer.value.exists() and (answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(2x6)-tablets(1-5-years)'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'df6cbd9a-70e1-472d-8c9f-2f0e12d70dc4') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "2"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_malaria_act",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "malaria_act",
+							"condition": "((linkId = '76db3c8a-da61-44ee-83bf-db30038f3866') and answer.value.exists() and (answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(2x6)-tablets(1-5-years)'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '10b83409-d91b-4770-98eb-d32d41e9f774') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "2"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_artesunate",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "artesunate",
+							"condition": "((linkId = 'e57feacd-33cd-4968-8181-740d5befe347') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'fa3c1ddc-e6a8-4089-89d7-2222fdfc638d') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/592181bc-0a68-47bc-8275-ac853bba1b09'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_artesunate",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "artesunate",
+							"condition": "((linkId = '9230c34b-11cc-4c58-81b7-e091b25daf7d') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '46427f09-47d8-46f4-9470-a14a4545c210') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "2"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/592181bc-0a68-47bc-8275-ac853bba1b09'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_asaq",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "asaq",
+							"condition": "((linkId = '1a6b70d7-9aae-4556-8730-49d0f7094c16') and answer.value.exists() and (answer.value.code = 'asaq:-as-(25mg)---+---aq-(67.5mg)---(-2-11months)-tablets'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '1e5b769f-074c-444c-e497-50c242d4ec7e') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_asaq",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "asaq",
+							"condition": "((linkId = 'c3e43a3c-d79b-41a7-95fd-d44308c38b0a') and answer.value.exists() and (answer.value.code = 'asaq:-as-(25mg)---+---aq-(67.5mg)---(-2-11months)-tablets'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'fad4209d-74c6-45f6-e577-793211e45cb3') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_asaq",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "asaq",
+							"condition": "((linkId = '2cc8de99-3482-4348-894f-222e40dad14f') and answer.value.exists() and (answer.value.code = 'asaq:-as-(50mg)-+-aq-(135mg)-(-1-5years)-tablets'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '0042964e-6c13-4324-9ae1-27e2ff92de28') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_asaq",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "asaq",
+							"condition": "((linkId = '76db3c8a-da61-44ee-83bf-db30038f3866') and answer.value.exists() and (answer.value.code = 'asaq:-as-(50mg)-+-aq-(135mg)-(-1-5years)-tablets'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'cc2b8970-2ba5-4d7d-ed56-749e193120f8') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Strips'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_rdt",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "rdt",
+							"condition": "((linkId = 'c337ea18-44f4-4074-8380-d871095ef446') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '14b00b90-ecd5-4936-8215-b4ed08dd750b') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tests'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_amoxicillin",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "amoxicillin",
+							"condition": "((linkId = '4a035bfe-4d43-4814-88c9-476f73d729f6') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'fcbb4f5c-7120-4fa8-879b-cea44481934d') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/e50eb835-7827-4001-b233-e1dda721d4e8'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_pneumonia",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "pneumonia",
+							"condition": "((linkId = 'c6a971ad-8117-4ef0-88d0-1aa347b345d7') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'f04aec03-c24d-42a0-fca3-3135ea3da639') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "1"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/e50eb835-7827-4001-b233-e1dda721d4e8'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_amoxicilin",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "amoxicilin",
+							"condition": "((linkId = '0a2fdbff-f9a2-46b3-8e91-3e924ee6d7ab') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '63ec1a00-d04e-4b9b-ec92-05c64ec2c3ab') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "2"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/e50eb835-7827-4001-b233-e1dda721d4e8'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_pneumonia",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "pneumonia",
+							"condition": "((linkId = '9e4e2863-2a9e-4fe3-bcbd-2202d5c0060a') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '2c18cbd8-ff7b-42cf-86d4-7e6c04a773e8') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "2"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/e50eb835-7827-4001-b233-e1dda721d4e8'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_ors",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "ors",
+							"condition": "((linkId = '410cb6b7-c486-4559-8f2d-169efd723a08') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'adcbe143-87a3-4c77-8cb1-74838b063219') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "3"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Sachets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/6a59c142-1c87-11ed-861d-0242ac120002'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_ors",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "ors",
+							"condition": "((linkId = 'f3c23ac2-d405-44dc-f462-28ac9ec30931') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '9be433bb-0aa2-4b27-876b-f58cd8d73cb3') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "3"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Sachets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/6a59c142-1c87-11ed-861d-0242ac120002'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_zinc",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "zinc",
+							"condition": "((linkId = 'f32ffc48-806f-4220-818b-c6191a363aad') and answer.value.exists() and (answer.value.code = '20mg-zinc'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = '180652dc-748b-4e09-8d58-4560dacbb55f') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "10"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/6815d390-1c8b-11ed-861d-0242ac120002'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_paracetamol",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "paracetamol",
+							"condition": "((linkId = 'c3e60e46-38eb-4244-860f-a0822cb0b6a7') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'bef088be-4384-4cdc-cc5a-6469cf8f775f') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "9"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/567ec5f2-db90-4fac-b578-6e07df3f48de'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_paracetamol",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "paracetamol",
+							"condition": "((linkId = '522de694-2c29-4d26-b058-4096d924ac08') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_given",
+							"source": [
+								{
+									"context": "src",
+									"element": "item",
+									"variable": "given",
+									"condition": "((linkId = 'f3df1c61-d58d-4fa3-bf96-8a7386287274') and answer.value.exists() and (answer.value.code = 'yes'))"
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"variable": "qtyValue",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "18"
+												}
+											]
+										},
+										{
+											"variable": "qtyUnit",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Tablets'"
+												}
+											]
+										},
+										{
+											"variable": "refSubject",
+											"transform": "evaluate",
+											"parameter": [
+												{
+													"valueId": "src"
+												},
+												{
+													"valueString": "'Group/567ec5f2-db90-4fac-b578-6e07df3f48de'"
+												}
+											]
+										}
+									],
+									"dependent": [
+										{
+											"name": "ExtractSpecificObservation",
+											"variable": [
+												"src",
+												"bundle",
+												"refPatient",
+												"refSubject",
+												"qtyValue",
+												"qtyUnit"
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ExtractSpecificObservation",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				},
+				{
+					"name": "refPatient",
+					"type": "Reference",
+					"mode": "source"
+				},
+				{
+					"name": "refSubject",
+					"type": "String",
+					"mode": "source"
+				},
+				{
+					"name": "qtyValue",
+					"type": "Integer",
+					"mode": "source"
+				},
+				{
+					"name": "qtyUnit",
+					"type": "String",
+					"mode": "source"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_obs",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"context": "bundle",
+							"contextType": "variable",
+							"element": "entry",
+							"variable": "entry"
+						},
+						{
+							"context": "entry",
+							"contextType": "variable",
+							"element": "resource",
+							"variable": "obs",
+							"transform": "create",
+							"parameter": [
+								{
+									"valueString": "Observation"
+								}
+							]
+						}
+					],
+					"rule": [
+						{
+							"name": "r_obs_id",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "id",
+									"transform": "uuid"
+								}
+							]
+						},
+						{
+							"name": "r_obs_status",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "status",
+									"transform": "copy",
+									"parameter": [
+										{
+											"valueString": "final"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_category_1",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "category",
+									"transform": "cc",
+									"parameter": [
+										{
+											"valueString": "http://snomed.info/sct"
+										},
+										{
+											"valueString": "386452003"
+										},
+										{
+											"valueString": "Supply management"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_category_2",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "category",
+									"transform": "cc",
+									"parameter": [
+										{
+											"valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+										},
+										{
+											"valueString": "subtraction"
+										},
+										{
+											"valueString": "Subtraction"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_code",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "code",
+									"variable": "code",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "CodeableConcept"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs_c_text",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "code",
+											"contextType": "variable",
+											"element": "text",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "consumption"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_ref",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "subject",
+									"variable": "ref",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "Reference"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_ref_subject",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "ref",
+											"contextType": "variable",
+											"element": "reference",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "refSubject"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_effective_current_date_time",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "effective",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "now()"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_performer",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "performer",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "$this.generalPractitioner.first()"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_value",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "value",
+									"variable": "qty",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "Quantity"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs_qty",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "value",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "qtyValue"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "unit",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "qtyUnit"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "system",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "http://snomed.info/sct"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "code",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "767525000"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}

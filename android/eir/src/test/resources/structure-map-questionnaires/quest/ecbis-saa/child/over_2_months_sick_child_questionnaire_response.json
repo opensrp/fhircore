@@ -1,0 +1,35 @@
+{
+	"resourceType": "QuestionnaireResponse",
+	"questionnaire": "Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726",
+	"subject": {
+		"reference": "Patient/12345"
+	},
+	"item": [
+		{
+			"linkId": "c337ea18-44f4-4074-8380-d871095ef446",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "8e5225a2-642a-4152-b5a9-8e54e4d97623",
+						"code": "yes",
+						"system": "urn:uuid:675d136b-3f39-4d41-8e02-c5199d29f39e",
+						"display": "Yes"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "14b00b90-ecd5-4936-8215-b4ed08dd750b",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "8e5225a2-642a-4152-b5a9-8e54e4d97623",
+						"code": "yes",
+						"system": "urn:uuid:675d136b-3f39-4d41-8e02-c5199d29f39e",
+						"display": "Yes"
+					}
+				}
+			]
+		}
+	]
+}
