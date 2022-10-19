@@ -476,6 +476,15 @@ constructor(
     )
   }
 
+  fun partialQuestionnaireResponseHasValues(questionnaireResponse: QuestionnaireResponse): Boolean {
+    val questionnaireResponseItemListIterator = questionnaireResponse.item.iterator()
+    while (questionnaireResponseItemListIterator.hasNext()) {
+      val questionnaireResponseItem = questionnaireResponseItemListIterator.next()
+      questionnaireResponseItem.answer?.forEach { if (it.hasValue()) return true }
+    }
+    return false
+  }
+
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
     return questionnaireResponse
       .find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
