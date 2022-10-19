@@ -22,7 +22,12 @@ import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.parser.IParser
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
@@ -77,7 +82,10 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse, extras: List<Resource>?) {
+  override fun postSaveSuccessful(
+    questionnaireResponse: QuestionnaireResponse,
+    extras: List<Resource>?
+  ) {
     val nextVaccineDate = savedImmunization.nextDueDateFmt()
     val currentDose = savedImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
 
