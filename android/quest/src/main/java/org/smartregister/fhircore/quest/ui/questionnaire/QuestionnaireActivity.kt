@@ -258,18 +258,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleSaveDraftQuestionnaire() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
     val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
-
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title
-      )
-      return
+    if (questionnaireViewModel.partialQuestionnaireResponseHasValues(questionnaireResponse)) {
+      handlePartialQuestionnaireResponse(questionnaireResponse)
     }
-
-    handlePartialQuestionnaireResponse(questionnaireResponse)
+    finish()
   }
 
   open fun handleQuestionnaireSubmit() {
@@ -419,7 +411,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       this,
       getDismissDialogMessage(),
       R.string.questionnaire_alert_back_pressed_title,
-      { handleQuestionnaireSubmit() },
+      { finish() },
       R.string.questionnaire_alert_back_pressed_button_title,
     )
   }
