@@ -92,12 +92,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
       is State.Failed -> {
         showToast(getString(R.string.sync_failed_text))
-        val resultHasAuthError =
+        val hasAuthError =
           state.result.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
         val message =
-          if (resultHasAuthError) R.string.session_expired else R.string.sync_check_internet
+          if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
         showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
@@ -107,6 +107,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             else getString(R.string.syncing_failed)
           )
         )
+        if (hasAuthError) {
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        }
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
         scheduleFhirTaskStatusUpdater()
       }

@@ -339,6 +339,44 @@ constructor(
     launchScreen(AppSettingActivity::class.java)
   }
 
+  fun loadRefreshedSessionAccount(callback: AccountManagerCallback<Bundle>) {
+    tokenManagerService.getActiveAccount()?.run {
+      val accountType = getAccountType()
+      var authToken = accountManager.peekAuthToken(this, accountType)
+      if (!tokenManagerService.isTokenActive(authToken)) {
+        // Attempt to refresh token
+        getRefreshToken()?.let {
+          Timber.i("Saved active refresh token is available")
+
+          runCatching {
+            refreshToken(it)?.let { newTokenResponse ->
+              authToken = newTokenResponse.accessToken!!
+              updateSession(newTokenResponse)
+            }
+          }
+            .onFailure {
+              // Reset session and refresh tokens to null to force re-login?
+              accountManager.invalidateAuthToken(accountType, authToken)
+              Timber.e("Refresh token expired before it was used", it.stackTraceToString())
+            }
+            .onSuccess {
+              Timber.i("Got new accessToken")
+              tokenManagerService.getActiveAccount()?.let {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                  accountManager.notifyAccountAuthenticated(it)
+                }
+              }
+            }
+        }
+      }
+      loadAccount(
+        this,
+        callback,
+        errorHandler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+      )
+    }
+  }
+
   val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
     throwable.printStackTrace()
   }

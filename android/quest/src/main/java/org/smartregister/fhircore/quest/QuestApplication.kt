@@ -28,6 +28,8 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -36,6 +38,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+   var appInActivityListener: AppInActivityListener = AppInActivityListener(listOf(LoginActivity::class.java.name, AppSettingActivity::class.java.name)) {
+     accountAuthenticator.logout()
+   }
 
   private var mForegroundActivityContext: Context? = null
 
@@ -57,6 +63,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
     registerActivityLifecycleCallbacks(
       object : ActivityLifecycleCallbacks {
         override fun onActivityStarted(activity: Activity) {
+          appInActivityListener.stop(activity.javaClass)
           if (activity::class.java.name != launcherActivityName) {
             mForegroundActivityContext = activity
           }
@@ -68,7 +75,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
 
         override fun onActivityPaused(activity: Activity) {}
 
-        override fun onActivityStopped(activity: Activity) {}
+        override fun onActivityStopped(activity: Activity) {
+          appInActivityListener.start(activity.javaClass)
+        }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
