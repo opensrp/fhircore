@@ -1,0 +1,44 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/c7283c70-4f89-11ed-bdc3-0242ac120002" = "eCBIS under 1 Year Child Visit Form"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group SickChild(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src -> evaluate(src, $this.subject) as refPatient then
+        ExtractObservation(src, bundle, refPatient) "r_bundle_entries";
+}
+
+group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+
+    src.item as mnp where(linkId ='2b9f4073-b5b3-4276-afff-6fdd7d3286ec' and answer.value.exists() and answer.value.code = 'yes') then {
+        src -> evaluate(src, 1) as qtyValue,
+            evaluate(src, "Pieces") as qtyUnit,
+            evaluate(src, "Group/3af23539-850a-44ed-8fb1-d4999e2145ff") as refSubject
+                then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
+    } "r_mnp";
+}
+
+group ExtractSpecificObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference, source refSubject: String, source qtyValue: Integer, source qtyUnit: String) {
+
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'final' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+		src -> obs.subject = create('Reference') as ref then {
+			src -> ref.reference = refSubject "r_ref_subject";
+		} "r_obs_ref";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+		src -> obs.value = create('Quantity') as qty then {
+			src -> qty.value = qtyValue,
+				qty.unit = qtyUnit,
+				qty.system = 'http://snomed.info/sct',
+				qty.code = '767525000' "r_obs_qty";
+		} "r_obs_value";
+    } "r_obs";
+}
