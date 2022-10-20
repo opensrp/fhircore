@@ -17,13 +17,40 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import androidx.navigation.NavController
 import com.google.android.fhir.sync.State
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
+
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
-  data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
-  object Logout : AppMainEvent()
-  object SyncData : AppMainEvent()
+
+  data class OpenRegistersBottomSheet(
+    val navController: NavController,
+    val registersList: List<NavigationMenuConfig>?
+  ) : AppMainEvent()
+
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+
+  data class TriggerWorkflow(val navController: NavController, val navMenu: NavigationMenuConfig) :
+    AppMainEvent()
+
+  /**
+   * Event triggered to open the profile with the given [profileId] for the resource identified by
+   * [resourceId].
+   */
+  data class OpenProfile(
+    val navController: NavController,
+    val profileId: String,
+    val resourceId: String,
+    val resourceConfig: FhirResourceConfig? = null
+  ) : AppMainEvent()
+
+  object Logout : AppMainEvent()
+
+  object SyncData : AppMainEvent()
+
+  object RefreshAuthToken : AppMainEvent()
 }

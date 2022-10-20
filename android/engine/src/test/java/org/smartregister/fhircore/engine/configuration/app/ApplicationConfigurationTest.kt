@@ -16,52 +16,49 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-class ApplicationConfigurationTest {
+@HiltAndroidTest
+class ApplicationConfigurationTest : RobolectricTest() {
 
-  @Test
-  fun testApplicationConfiguration() {
-    val applicationConfiguration =
+  @get:Rule var hiltRule = HiltAndroidRule(this)
+
+  lateinit var appConfig: ApplicationConfiguration
+  var application: Application = ApplicationProvider.getApplicationContext()
+  @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    appConfig =
       ApplicationConfiguration(
         appId = "ancApp",
-        classification = "classification",
+        configType = "classification",
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
-        applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher",
-        count = "100"
+        appTitle = "Test App",
+        remoteSyncPageSize = 100
       )
-    Assert.assertEquals("ancApp", applicationConfiguration.appId)
-    Assert.assertEquals("classification", applicationConfiguration.classification)
-    Assert.assertEquals("dark theme", applicationConfiguration.theme)
-    Assert.assertEquals(15, applicationConfiguration.syncInterval)
-    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
-    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
-    Assert.assertEquals("100", applicationConfiguration.count)
   }
 
   @Test
-  fun testApplicationConfigurationOf() {
-    val applicationConfiguration =
-      applicationConfigurationOf(
-        appId = "ancApp",
-        classification = "classification",
-        theme = "dark theme",
-        languages = listOf("en"),
-        syncInterval = 15,
-        applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher",
-        count = "100"
-      )
-    Assert.assertEquals("ancApp", applicationConfiguration.appId)
-    Assert.assertEquals("classification", applicationConfiguration.classification)
-    Assert.assertEquals("dark theme", applicationConfiguration.theme)
-    Assert.assertEquals(15, applicationConfiguration.syncInterval)
-    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
-    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
-    Assert.assertEquals("100", applicationConfiguration.count)
+  fun appConfigProperties() {
+    Assert.assertEquals("ancApp", appConfig.appId)
+    Assert.assertEquals("classification", appConfig.configType)
+    Assert.assertEquals("dark theme", appConfig.theme)
+    Assert.assertEquals(15, appConfig.syncInterval)
+    Assert.assertEquals("Test App", appConfig.appTitle)
+    Assert.assertEquals(100, appConfig.remoteSyncPageSize)
   }
 }

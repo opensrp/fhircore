@@ -1,0 +1,140 @@
+map "http://hl7.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593" = 'eCBIS Child Immunization'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/careplan" as target
+
+group childImmunizationSchedule(source src : Parameters, target careplan: careplan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse
+            then extractcareplan( subject, definition, careplan), extractActivityDetail(subject, definition, careplan) "rule_careplan";
+}
+
+group extractcareplan(source subject: Patient, source definition: ActivityDefinition, target careplan : careplan) {
+    subject -> careplan.id = uuid() ,
+            careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+            careplan.status = 'active',
+            careplan.intent = 'plan',
+            careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+            careplan.created = evaluate(subject, now()),
+            careplan.author = evaluate(subject, $this.generalPractitioner.first()) "rule_careplan_data";
+    subject -> evaluate(subject, $this.birthDate) as offset then {
+         subject -> careplan.period = create('Period') as period then extractImmunizationPeriod(offset, period) "rule_carepla_data_period";
+    } "rule_extract_careplan_period";
+}
+
+group extractActivityDetail(source subject : Patient, source definition: ActivityDefinition, target careplan : careplan) {
+    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
+        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+            subject -> det.kind = 'Task', det.status = 'in-progress', det.description = evaluate(definition, $this.title), det.performer = evaluate(subject, $this.generalPractitioner.first()), det.code = create('CodeableConcept') as concept then extractTimingCode(subject, concept) "rule_act_det_data";
+
+            subject -> det.scheduled = evaluate(definition, $this.timing) as timing, evaluate(timing, $this.repeat) as repeat then {
+
+                // Immunizations at Birth
+                subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
+                    subject -> evaluate(patientBirthDate, $this + '14 \'days\''.toQuantity()) as opvEndDate, evaluate(subject, 'OPV at Birth Vaccine') as immunizationTitle then extractTasks(patientBirthDate, opvEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_opv_tasks";
+                    subject -> evaluate(patientBirthDate , $this + '1825 \'days\''.toQuantity()) as bcgEndDate, evaluate(subject, 'BCG at Birth Vaccine') as immunizationTitle then extractTasks(patientBirthDate, bcgEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_bcg_tasks";
+                } "rule_at_birth";
+
+                // Immunizations at 6 weeks
+                subject -> evaluate(subject, $this.birthDate + '42 \'days\''.toQuantity()) as sixWeeksDate then {
+                    subject -> evaluate(sixWeeksDate, $this + '1825 \'days\''.toQuantity()) as opvOneEndDate, evaluate(subject, 'OPV(2) at 6 weeks Vaccine') as immunizationTitle then extractTasks(sixWeeksDate, opvOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_opv_one_tasks";
+                    subject -> evaluate(sixWeeksDate , $this + '1460 \'days\''.toQuantity()) as pentaEndDate, evaluate(subject, 'Penta at 6 weeks Vaccine') as immunizationTitle then extractTasks(sixWeeksDate, pentaEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_penta_tasks";
+                    subject -> evaluate(sixWeeksDate , $this + '105 \'days\''.toQuantity()) as rotaEndDate, evaluate(subject, 'ROTA at 6 weeks Vaccine') as immunizationTitle then extractTasks(sixWeeksDate, rotaEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_rota_tasks";
+                    subject -> evaluate(sixWeeksDate , $this + '1825 \'days\''.toQuantity()) as pneumoEndDate, evaluate(subject, 'Pneumo at 6 weeks Vaccine') as immunizationTitle then extractTasks(sixWeeksDate, pneumoEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_pneumo_tasks";
+                } "rule_at_six_weeks";
+
+                // Immunizations at 10 weeks
+                subject -> evaluate(subject, $this.birthDate + '70 \'days\''.toQuantity()) as tenWeeksDate then {
+                    subject -> evaluate(tenWeeksDate, $this + '1825 \'days\''.toQuantity()) as opvTwoEndDate, evaluate(subject, 'OPV(3) at 10 weeks Vaccine') as immunizationTitle then extractTasks(tenWeeksDate, opvTwoEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_opv_two_tasks";
+                    subject -> evaluate(tenWeeksDate , $this + '1460 \'days\''.toQuantity()) as pentaOneEndDate, evaluate(subject, 'Penta(2) at 10 weeks Vaccine') as immunizationTitle then extractTasks(tenWeeksDate, pentaOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_penta_one_tasks";
+                    subject -> evaluate(tenWeeksDate , $this + '105 \'days\''.toQuantity()) as rotaOneEndDate, evaluate(subject, 'ROTA(2) at 10 weeks Vaccine') as immunizationTitle then extractTasks(tenWeeksDate, rotaOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_rota_one_tasks";
+                    subject -> evaluate(tenWeeksDate , $this + '1825 \'days\''.toQuantity()) as pneumoOneEndDate, evaluate(subject, 'Pneumo(2) at 10 weeks Vaccine') as immunizationTitle then extractTasks(tenWeeksDate, pneumoOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_pneumo_one_tasks";
+                } "rule_at_ten_weeks";
+
+                // Immunizations at 14 weeks
+                subject -> evaluate(subject, $this.birthDate + '98 \'days\''.toQuantity()) as fourteenWeeksDate then {
+                    subject -> evaluate(fourteenWeeksDate, $this + '1825 \'days\''.toQuantity()) as opvThreeEndDate, evaluate(subject, 'OPV(4) at 15 weeks Vaccine') as immunizationTitle then extractTasks(fourteenWeeksDate, opvThreeEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_opv_three_tasks";
+                    subject -> evaluate(fourteenWeeksDate , $this + '1460 \'days\''.toQuantity()) as pentaTwoEndDate, evaluate(subject, 'Penta(3) at 15 weeks Vaccine') as immunizationTitle then extractTasks(fourteenWeeksDate, pentaTwoEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_penta_two_tasks";
+                    subject -> evaluate(fourteenWeeksDate , $this + '1825 \'days\''.toQuantity()) as ipvEndDate , evaluate(subject, 'IPV at 15 weeks Vaccine') as immunizationTitle then extractTasks(fourteenWeeksDate, ipvEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_ipv_tasks";
+                    subject -> evaluate(fourteenWeeksDate , $this + '365 \'days\''.toQuantity()) as pneumoTwoEndDate, evaluate(subject, 'Pneumo(3) at 15 weeks Vaccine') as immunizationTitle then extractTasks(fourteenWeeksDate, pneumoTwoEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_pneumo_two_tasks";
+                } "rule_at_fourteen_weeks";
+
+                // Immunizations at 9 months
+                subject -> evaluate(subject, $this.birthDate + '270 \'days\''.toQuantity()) as nineMonthsDate then {
+                    subject -> evaluate(nineMonthsDate, $this + '1825 \'days\''.toQuantity()) as measlesEndDate, evaluate(subject, 'Measles at 9 months Vaccine') as immunizationTitle then extractTasks(nineMonthsDate, measlesEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_measles_tasks";
+                    subject -> evaluate(nineMonthsDate , $this + '1825 \'days\''.toQuantity()) as yellowFeverEndDate, evaluate(subject, 'Yellow Fever at 9 months Vaccine') as immunizationTitle then extractTasks(nineMonthsDate, yellowFeverEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_yellow_fever_tasks";
+                    subject -> evaluate(nineMonthsDate , $this + '730 \'days\''.toQuantity()) as typhoidEndDate, evaluate(subject, 'Typhoid at 9 months Vaccine') as immunizationTitle then extractTasks(nineMonthsDate, typhoidEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_typhoid_tasks";
+                } "rule_at_nine_months";
+
+                // Immunizations at 15 months
+                subject -> evaluate(subject, $this.birthDate + '540 \'days\''.toQuantity()) as fifteenMonthsDate then {
+                    subject -> evaluate(fifteenMonthsDate, $this + '1825 \'days\''.toQuantity()) as measlesOneEndDate, evaluate(subject, 'Measles(2) at 15 months Vaccine') as immunizationTitle then extractTasks(fifteenMonthsDate, measlesOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_measles_one_tasks";
+                } "rule_at_fifteen_months";
+
+                // Immunizations at 9 years
+                subject -> evaluate(subject, $this.birthDate + '3285 \'days\''.toQuantity()) as nineYearsDate then {
+                    subject -> evaluate(nineYearsDate, $this + '3653 \'days\''.toQuantity()) as hpvEndDate, evaluate(subject, 'HPV at 9 years Vaccine') as immunizationTitle then extractTasks(nineYearsDate, hpvEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_hpv_tasks";
+                } "rule_at_nine_months";
+
+                // Immunizations at 9.5 years
+                subject -> evaluate(subject, $this.birthDate + '3467 \'days\''.toQuantity()) as nineAndHalfYearsDate then {
+                    subject -> evaluate(nineAndHalfYearsDate, $this + '4017 \'days\''.toQuantity()) as hpvOneEndDate, evaluate(subject, 'HPV(2) at 9.5 years Vaccine') as immunizationTitle then extractTasks(nineAndHalfYearsDate, hpvOneEndDate, subject, careplan, activity, timing, immunizationTitle) "rule_hpv_one_tasks";
+                } "rule_at_nine_and_half_months";
+
+                subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "rule_task_rep_count";
+            } "rule_tim_repeat";
+        } "rule_act_det";
+    } "rule_cp_acti";
+}
+
+group extractTasks( source dueDate: DateType, source maxDate: DateType, source subject : Patient, target careplan: careplan, target activity : CarePlan_Activity, target timing: Timing, source title: String) {
+    subject ->create('Period') as period, careplan.contained = create('Task') as task then {
+        subject then extractPeriod(dueDate, maxDate, period) "rule_task_period_extr";
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'requested',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = title,
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               task.basedOn = reference(careplan),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.owner = evaluate(subject, $this.generalPractitioner.first()) "rule_task_data";
+        // task completion form
+        subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "rule_task_reason_ref";
+        subject -> task.reasonCode = create('CodeableConcept') as concept then extractReasonCode(subject, concept) "rule_task_reason_code";
+        subject -> activity.outcomeReference = reference(task) "rule_cp_task_ref";
+        subject -> timing.event = evaluate(period, $this.start) "rule_activity_timing";
+    } "rule_cp_acti_outcome";
+}
+
+group extractReasonCode(source subject : Patient, target concept: CodeableConcept) {
+subject -> concept.coding = c("http://snomed.info/sct", "33879002") as coding then {
+        subject -> coding.display = 'Administration of vaccine to produce active immunity (procedure)' "rule_task_reason_code_display";
+    } "rule_task_reason_code";
+    subject -> concept.text = 'Administration of vaccine to produce active immunity (procedure)' "rule_task_reason_code_text";
+}
+
+group extractTimingCode(source subject : Patient, target concept: CodeableConcept){
+    subject -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation", "QD") as coding then {
+        subject -> coding.display = 'QD' "rule_cp_cod_disp";
+    } "rule_cp_cc_cod";
+    subject -> concept.text = 'QD' "rule_cp_cc_txt";
+}
+
+group extractImmunizationPeriod(source offset: DateType, target period: Period){
+    offset -> offset as start, evaluate(offset, $this + '1825 \'days\''.toQuantity()) as end then extractPeriod(start, end, period) "rule_period";
+}
+
+group extractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt, dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
+    end -> period.end = create('dateTime') as dt, dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_end";
+}
+
+group ExtractSubject(source subject: Patient, target ref: Reference) {
+    subject -> ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')) "rule_patient_ref";
+    subject -> ref.display = evaluate(subject, $this.name.given + " " + $this.name.text + " " + $this.name.family) "rule_patient_display";
+}

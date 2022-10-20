@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,7 +48,12 @@ import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.R
+
+const val DATE_RANGE_TITLE_TEST_TAG = "dateRangeTitleTestTag"
+const val DATE_RANGE_SEPARATOR_TEST_TAG = "dateRangeSeparatorTestTag"
+const val CALENDAR_ICON_TEST_TAG = "calendarIconTestTag"
 
 @Composable
 fun DateSelectionBox(
@@ -70,7 +75,7 @@ fun DateSelectionBox(
       text = stringResource(id = R.string.date_range),
       fontWeight = FontWeight.Bold,
       fontSize = 18.sp,
-      modifier = modifier.wrapContentWidth()
+      modifier = modifier.wrapContentWidth().testTag(DATE_RANGE_TITLE_TEST_TAG)
     )
     Spacer(modifier = modifier.height(16.dp))
     Row(
@@ -78,7 +83,11 @@ fun DateSelectionBox(
       verticalAlignment = Alignment.CenterVertically
     ) {
       DateRangeItem(text = startDate)
-      Text("-", fontSize = 18.sp, modifier = modifier.padding(horizontal = 8.dp))
+      Text(
+        "-",
+        fontSize = 18.sp,
+        modifier = modifier.padding(horizontal = 8.dp).testTag(DATE_RANGE_SEPARATOR_TEST_TAG)
+      )
       DateRangeItem(text = endDate)
       if (showDateRangePicker) {
         Icon(
@@ -94,6 +103,7 @@ fun DateSelectionBox(
                 )
               }
               .padding(8.dp)
+              .testTag(CALENDAR_ICON_TEST_TAG)
         )
       }
     }
@@ -118,7 +128,8 @@ fun showDateRangePicker(
       addOnPositiveButtonClickListener { selectedDateRange ->
         onDateRangeSelected(selectedDateRange)
       }
-      show((context as AppCompatActivity).supportFragmentManager, "DATE_PICKER_DIALOG_TAG")
+      val fragmentManager = context.getActivity()!!.supportFragmentManager
+      show(fragmentManager, "DATE_PICKER_DIALOG_TAG")
     }
 }
 

@@ -17,53 +17,53 @@
 package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import kotlin.test.assertEquals
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
+import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class MeasureReportPatientsPagingSourceTest {
-  val measureReportRepository =
-    spyk(MeasureReportRepository(mockk(), mockk(), mockk(), mockk(), mockk()))
-  val measureReportPatientViewDataMapper = spyk(MeasureReportPatientViewDataMapper(mockk()))
-  val measureReportPatientData = mockk<RegisterData.AncRegisterData>()
-  val measureReportPatientViewData = mockk<MeasureReportPatientViewData>()
+@HiltAndroidTest
+class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
+
+  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+
+  private val reportRepository = mockk<MeasureReportRepository>()
+
+  private lateinit var reportPatientsPagingSource: MeasureReportPatientsPagingSource
 
   @Before
   fun setUp() {
-    coEvery { measureReportRepository.retrievePatients(any()) } returns
-      listOf(measureReportPatientData)
-    every {
-      measureReportPatientViewDataMapper.transformInputToOutputModel(eq(measureReportPatientData))
-    } returns measureReportPatientViewData
+    hiltAndroidRule.inject()
+    reportPatientsPagingSource =
+      MeasureReportPatientsPagingSource(reportRepository, measureReportPatientViewDataMapper)
   }
 
   @Test
-  fun loadReturnsPageOnSuccess() = runTest {
-    val measureReportPatientPagingSource =
-      MeasureReportPatientsPagingSource(measureReportRepository, measureReportPatientViewDataMapper)
-    val loadParams =
-      PagingSource.LoadParams.Refresh(key = null, loadSize = 2, placeholdersEnabled = false) as
-        PagingSource.LoadParams<Int>
-    val result = measureReportPatientPagingSource.load(loadParams)
-    val expectedData =
-      listOf(
-        measureReportPatientViewDataMapper.transformInputToOutputModel(measureReportPatientData)
-      )
-    assertEquals(
-      expected = PagingSource.LoadResult.Page(data = expectedData, prevKey = null, nextKey = 1),
-      actual = result
-    )
-    coVerify { measureReportRepository.retrievePatients(eq(loadParams.key ?: 0)) }
+  fun loadShouldReturnResults() {
+    coEvery { reportRepository.retrievePatients(0) } returns
+      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+
+    val loadParams = mockk<PagingSource.LoadParams<Int>>()
+    every { loadParams.key } returns null
+    runBlocking {
+      reportPatientsPagingSource.run {
+        val result = load(loadParams)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
+      }
+    }
   }
 }

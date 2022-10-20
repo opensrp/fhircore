@@ -30,12 +30,17 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+
+const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
+const val FAMILY_NAME_TEST_TAG = "familyNameTestTag"
+const val PATIENT_ROW_TEST_TAG = "patientRowTestTag"
 
 @Composable
 fun MeasureReportPatientRow(
@@ -47,9 +52,11 @@ fun MeasureReportPatientRow(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
     modifier =
-      modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
-        onRowClick(measureReportPatientViewData)
-      }
+      modifier
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min)
+        .clickable { onRowClick(measureReportPatientViewData) }
+        .testTag(PATIENT_ROW_TEST_TAG)
   ) {
     Column(
       modifier =
@@ -64,7 +71,7 @@ fun MeasureReportPatientRow(
             )
             .joinToString(", "),
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth(),
+        modifier = modifier.wrapContentWidth().testTag(PATIENT_DETAILS_TEST_TAG),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )
@@ -74,7 +81,7 @@ fun MeasureReportPatientRow(
           color = SubtitleTextColor,
           text = measureReportPatientViewData.family,
           fontSize = 14.sp,
-          modifier = modifier.wrapContentWidth(),
+          modifier = modifier.wrapContentWidth().testTag(FAMILY_NAME_TEST_TAG),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis
         )

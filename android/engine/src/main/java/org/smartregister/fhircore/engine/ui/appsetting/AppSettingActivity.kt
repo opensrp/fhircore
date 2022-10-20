@@ -34,8 +34,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -57,7 +57,8 @@ class AppSettingActivity : AppCompatActivity() {
     val isLoggedIn = accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
-      loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
+      val appSettingActivity = this@AppSettingActivity
+      loadConfigs.observe(appSettingActivity) { loadConfigs ->
         if (loadConfigs == false) {
           showToast(getString(R.string.application_not_supported, appId.value))
           return@observe
@@ -67,21 +68,19 @@ class AppSettingActivity : AppCompatActivity() {
 
         val appId = appId.value!!.trimEnd()
 
-        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
+            configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+              loadSuccessful: Boolean ->
               if (loadSuccessful) {
-                sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
-                if (!isLoggedIn) {
-                  accountAuthenticator.launchScreen(LoginActivity::class.java)
-                } else {
-                  loginService.loginActivity = this@AppSettingActivity
-                  loginService.navigateToHome()
-                }
+                sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+                accountAuthenticator.launchScreen(LoginActivity::class.java)
+                appSettingViewModel.showProgressBar.postValue(false)
                 finish()
               } else {
                 launch(dispatcherProvider.main()) {
                   showToast(getString(R.string.application_not_supported, appId))
+                  appSettingViewModel.showProgressBar.postValue(false)
                 }
               }
             }
@@ -90,9 +89,11 @@ class AppSettingActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(dispatcherProvider.io()) {
-          configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
+          appSettingViewModel.showProgressBar.postValue(true)
+          configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+            loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+              sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
               accountAuthenticator.launchScreen(LoginActivity::class.java)
               finish()
             } else {
@@ -100,17 +101,18 @@ class AppSettingActivity : AppCompatActivity() {
                 showToast(getString(R.string.application_not_supported, appId))
               }
             }
+            appSettingViewModel.showProgressBar.postValue(false)
           }
         }
       }
 
-      fetchConfigs.observe(this@AppSettingActivity) { fetchConfigs ->
+      fetchConfigs.observe(appSettingActivity) { fetchConfigs ->
         if (fetchConfigs == false) {
           loadConfigurations(true)
           return@observe
         }
 
-        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
           loadConfigurations(true)
           return@observe
         }
@@ -118,16 +120,16 @@ class AppSettingActivity : AppCompatActivity() {
         if (appId.value.isNullOrBlank()) return@observe
 
         lifecycleScope.launch(dispatcherProvider.io()) {
-          fetchConfigurations(appId.value!!, this@AppSettingActivity)
+          fetchConfigurations(appId.value!!, appSettingActivity)
         }
       }
 
-      error.observe(this@AppSettingActivity) { error ->
-        if (error.isNotBlank()) showToast(getString(R.string.error_loading_config, error))
+      error.observe(appSettingActivity) { error ->
+        if (!error.isNullOrEmpty()) showToast(getString(R.string.error_loading_config, error))
       }
     }
 
-    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.trimEnd()
+    val lastAppId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)

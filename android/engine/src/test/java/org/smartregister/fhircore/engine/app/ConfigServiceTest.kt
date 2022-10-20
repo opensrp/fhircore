@@ -16,118 +16,46 @@
 
 package org.smartregister.fhircore.engine.app
 
-import android.os.Looper
+import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.impl.WorkManagerImpl
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.SyncJob
+import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.ResourceType
+import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers.setStaticField
-import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncStrategyTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
-  val configService = AppConfigService(ApplicationProvider.getApplicationContext())
-  val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
-  @Test
-  fun testLoadSyncParamsShouldLoadFromConfiguration() {
-    val syncParam =
-      configService.loadRegistrySyncParams(configurationRegistry, UserInfo("samplep", "sampleo"))
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var gson: Gson
 
-    Assert.assertTrue(syncParam.isNotEmpty())
+  private val application = ApplicationProvider.getApplicationContext<Application>()
 
-    val resourceTypes =
-      arrayOf(
-          ResourceType.Library,
-          ResourceType.StructureMap,
-          ResourceType.PlanDefinition,
-          ResourceType.MedicationRequest,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Questionnaire,
-          ResourceType.Patient,
-          ResourceType.Condition,
-          ResourceType.Observation,
-          ResourceType.Encounter,
-          ResourceType.Task
-        )
-        .sorted()
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+  private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
-    syncParam.keys
-      .filter {
-        it.isIn(ResourceType.Binary, ResourceType.StructureMap, ResourceType.PlanDefinition)
-      }
-      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_id"))
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
-
-    syncParam.keys
-      .filter {
-        it.isIn(
-          ResourceType.Encounter,
-          ResourceType.Condition,
-          ResourceType.MedicationRequest,
-          ResourceType.Task
-        )
-      }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
-
-    syncParam.keys
-      .filter { it.isIn(ResourceType.Observation, ResourceType.QuestionnaireResponse) }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("_filter"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
-  }
-
-  @Test
-  fun testSchedulePeriodicSyncShouldPoll() = runTest {
-    val syncJob = mockk<SyncJob>()
-    val configurationRegistry = mockk<ConfigurationRegistry>()
-    val syncBroadcaster = mockk<SyncBroadcaster>()
-
-    every { syncJob.stateFlow() } returns mockk()
-    every { syncJob.poll(any(), FhirSyncWorker::class.java) } returns mockk()
-    coEvery { syncBroadcaster.sharedSyncStatus } returns mockk()
-
-    configService.schedulePeriodicSync(syncJob, configurationRegistry, syncBroadcaster)
-    shadowOf(Looper.getMainLooper()).idle()
-
-    verify { syncJob.poll(any(), eq(FhirSyncWorker::class.java)) }
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
   }
 
   @Test
@@ -136,7 +64,7 @@ class ConfigServiceTest : RobolectricTest() {
     setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
 
     every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
-    configService.schedulePlan(mockk())
+    configService.scheduleFhirTaskPlanWorker(mockk())
 
     verify {
       workManager.enqueueUniquePeriodicWork(
@@ -148,13 +76,34 @@ class ConfigServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnschedulePlanShouldCancelUniqueWork() {
-    val workManager = mockk<WorkManagerImpl>()
-    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
+  fun testProvideMandatorySyncTags() {
 
-    every { workManager.cancelUniqueWork(any()) } returns mockk()
-    configService.unschedulePlan(mockk())
+    val practitionerId = "practitioner-id"
+    sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
+    every { configService.provideSyncStrategies() } returns
+      listOf(SharedPreferenceKey.PRACTITIONER_ID.name)
+    every { configService.provideSyncStrategyTags() } returns
+      listOf(
+        SyncStrategyTag(
+          type = SharedPreferenceKey.PRACTITIONER_ID.name,
+          tag =
+            Coding().apply {
+              system = "http://fake.tag.com/Practitioner#system"
+              display = "Practitioner "
+            }
+        )
+      )
 
-    verify { workManager.cancelUniqueWork(eq(FhirTaskPlanWorker.WORK_ID)) }
+    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    Assert.assertEquals(practitionerId, mandatorySyncTags[0].code)
+  }
+
+  @Test
+  fun testProvideMandatorySyncTagsForLocationSyncStrategy() {
+    val locationId = "location-id1"
+    sharedPreferencesHelper.write("Location", listOf(locationId))
+
+    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    Assert.assertEquals(locationId, mandatorySyncTags[0].code)
   }
 }

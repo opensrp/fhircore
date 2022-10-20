@@ -18,27 +18,44 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.graphics.drawable.Drawable
+import android.graphics.Color
 import android.os.Build
-import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.graphics.Color as ComposeColor
+import ca.uhn.fhir.context.FhirContext
+import com.google.gson.Gson
 import java.util.Locale
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.ui.theme.LightColors
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import timber.log.Timber
+
+const val ERROR_COLOR = "errorColor"
+const val PRIMARY_COLOR = "primaryColor"
+const val PRIMARY_VARIANT_COLOR = "primaryVariantColor"
+const val DEFAULT_COLOR = "defaultColor"
+const val SUCCESS_COLOR = "successColor"
+const val WARNING_COLOR = "warningColor"
+const val DANGER_COLOR = "dangerColor"
+const val INFO_COLOR = "infoColor"
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
 
 fun Activity.refresh() {
-  startActivity(Intent(this, this.javaClass))
   finish()
+  startActivity(Intent(this, this.javaClass))
+  finishAffinity()
 }
 
 fun Context.setAppLocale(languageTag: String): Configuration? {
@@ -67,55 +84,61 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   return configuration
 }
 
-fun Context.getDrawable(name: String): Drawable {
-  var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
-  if (resourceId == 0) resourceId = R.drawable.ic_app_logo
-  return ContextCompat.getDrawable(this, resourceId)!!
-}
-
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
 }
 
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  groupIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY
-) {
-  this.startActivity(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          groupIdentifier = groupIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType
-        )
-      )
+/** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */
+fun Context.appVersion(): Pair<Int, String> =
+  Pair(
+    this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
+    this.packageManager.getPackageInfo(this.packageName, 0).versionName.substringBefore("-")
   )
+
+fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {
+  if (resourceName.isNullOrEmpty()) return null
+  val resourceId = this.resources.getIdentifier(resourceName, resourceType, this.packageName)
+  return if (resourceId != 0) resourceId else null
 }
 
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  backReference: String? = null,
-  intentBundle: Bundle = Bundle.EMPTY
-) {
-  (this as Activity).startActivityForResult(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
-          backReference = backReference
-        )
-      ),
-    0
-  )
+fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
+  var json = assets.open(id).bufferedReader().use { it.readText() }
+
+  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
+
+  return if (Resource::class.java.isAssignableFrom(clazz))
+    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
+  else Gson().fromJson(json, clazz)
 }
+
+/**
+ * Parse this [String] to a color code to be used in compose. Color code must either a). begin with
+ * pound sign ('#') and should be of 6 valid characters or b). be equal to 'primaryColor',
+ * 'primaryVariantColor' or 'errorColor'
+ */
+fun String?.parseColor(): androidx.compose.ui.graphics.Color {
+  if (this.isNullOrEmpty()) {
+    return ComposeColor.Unspecified
+  } else if (this.startsWith("#")) {
+    return ComposeColor(Color.parseColor(this))
+  } else {
+    when {
+      this.equals(PRIMARY_COLOR, ignoreCase = true) -> return LightColors.primary
+      this.equals(PRIMARY_VARIANT_COLOR, ignoreCase = true) -> return LightColors.primaryVariant
+      this.equals(ERROR_COLOR, ignoreCase = true) -> return LightColors.error
+      this.equals(DANGER_COLOR, ignoreCase = true) -> return DangerColor
+      this.equals(WARNING_COLOR, ignoreCase = true) -> return WarningColor
+      this.equals(INFO_COLOR, ignoreCase = true) -> return InfoColor
+      this.equals(SUCCESS_COLOR, ignoreCase = true) -> return SuccessColor
+      this.equals(DEFAULT_COLOR, ignoreCase = true) -> return DefaultColor
+    }
+  }
+  return ComposeColor.Unspecified
+}
+
+fun Context.getActivity(): AppCompatActivity? =
+  when (this) {
+    is AppCompatActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
+  }

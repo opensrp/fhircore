@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,24 +48,43 @@ import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
 const val CLEAR = "Clear"
+const val TITLE_ROW_TEST_TAG = "titleRowTestTag"
+const val TOP_ROW_ICON_TEST_TAG = "topRowIconTestTag"
+const val TOP_ROW_TEXT_TEST_TAG = "topRowTextTestTag"
+const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
+const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
+const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
+const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
+const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 
 @Composable
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
   searchText: String,
+  searchPlaceholder: String? = null,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp)
+      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG)
     ) {
       IconButton(onClick = onTitleIconClick) {
-        Icon(Icons.Filled.Menu, contentDescription = DRAWER_MENU, tint = Color.White)
+        Icon(
+          Icons.Filled.Menu,
+          contentDescription = DRAWER_MENU,
+          tint = Color.White,
+          modifier = modifier.testTag(TOP_ROW_ICON_TEST_TAG)
+        )
       }
-      Text(text = title, fontSize = 20.sp, color = Color.White)
+      Text(
+        text = title,
+        fontSize = 20.sp,
+        color = Color.White,
+        modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG)
+      )
     }
     OutlinedTextField(
       colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
@@ -75,7 +95,8 @@ fun TopScreenSection(
       placeholder = {
         Text(
           color = GreyTextColor,
-          text = stringResource(R.string.search_hint),
+          text = searchPlaceholder ?: stringResource(R.string.search_hint),
+          modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
         )
       },
       modifier =
@@ -83,12 +104,27 @@ fun TopScreenSection(
           .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
           .fillMaxWidth()
           .clip(RoundedCornerShape(size = 10.dp))
-          .background(Color.White),
-      leadingIcon = { Icon(imageVector = Icons.Filled.Search, SEARCH) },
+          .background(Color.White)
+          .testTag(OUTLINED_BOX_TEST_TAG),
+      leadingIcon = {
+        Icon(
+          imageVector = Icons.Filled.Search,
+          SEARCH,
+          modifier = modifier.testTag(LEADING_ICON_TEST_TAG)
+        )
+      },
       trailingIcon = {
         if (searchText.isNotEmpty())
-          IconButton(onClick = { onSearchTextChanged("") }) {
-            Icon(imageVector = Icons.Filled.Clear, CLEAR, tint = Color.Gray)
+          IconButton(
+            onClick = { onSearchTextChanged("") },
+            modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG)
+          ) {
+            Icon(
+              imageVector = Icons.Filled.Clear,
+              CLEAR,
+              tint = Color.Gray,
+              modifier = modifier.testTag(TRAILING_ICON_TEST_TAG)
+            )
           }
       }
     )

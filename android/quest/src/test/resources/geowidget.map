@@ -1,0 +1,103 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/febf0030-262f-443d-95b4-e002d437cfd0" = 'eCBIS Add Family Member Registration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Patient" as target
+
+group eCBISAddFamilyMemberRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_bundle_id";
+    src -> bundle.type = 'collection' "rule_bundle_type";
+    src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
+        ExtractPatient(src, patient, bundle) "rule_bundle_entries";
+}
+
+group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient, target bundle : Bundle){
+       src -> patient.id = uuid() "rule_patient_id_generation";
+
+       src -> patient.name = create('HumanName') as patientName then {
+           src -> patientName.family = evaluate(src, $this.item.where(linkId = '8fb87910-d900-4eea-dbba-dcf76ee6806d').answer.value) "rule_patient_family_name";
+           src -> patientName.given = evaluate(src, $this.item.where(linkId = 'e6306275-b989-4375-8527-3a56092081b8').answer.value) "rule_patient_given_name";
+           src -> patientName.text = evaluate(src, $this.item.where(linkId = '597f4425-72b3-4bc4-8f38-b742aa3e99cd').answer.value) "rule_patient_middle_name";
+           src -> patientName.use = 'official' "rule_patient_name_use";
+       } "rule_patient_name";
+
+       src -> patient.identifier = create('Identifier') as patientIdentifierOpenSRPId then {
+          src -> patientIdentifierOpenSRPId.value = evaluate(src, $this.item.where(linkId = 'ed77104e-c279-4030-ab20-8cd99ca99ca9').answer.value)
+          "rule_patient_identifier_opensrp_id_value";
+          src -> patientIdentifierOpenSRPId.use = "official" "rule_patient_identifier_opensrp_id_use";
+          src -> patientIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
+       } "rule_patient_identifier_opensrp";
+
+       src -> patient.identifier = create('Identifier') as patientIdentifierNationalId then {
+         src -> patientIdentifierNationalId.value = evaluate(src, $this.item.where(linkId = '06cbc503-3fa3-49f4-d0d7-9f427c0c6dd9').answer.value)
+         "rule_patient_identifier_national_id_value";
+         src -> patientIdentifierNationalId.use = "usual" "rule_patient_identifier_national_id_use";
+         src -> patientIdentifierNationalId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
+       } "rule_patient_identifier_national_id";
+
+       src -> patient.identifier = create('Identifier') as patientIdentifier then {
+           src -> patientIdentifier.value = uuid() "rule_patient_identifier_value";
+           src -> patientIdentifier.use = "secondary" "rule_patient_identifier_use";
+           src -> patientIdentifier.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
+       } "rule_patient_identifier";
+
+       src -> patient.gender = evaluate(src, $this.item.where(linkId = '77e32953-0679-48b5-f004-1ab4a4ac0271').answer.value.code) "rule_patient_gender";
+
+        src.item as patient_dob where(linkId = 'cd8e3d6d-e9ff-458d-d122-57070bebffaf') then {
+                 patient_dob.answer first as patientBirthDateAnswer then {
+                         patientBirthDateAnswer.value as val -> patient.birthDate = val "rule_patient_dob_answer";
+                 } "rule__first_patient_dob";
+        } "rule_patient_dob";
+
+        src.item as patient_age where(linkId = '8460d986-ef71-4997-80ee-7887d8c345e7' and answer.count() > 0) -> patient
+               .birthDate = evaluate(patient_age, today() - ($this.answer.value.toString() + 'years').toQuantity())
+               "rule_patient_age";
+
+       src -> patient.active = true "rule_patient_active";
+
+       src -> patient.address = create('Address') as patientAddress then {
+          src -> patientAddress.district = evaluate(src, $this.item.where(linkId ='7d9dba4c-7407-4eb2-d791-2d1834b6afcc').answer.value) "rule_patient_address_district";
+          src -> patientAddress.use = "home" "rule_patient_address_use";
+          src -> patientAddress.type = "physical" "rule_patient_address_type";
+       } "rule_patient_address";
+
+       src.item as calculate_new_date_today -> evaluate(src, today() - 15 'years') as new_date then {
+           calculate_new_date_today as patient_date_of_birth where(linkId = 'cd8e3d6d-e9ff-458d-d122-57070bebffaf' and answer.value.count() > 0) then {
+               patient_date_of_birth.answer first as patient_date_of_birth_answer then {
+                    patient_date_of_birth_answer.value as patient_date_of_birth_answer_value then {
+                        patient_date_of_birth_answer_value as patient_age_compare_with_today where(patient_date_of_birth_answer_value <= new_date) then {
+                            src.item as head_of_household_check where(linkId ='1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c' and answer.value.code = 'yes') then {
+                                head_of_household_check -> bundle.entry as entry, entry.resource = create('RelatedPerson') as relatedPerson then {
+                                    src then ExtractRelatedPerson(patient, relatedPerson) "rule_related_person_reference";
+                                } "rule_related_person_creation";
+                            } "household_head_trigger_check";
+                        } "rule_patient_age_compare_with_today";
+                    } "rule_patient_date_of_birth_answer_value";
+               } "rule_patient_date_of_birth_answer";
+           } "rule_patient_date_of_birth";
+       } "rule_calculate_new_date_today";
+ }
+
+group ExtractRelatedPerson(source src : Patient, target relatedPerson : RelatedPerson) {
+     src -> relatedPerson.id = uuid() "rule_related_person";
+     src -> relatedPerson.identifier = create('Identifier') as relatedPersonIdentifier then {
+          src -> relatedPersonIdentifier.value = uuid() "rule_related_person_identifier_value";
+          src -> relatedPersonIdentifier.use = "secondary" "rule_related_person_identifier_use";
+     } "rule_related_person_identifier";
+     src -> relatedPerson.name = create('HumanName') as relatedPersonName then {
+          src -> relatedPersonName.family = evaluate(src, $this.name.family) "rule_related_person_family_name";
+          src -> relatedPersonName.given = evaluate(src,  $this.name.given) "rule_related_person_given_name";
+          src -> relatedPersonName.text = evaluate(src,  $this.name.text) "rule_related_person_middle_name";
+          src -> relatedPersonName.use = 'official' "rule_related_person_name_use";
+     } "rule_related_person_name";
+     src -> relatedPerson.active = true "rule_related_person_active";
+     src -> relatedPerson.relationship = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "99990006") as coding then {
+                src -> coding.display = 'Family Head' "r_en_cod_disp";
+            } "r_en_cc_cod";
+        } "rule_related_person_relationship";
+     src -> relatedPerson.patient = create('Reference') as ref then {
+          src -> ref.reference = evaluate(src, 'Patient/' + $this.id) "rule_related_person_patient_ref";
+          src -> ref.display = evaluate(src, relatedPerson.name.given + " " + relatedPerson.name.text + " " + relatedPerson.name.family) "rule_related_person_patient_ref_display";
+     } "rule_related_person_patient";
+}

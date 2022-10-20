@@ -16,11 +16,23 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import dagger.hilt.android.testing.BindValue
+import android.app.Activity
+import android.content.Context
+import android.os.Bundle
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.sync.Result
+import com.google.android.fhir.sync.State
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkClass
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -28,112 +40,202 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
+import org.robolectric.Robolectric
+import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
+@OptIn(ExperimentalMaterialApi::class)
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+  @Inject lateinit var gson: Gson
 
-  @BindValue val sideMenuOptionFactory: SideMenuOptionFactory = mockk()
+  private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
-  @BindValue val appFeatureManager: AppFeatureManager = mockk()
+  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
 
-  @BindValue var defaultRepository: DefaultRepository = mockk()
+  private val secureSharedPreference: SecureSharedPreference = mockk()
 
-  @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", defaultRepository)
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @Inject lateinit var configService: ConfigService
+  private val registerRepository: RegisterRepository = mockk()
 
-  private lateinit var viewModel: AppMainViewModel
+  private val application: Context = ApplicationProvider.getApplicationContext()
+
+  private lateinit var appMainViewModel: AppMainViewModel
+
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
-  fun setUp() = runBlocking {
+  fun setUp() {
     hiltRule.inject()
 
-    Faker.loadTestConfigurationRegistryData("g6pd", defaultRepository, configurationRegistry)
-
-    every { configurationRegistry.appId } returns "g6pd"
-
-    every { sharedPreferencesHelper.write(APP_ID_CONFIG, "default/debug") }
-    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
-      {
-        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
-          ""
-        } else {
-          "1234"
-        }
-      }
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
-    every { sideMenuOptionFactory.retrieveSideMenuOptions() } returns emptyList()
-
-    every { appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync) } returns true
-    every { appFeatureManager.isFeatureActive(AppFeature.InAppReporting) } returns false
-
-    viewModel =
-      AppMainViewModel(
-        accountAuthenticator = mockk(),
-        syncBroadcaster = mockk(),
-        sideMenuOptionFactory = sideMenuOptionFactory,
-        secureSharedPreference = secureSharedPreference,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
-        configService = configService,
-        appFeatureManager = appFeatureManager,
+    appMainViewModel =
+      spyk(
+        AppMainViewModel(
+          accountAuthenticator = accountAuthenticator,
+          syncBroadcaster = syncBroadcaster,
+          secureSharedPreference = secureSharedPreference,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          registerRepository = registerRepository,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        )
       )
+
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
   @Test
-  fun testLoadCurrentLanguage() {
-    Assert.assertNotNull(viewModel.loadCurrentLanguage())
+  fun testOnEventLogout() {
+    val appMainEvent = AppMainEvent.Logout
+
+    appMainViewModel.onEvent(appMainEvent)
+
+    verify { accountAuthenticator.logout() }
   }
 
   @Test
-  fun testUpdateAndRetrieveLastSyncTimestamp() {
-    val odt = OffsetDateTime.now()
-    val formattedOdt = viewModel.formatLastSyncTimestamp(OffsetDateTime.now())
-    viewModel.updateLastSyncTimestamp(odt)
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertEquals(formattedOdt, viewModel.formatLastSyncTimestamp(odt))
-  }
-
-  @Test
-  fun testRetrieveAppMainUiState() {
-    val expectedAppMainUiState =
-      appMainUiStateOf(
-        "G6PD Test Reader",
-        "demo",
-        enableReports = false,
-        enableDeviceToDeviceSync = true
+  fun testOnEventSwitchLanguage() {
+    val appMainEvent =
+      AppMainEvent.SwitchLanguage(
+        Language("en", "English"),
+        mockkClass(Activity::class, relaxed = true)
       )
-    viewModel.retrieveAppMainUiState()
-    val resultAppMainUiState = viewModel.appMainUiState.value
-    Assert.assertNotNull(resultAppMainUiState)
-    Assert.assertEquals(expectedAppMainUiState.appTitle, resultAppMainUiState.appTitle)
-    Assert.assertEquals(expectedAppMainUiState.username, resultAppMainUiState.username)
+
+    appMainViewModel.onEvent(appMainEvent)
+
+    Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
+  }
+
+  @Test
+  fun testOnEventSyncData() {
+    val appMainEvent = AppMainEvent.SyncData
+    appMainViewModel.onEvent(appMainEvent)
+
+    verify { syncBroadcaster.runSync() }
+    verify { appMainViewModel.retrieveAppMainUiState() }
+  }
+
+  @Test
+  fun testOnEventUpdateSyncStates() {
+    val stateInProgress = mockk<State.InProgress>()
+    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateInProgress, "Some timestamp"))
+    Assert.assertEquals("Some timestamp", appMainViewModel.appMainUiState.value.lastSyncTime)
+
+    // Simulate sync state Finished
+    val timestamp = OffsetDateTime.now()
+    val success = spyk(Result.Success())
+    every { success.timestamp } returns timestamp
+    val stateFinished = mockk<State.Finished>()
+    every { stateFinished.result } returns success
+
+    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
     Assert.assertEquals(
-      expectedAppMainUiState.enableDeviceToDeviceSync,
-      resultAppMainUiState.enableDeviceToDeviceSync
+      appMainViewModel.formatLastSyncTimestamp(timestamp),
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
     )
-    Assert.assertEquals(expectedAppMainUiState.enableReports, resultAppMainUiState.enableReports)
+    verify { appMainViewModel.retrieveAppMainUiState() }
+  }
+
+  @Test
+  fun testOnEventOpenProfile() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    appMainViewModel.onEvent(
+      AppMainEvent.OpenProfile(
+        navController = navController,
+        profileId = "profileId",
+        resourceId = "resourceId",
+        resourceConfig = resourceConfig
+      )
+    )
+
+    val intSlot = slot<Int>()
+    val bundleSlot = slot<Bundle>()
+    verify { navController.navigate(capture(intSlot), capture(bundleSlot)) }
+
+    Assert.assertEquals(MainNavigationScreen.Profile.route, intSlot.captured)
+    Assert.assertEquals(3, bundleSlot.captured.size())
+    Assert.assertEquals("profileId", bundleSlot.captured.getString(NavigationArg.PROFILE_ID))
+    Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
+    Assert.assertEquals(
+      resourceConfig,
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+    )
+  }
+
+  @Test
+  fun testOnEventTriggerWorkflow() {
+    val action =
+      spyk(
+        listOf(
+          ActionConfig(
+            trigger = ActionTrigger.ON_CLICK,
+            workflow = ApplicationWorkflow.LAUNCH_REPORT
+          )
+        )
+      )
+    val navMenu = spyk(NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action))
+    appMainViewModel.onEvent(
+      AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu)
+    )
+    // We have triggered workflow for launching report
+    val intSlot = slot<Int>()
+    verify { navController.navigate(capture(intSlot)) }
+    Assert.assertEquals(MainNavigationScreen.Reports.route, intSlot.captured)
+  }
+
+  @Test
+  fun testOnEventOpenRegistersBottomSheet() {
+    val controller = Robolectric.buildActivity(HiltActivityForTest::class.java).create().resume()
+    val activityForTest = controller.get()
+    every { navController.context } returns activityForTest
+    appMainViewModel.onEvent(
+      AppMainEvent.OpenRegistersBottomSheet(
+        navController = navController,
+        registersList = emptyList()
+      )
+    )
+
+    // Assert fragment that was launched is RegisterBottomSheetFragment
+    activityForTest.supportFragmentManager.executePendingTransactions()
+    val fragments = activityForTest.supportFragmentManager.fragments
+    Assert.assertEquals(1, fragments.size)
+    Assert.assertTrue(fragments.first() is RegisterBottomSheetFragment)
+    // Destroy the activity
+    controller.destroy()
+  }
+
+  @Test
+  fun onRefreshAuthToken() {
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+
+    verify { accountAuthenticator.loadRefreshedSessionAccount(any()) }
   }
 }

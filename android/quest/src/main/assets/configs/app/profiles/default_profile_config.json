@@ -1,0 +1,455 @@
+{
+  "appId": "cha",
+  "configType": "profile",
+  "id": "defaultProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Condition",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "patientFirstName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+      ]
+    },
+    {
+      "name": "patientMiddleName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+      ]
+    },
+    {
+      "name": "patientLastName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+      ]
+    },
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName'))"
+      ]
+    },
+    {
+      "name": "patientIdentifier",
+      "condition": "true",
+      "actions": [
+        "data.put('patientIdentifier', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+      ]
+    },
+    {
+      "name": "patientId",
+      "condition": "true",
+      "actions": [
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+      ]
+    },
+    {
+      "name": "patientAge",
+      "condition": "true",
+      "actions": [
+        "data.put('patientAge', service.extractAge(Patient))"
+      ]
+    },
+    {
+      "name": "patientGender",
+      "condition": "true",
+      "actions": [
+        "data.put('patientGender', service.extractGender(Patient))"
+      ]
+    },
+    {
+      "name": "patientDOB",
+      "condition": "true",
+      "actions": [
+        "data.put('patientDOB', service.extractDOB(Patient, 'dd/MM/YY'))"
+      ]
+    },
+    {
+      "name": "isChild",
+      "condition": "true",
+      "actions": [
+        "data.put('isChild',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+      ]
+    },
+    {
+      "name": "canBearChild",
+      "condition": "true",
+      "actions": [
+        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+      ]
+    },
+    {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
+      ]
+    },
+    {
+      "name": "canEnrollToFp",
+      "condition": "true",
+      "actions": [
+        "data.put('canEnrollToFp', data.get('canBearChild'))"
+      ]
+    },
+    {
+      "name": "isChildUnder2months",
+      "condition": "true",
+      "actions": [
+        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate > today() - 2 'months')\"))"
+      ]
+    },
+    {
+      "name": "isChildOver2months",
+      "condition": "true",
+      "actions": [
+        "data.put('isChildOver2months',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{patientName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "ID: #@{patientIdentifier}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "SPACER",
+                  "height": 10
+                },
+                {
+                  "viewType": "PERSONAL_DATA",
+                  "personalDataItems": [
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Sex",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientGender}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Age",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientAge}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "DOB",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientDOB}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "header": {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "VISITS",
+            "primaryTextColor": "#6F7274",
+            "fontSize": 18.0,
+            "padding": 16
+          },
+          "content": [
+            {
+              "viewType": "LIST",
+              "baseResource": "Task",
+              "registerCard": {
+                "rules": [
+                  {
+                    "name": "taskStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+                    ]
+                  },
+                  {
+                    "name": "taskStatusColorCode",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                    ]
+                  },
+                  {
+                    "name": "taskDescription",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
+                    ]
+                  },
+                  {
+                    "name": "taskFor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
+                    ]
+                  },
+                  {
+                    "name": "taskQuestionnaireId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
+                    ]
+                  }
+                ],
+                "views": [
+                  {
+                    "viewType": "BUTTON",
+                    "smallSized": "true",
+                    "text": "@{taskDescription}",
+                    "status": "@{taskStatusColorCode}",
+                    "visible": "true",
+                    "actions": [
+                      {
+                        "trigger": "ON_CLICK",
+                        "workflow": "LAUNCH_QUESTIONNAIRE",
+                        "questionnaire": {
+                          "id": "@{taskQuestionnaireId}",
+                          "title": "@{taskDescription}",
+                          "saveButtonText": "Save",
+                          "taskId": "@{taskId}",
+                          "resourceIdentifier": "@{taskFor}"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Registration info",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+            "title": "Member registration info",
+            "saveButtonText": "Update registration",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
+            "type": "EDIT",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "@{isChildOver2months}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "3276f55c-b25e-455b-ae4e-8846fb8fd039",
+            "title": "Record sick child",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "@{isChildUnder2months}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "58fbddae-c5a0-4b86-832e-f516c96f3b85",
+            "title": "Record sick child",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Register Pregnancy",
+      "titleColor": "#000000",
+      "visible": "@{canBearChild}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "9b22f3ed-e7e1-4222-bf72-1ced42696189",
+            "title": "Record to ANC",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "a881d53a-590c-4d52-ae0f-c87b7ff04148"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "#000000",
+      "visible": "@{canHavePregnancyOutcome}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
+            "title": "Pregnancy outcome",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Enroll to FP",
+      "titleColor": "#000000",
+      "visible": "@{canEnrollToFp}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "4acc8776-32b0-4440-a1b1-a11a12d79acb",
+            "title": "Enroll to family planning",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "d6263f2d-2ebe-456c-bbb7-786dabd3ea22",
+              "cd39380b-2359-4b98-8ab9-df7f90fe9392"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Register with Disease",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "f7004382-ba3d-4f62-a687-6e9d18c09d3a",
+            "resourceIdentifier": "@{patientId}",
+            "title": "Diseases Registration Form",
+            "planDefinitions": [
+              "55d89227-3a06-4a9a-b526-2819dcb1d301",
+              "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Remove this person",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+            "resourceIdentifier": "@{patientId}",
+            "title": "Remove family member",
+            "saveButtonText": "Update registration"
+          }
+        }
+      ]
+    }
+  ]
+}

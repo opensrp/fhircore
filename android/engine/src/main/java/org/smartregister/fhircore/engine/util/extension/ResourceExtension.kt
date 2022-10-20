@@ -22,12 +22,15 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.LinkedList
+import java.util.Locale
 import java.util.UUID
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -45,10 +48,9 @@ import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
+private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
   return when {
@@ -60,7 +62,15 @@ fun Base?.valueToString(): String {
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
       this.repeat.let {
-        it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
+        it.period
+          .toPlainString()
+          .plus(" ")
+          .plus(
+            it.periodUnit.display.replaceFirstChar { char ->
+              if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
+            }
+          )
+          .plus(" (s)")
       }
     this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
     else -> this.toString()
@@ -225,7 +235,6 @@ fun Resource.isPatient(patientId: String) =
 
 fun Resource.asReference(): Reference {
   val referenceValue = "${fhirType()}/$logicalId"
-
   return Reference().apply { this.reference = referenceValue }
 }
 
@@ -253,9 +262,6 @@ fun Resource.setPropertySafely(name: String, value: Base) =
 
 fun generateUniqueId() = UUID.randomUUID().toString()
 
-fun Base.extractWithFhirPath(expression: String) =
-  FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
-
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {
     ResourceType.fromCode(resourceCode)
@@ -263,4 +269,47 @@ fun isValidResourceType(resourceCode: String): Boolean {
   } catch (exception: FHIRException) {
     false
   }
+}
+
+/**
+ * Composition sections can be nested. This function retrieves all the nested composition sections
+ * and returns a flattened list of all [Composition.SectionComponent] for the given [Composition]
+ * resource
+ */
+fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
+  val sections = mutableListOf<Composition.SectionComponent>()
+  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  this.section.forEach {
+    if (!it.section.isNullOrEmpty()) {
+      it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
+    }
+    sections.add(it)
+  }
+  while (sectionsQueue.isNotEmpty()) {
+    val sectionComponent = sectionsQueue.removeFirst()
+    if (!sectionComponent.section.isNullOrEmpty()) {
+      sectionComponent.section.forEach { sectionsQueue.addLast(it) }
+    }
+    sections.add(sectionComponent)
+  }
+  return sections
+}
+
+fun String.resourceClassType(): Class<out Resource> =
+  Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+
+/**
+ * A function that extracts only the UUID part of a resource logicalId.
+ *
+ * Examples:
+ *
+ * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
+ * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ *
+ * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ */
+fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
+
+fun Resource.addTags(tags: List<Coding>) {
+  tags.forEach { this.meta.addTag(it) }
 }

@@ -78,6 +78,11 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit { remove(LOGIN_PIN_KEY) }
   }
 
+  /** This method resets/clears all existing values in the shared preferences synchronously */
+  fun resetSharedPrefs() {
+    secureSharedPreferences.edit()?.clear()?.commit()
+  }
+
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
     const val LOGIN_CREDENTIAL_KEY = "login_credentials"

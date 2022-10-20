@@ -87,7 +87,11 @@
     <string name="visit_overdue">%1$s overdue %2$s ago</string>
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
+    <string name="registers">Registers</string>
 
-    <string name="questionnaire_response_name">%1$s (%2$s)</string>
+    <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
+    <string name="due_on">Due on %1$s</string>
+
+    <string name="geo_widget_fragment_destination" translatable="false">GeoWidget Fragment Destination</string>
 
 </resources>

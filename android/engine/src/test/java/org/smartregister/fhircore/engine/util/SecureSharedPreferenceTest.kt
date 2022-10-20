@@ -81,4 +81,31 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     secureSharedPreference.deleteSessionPin()
     Assert.assertNull(secureSharedPreference.retrieveSessionPin())
   }
+
+  @Test
+  fun testResetSharedPrefsClearsData() {
+
+    secureSharedPreference.saveSessionPin(pin = "6699")
+
+    val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
+    Assert.assertEquals("6699", retrievedSessionPin)
+
+    secureSharedPreference.resetSharedPrefs()
+
+    Assert.assertNull(secureSharedPreference.retrieveSessionPin())
+  }
+
+  @Test
+  fun testDeleteSessionTokensSetsTokenToNull() {
+    secureSharedPreference.saveCredentials(
+      AuthCredentials(
+        username = "userName",
+        password = "!@#$",
+        sessionToken = "sessionToken",
+        refreshToken = "refreshToken"
+      )
+    )
+    secureSharedPreference.deleteSessionTokens()
+    Assert.assertNull(secureSharedPreference.retrieveSessionToken())
+  }
 }

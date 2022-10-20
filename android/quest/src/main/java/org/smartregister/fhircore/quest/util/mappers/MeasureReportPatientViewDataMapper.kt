@@ -17,27 +17,47 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.translateGender
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
 class MeasureReportPatientViewDataMapper
 @Inject
-constructor(@ApplicationContext val context: Context) :
-  DataMapper<RegisterData.AncRegisterData, MeasureReportPatientViewData> {
-  override fun transformInputToOutputModel(
-    inputModel: RegisterData.AncRegisterData
-  ): MeasureReportPatientViewData {
+constructor(
+  @ApplicationContext val context: Context,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : DataMapper<ResourceData, MeasureReportPatientViewData> {
+
+  override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportPatientViewData {
+    // Patient resource can be the baseResource or any of the relatedResources of the resourceData
+    // Ensure the register is configured to return a Patient resource; app will crash otherwise
+    val patient: Patient =
+      when (inputModel.baseResource) {
+        is Patient -> inputModel.baseResource as Patient
+        else ->
+          inputModel.relatedResourcesMap.getValue(ResourceType.Patient.name).first() as Patient
+      }
+
     return MeasureReportPatientViewData(
-      logicalId = inputModel.logicalId,
-      name = inputModel.name,
-      gender = inputModel.gender.translateGender(context).first().uppercase(),
-      age = inputModel.age,
-      family = context.getString(R.string.family_suffix, inputModel.familyName),
+      logicalId = patient.logicalId,
+      name =
+        fhirPathDataExtractor.extractValue(patient, "Patient.name.select(given + ' ' + family)"),
+      gender = patient.gender.translateGender(context).first().uppercase(),
+      age = patient.birthDate?.toAgeDisplay() ?: "N/A",
+      family =
+        context.getString(
+          R.string.family_suffix,
+          fhirPathDataExtractor.extractValue(patient, "Patient.name.family")
+        )
     )
   }
 }

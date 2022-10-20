@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
+import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -46,7 +47,13 @@ class NetworkModule {
   fun provideAuthOkHttpClient(oAuthInterceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(oAuthInterceptor)
-      .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BASIC })
+      .addInterceptor(
+        HttpLoggingInterceptor().apply {
+          level = HttpLoggingInterceptor.Level.BASIC
+          redactHeader(AUTHORIZATION)
+          redactHeader(COOKIE)
+        }
+      )
       .build()
 
   @Provides
@@ -54,7 +61,13 @@ class NetworkModule {
   fun provideOkHttpClient(interceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
-      .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BODY })
+      .addInterceptor(
+        HttpLoggingInterceptor().apply {
+          level = HttpLoggingInterceptor.Level.BASIC
+          redactHeader(AUTHORIZATION)
+          redactHeader(COOKIE)
+        }
+      )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -73,7 +86,7 @@ class NetworkModule {
       .build()
       .create(OAuthService::class.java)
 
-  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().newJsonParser()
+  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
   @Provides
   fun provideFhirResourceService(
@@ -92,5 +105,7 @@ class NetworkModule {
 
   companion object {
     const val TIMEOUT_DURATION = 120L
+    const val AUTHORIZATION = "Authorization"
+    const val COOKIE = "Cookie"
   }
 }

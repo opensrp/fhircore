@@ -21,14 +21,27 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.nio.charset.Charset
 import javax.inject.Inject
+import okio.ByteString.Companion.decodeBase64
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import timber.log.Timber
 
 @HiltViewModel
@@ -36,20 +49,20 @@ class AppSettingViewModel
 @Inject
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configService: ConfigService
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+
+  val showProgressBar = MutableLiveData(false)
 
   val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
     get() = _appId
-
-  private val _showProgressBar = MutableLiveData(false)
-  val showProgressBar
-    get() = _showProgressBar
 
   private val _error = MutableLiveData("")
   val error: LiveData<String>
@@ -60,6 +73,7 @@ constructor(
   }
 
   fun loadConfigurations(loadConfigs: Boolean) {
+    if (loadConfigs) showProgressBar.postValue(true)
     this.loadConfigs.postValue(loadConfigs)
   }
 
@@ -67,52 +81,103 @@ constructor(
     this.fetchConfigs.postValue(fetchConfigs)
   }
 
+  /**
+   * Fetch the [Composition] resource whose identifier matches the provided [appId]. Save the
+   * composition resource and all the nested resources referenced in the
+   * [Composition.SectionComponent].
+   */
   suspend fun fetchConfigurations(appId: String, context: Context) {
-    kotlin
-      .runCatching {
-        Timber.i("Fetching configs for app $appId")
+    runCatching {
+      Timber.i("Fetching configs for app $appId")
+      showProgressBar.postValue(true)
+      val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+      val compositionResource = fetchComposition(urlPath, context) ?: return
 
-        this._showProgressBar.postValue(true)
-        val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-        val data =
-          fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
-            if (!it.hasResource()) {
-              Timber.w("No response for composition resource on path $cPath")
-              _showProgressBar.postValue(false)
-              _error.postValue(context.getString(R.string.application_not_supported, appId))
-              return
+      Timber.d("Fetched app config ${compositionResource.encodeResourceToString()}")
+
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      compositionResource
+        .retrieveCompositionSections()
+        .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+        .groupBy { it.focus.reference.substringBeforeLast("/") }
+        .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
+        .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+          val ids = entry.value.joinToString(",") { it.focus.extractId() }
+          val resourceUrlPath =
+            entry.key +
+              "?${Composition.SP_RES_ID}=$ids" +
+              "&_count=${configService.provideConfigurationSyncPageSize()}"
+
+          Timber.d("Fetching config details $resourceUrlPath")
+
+          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+            defaultRepository.create(false, bundleEntryComponent.resource)
+
+            if (bundleEntryComponent.resource is Binary) {
+              val binary = bundleEntryComponent.resource as Binary
+              binary.data.decodeToString().decodeBase64()?.string(Charset.defaultCharset())?.let {
+                val config =
+                  it.tryDecodeJson<RegisterConfiguration>()
+                    ?: it.tryDecodeJson<ProfileConfiguration>()
+
+                when (config) {
+                  is RegisterConfiguration ->
+                    config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                  is ProfileConfiguration ->
+                    config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                }
+              }
             }
+
+            Timber.d("Fetched and processed config details $resourceUrlPath")
           }
+        }
 
-        val composition = data.resource as Composition
-        defaultRepository.save(composition)
+      saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
-        composition
-          .section
-          .groupBy { it.focus.reference.split("/")[0] }
-          .entries
-          .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-            fhirResourceDataSource.loadData(rPath).entry.forEach {
-              defaultRepository.save(it.resource)
-            }
-          }
+      // Save composition after fetching all the referenced section resources
+      defaultRepository.create(false, compositionResource)
 
-        loadConfigurations(true)
-        _showProgressBar.postValue(false)
-      }
+      Timber.d("Done with all app configs and details")
+
+      loadConfigurations(true)
+      showProgressBar.postValue(false)
+    }
       .onFailure {
         Timber.w(it)
-        _showProgressBar.postValue(false)
+        showProgressBar.postValue(false)
         _error.postValue("${it.message}")
       }
   }
 
-  fun hasDebugSuffix(): Boolean? {
-    return if (!appId.value.isNullOrBlank())
-      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
-    else null
+  suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
+    return fhirResourceDataSource.loadData(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        showProgressBar.postValue(false)
+        _error.postValue(context.getString(R.string.application_not_supported, appId))
+        return null
+      }
+
+      it.resource as Composition
+    }
   }
+
+  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+      resourceTypes.distinctBy { it.name }
+    )
+
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    this.baseResource.dependentResourceTypes(target)
+    this.relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    target.add(ResourceType.fromCode(resource))
+    relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  fun hasDebugSuffix(): Boolean = appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) ?: false
 }
