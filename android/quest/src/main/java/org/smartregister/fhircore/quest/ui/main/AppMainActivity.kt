@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Message
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -61,11 +60,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
-  val authActivityLauncherForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-    if (res.resultCode == Activity.RESULT_OK) {
-      appMainViewModel.onEvent(AppMainEvent.ResumeSync)
+  val authActivityLauncherForResult =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+      if (res.resultCode == Activity.RESULT_OK) {
+        appMainViewModel.onEvent(AppMainEvent.ResumeSync)
+      }
     }
-  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -107,8 +107,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           state.result.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        val message =
-          if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
+        val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
         showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
@@ -119,7 +118,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
         )
         if (hasAuthError) {
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent)})
+          appMainViewModel.onEvent(
+            AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent) }
+          )
         }
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
         scheduleFhirTaskStatusUpdater()
@@ -154,11 +155,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   fun setupTimeOutListener() {
     if (application is QuestApplication) {
-      (application as QuestApplication).onInActivityListener = object: OnInActivityListener {
-        override fun onTimeout() {
-          appMainViewModel.onTimeOut()
+      (application as QuestApplication).onInActivityListener =
+        object : OnInActivityListener {
+          override fun onTimeout() {
+            appMainViewModel.onTimeOut()
+          }
         }
-      }
     }
   }
 

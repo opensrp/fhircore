@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.main
 import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
-import android.os.Parcelable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -103,9 +102,7 @@ constructor(
             appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
             run(resumeSync)
           },
-          onValidTokenMissing = {
-            onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth))
-          }
+          onValidTokenMissing = { onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth)) }
         )
       }
       is AppMainEvent.RefreshAuthToken -> {

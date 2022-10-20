@@ -19,9 +19,7 @@ package org.smartregister.fhircore.quest
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -32,7 +30,6 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -44,9 +41,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
 
   var onInActivityListener: OnInActivityListener? = null
 
-   var appInActivityListener: AppInActivityListener = AppInActivityListener(listOf(LoginActivity::class.java.name, AppSettingActivity::class.java.name)) {
-     onInActivityListener?.onTimeout()
-   }
+  var appInActivityListener: AppInActivityListener =
+    AppInActivityListener(
+      listOf(LoginActivity::class.java.name, AppSettingActivity::class.java.name)
+    ) { onInActivityListener?.onTimeout() }
 
   private var mForegroundActivityContext: Context? = null
 

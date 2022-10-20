@@ -299,7 +299,10 @@ constructor(
 
   fun invalidateAccount() {
     tokenManagerService.getActiveAccount()?.run {
-      accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
+      accountManager.invalidateAuthToken(
+        getAccountType(),
+        tokenManagerService.getLocalSessionToken()
+      )
       secureSharedPreference.deleteSession()
     }
   }
