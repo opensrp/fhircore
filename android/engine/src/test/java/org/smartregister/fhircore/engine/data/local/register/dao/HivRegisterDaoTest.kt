@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
@@ -407,5 +408,36 @@ class HivRegisterDaoTest : RobolectricTest() {
       assertEquals("practitioner/1234", practitioners?.get(0)?.reference)
       assertNotEquals(HealthStatus.DEFAULT, healthStatus)
     }
+  }
+
+  @Test
+  fun `testLoadGuardianProfileData for guardians not on ART`() = runTest {
+    val guardianRelatedPerson =
+      RelatedPerson().apply {
+        this.id = "9"
+        this.addName().apply {
+          this.family = "Kwezaba"
+          this.given.add(StringType("Michael"))
+        }
+        this.gender = Enumerations.AdministrativeGender.FEMALE
+        this.birthDate = DateType(Date()).apply { add(Calendar.YEAR, -34) }.dateTimeValue().value
+        this.addAddress().apply {
+          district = "Kinondoni"
+          city = "Dar es salaam"
+        }
+      }
+
+    coEvery { fhirEngine.get(ResourceType.RelatedPerson, guardianRelatedPerson.logicalId) } returns
+      guardianRelatedPerson
+    val data = runBlocking { hivRegisterDao.loadRelatedPersonProfileData("9") }
+
+    val guardianProfileData = data as ProfileData.HivProfileData
+    assertNotNull(data)
+    assertEquals("9", guardianProfileData.logicalId)
+    assertEquals("34y", guardianProfileData.age)
+    assertEquals("Michael Kwezaba", guardianProfileData.name)
+    assertEquals("Kinondoni Dar es salaam", guardianProfileData.address)
+    assertEquals(HealthStatus.NOT_ON_ART, guardianProfileData.healthStatus)
+    assertEquals(false, guardianProfileData.showIdentifierInProfile)
   }
 }
