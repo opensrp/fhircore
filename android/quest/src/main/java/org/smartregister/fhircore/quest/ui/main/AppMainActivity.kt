@@ -19,7 +19,9 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Message
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
@@ -42,6 +44,8 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.OnInActivityListener
+import org.smartregister.fhircore.quest.QuestApplication
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -57,8 +61,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
+  val authActivityLauncherForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+    if (res.resultCode == Activity.RESULT_OK) {
+      appMainViewModel.onEvent(AppMainEvent.ResumeSync)
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setupTimeOutListener()
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
   }
@@ -108,7 +119,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
         )
         if (hasAuthError) {
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent)})
         }
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
         scheduleFhirTaskStatusUpdater()
@@ -138,6 +149,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@AppMainActivity)
       else this.unschedulePlan(this@AppMainActivity)
+    }
+  }
+
+  fun setupTimeOutListener() {
+    if (application is QuestApplication) {
+      (application as QuestApplication).onInActivityListener = object: OnInActivityListener {
+        override fun onTimeout() {
+          appMainViewModel.onTimeOut()
+        }
+      }
     }
   }
 

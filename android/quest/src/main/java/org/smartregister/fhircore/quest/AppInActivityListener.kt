@@ -9,17 +9,27 @@ import timber.log.Timber
 
 class AppInActivityListener(val ignoreList: List<String>, onTimeLapse: () -> Unit) {
   val handler = Handler(Looper.getMainLooper())
-  val runnable: Runnable = Runnable { onTimeLapse() }
+  val runnable: Runnable = Runnable {
+    if (ignoreList.firstOrNull { it == currentActivity?.name } == null)
+      onTimeLapse()
+  }
+  var currentActivity: Class<Activity>? = null
 
-  fun start(data: Class<Activity>) {
+  fun current(data: Class<Activity>) {
+    currentActivity = data
+  }
+
+  fun start() {
     Timber.i("App is in background")
-    val canStart = ignoreList.firstOrNull() { data.name == it }
-    if (canStart == null) handler.postDelayed(runnable, 5.minutes.inMilliseconds())
+    handler.postDelayed(runnable, 5.minutes.inMilliseconds())
   }
 
-  fun stop(data: Class<Activity>) {
+  fun stop() {
     Timber.i("App is foreground")
-    val canStart = ignoreList.firstOrNull() { data.name == it }
-    if (canStart == null) handler.removeCallbacks(runnable)
+    handler.removeCallbacks(runnable)
   }
+}
+
+interface OnInActivityListener {
+  fun onTimeout()
 }

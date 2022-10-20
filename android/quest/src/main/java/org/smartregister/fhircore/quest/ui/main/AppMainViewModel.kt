@@ -104,9 +104,7 @@ constructor(
             run(resumeSync)
           },
           onValidTokenMissing = {
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            it.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-            event.launchManualAuth(it)
+            onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth))
           }
         )
       }
@@ -114,12 +112,15 @@ constructor(
         Timber.e("Refreshing token")
         accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
           val bundle = accountBundleFuture.result
-          bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
+          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
             if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
               syncBroadcaster.runSync()
               return@let
             }
-            accountAuthenticator.logout()
+            intent!!
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            event.launchManualAuth(intent)
           }
         }
       }
@@ -183,6 +184,10 @@ constructor(
       formatLastSyncTimestamp(timestamp),
       async = true
     )
+  }
+
+  fun onTimeOut() {
+    accountAuthenticator.invalidateAccount()
   }
 
   companion object {

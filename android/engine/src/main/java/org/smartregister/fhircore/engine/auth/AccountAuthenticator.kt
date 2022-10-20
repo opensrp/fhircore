@@ -297,6 +297,13 @@ constructor(
     }
   }
 
+  fun invalidateAccount() {
+    tokenManagerService.getActiveAccount()?.run {
+      accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
+      secureSharedPreference.deleteSession()
+    }
+  }
+
   fun loadActiveAccount(
     callback: AccountManagerCallback<Bundle>,
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)

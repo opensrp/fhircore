@@ -19,7 +19,9 @@ package org.smartregister.fhircore.quest
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -30,6 +32,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -39,8 +42,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
+  var onInActivityListener: OnInActivityListener? = null
+
    var appInActivityListener: AppInActivityListener = AppInActivityListener(listOf(LoginActivity::class.java.name, AppSettingActivity::class.java.name)) {
-     accountAuthenticator.logout()
+     onInActivityListener?.onTimeout()
    }
 
   private var mForegroundActivityContext: Context? = null
@@ -63,7 +68,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
     registerActivityLifecycleCallbacks(
       object : ActivityLifecycleCallbacks {
         override fun onActivityStarted(activity: Activity) {
-          appInActivityListener.stop(activity.javaClass)
+          appInActivityListener.current(activity.javaClass)
           if (activity::class.java.name != launcherActivityName) {
             mForegroundActivityContext = activity
           }
@@ -75,9 +80,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
 
         override fun onActivityPaused(activity: Activity) {}
 
-        override fun onActivityStopped(activity: Activity) {
-          appInActivityListener.start(activity.javaClass)
-        }
+        override fun onActivityStopped(activity: Activity) {}
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
@@ -94,10 +97,12 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
   }
 
   override fun onStop(owner: LifecycleOwner) {
+    appInActivityListener.start()
     mForegroundActivityContext = null
   }
 
   override fun onStart(owner: LifecycleOwner) {
+    appInActivityListener.stop()
     if (mForegroundActivityContext != null) {
       accountAuthenticator.loadActiveAccount(
         onActiveAuthTokenFound = {},
