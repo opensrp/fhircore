@@ -20,8 +20,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import okhttp3.Interceptor
-import okhttp3.Request
-import org.hl7.fhir.r4.model.ResourceType
+import okhttp3.Response
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import timber.log.Timber
 
@@ -32,28 +31,15 @@ constructor(
   val tokenManagerService: TokenManagerService
 ) : Interceptor {
 
-  override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
+  override fun intercept(chain: Interceptor.Chain): Response {
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
-    if (!request.hasPaths(segments) && !request.hasOpenResources()) {
+    if (!request.url.pathSegments.containsAll(segments)) {
       tokenManagerService.runCatching { getBlockingActiveAuthToken() }.getOrNull()?.let { token ->
         Timber.d("Passing auth token for %s", request.url.toString())
         request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
       }
     }
     return chain.proceed(request)
-  }
-
-  fun Request.hasPaths(paths: List<String>) = this.url.pathSegments.containsAll(paths)
-
-  fun Request.hasOpenResources() =
-    this.method.contentEquals(REQUEST_METHOD_GET) &&
-      this.url.pathSegments.any {
-        it.contentEquals(ResourceType.Composition.name) ||
-          it.contentEquals(ResourceType.Binary.name)
-      }
-
-  companion object {
-    const val REQUEST_METHOD_GET = "GET"
   }
 }

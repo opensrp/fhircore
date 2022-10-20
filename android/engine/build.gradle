@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'de.mannodermaus.android-junit5'
@@ -102,6 +103,7 @@ configurations {
     all*.exclude group: 'javax.activation', module: 'activation'
     all*.exclude group: 'javax', module: 'javaee-api'
     all*.exclude group: 'xml-apis'
+    all*.exclude group: 'xpp3'
 }
 
 dependencies {
@@ -129,31 +131,18 @@ dependencies {
     // CQL
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.0'
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
-    implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
-    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
+   // implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
+//    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
 
-    def cqlEngineVersion = '1.5.4'
+    def cqlEngineVersion = '2.1.0'
     implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
-    implementation "org.opencds.cqf.cql:engine.fhir:$cqlEngineVersion"
+    implementation "org.opencds.cqf.cql:engine.jackson:$cqlEngineVersion"
 
-    def cqlEvaluatorVersion = '1.4.2'
+    def cqlEvaluatorVersion = '2.1.0'
     implementation "org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"
     implementation "org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"
-    implementation "org.opencds.cqf.cql:evaluator.activitydefinition:$cqlEvaluatorVersion"
     implementation "org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"
-    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion") {}
-
-
-    api('org.smartregister:workflow:0.1.0-alpha01-preview8-SNAPSHOT') {
-        transitive = true
-        exclude group: 'xerces'
-        exclude group: 'com.github.java-json-tools'
-        exclude group: 'org.codehaus.woodstox'
-        exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'org.opencds.cqf.cql'
-        exclude group: 'com.google.android.fhir', module: 'common'
-        exclude group: 'org.smartregister', module: 'engine'
-    }
+    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion")
 
     // Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
@@ -190,37 +179,38 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
-
-    api('org.smartregister:data-capture:0.1.0-beta05-preview3-SNAPSHOT') {
+    
+    api('org.smartregister:data-capture:0.1.0-beta05-preview6-SNAPSHOT') {
         transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-        exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'org.opencds.cqf.cql'
-    }
-
-    api('org.smartregister:common:0.1.0-alpha03-preview3-SNAPSHOT') {
-        transitive = true
-    }
-
-    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview2-SNAPSHOT') {
-        transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'org.smartregister', module: 'engine'
+        exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview3-SNAPSHOT') {
+    api('org.smartregister:workflow:0.1.0-alpha02-preview3-SNAPSHOT') {
         transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-        exclude group: 'org.opencds.cqf.cql', module: 'engine'
-        exclude group: 'org.opencds.cqf.cql', module: 'evaluator'
-        exclude group: 'org.opencds.cqf.cql', module: 'evaluator.builder'
-        exclude group: 'org.opencds.cqf.cql', module: 'evaluator.dagger'
+        exclude group: 'xerces'
+        exclude group: 'com.github.java-json-tools'
+        exclude group: 'org.codehaus.woodstox'
+        exclude group: 'ca.uhn.hapi.fhir'
+        exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.google.android.fhir', module: 'engine'
+    }
+
+    api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {
+        transitive = true
+    }
+
+    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT') {
+        transitive = true
+        exclude group: 'ca.uhn.hapi.fhir'
+        exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.google.android.fhir', module: 'engine'
+    }
+
+    api('org.smartregister:engine:0.1.0-beta02-preview6-SNAPSHOT') {
+        transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 

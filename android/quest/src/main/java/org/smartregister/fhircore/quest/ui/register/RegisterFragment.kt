@@ -86,6 +86,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val lifecycleEvent = rememberLifecycleEvent()
           LaunchedEffect(lifecycleEvent) {
             if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+              appMainViewModel.retrieveAppMainUiState()
               with(registerFragmentArgs) {
                 registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
               }

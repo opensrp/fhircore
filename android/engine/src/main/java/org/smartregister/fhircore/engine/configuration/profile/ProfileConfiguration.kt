@@ -20,8 +20,8 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 

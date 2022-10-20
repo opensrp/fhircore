@@ -53,7 +53,8 @@ fun List<ActionConfig>.handleClickEvent(
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to it,
-              NavigationArg.RESOURCE_ID to resourceData?.baseResource?.logicalId
+              NavigationArg.RESOURCE_ID to resourceData?.baseResource?.logicalId,
+              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
