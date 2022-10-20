@@ -1,5 +1,5 @@
 {
-  "appId": "cha",
+  "appId": "app",
   "configType": "register",
   "id": "householdRegister",
   "fhirResource": {
@@ -128,7 +128,20 @@
               "text": "@{taskCount}",
               "status": "@{serviceStatus}",
               "fontSize": 14.0,
-              "smallSized": false
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "householdProfile",
+                  "params": [
+                    {
+                      "key": "familyId",
+                      "value": "@{familyId}"
+                    }
+                  ]
+                }
+              ]
             },
             "actions": [
               {
