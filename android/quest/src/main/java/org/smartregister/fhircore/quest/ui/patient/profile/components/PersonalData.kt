@@ -71,7 +71,7 @@ fun PersonalData(
               stringResource(R.string.identifier_unassigned)
             }
           )
-        if (patientProfileViewData.showIdentifierInProfile)
+        if (patientProfileViewData.showIdentifierInProfile) {
           idKeyValue =
             stringResource(
               R.string.idKeyValue,
@@ -80,13 +80,14 @@ fun PersonalData(
                 stringResource(R.string.identifier_unassigned)
               }
             )
-        Text(
-          text = idKeyValue,
-          color = StatusTextColor,
-          fontSize = 18.sp,
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis
-        )
+          Text(
+            text = idKeyValue,
+            color = StatusTextColor,
+            fontSize = 18.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+        }
       }
       Spacer(modifier = modifier.height(16.dp))
       Row(
