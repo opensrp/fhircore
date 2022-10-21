@@ -36,7 +36,7 @@ class AppInActivityListener(val ignoreList: List<String>, onTimeLapse: () -> Uni
 
   fun start() {
     Timber.i("App is in background")
-    handler.postDelayed(runnable, 5.minutes.inMilliseconds())
+    handler.postDelayed(runnable, 10.minutes.inMilliseconds())
   }
 
   fun stop() {
