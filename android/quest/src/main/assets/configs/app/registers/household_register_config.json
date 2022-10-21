@@ -91,7 +91,7 @@
         "name": "serviceStatus",
         "condition": "true",
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' :'UPCOMING')"
         ]
       },
       {

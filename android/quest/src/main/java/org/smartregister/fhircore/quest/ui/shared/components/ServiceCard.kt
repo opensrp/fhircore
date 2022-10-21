@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -224,9 +226,15 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
-        .fillMaxSize(0.9f)
-        .padding(4.dp)
+        .width(140.dp)
+        .height(80.dp)
+        .padding(8.dp)
         .clip(RoundedCornerShape(4.dp))
+        .border(
+          width = if (extractedStatus == ServiceStatus.DUE) 1.dp else 0.dp,
+          color = if (extractedStatus == ServiceStatus.DUE) contentColor else Color.Unspecified,
+          shape = RoundedCornerShape(4.dp)
+        )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         )
@@ -259,7 +267,8 @@ private fun BigServiceButton(
         text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
         textAlign = TextAlign.Center,
-        fontSize = buttonProperties.fontSize.sp
+        fontSize = buttonProperties.fontSize.sp,
+        overflow = TextOverflow.Ellipsis
       )
     }
   }
