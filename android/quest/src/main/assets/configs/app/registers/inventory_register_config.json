@@ -72,6 +72,13 @@
         "actions": [
           "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
         ]
+      },
+      {
+        "name": "status",
+        "condition": "true",
+        "actions": [
+          "data.put('status', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value') == '' ? 'UPCOMING' : 'DUE')"
+        ]
       }
     ],
     "views": [
@@ -97,23 +104,23 @@
             "serviceButton": {
               "visible": true,
               "text": "@{quantity}",
-              "status": "DUE",
+              "status": "@{status}",
               "fontSize": 14.0,
               "smallSized": false,
               "actions": [
-                  {
-                    "trigger": "ON_CLICK",
-                    "workflow": "LAUNCH_QUESTIONNAIRE",
-                    "questionnaire": {
-                      "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-                      "title": "@{commodityName}",
-                      "saveButtonText": "ADJUST STOCK LEVELS",
-                      "setPractitionerDetails": true,
-                      "setOrganizationDetails": true,
-                      "resourceIdentifier": "@{commodityId}"
-                    }
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+                    "title": "@{commodityName}",
+                    "saveButtonText": "ADJUST STOCK LEVELS",
+                    "setPractitionerDetails": true,
+                    "setOrganizationDetails": true,
+                    "resourceIdentifier": "@{commodityId}"
                   }
-                ]
+                }
+              ]
             },
             "actions": [
               {
