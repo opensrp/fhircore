@@ -99,32 +99,40 @@
               "text": "@{quantity}",
               "status": "DUE",
               "fontSize": 14.0,
-              "smallSized": false
-            }
+              "smallSized": false,
+              "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_QUESTIONNAIRE",
+                    "questionnaire": {
+                      "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+                      "title": "@{commodityName}",
+                      "saveButtonText": "ADJUST STOCK LEVELS",
+                      "setPractitionerDetails": true,
+                      "setOrganizationDetails": true,
+                      "resourceIdentifier": "@{commodityId}"
+                    }
+                  }
+                ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "inventoryProfile",
+                "params": [
+                  {
+                    "key": "commodityId",
+                    "value": "@{commodityId}"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
     ]
   },
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "Record Restock",
-      "icon": "add",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-            "title": "Physical Inventory Count and Stock Supply",
-            "saveButtonText": "SAVE"
-          }
-        }
-      ]
-    }
-  ],
   "noResults": {
     "title": "No Commodities",
     "message": "Sorry, stock commodities have not been setup yet"
