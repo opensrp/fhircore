@@ -1,0 +1,22 @@
+{
+	"resourceType": "QuestionnaireResponse",
+	"questionnaire": "Questionnaire/5a60a629-bcf4-4101-96ac-a5e07b35f30e",
+	"subject": {
+		"reference": "Patient/12345"
+	},
+	"item": [
+		{
+			"linkId": "f0cd689d-b567-4cd6-8159-3ef49e9a0058",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "9075b779-bb14-4852-b9a6-b051a3c0d870",
+						"code": "yes",
+						"system": "urn:uuid:79bd9111-545f-4ae1-9150-80e1f1239914",
+						"display": "Yes"
+					}
+				}
+			]
+		}
+	]
+}

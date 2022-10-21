@@ -1,0 +1,559 @@
+{
+	"resourceType": "StructureMap",
+	"id": "b4c2d528-5109-11ed-bdc3-0242ac120002",
+	"url": "https://fhir.labs.smartregister.org/fhir/StructureMap/b4c2d528-5109-11ed-bdc3-0242ac120002",
+	"name": "eCBIS over 1 Year Child Visit Form",
+	"structure": [
+		{
+			"url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+			"mode": "source"
+		},
+		{
+			"url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+			"mode": "target"
+		}
+	],
+	"group": [
+		{
+			"name": "SickChild",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_bundle_type",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"context": "bundle",
+							"contextType": "variable",
+							"element": "type",
+							"transform": "copy",
+							"parameter": [
+								{
+									"valueString": "collection"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "r_bundle_entries",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"variable": "refPatient",
+							"transform": "evaluate",
+							"parameter": [
+								{
+									"valueId": "src"
+								},
+								{
+									"valueString": "$this.subject"
+								}
+							]
+						}
+					],
+					"dependent": [
+						{
+							"name": "ExtractObservation",
+							"variable": [
+								"src",
+								"bundle",
+								"refPatient"
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ExtractObservation",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				},
+				{
+					"name": "refPatient",
+					"type": "Reference",
+					"mode": "source"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_mnp",
+					"source": [
+						{
+							"context": "src",
+							"element": "item",
+							"variable": "mnp",
+							"condition": "((linkId = 'f0cd689d-b567-4cd6-8159-3ef49e9a0058') and answer.value.exists() and (answer.value.code = 'yes'))"
+						}
+					],
+					"rule": [
+						{
+							"name": "r_obs",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"variable": "qtyValue",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "1"
+										}
+									]
+								},
+								{
+									"variable": "qtyUnit",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "'Pieces'"
+										}
+									]
+								},
+								{
+									"variable": "refSubject",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'"
+										}
+									]
+								}
+							],
+							"dependent": [
+								{
+									"name": "ExtractSpecificObservation",
+									"variable": [
+										"src",
+										"bundle",
+										"refPatient",
+										"refSubject",
+										"qtyValue",
+										"qtyUnit"
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ExtractSpecificObservation",
+			"typeMode": "none",
+			"input": [
+				{
+					"name": "src",
+					"type": "QuestionnaireResponse",
+					"mode": "source"
+				},
+				{
+					"name": "bundle",
+					"type": "Bundle",
+					"mode": "target"
+				},
+				{
+					"name": "refPatient",
+					"type": "Reference",
+					"mode": "source"
+				},
+				{
+					"name": "refSubject",
+					"type": "String",
+					"mode": "source"
+				},
+				{
+					"name": "qtyValue",
+					"type": "Integer",
+					"mode": "source"
+				},
+				{
+					"name": "qtyUnit",
+					"type": "String",
+					"mode": "source"
+				}
+			],
+			"rule": [
+				{
+					"name": "r_obs",
+					"source": [
+						{
+							"context": "src"
+						}
+					],
+					"target": [
+						{
+							"context": "bundle",
+							"contextType": "variable",
+							"element": "entry",
+							"variable": "entry"
+						},
+						{
+							"context": "entry",
+							"contextType": "variable",
+							"element": "resource",
+							"variable": "obs",
+							"transform": "create",
+							"parameter": [
+								{
+									"valueString": "Observation"
+								}
+							]
+						}
+					],
+					"rule": [
+						{
+							"name": "r_obs_id",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "id",
+									"transform": "uuid"
+								}
+							]
+						},
+						{
+							"name": "r_obs_status",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "status",
+									"transform": "copy",
+									"parameter": [
+										{
+											"valueString": "final"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_category_1",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "category",
+									"transform": "cc",
+									"parameter": [
+										{
+											"valueString": "http://snomed.info/sct"
+										},
+										{
+											"valueString": "386452003"
+										},
+										{
+											"valueString": "Supply management"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_category_2",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "category",
+									"transform": "cc",
+									"parameter": [
+										{
+											"valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+										},
+										{
+											"valueString": "subtraction"
+										},
+										{
+											"valueString": "Subtraction"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_code",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "code",
+									"variable": "code",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "CodeableConcept"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs_c_text",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "code",
+											"contextType": "variable",
+											"element": "text",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "consumption"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_ref",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "subject",
+									"variable": "ref",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "Reference"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_ref_subject",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "ref",
+											"contextType": "variable",
+											"element": "reference",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "refSubject"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_effective_current_date_time",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "effective",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "now()"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_performer",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "performer",
+									"transform": "evaluate",
+									"parameter": [
+										{
+											"valueId": "src"
+										},
+										{
+											"valueString": "$this.generalPractitioner.first()"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "r_obs_value",
+							"source": [
+								{
+									"context": "src"
+								}
+							],
+							"target": [
+								{
+									"context": "obs",
+									"contextType": "variable",
+									"element": "value",
+									"variable": "qty",
+									"transform": "create",
+									"parameter": [
+										{
+											"valueString": "Quantity"
+										}
+									]
+								}
+							],
+							"rule": [
+								{
+									"name": "r_obs_qty",
+									"source": [
+										{
+											"context": "src"
+										}
+									],
+									"target": [
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "value",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "qtyValue"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "unit",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueId": "qtyUnit"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "system",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "http://snomed.info/sct"
+												}
+											]
+										},
+										{
+											"context": "qty",
+											"contextType": "variable",
+											"element": "code",
+											"transform": "copy",
+											"parameter": [
+												{
+													"valueString": "767525000"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
