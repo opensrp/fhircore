@@ -1037,6 +1037,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testSavePartialQuestionnaireResponseCallsSaveResponse() {
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireViewModel.savePartialQuestionnaireResponse(Questionnaire(), questionnaireResponse)
+    Assert.assertEquals(
+      QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
+      questionnaireResponse.status
+    )
+    coVerify { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) }
+  }
+
+  @Test
   fun testAddPractitionerInfoShouldSetGeneralPractitionerReferenceToPatientResource() {
     val patient = samplePatient()
 
