@@ -106,7 +106,7 @@ group extractObservationComponent(source questionnaireResponse : QuestionnaireRe
     } "rule_current_stock_balance_observation_component";
 
     // Adding the Donation quantity component.
-    questionnaireResponse where(linkId = 'be137683-fda1-4fe3-86e7-39bbd3c87299' and answer.count() > 0) -> observation.component = create ('Observation_Component') as observationComponent then {
+    questionnaireResponse -> observation.component = create ('Observation_Component') as observationComponent then {
         questionnaireResponse -> observationComponent.code = cc('http://snomed.info/sct','donation', 'Donation') "rule_observation_donation_code";
         questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = 'be137683-fda1-4fe3-86e7-39bbd3c87299').answer.value) as donationQuantity then {
             questionnaireResponse -> observationComponent.value = create('Quantity') as quantity then {
@@ -116,7 +116,7 @@ group extractObservationComponent(source questionnaireResponse : QuestionnaireRe
     } "rule_donation_observation_component";
 
     // Adding the Over Reporting quantity component.
-    questionnaireResponse where(linkId = '66e1ca2e-a46a-42e2-c397-a12c30b8525e' and answer.count() > 0) -> observation.component = create ('Observation_Component') as observationComponent then {
+    questionnaireResponse -> observation.component = create ('Observation_Component') as observationComponent then {
         questionnaireResponse -> observationComponent.code = cc('http://snomed.info/sct','over_reporting', 'Over Reporting') "rule_observation_over_reporting_code";
         questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '66e1ca2e-a46a-42e2-c397-a12c30b8525e').answer.value) as overReportingQuantity then {
             questionnaireResponse -> observationComponent.value = create('Quantity') as quantity then {
@@ -126,7 +126,7 @@ group extractObservationComponent(source questionnaireResponse : QuestionnaireRe
     } "rule_over_reporting_observation_component";
 
     // Adding the Under Reporting quantity component.
-    questionnaireResponse where(linkId = '605f0de5-3d7e-4e3d-977b-b05932602d9e' and answer.count() > 0) -> observation.component = create ('Observation_Component') as observationComponent then {
+    questionnaireResponse -> observation.component = create ('Observation_Component') as observationComponent then {
         questionnaireResponse -> observationComponent.code = cc('http://snomed.info/sct','under_reporting', 'Under Reporting') "rule_observation_under_reporting_code";
         questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '605f0de5-3d7e-4e3d-977b-b05932602d9e').answer.value) as underReportingQuantity then {
             questionnaireResponse -> observationComponent.value = create('Quantity') as quantity then {

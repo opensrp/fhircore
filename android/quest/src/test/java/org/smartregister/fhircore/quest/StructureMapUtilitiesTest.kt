@@ -428,9 +428,9 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     // for some weird reason, the `entry` has 3 resources instead of 2. The 1st resource is blank.
     Assert.assertTrue(targetResource.entry.size == 3)
-    Assert.assertTrue(targetResource.entry[1].resource is Observation)
+    Assert.assertTrue(targetResource.entry[2].resource is Observation)
 
-    val observation = targetResource.entry[1].resource as Observation
+    val observation = targetResource.entry[2].resource as Observation
     Assert.assertTrue(observation.component.size == 6)
   }
 }
