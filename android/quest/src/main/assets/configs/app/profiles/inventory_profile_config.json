@@ -20,6 +20,34 @@
       "actions": [
         "data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
       ]
+    },
+    {
+      "name": "commodityId",
+      "condition": "true",
+      "actions": [
+        "data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    },
+    {
+      "name": "quantity",
+      "condition": "true",
+      "actions": [
+        "data.put('quantity', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value'))"
+      ]
+    },
+    {
+      "name": "lastUpdated",
+      "condition": "true",
+      "actions": [
+        "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
+      ]
+    },
+    {
+      "name": "unitsOfMeasure",
+      "condition": "true",
+      "actions": [
+        "data.put('unitsOfMeasure', fhirPath.extractValue(Group, 'Group.characteristic[0].value.text'))"
+      ]
     }
   ],
   "views": [
@@ -51,7 +79,7 @@
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
-                            "primaryText": "82",
+                            "primaryText": "@{quantity}",
                             "primaryTextColor": "#000000"
                           },
                           "displayValue": {
@@ -73,7 +101,7 @@
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
-                            "primaryText": "Tabs",
+                            "primaryText": "@{unitsOfMeasure}",
                             "primaryTextColor": "#000000"
                           },
                           "displayValue": {
@@ -108,8 +136,8 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "cfdba05b-fb46-4673-a1bd-e300ab1afe94",
-            "title": "Stock Level Adjustment",
+            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+            "title": "@{commodityName",
             "saveButtonText": "ADJUST STOCK LEVELS",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
