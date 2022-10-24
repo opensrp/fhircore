@@ -50,8 +50,10 @@
     <string name="error_loading_form">Erreur de chargement du formulaire</string>
     <string name="error_saving_form">Erreur rencontrée impossible d’enregistrer le formulaire</string>
     <string name="questionnaire_alert_back_pressed_message">Êtes-vous sûr de vouloir retourner. Les modifications apportées au formulaire seraient perdues</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">Voulez-vous vraiment supprimer les réponses ?</string>
     <string name="questionnaire_alert_back_pressed_title">Abandonner les modifications</string>
     <string name="questionnaire_alert_back_pressed_button_title">Abandonner</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer le brouillon partiel</string>
     <string name="questionnaire_alert_submit_message">Confirmez que vous avez terminé de remplir les détails du client. Vous pouvez modifier les informations du client plus tard</string>
     <string name="questionnaire_alert_submit_title">Enregistrer les données du client</string>
     <string name="questionnaire_alert_neutral_button_title">Annuler</string>

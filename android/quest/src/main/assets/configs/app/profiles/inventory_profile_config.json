@@ -1,0 +1,150 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "inventoryProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group"
+    },
+    "relatedResources": [
+      {
+        "resource": "Observation",
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "commodityName",
+      "condition": "true",
+      "actions": [
+        "data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
+      ]
+    },
+    {
+      "name": "commodityId",
+      "condition": "true",
+      "actions": [
+        "data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    },
+    {
+      "name": "quantity",
+      "condition": "true",
+      "actions": [
+        "data.put('quantity', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value'))"
+      ]
+    },
+    {
+      "name": "lastUpdated",
+      "condition": "true",
+      "actions": [
+        "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
+      ]
+    },
+    {
+      "name": "unitsOfMeasure",
+      "condition": "true",
+      "actions": [
+        "data.put('unitsOfMeasure', fhirPath.extractValue(Group, 'Group.characteristic[0].value.text'))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{commodityName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "SPACER",
+                  "height": 10
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "PERSONAL_DATA",
+                      "personalDataItems": [
+                        {
+                          "label": {
+                            "viewType": "COMPOUND_TEXT",
+                            "primaryText": "@{quantity}",
+                            "primaryTextColor": "#000000"
+                          },
+                          "displayValue": {
+                            "viewType": "COMPOUND_TEXT",
+                            "primaryText": "Available",
+                            "fontSize": 14,
+                            "primaryTextColor": "#000000"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "viewType": "SPACER",
+                      "height": 10
+                    },
+                    {
+                      "viewType": "PERSONAL_DATA",
+                      "personalDataItems": [
+                        {
+                          "label": {
+                            "viewType": "COMPOUND_TEXT",
+                            "primaryText": "@{unitsOfMeasure}",
+                            "primaryTextColor": "#000000"
+                          },
+                          "displayValue": {
+                            "viewType": "COMPOUND_TEXT",
+                            "primaryText": "Units",
+                            "fontSize": 14,
+                            "primaryTextColor": "#000000"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
+        }
+      ]
+    }
+  ],
+  "fabActions": [
+    {
+      "id": "ActionButton",
+      "visible": true,
+      "display": "Adjust/Restock",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+            "title": "@{commodityName",
+            "saveButtonText": "ADJUST STOCK LEVELS",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
+            "resourceIdentifier": "@{taskFor}"
+          }
+        }
+      ]
+    }
+  ]
+}
