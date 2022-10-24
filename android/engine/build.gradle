@@ -146,6 +146,7 @@ dependencies {
 
     // Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:$hiltWorkVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     def lifecycleKtxVersion = '2.5.1'

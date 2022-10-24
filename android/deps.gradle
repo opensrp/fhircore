@@ -141,3 +141,4 @@ androidx.core_test = "androidx.arch.core:core-testing:$versions.androidx_test"
 deps.androidx = androidx
 
 ext.hiltVersion = "2.42"
+ext.hiltWorkVersion ="1.0.0"

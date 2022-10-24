@@ -110,7 +110,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
-    syncBroadcaster.runSync()
+    syncBroadcaster.run {
+      runSync()
+      schedulePeriodicSync()
+    }
 
     configService.scheduleFhirTaskPlanWorker(this)
   }
