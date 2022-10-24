@@ -28,4 +28,5 @@ sealed class AppMainEvent {
   data class SyncData(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
   object ResumeSync : AppMainEvent()
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+  data class RefreshAuthToken(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
 }
