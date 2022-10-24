@@ -81,8 +81,8 @@ constructor(
 
   var selectedLanguage =
     MutableLiveData(
-      sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
+      sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())
+        ?: Locale.UK.toLanguageTag()
     )
 
   val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> = MutableLiveData()
