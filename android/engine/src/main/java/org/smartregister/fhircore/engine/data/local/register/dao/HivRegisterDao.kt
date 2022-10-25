@@ -192,7 +192,7 @@ constructor(
       address = person.addressFirstRep.canonical(),
       phoneContacts = if (person.hasTelecom()) person.telecom.map { it.value } else emptyList(),
       chwAssigned = Reference(), // Empty
-      showIdentifierInProfile = true,
+      showIdentifierInProfile = false,
       healthStatus = HealthStatus.NOT_ON_ART,
     )
 

@@ -27,6 +27,7 @@
     <string name="sync_authentication_error">Authentication error</string>
     <string name="sync_check_internet">Check internet connection or try again later.</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
+    <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>

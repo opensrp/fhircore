@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.MutableState
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -100,12 +102,24 @@ constructor(
             appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
             run(resumeSync)
           },
-          onValidTokenMissing = {
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            it.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-            event.launchManualAuth(it)
-          }
+          onValidTokenMissing = { onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth)) }
         )
+      }
+      is AppMainEvent.RefreshAuthToken -> {
+        Timber.e("Refreshing token")
+        accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
+          val bundle = accountBundleFuture.result
+          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
+            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+              syncBroadcaster.runSync()
+              return@let
+            }
+            intent!!
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            event.launchManualAuth(intent)
+          }
+        }
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)
@@ -167,6 +181,10 @@ constructor(
       formatLastSyncTimestamp(timestamp),
       async = true
     )
+  }
+
+  fun onTimeOut() {
+    accountAuthenticator.invalidateAccount()
   }
 
   companion object {
