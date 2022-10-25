@@ -17,13 +17,14 @@
 package org.smartregister.fhircore.engine.ui
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
@@ -135,5 +136,4 @@ class RegisterViewModelTest : RobolectricTest() {
   fun testSelectedLanguage() {
     Assert.assertEquals("en-GB", viewModel.selectedLanguage.value)
   }
-
 }
