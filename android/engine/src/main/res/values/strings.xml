@@ -133,4 +133,5 @@
     <string name="service_card">SERVICE CARD</string>
     <string name="auth_token_expired">Session expired</string>
     <string name="identifier_unassigned">Unassigned</string>
+    <string name="press_back_again">Please click BACK again to exit</string>
 </resources>

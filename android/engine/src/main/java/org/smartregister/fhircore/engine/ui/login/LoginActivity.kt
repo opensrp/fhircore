@@ -21,7 +21,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.Lazy
@@ -39,6 +43,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.extension.showToast
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -51,6 +56,7 @@ class LoginActivity :
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   private val loginViewModel by viewModels<LoginViewModel>()
+  private var backPressed = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -133,5 +139,20 @@ class LoginActivity :
 
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+  }
+
+  override fun onBackPressed() {
+    if (backPressed) {
+      finishAffinity();
+      val a = Intent(Intent.ACTION_MAIN)
+      a.addCategory(Intent.CATEGORY_HOME)
+      a.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+      startActivity(a)
+    }
+
+    backPressed = true;
+    Toast.makeText(this, getString(R.string.press_back_again), Toast.LENGTH_SHORT).show()
+
+    Handler(Looper.getMainLooper()).postDelayed({ backPressed = false }, 2000)
   }
 }
