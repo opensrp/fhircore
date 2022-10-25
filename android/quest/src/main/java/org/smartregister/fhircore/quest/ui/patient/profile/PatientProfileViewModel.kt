@@ -103,6 +103,8 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration
     get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
+  private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
+
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
@@ -192,30 +194,12 @@ constructor(
               questionnaireType = QuestionnaireType.EDIT
             )
           R.id.guardian_visit -> {
-            val updatedMenuItems =
-              patientProfileUiState.value.overflowMenuItems.map {
-                when (it.id) {
-                  R.id.guardian_visit -> it.apply { hidden = true }
-                  R.id.client_visit -> it.apply { hidden = false }
-                  else -> it
-                }
-              }
-            patientProfileUiState.value =
-              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-            filterGuardianVisitTasks()
+            isClientVisit.value = false
+            handleVisitType(false)
           }
           R.id.client_visit -> {
-            val updatedMenuItems =
-              patientProfileUiState.value.overflowMenuItems.map {
-                when (it.id) {
-                  R.id.guardian_visit -> it.apply { hidden = false }
-                  R.id.client_visit -> it.apply { hidden = true }
-                  else -> it
-                }
-              }
-            patientProfileUiState.value =
-              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-            undoGuardianVisitTasksFilter()
+            isClientVisit.value = true
+            handleVisitType(true)
           }
           R.id.view_guardians -> {
             val commonParams =
@@ -326,6 +310,34 @@ constructor(
     }
   }
 
+  fun handleVisitType(isClientVisit: Boolean) {
+    if (isClientVisit) {
+      val updatedMenuItems =
+        patientProfileUiState.value.overflowMenuItems.map {
+          when (it.id) {
+            R.id.guardian_visit -> it.apply { hidden = false }
+            R.id.client_visit -> it.apply { hidden = true }
+            else -> it
+          }
+        }
+      patientProfileUiState.value =
+        patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+      undoGuardianVisitTasksFilter()
+    } else {
+      val updatedMenuItems =
+        patientProfileUiState.value.overflowMenuItems.map {
+          when (it.id) {
+            R.id.guardian_visit -> it.apply { hidden = true }
+            R.id.client_visit -> it.apply { hidden = false }
+            else -> it
+          }
+        }
+      patientProfileUiState.value =
+        patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+      filterGuardianVisitTasks()
+    }
+  }
+
   fun fetchPatientProfileDataWithChildren() {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
@@ -337,6 +349,7 @@ constructor(
                 ProfileViewData.PatientProfileViewData
             refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
             paginateChildrenRegisterData(true)
+            handleVisitType(isClientVisit.value)
           }
       }
     }
