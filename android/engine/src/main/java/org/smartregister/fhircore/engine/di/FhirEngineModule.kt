@@ -24,6 +24,7 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.NetworkConfiguration
 import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.sync.Authenticator
+import com.google.android.fhir.sync.remote.HttpLogger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +34,10 @@ import javax.inject.Singleton
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
+import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
+import org.smartregister.fhircore.engine.di.NetworkModule.Companion.TIMEOUT_DURATION
+import timber.log.Timber
 
 /**
  * Provide [FhirEngine] dependency in isolation so we can replace it with a fake dependency in test
@@ -58,11 +63,23 @@ class FhirEngineModule {
             object : Authenticator {
               override fun getAccessToken() = tokenManagerService.getBlockingActiveAuthToken() ?: ""
             },
-          networkConfiguration = NetworkConfiguration(120, 120, 120)
+          networkConfiguration =
+            NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION),
+          httpLogger =
+            HttpLogger(
+              HttpLogger.Configuration(
+                level = HttpLogger.Level.BASIC,
+                headersToIgnore = listOf(AUTHORIZATION, COOKIE)
+              )
+            ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }
         )
       )
     )
 
     return FhirEngineProvider.getInstance(context)
+  }
+
+  companion object {
+    private const val QUEST_OKHTTP_CLIENT_TAG = "QuestOkHttpClient"
   }
 }
