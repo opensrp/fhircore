@@ -140,7 +140,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onSync(state: State) {
     if (state is State.Finished || state is State.Failed) {
       with(registerFragmentArgs) {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.run {
+          // Clear pages cache to load new data
+          pagesDataCache.clear()
+          retrieveRegisterUiState(registerId, screenTitle)
+        }
       }
     }
   }
