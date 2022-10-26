@@ -172,24 +172,26 @@ dependencies {
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview-SNAPSHOT"){
+    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT"){
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.google.android.fhir', module: 'engine'
     }
-    api('org.smartregister:data-capture:0.1.0-beta05-preview-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta05-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:common:0.1.0-alpha03-preview3-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
