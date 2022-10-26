@@ -65,16 +65,34 @@ private fun PersonalDataItem(
 @Composable
 @Preview(showBackground = true)
 fun PersonalDataViewPreview() {
-  val genderLabel = CompoundTextProperties(primaryText = "Sex")
-  val genderValue = CompoundTextProperties(primaryText = "Female")
+  val genderLabel =
+    CompoundTextProperties(
+      primaryText = "Sex",
+    )
+  val genderValue =
+    CompoundTextProperties(
+      primaryText = "Female",
+    )
   val genderDataItem = PersonalDataItem(label = genderLabel, displayValue = genderValue)
 
-  val dobLabel = CompoundTextProperties(primaryText = "DOB")
-  val dobValue = CompoundTextProperties(primaryText = "01 2000")
+  val dobLabel =
+    CompoundTextProperties(
+      primaryText = "DOB",
+    )
+  val dobValue =
+    CompoundTextProperties(
+      primaryText = "01 2000",
+    )
   val dobDataItem = PersonalDataItem(label = dobLabel, displayValue = dobValue)
 
-  val ageTitle = CompoundTextProperties(primaryText = "Age")
-  val ageValue = CompoundTextProperties(primaryText = "22y")
+  val ageTitle =
+    CompoundTextProperties(
+      primaryText = "Age",
+    )
+  val ageValue =
+    CompoundTextProperties(
+      primaryText = "22y",
+    )
   val ageDataItem = PersonalDataItem(label = ageTitle, displayValue = ageValue)
 
   val personaDataItems = listOf(genderDataItem, dobDataItem, ageDataItem)
