@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
-class PatientRegisterRepository
+class AppRegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
@@ -54,7 +54,7 @@ constructor(
         ?: emptyList()
     }
 
-  suspend fun searchByName(
+  override suspend fun searchByName(
     nameQuery: String,
     currentPage: Int,
     appFeatureName: String?,

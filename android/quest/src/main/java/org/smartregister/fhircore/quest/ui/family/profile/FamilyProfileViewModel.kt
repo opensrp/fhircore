@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -57,7 +57,7 @@ constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: AppRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
@@ -144,7 +144,7 @@ constructor(
   fun fetchFamilyProfileData() {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!familyId.isNullOrEmpty()) {
-        patientRegisterRepository.loadPatientProfileData(
+        registerRepository.loadPatientProfileData(
             AppFeature.HouseholdManagement.name,
             HealthModule.FAMILY,
             familyId
@@ -168,7 +168,7 @@ constructor(
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
     withContext(dispatcherProvider.io()) {
-      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
+      registerRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
         newFamilyHead = newFamilyHead,
         oldFamilyHead = oldFamilyHead
       )

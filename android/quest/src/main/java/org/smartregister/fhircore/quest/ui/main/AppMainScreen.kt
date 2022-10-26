@@ -36,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRo
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
+import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterScreen
 
 @Composable
 fun MainScreen(
@@ -151,11 +153,25 @@ private fun AppMainNavigationGraph(
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
-            PatientRegisterScreen(
-              navController = navController,
-              openDrawer = openDrawer,
-              screenTitle = screenTitle
-            )
+
+            val healthModule: HealthModule =
+              stackEntry.arguments?.getString(NavigationArg.HEALTH_MODULE) as HealthModule?
+                ?: HealthModule.HIV
+            if (healthModule == HealthModule.HOME_TRACING ||
+                healthModule == HealthModule.PHONE_TRACING
+            ) {
+              TracingRegisterScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                screenTitle = screenTitle
+              )
+            } else {
+              PatientRegisterScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                screenTitle = screenTitle
+              )
+            }
           }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
         MainNavigationScreen.Reports ->
