@@ -25,8 +25,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Config(sdk = [Build.VERSION_CODES.M])
-class AndroidExtensionApi23Test : RobolectricTest() {
+@Config(sdk = [Build.VERSION_CODES.N])
+class AndroidExtensionApi2Test : RobolectricTest() {
 
   @Test
   fun `Context#setLocale() should change the default locale`() {
