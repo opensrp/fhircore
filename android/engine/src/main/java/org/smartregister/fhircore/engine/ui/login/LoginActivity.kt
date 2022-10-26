@@ -29,6 +29,7 @@ import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.system.exitProcess
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -141,15 +142,11 @@ class LoginActivity :
   override fun onBackPressed() {
     if (backPressed) {
       finishAffinity()
-      val a = Intent(Intent.ACTION_MAIN)
-      a.addCategory(Intent.CATEGORY_HOME)
-      a.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-      startActivity(a)
+      exitProcess(0)
+    } else {
+      backPressed = true
+      Toast.makeText(this, getString(R.string.press_back_again), Toast.LENGTH_SHORT).show()
+      Handler(Looper.getMainLooper()).postDelayed({ backPressed = false }, 3000)
     }
-
-    backPressed = true
-    Toast.makeText(this, getString(R.string.press_back_again), Toast.LENGTH_SHORT).show()
-
-    Handler(Looper.getMainLooper()).postDelayed({ backPressed = false }, 2000)
   }
 }
