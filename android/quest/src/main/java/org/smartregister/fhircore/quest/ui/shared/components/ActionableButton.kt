@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
@@ -84,7 +85,7 @@ fun ActionableButton(
         ),
       modifier =
         modifier
-          .fillMaxWidth()
+          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() })
           .padding(top = 0.dp, start = 12.dp, end = 12.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG)
@@ -92,9 +93,8 @@ fun ActionableButton(
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
-        modifier = modifier.wrapContentHeight().fillMaxWidth()
+        modifier = modifier.wrapContentHeight()
       ) {
-        Spacer(modifier = modifier.weight(0.5f).wrapContentHeight())
         Icon(
           modifier = modifier.size(16.dp),
           imageVector =
@@ -115,7 +115,6 @@ fun ActionableButton(
             if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
             else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
         )
-        Spacer(modifier = modifier.weight(0.5f))
         if (status == ServiceStatus.COMPLETED) {
           Icon(
             imageVector = Icons.Filled.ArrowDropDown,
@@ -161,7 +160,8 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
 fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
-      buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
+      buttonProperties =
+        ButtonProperties(status = "OVERDUE", text = "Button Text", fillMaxWidth = true),
       resourceData = ResourceData(Patient()),
       navController = rememberNavController()
     )
@@ -171,9 +171,18 @@ fun ActionableButtonPreview() {
 @Composable
 @Preview(showBackground = true)
 fun SmallActionableButtonPreview() {
-  Column(modifier = Modifier.height(50.dp)) {
+  Row(
+    modifier = Modifier.height(50.dp).fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
     ActionableButton(
-      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task"),
+      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = false),
+      resourceData = ResourceData(Patient()),
+      navController = rememberNavController()
+    )
+    ActionableButton(
+      buttonProperties =
+        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = false),
       resourceData = ResourceData(Patient()),
       navController = rememberNavController()
     )
