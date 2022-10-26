@@ -41,6 +41,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyInt
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
@@ -252,12 +253,16 @@ class LoginActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(loginActivity.getApplicationConfiguration())
   }
 
-  @Test
+  @Test(expected = RuntimeException::class)
   fun testOnBackPressesTwoTimes() {
+    val runTime = spyk(Runtime.getRuntime())
+    ReflectionHelpers.setStaticField(Runtime::class.java, "currentRuntime", runTime)
+    every { runTime.exit(anyInt()) } returns Unit
     loginActivity.onBackPressed()
     assertTrue(ReflectionHelpers.getField(loginActivity, "backPressed"))
     loginActivity.onBackPressed()
     verify { loginActivity.finishAffinity() }
+    verify { runTime.exit(0) }
   }
 
   override fun getActivity(): Activity {
