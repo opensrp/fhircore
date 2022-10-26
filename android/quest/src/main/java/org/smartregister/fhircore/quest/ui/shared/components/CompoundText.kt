@@ -21,17 +21,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 
@@ -41,48 +42,65 @@ fun CompoundText(
   compoundTextProperties: CompoundTextProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  FlowRow(
+  Text(
+    text =
+      buildAnnotatedString {
+        // Primary text
+        withStyle(
+          style =
+            SpanStyle(
+              background =
+                compoundTextProperties
+                  .primaryTextBackgroundColor
+                  ?.interpolate(computedValuesMap)
+                  .parseColor(),
+              color =
+                compoundTextProperties.primaryTextColor?.interpolate(computedValuesMap).parseColor()
+            )
+        ) { append(compoundTextProperties.primaryText?.interpolate(computedValuesMap) ?: "") }
+
+        if (!compoundTextProperties.secondaryText?.interpolate(computedValuesMap).isNullOrEmpty()) {
+          // Separator
+          withStyle(
+            style =
+              SpanStyle(
+                color =
+                  compoundTextProperties
+                    .primaryTextColor
+                    ?.interpolate(computedValuesMap)
+                    .parseColor(),
+                letterSpacing = 16.sp
+              )
+          ) { append(compoundTextProperties.separator ?: "-") }
+        }
+
+        // Secondary text
+        withStyle(
+          style =
+            SpanStyle(
+              background =
+                compoundTextProperties
+                  .secondaryTextBackgroundColor
+                  ?.interpolate(computedValuesMap)
+                  .parseColor(),
+              color =
+                compoundTextProperties
+                  .secondaryTextColor
+                  ?.interpolate(computedValuesMap)
+                  .parseColor()
+            )
+        ) { append(compoundTextProperties.secondaryText?.interpolate(computedValuesMap) ?: "") }
+      },
+    fontSize = compoundTextProperties.fontSize.sp,
     modifier =
       modifier
+        .wrapContentWidth()
         .background(
           compoundTextProperties.backgroundColor?.interpolate(computedValuesMap).parseColor()
         )
-        .padding(
-          horizontal = compoundTextProperties.padding.dp,
-          vertical = compoundTextProperties.padding.div(2).dp
-        ),
-  ) {
-    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
-      Text(
-        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap).trim(),
-        color = compoundTextProperties.primaryTextColor.parseColor(),
-        modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .background(
-              compoundTextProperties.primaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
-            )
-            .padding(2.dp),
-        fontSize = compoundTextProperties.fontSize.sp,
-      )
-    }
-    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
-      // Separate the primary and secondary text
-      Separator(separator = compoundTextProperties.separator ?: "-")
-      Text(
-        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap).trim(),
-        color = compoundTextProperties.secondaryTextColor.parseColor(),
-        modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .background(
-              compoundTextProperties.secondaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
-            )
-            .padding(2.dp),
-        fontSize = compoundTextProperties.fontSize.sp,
-      )
-    }
-  }
+        .clip(RoundedCornerShape(compoundTextProperties.borderRadius.dp))
+        .padding(compoundTextProperties.padding.dp)
+  )
 }
 
 @Preview(showBackground = true)
@@ -91,10 +109,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
   Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
-        CompoundTextProperties(
-          primaryText = "Full Name, Age",
-          primaryTextColor = "#000000",
-        ),
+        CompoundTextProperties(primaryText = "Full Name, Age", primaryTextColor = "#000000"),
       computedValuesMap = emptyMap()
     )
     CompoundText(
@@ -114,10 +129,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
   Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
-        CompoundTextProperties(
-          primaryText = "Full Name, Sex, Age",
-          primaryTextColor = "#000000",
-        ),
+        CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
       computedValuesMap = emptyMap()
     )
     CompoundText(
@@ -126,8 +138,8 @@ private fun CompoundTextWithSecondaryTextPreview() {
           primaryText = "Last visited",
           primaryTextColor = "#5A5A5A",
           secondaryText = "G6PD status",
-          separator = "-",
           secondaryTextColor = "#FFFFFF",
+          separator = "-",
           secondaryTextBackgroundColor = "#FFA500"
         ),
       computedValuesMap = emptyMap()
