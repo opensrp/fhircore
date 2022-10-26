@@ -55,9 +55,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
@@ -279,7 +279,7 @@ private fun BigServiceButton(
 private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -333,7 +333,7 @@ private fun ServiceCardServiceOverduePreview() {
 private fun ServiceCardServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -387,7 +387,7 @@ private fun ServiceCardServiceDuePreview() {
 private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -441,7 +441,7 @@ private fun ServiceCardServiceUpcomingPreview() {
 private fun ServiceCardServiceFamilyMemberPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -476,7 +476,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
 private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -529,7 +529,7 @@ private fun ServiceCardServiceCompletedPreview() {
 private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -578,7 +578,7 @@ private fun ServiceCardANCServiceDuePreview() {
 private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(

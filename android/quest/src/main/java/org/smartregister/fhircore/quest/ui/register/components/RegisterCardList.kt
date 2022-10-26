@@ -53,8 +53,8 @@ fun RegisterCardList(
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         ViewRenderer(
-          resourceData = it!!,
           viewProperties = registerCardConfig.views,
+          resourceData = it!!,
           navController = navController,
         )
       }
