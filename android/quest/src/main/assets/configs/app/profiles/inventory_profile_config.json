@@ -52,28 +52,31 @@
   ],
   "views": [
     {
-      "viewType": "COLUMN",
-      "children": [
+      "viewType": "CARD",
+      "padding": 0,
+      "content": [
         {
-          "viewType": "CARD",
-          "padding": 0,
-          "content": [
+          "viewType": "COLUMN",
+          "children": [
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "@{commodityName}",
+              "primaryTextColor": "#000000"
+            },
+            {
+              "viewType": "SPACER",
+              "height": 10
+            },
             {
               "viewType": "COLUMN",
               "children": [
                 {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "@{commodityName}",
-                  "primaryTextColor": "#000000"
-                },
-                {
-                  "viewType": "SPACER",
-                  "height": 10
-                },
-                {
                   "viewType": "ROW",
+                  "fillMaxWidth": true,
+                  "horizontalArrangement": "SPACE_BETWEEN",
                   "children": [
                     {
+                      "weight": 0.5,
                       "viewType": "PERSONAL_DATA",
                       "personalDataItems": [
                         {
@@ -92,10 +95,7 @@
                       ]
                     },
                     {
-                      "viewType": "SPACER",
-                      "height": 10
-                    },
-                    {
+                      "weight": 0.5,
                       "viewType": "PERSONAL_DATA",
                       "personalDataItems": [
                         {
@@ -118,10 +118,6 @@
               ]
             }
           ]
-        },
-        {
-          "viewType": "SPACER",
-          "height": 16
         }
       ]
     }
@@ -131,13 +127,17 @@
       "id": "ActionButton",
       "visible": true,
       "display": "Adjust/Restock",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_add"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-            "title": "@{commodityName",
+            "title": "@{commodityName}",
             "saveButtonText": "ADJUST STOCK LEVELS",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,

@@ -17,17 +17,28 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.HorizontalViewArrangement
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
@@ -38,7 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
+import org.smartregister.fhircore.quest.util.extensions.conditional
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -56,20 +67,14 @@ fun ViewRenderer(
   resourceData: ResourceData,
   navController: NavController
 ) {
+  if (viewProperties.isEmpty()) return
   viewProperties.forEach { properties ->
-    // Render views recursively
     if (properties is ViewGroupProperties) {
-      if (properties.children.isEmpty()) return
-      when (properties.viewType) {
-        ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(
-            modifier = modifier,
-            viewProperties = properties,
-            resourceData = resourceData,
-            navController = navController
-          )
-        else -> return
-      }
+      RenderViewGroup(
+        viewProperties = properties,
+        resourceData = resourceData,
+        navController = navController
+      )
     } else {
       RenderChildView(
         modifier = modifier,
@@ -83,68 +88,75 @@ fun ViewRenderer(
 
 @Composable
 private fun RenderViewGroup(
-  modifier: Modifier = Modifier,
   viewProperties: ViewGroupProperties,
   resourceData: ResourceData,
   navController: NavController
 ) {
+  val modifier =
+    Modifier.conditional(viewProperties.fillMaxSize, { fillMaxSize() })
+      .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
+      .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
+      .background(
+        viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
+      )
+      .clip(RoundedCornerShape(viewProperties.borderRadius.dp))
+      .padding(viewProperties.padding.dp)
 
-  viewProperties.children.forEach { childViewProperty ->
-    if (childViewProperty is ViewGroupProperties) {
-      if (childViewProperty.viewType == ViewType.COLUMN) {
-        FlowColumn(
-          modifier =
-            modifier
-              .background(
-                childViewProperty
-                  .backgroundColor
-                  ?.interpolate(resourceData.computedValuesMap)
-                  .parseColor()
-              )
-              .fillMaxWidth()
-              .padding(childViewProperty.padding.dp)
-        ) {
+  // NOTE: Do not use th same modifier in the nested ViewRender call. Use a new Modifier for every
+  // ViewRenderer so as not to use the same styling for the Column and Row components
+  when (viewProperties.viewType) {
+    ViewType.COLUMN -> {
+      if (viewProperties.wrapContent) {
+        FlowColumn(modifier = modifier) {
           ViewRenderer(
-            modifier = modifier,
-            viewProperties = childViewProperty.children,
+            viewProperties = viewProperties.children,
             resourceData = resourceData,
             navController = navController
           )
         }
-      } else if (childViewProperty.viewType == ViewType.ROW) {
-        FlowRow(
-          modifier =
-            modifier
-              .background(
-                childViewProperty
-                  .backgroundColor
-                  ?.interpolate(resourceData.computedValuesMap)
-                  .parseColor()
-              )
-              .fillMaxWidth()
-              .padding(childViewProperty.padding.dp)
+      } else {
+        Column(
+          modifier = modifier,
+          verticalArrangement = viewProperties.verticalArrangement?.position ?: Arrangement.Top
         ) {
           ViewRenderer(
-            modifier = modifier,
-            viewProperties = childViewProperty.children,
+            viewProperties = viewProperties.children,
             resourceData = resourceData,
             navController = navController
           )
         }
       }
     }
-    RenderChildView(
-      modifier = modifier,
-      viewProperties = childViewProperty,
-      resourceData = resourceData,
-      navController = navController
-    )
+    ViewType.ROW -> {
+      if (viewProperties.wrapContent) {
+        FlowRow(modifier = modifier) {
+          ViewRenderer(
+            viewProperties = viewProperties.children,
+            resourceData = resourceData,
+            navController = navController
+          )
+        }
+      } else {
+        Row(
+          modifier = modifier,
+          horizontalArrangement = viewProperties.horizontalArrangement?.position
+              ?: Arrangement.Start
+        ) {
+          ViewRenderer(
+            viewProperties = viewProperties.children,
+            resourceData = resourceData,
+            navController = navController
+          )
+        }
+      }
+    }
+    else -> return
   }
 }
 
 @Composable
 private fun RenderChildView(
-  modifier: Modifier = Modifier,
+  modifier: Modifier,
   viewProperties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
@@ -189,4 +201,92 @@ private fun RenderChildView(
         navController = navController,
       )
   }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RenderNestedButtonsPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        fillMaxWidth = true,
+        children =
+          listOf(
+            CompoundTextProperties(
+              primaryText = "Nelson Mandela",
+              primaryTextColor = "#000000",
+            ),
+            CompoundTextProperties(
+              primaryText = "ANC  ~ Presidential Candidate",
+              primaryTextColor = "#5A5A5A",
+            ),
+            ViewGroupProperties(
+              viewType = ViewType.ROW,
+              fillMaxWidth = true,
+              children =
+                listOf(
+                  ButtonProperties(status = "OVERDUE", text = "Revoke", fillMaxWidth = false),
+                  ButtonProperties(status = "COMPLETED", text = "Elected", fillMaxWidth = false)
+                ),
+              horizontalArrangement = HorizontalViewArrangement.SPACE_AROUND
+            )
+          )
+      )
+    )
+
+  ViewRenderer(
+    viewProperties = viewProperties,
+    resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
+    navController = rememberNavController()
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RenderNestedCompoundTextsPreview() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        ViewGroupProperties(
+          viewType = ViewType.ROW,
+          fillMaxWidth = true,
+          wrapContent = true,
+          children =
+            listOf(
+              CompoundTextProperties(
+                primaryText = "Janet Wix",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                primaryText = "Last visited",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "Yesterday",
+                secondaryTextColor = "#FFFFFF",
+                separator = "-",
+                secondaryTextBackgroundColor = "#BFA500",
+              ),
+              CompoundTextProperties(
+                primaryText = "LMP",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "02-01-2022",
+                secondaryTextColor = "#FFFFFF",
+                separator = "-",
+                secondaryTextBackgroundColor = "#CFA450",
+              ),
+              CompoundTextProperties(
+                primaryText = "EDD",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "03-09-2022",
+                secondaryTextColor = "#FFFFFF",
+                separator = "-",
+                secondaryTextBackgroundColor = "#DFA400",
+              )
+            ),
+          horizontalArrangement = HorizontalViewArrangement.SPACE_EVENLY
+        )
+      ),
+    resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
+    navController = rememberNavController()
+  )
 }

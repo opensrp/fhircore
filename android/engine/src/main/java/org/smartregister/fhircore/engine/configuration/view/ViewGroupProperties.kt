@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.foundation.layout.Arrangement
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
@@ -24,5 +25,30 @@ class ViewGroupProperties(
   override val viewType: ViewType,
   val backgroundColor: String? = null,
   val padding: Int = 0,
-  val children: List<ViewProperties> = emptyList()
+  val fillMaxWidth: Boolean = false,
+  val fillMaxHeight: Boolean = false,
+  val fillMaxSize: Boolean = false,
+  val verticalArrangement: VerticalViewArrangement? = null,
+  val horizontalArrangement: HorizontalViewArrangement? = null,
+  val children: List<ViewProperties> = emptyList(),
+  val wrapContent: Boolean = false,
+  val borderRadius: Int = 2
 ) : ViewProperties()
+
+enum class VerticalViewArrangement(val position: Arrangement.Vertical) {
+  SPACE_BETWEEN(Arrangement.SpaceBetween),
+  SPACE_AROUND(Arrangement.SpaceAround),
+  SPACE_EVENLY(Arrangement.SpaceEvenly),
+  CENTER(Arrangement.Center),
+  TOP(Arrangement.Top),
+  BOTTOM(Arrangement.Bottom)
+}
+
+enum class HorizontalViewArrangement(val position: Arrangement.Horizontal) {
+  SPACE_BETWEEN(Arrangement.SpaceBetween),
+  SPACE_AROUND(Arrangement.SpaceAround),
+  SPACE_EVENLY(Arrangement.SpaceEvenly),
+  CENTER(Arrangement.Center),
+  START(Arrangement.Start),
+  END(Arrangement.End),
+}
