@@ -133,7 +133,7 @@ abstract class BaseRegisterActivity :
 
     registerViewModel.run {
       selectedLanguage.observe(this@BaseRegisterActivity) {
-        updateLanguage(Language(it, Locale.forLanguageTag(it).displayName))
+        updateLanguage(Language(it!!, Locale.forLanguageTag(it).displayName))
       }
     }
 

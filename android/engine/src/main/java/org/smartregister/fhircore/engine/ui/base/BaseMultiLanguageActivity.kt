@@ -45,8 +45,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
     val lang =
       baseContext
         .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())
-        ?: Locale.UK.toLanguageTag()
+        .getString(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())!!
     baseContext.setAppLocale(lang).run {
       super.attachBaseContext(baseContext)
       applyOverrideConfiguration(this)
