@@ -84,6 +84,10 @@
       "id": "ActionButton",
       "visible": true,
       "display": "{{ add.member }}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_add"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -142,6 +146,7 @@
         {
           "viewType": "COLUMN",
           "backgroundColor": "primaryColor",
+          "fillMaxWidth": true,
           "padding": 8,
           "children": [
             {
