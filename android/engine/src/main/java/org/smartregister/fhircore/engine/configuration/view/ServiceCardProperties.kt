@@ -23,6 +23,11 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class ServiceCardProperties(
   override val viewType: ViewType = ViewType.SERVICE_CARD,
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = "#FFFFFF",
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
   val details: List<CompoundTextProperties> = emptyList(),
   val showVerticalDivider: Boolean = false,
   val serviceMemberIcons: String? = null,

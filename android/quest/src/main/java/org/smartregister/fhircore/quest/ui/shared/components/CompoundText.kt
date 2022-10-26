@@ -18,9 +18,9 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 
@@ -94,12 +96,18 @@ fun CompoundText(
     fontSize = compoundTextProperties.fontSize.sp,
     modifier =
       modifier
-        .wrapContentWidth()
+        .padding(compoundTextProperties.padding.dp)
         .background(
           compoundTextProperties.backgroundColor?.interpolate(computedValuesMap).parseColor()
         )
-        .clip(RoundedCornerShape(compoundTextProperties.borderRadius.dp))
-        .padding(compoundTextProperties.padding.dp)
+        .clip(RoundedCornerShape(compoundTextProperties.borderRadius.dp)),
+    textAlign =
+      when (compoundTextProperties.alignment) {
+        ViewAlignment.START -> TextAlign.Start
+        ViewAlignment.END -> TextAlign.End
+        ViewAlignment.CENTER -> TextAlign.Center
+        else -> TextAlign.Start
+      }
   )
 }
 
@@ -126,11 +134,11 @@ private fun CompoundTextNoSecondaryTextPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+  Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-      computedValuesMap = emptyMap()
+      computedValuesMap = emptyMap(),
     )
     CompoundText(
       compoundTextProperties =

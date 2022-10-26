@@ -27,4 +27,17 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable(with = ViewPropertiesSerializer::class)
 abstract class ViewProperties {
   abstract val viewType: ViewType
+  abstract val weight: Float
+  abstract val backgroundColor: String?
+  abstract val padding: Int
+  abstract val borderRadius: Int
+  abstract val alignment: ViewAlignment
+}
+
+enum class ViewAlignment {
+  START,
+  END,
+  CENTER,
+  FILL,
+  NONE
 }

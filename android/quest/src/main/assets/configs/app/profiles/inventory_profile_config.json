@@ -72,12 +72,10 @@
               "children": [
                 {
                   "viewType": "ROW",
-                  "fillMaxWidth": true,
-                  "horizontalArrangement": "SPACE_BETWEEN",
                   "children": [
                     {
-                      "weight": 0.5,
                       "viewType": "PERSONAL_DATA",
+                      "weight": 1.0,
                       "personalDataItems": [
                         {
                           "label": {
@@ -95,8 +93,8 @@
                       ]
                     },
                     {
-                      "weight": 0.5,
                       "viewType": "PERSONAL_DATA",
+                      "weight": 1.0,
                       "personalDataItems": [
                         {
                           "label": {

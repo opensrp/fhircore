@@ -47,7 +47,7 @@ fun List(
     modifier =
       modifier
         .background(
-          viewProperties.backgroundColor.interpolate(resourceData.computedValuesMap).parseColor()
+          viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
         )
         .padding(
           horizontal = viewProperties.padding.dp,

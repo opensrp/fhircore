@@ -23,6 +23,11 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = null,
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
   val visible: String = "true",
   val text: String? = null,
   val status: String,

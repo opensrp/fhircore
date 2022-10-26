@@ -21,30 +21,19 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-class ViewGroupProperties(
+data class RowProperties(
   override val viewType: ViewType,
-  val backgroundColor: String? = null,
-  val padding: Int = 0,
-  val fillMaxWidth: Boolean = false,
-  val fillMaxHeight: Boolean = false,
-  val fillMaxSize: Boolean = false,
-  val verticalArrangement: VerticalViewArrangement? = null,
-  val horizontalArrangement: HorizontalViewArrangement? = null,
-  val children: List<ViewProperties> = emptyList(),
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = null,
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
+  val arrangement: RowArrangement? = null,
   val wrapContent: Boolean = false,
-  val borderRadius: Int = 2
+  val children: List<ViewProperties> = emptyList(),
 ) : ViewProperties()
 
-enum class VerticalViewArrangement(val position: Arrangement.Vertical) {
-  SPACE_BETWEEN(Arrangement.SpaceBetween),
-  SPACE_AROUND(Arrangement.SpaceAround),
-  SPACE_EVENLY(Arrangement.SpaceEvenly),
-  CENTER(Arrangement.Center),
-  TOP(Arrangement.Top),
-  BOTTOM(Arrangement.Bottom)
-}
-
-enum class HorizontalViewArrangement(val position: Arrangement.Horizontal) {
+enum class RowArrangement(val position: Arrangement.Horizontal) {
   SPACE_BETWEEN(Arrangement.SpaceBetween),
   SPACE_AROUND(Arrangement.SpaceAround),
   SPACE_EVENLY(Arrangement.SpaceEvenly),

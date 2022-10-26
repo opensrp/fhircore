@@ -17,14 +17,9 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -40,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -86,17 +83,16 @@ fun ActionableButton(
       modifier =
         modifier
           .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() })
-          .padding(top = 0.dp, start = 12.dp, end = 12.dp)
+          .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG)
     ) {
       Row(
-        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.weight(1.0f),
         horizontalArrangement = Arrangement.Center,
-        modifier = modifier.wrapContentHeight()
+        verticalAlignment = Alignment.CenterVertically
       ) {
         Icon(
-          modifier = modifier.size(16.dp),
           imageVector =
             if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
           contentDescription = null,
@@ -105,21 +101,24 @@ fun ActionableButton(
               ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
               else ->
                 buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
-            }
+            },
         )
-        Spacer(modifier = modifier.width(6.dp))
         Text(
           text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
           fontWeight = FontWeight.Medium,
           color =
             if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
-            else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+            else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f),
+          textAlign = TextAlign.Center,
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 2,
+          modifier = modifier.padding(horizontal = 4.dp)
         )
         if (status == ServiceStatus.COMPLETED) {
           Icon(
             imageVector = Icons.Filled.ArrowDropDown,
             contentDescription = null,
-            tint = DefaultColor.copy(alpha = 0.9f)
+            tint = DefaultColor.copy(alpha = 0.9f),
           )
         }
       }
@@ -158,29 +157,26 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
 @Composable
 @Preview(showBackground = true)
 fun ActionableButtonPreview() {
-  Column(modifier = Modifier.height(50.dp)) {
-    ActionableButton(
-      buttonProperties =
-        ButtonProperties(status = "OVERDUE", text = "Button Text", fillMaxWidth = true),
-      resourceData = ResourceData(Patient()),
-      navController = rememberNavController()
-    )
-  }
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(status = "OVERDUE", text = "Button Text", fillMaxWidth = true),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 fun SmallActionableButtonPreview() {
-  Row(
-    modifier = Modifier.height(50.dp).fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween
-  ) {
+  Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
+      modifier = Modifier.weight(1.0f),
       buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = false),
       resourceData = ResourceData(Patient()),
       navController = rememberNavController()
     )
     ActionableButton(
+      modifier = Modifier.weight(1.0f),
       buttonProperties =
         ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = false),
       resourceData = ResourceData(Patient()),

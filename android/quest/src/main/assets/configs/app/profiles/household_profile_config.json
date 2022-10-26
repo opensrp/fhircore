@@ -146,7 +146,7 @@
         {
           "viewType": "COLUMN",
           "backgroundColor": "primaryColor",
-          "fillMaxWidth": true,
+          "alignment": "FILL",
           "padding": 8,
           "children": [
             {
