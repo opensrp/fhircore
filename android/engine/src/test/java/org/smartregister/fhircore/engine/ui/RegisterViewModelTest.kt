@@ -131,4 +131,9 @@ class RegisterViewModelTest : RobolectricTest() {
       Assert.assertTrue(patientExists.value!!.isSuccess)
     }
   }
+
+  @Test
+  fun testSelectedLanguage() {
+    Assert.assertEquals("en-GB", viewModel.selectedLanguage.value)
+  }
 }

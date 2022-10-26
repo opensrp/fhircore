@@ -151,10 +151,10 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") } returns "fr"
+    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en-GB") } returns "fr"
 
     Assert.assertEquals("French", userProfileViewModel.loadSelectedLanguage())
-    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") }
+    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en-GB") }
   }
 
   @Test

@@ -61,8 +61,7 @@ constructor(
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
-          ?: Locale.ENGLISH.toLanguageTag()
+        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())!!
       )
       .displayName
 
