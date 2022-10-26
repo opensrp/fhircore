@@ -29,4 +29,5 @@ data class ButtonProperties(
   val smallSized: Boolean = false,
   val fontSize: Float = 10.0f,
   val actions: List<ActionConfig> = emptyList(),
+  val fillMaxWidth: Boolean = true
 ) : ViewProperties()
