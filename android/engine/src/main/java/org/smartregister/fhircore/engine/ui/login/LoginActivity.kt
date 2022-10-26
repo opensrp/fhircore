@@ -21,12 +21,15 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.system.exitProcess
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -51,6 +54,7 @@ class LoginActivity :
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   private val loginViewModel by viewModels<LoginViewModel>()
+  private var backPressed = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -133,5 +137,16 @@ class LoginActivity :
 
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+  }
+
+  override fun onBackPressed() {
+    if (backPressed) {
+      finishAffinity()
+      exitProcess(0)
+    } else {
+      backPressed = true
+      Toast.makeText(this, getString(R.string.press_back_again), Toast.LENGTH_SHORT).show()
+      Handler(Looper.getMainLooper()).postDelayed({ backPressed = false }, 3000)
+    }
   }
 }

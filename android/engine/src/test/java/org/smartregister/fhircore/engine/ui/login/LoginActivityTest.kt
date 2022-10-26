@@ -35,13 +35,16 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyInt
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -248,6 +251,18 @@ class LoginActivityTest : ActivityRobolectricTest() {
       }
     }
     Assert.assertNotNull(loginActivity.getApplicationConfiguration())
+  }
+
+  @Test(expected = RuntimeException::class)
+  fun testOnBackPressesTwoTimes() {
+    val runTime = spyk(Runtime.getRuntime())
+    ReflectionHelpers.setStaticField(Runtime::class.java, "currentRuntime", runTime)
+    every { runTime.exit(anyInt()) } returns Unit
+    loginActivity.onBackPressed()
+    assertTrue(ReflectionHelpers.getField(loginActivity, "backPressed"))
+    loginActivity.onBackPressed()
+    verify { loginActivity.finishAffinity() }
+    verify { runTime.exit(0) }
   }
 
   override fun getActivity(): Activity {
