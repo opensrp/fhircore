@@ -54,6 +54,21 @@ constructor(
         ?: emptyList()
     }
 
+  suspend fun searchByName(
+    nameQuery: String,
+    currentPage: Int,
+    appFeatureName: String?,
+    healthModule: HealthModule
+  ): List<RegisterData> =
+    withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
+        currentPage = currentPage,
+        appFeatureName = appFeatureName,
+        nameQuery = nameQuery
+      )
+        ?: emptyList()
+    }
+
   override suspend fun countRegisterData(
     appFeatureName: String?,
     healthModule: HealthModule

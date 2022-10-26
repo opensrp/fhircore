@@ -175,24 +175,19 @@ constructor(
   fun paginateRegisterDataFlow(page: Int) =
     getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
 
-  fun filterRegisterDataFlow(text: String) =
-    paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
-      pagingData.filter {
-        it.title.contains(text, ignoreCase = true) ||
-          it.identifier.contains(text, ignoreCase = true)
-      }
-    }
+  fun filterRegisterDataFlow(text: String) = getPager(appFeatureName = appFeatureName, healthModule = healthModule, loadAll = false, searchFilter = text).flow.cachedIn(viewModelScope)
 
   fun paginateRegisterDataForSearch() {
     paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, healthModule, true).flow.cachedIn(viewModelScope)
+      getPager(appFeatureName, healthModule, false).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
     appFeatureName: String?,
     healthModule: HealthModule,
     loadAll: Boolean = false,
-    page: Int = 0
+    page: Int = 0,
+    searchFilter: String? = null
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
@@ -208,7 +203,8 @@ constructor(
               appFeatureName = appFeatureName,
               healthModule = healthModule,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else page
+              currentPage = if (loadAll) 0 else page,
+              searchFilter = searchFilter
             )
           )
         }

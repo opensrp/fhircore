@@ -19,10 +19,12 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -99,6 +101,40 @@ constructor(
       .filter(this::isValidPatient)
       .map { transformPatientToHivRegisterData(it) }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
+  }
+
+  override suspend fun searchByName(
+    nameQuery: String,
+    currentPage: Int,
+    appFeatureName: String?
+  ): List<RegisterData> {
+    val patients =
+      fhirEngine.search<Patient> {
+        filter(
+          Patient.NAME,
+          {
+            modifier = StringFilterModifier.CONTAINS
+            value = nameQuery
+          }
+        )
+        filter(Patient.ACTIVE, { value = of(true) })
+        filter(Patient.GENDER, { value = of(CodeType("male")) }, { value = of(CodeType("female")) })
+        sort(Patient.NAME, Order.ASCENDING)
+        count = PaginationConstant.DEFAULT_PAGE_SIZE
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      }
+
+    return patients.mapNotNull { patient ->
+      if (isValidPatient(patient)) {
+        if (patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }) {
+          val transFormedPatient = transformPatientToHivRegisterData(patient)
+          if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
+            return@mapNotNull transFormedPatient
+          }
+        }
+      }
+      return@mapNotNull null
+    }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {

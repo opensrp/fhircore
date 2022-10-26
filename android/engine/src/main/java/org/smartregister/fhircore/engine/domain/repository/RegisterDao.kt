@@ -27,6 +27,14 @@ interface RegisterDao {
     appFeatureName: String?
   ): List<RegisterData>
 
+  suspend fun searchByName(
+    nameQuery: String,
+    currentPage: Int,
+    appFeatureName: String?
+  ): List<RegisterData> {
+    TODO()
+  }
+
   suspend fun countRegisterData(appFeatureName: String?): Long = 0
 
   suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
