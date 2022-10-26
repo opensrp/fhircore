@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var questionnaireFragment: QuestionnaireFragment
 
   private lateinit var intent: Intent
 
@@ -123,7 +124,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any()) } returns
       QuestionnaireResponse()
 
-    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    questionnaireFragment = spyk<QuestionnaireFragment>()
 
     val questionnaireString = parser.encodeResourceToString(Questionnaire())
 
@@ -324,8 +325,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() {
+  fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() = runTest {
     val questionnaire = buildQuestionnaireWithConstraints()
+
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } just runs
+    every { questionnaireFragment.getQuestionnaireResponse() } returns
+      QuestionnaireResponse().apply {
+        addItem().apply { linkId = "1" }
+        addItem().apply { linkId = "2" }
+      }
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     questionnaireActivity.handleQuestionnaireSubmit()
