@@ -30,6 +30,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.isPaginated
+import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
@@ -332,7 +334,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       )
       .values
       .flatten()
-      .all { it is Valid || it is NotValidated }
+      .none { it is Invalid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     if (questionnaireConfig.confirmationDialog != null) {
