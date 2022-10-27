@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,10 +88,13 @@ fun GenerateView(
           }
         }
       } else {
+        val isWeighted = remember { children.any { it.weight > 0 } }
         Column(
           horizontalAlignment = Alignment.Start,
           modifier = modifier.padding(properties.padding.dp),
-          verticalArrangement = properties.arrangement?.position ?: Arrangement.Top
+          verticalArrangement =
+            if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
+            else properties.arrangement?.position ?: Arrangement.Top
         ) {
           for (child in children) {
             GenerateView(
@@ -116,11 +121,15 @@ fun GenerateView(
           }
         }
       } else {
+        val isWeighted = remember { children.any { it.weight > 0 } }
         Row(
           verticalAlignment = Alignment.CenterVertically,
           modifier = modifier.padding(properties.padding.dp),
-          horizontalArrangement = properties.arrangement?.position ?: Arrangement.Start
+          horizontalArrangement =
+            if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
+            else properties.arrangement?.position ?: Arrangement.Start
         ) {
+          children.any { it.weight > 0 }
           for (child in children) {
             GenerateView(
               modifier = generateModifier(child),
@@ -164,6 +173,7 @@ fun GenerateView(
   }
 }
 
+@SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 fun RowScope.generateModifier(viewProperties: ViewProperties): Modifier {
   var modifier = if (viewProperties.weight > 0) Modifier.weight(viewProperties.weight) else Modifier
@@ -179,6 +189,7 @@ fun RowScope.generateModifier(viewProperties: ViewProperties): Modifier {
   }
 }
 
+@SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 fun ColumnScope.generateModifier(viewProperties: ViewProperties): Modifier {
   var modifier =
@@ -197,6 +208,7 @@ fun ColumnScope.generateModifier(viewProperties: ViewProperties): Modifier {
   }
 }
 
+@SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 fun generateModifier(viewProperties: ViewProperties): Modifier {
   val modifier = Modifier.applyCommonProperties(viewProperties)
@@ -206,6 +218,7 @@ fun generateModifier(viewProperties: ViewProperties): Modifier {
   }
 }
 
+@SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
   this.background(viewProperties.backgroundColor.parseColor())
