@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.ResourceFactory
@@ -70,6 +71,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Timing_Repeat" -> Timing.TimingRepeatComponent()
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
+      "Observation_Component" -> Observation.ObservationComponentComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
