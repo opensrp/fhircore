@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.util.extension.findStratumForMonth
 import org.smartregister.fhircore.engine.util.extension.isMonthlyReport
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.reportingPeriodMonthsSpan
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
@@ -264,7 +263,9 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+          practitioner = null
+          /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+          practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }
@@ -335,24 +336,18 @@ constructor(
       .apply {
         measureReport
           .contained
-          .groupBy {
+          .filter {
             it as Observation
-            it.extension
-              .flatMap { it.extension }
-              .firstOrNull { it.url == POPULATION_OBS_URL }
-              ?.value
-              ?.valueToString()
+            it.resourceType == ResourceType.Observation
           }
-          .map { it.key to it.value.map { it as Observation } }
-          .map { group ->
-            group
-              .second
-              .distinctBy { it.code.codingFirstRep.code }
-              .count { it.code.codingFirstRep.code.isNotBlank() }
-              .let { group.first to it }
+          .map { it as Observation }
+          .groupBy { it.code.coding.find { it.code.startsWith(POPULATION) }?.display }
+          .map {
+            it.key to
+              it.value
+                .distinctBy { it.code.coding.find { !it.code.startsWith(POPULATION) }?.code }
+                .count()
           }
-          .filter { it.first?.isNotBlank() == true }
-          .distinctBy { it.first }
           .forEach {
             this.add(
               0,
