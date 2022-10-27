@@ -81,7 +81,8 @@
                           "label": {
                             "viewType": "COMPOUND_TEXT",
                             "primaryText": "@{quantity}",
-                            "primaryTextColor": "#000000"
+                            "primaryTextColor": "#000000",
+                            "primaryTextFontWeight": "SEMI_BOLD"
                           },
                           "displayValue": {
                             "viewType": "COMPOUND_TEXT",
@@ -100,7 +101,8 @@
                           "label": {
                             "viewType": "COMPOUND_TEXT",
                             "primaryText": "@{unitsOfMeasure}",
-                            "primaryTextColor": "#000000"
+                            "primaryTextColor": "#000000",
+                            "primaryTextFontWeight": "SEMI_BOLD"
                           },
                           "displayValue": {
                             "viewType": "COMPOUND_TEXT",
