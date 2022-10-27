@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -57,7 +58,11 @@ fun CompoundText(
                   ?.interpolate(computedValuesMap)
                   .parseColor(),
               color =
-                compoundTextProperties.primaryTextColor?.interpolate(computedValuesMap).parseColor()
+                compoundTextProperties
+                  .primaryTextColor
+                  ?.interpolate(computedValuesMap)
+                  .parseColor(),
+              fontWeight = compoundTextProperties.primaryTextFontWeight.fontWeight
             )
         ) { append(compoundTextProperties.primaryText?.interpolate(computedValuesMap) ?: "") }
 
@@ -89,7 +94,8 @@ fun CompoundText(
                 compoundTextProperties
                   .secondaryTextColor
                   ?.interpolate(computedValuesMap)
-                  .parseColor()
+                  .parseColor(),
+              fontWeight = compoundTextProperties.secondaryTextFontWeight.fontWeight
             )
         ) { append(compoundTextProperties.secondaryText?.interpolate(computedValuesMap) ?: "") }
       },
@@ -117,8 +123,12 @@ private fun CompoundTextNoSecondaryTextPreview() {
   Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
-        CompoundTextProperties(primaryText = "Full Name, Age", primaryTextColor = "#000000"),
-      computedValuesMap = emptyMap()
+        CompoundTextProperties(
+          primaryText = "Full Name, Age",
+          primaryTextColor = "#000000",
+          primaryTextFontWeight = TextFontWeight.SEMI_BOLD
+        ),
+      computedValuesMap = emptyMap(),
     )
     CompoundText(
       compoundTextProperties =
