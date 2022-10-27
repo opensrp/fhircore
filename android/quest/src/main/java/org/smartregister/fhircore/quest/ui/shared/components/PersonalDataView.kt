@@ -39,10 +39,7 @@ fun PersonalDataView(
 ) {
   FlowRow(
     modifier =
-      modifier
-        .padding(end = 8.dp)
-        .clip(RoundedCornerShape(size = 8.dp))
-        .background(PersonalDataBackgroundColor)
+      modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
   ) {
     PersonalDataItem(
       personalDataCardProperties = personalDataCardProperties,
