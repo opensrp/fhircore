@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,6 +65,7 @@ fun ActionableButton(
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
     OutlinedButton(
       onClick = {
         if (status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED) {
@@ -88,8 +90,8 @@ fun ActionableButton(
           .testTag(ACTIONABLE_BUTTON_TEST_TAG)
     ) {
       Row(
-        modifier = modifier.weight(1.0f),
-        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.background(Color.Transparent),
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
       ) {
         Icon(
@@ -99,8 +101,7 @@ fun ActionableButton(
           tint =
             when (status) {
               ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else ->
-                buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+              else -> statusColor.copy(alpha = 0.9f)
             },
         )
         Text(
@@ -108,11 +109,11 @@ fun ActionableButton(
           fontWeight = FontWeight.Medium,
           color =
             if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
-            else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f),
-          textAlign = TextAlign.Center,
+            else statusColor.copy(alpha = 0.9f),
+          textAlign = TextAlign.Start,
           overflow = TextOverflow.Ellipsis,
           maxLines = 2,
-          modifier = modifier.padding(horizontal = 4.dp)
+          modifier = modifier.padding(horizontal = 4.dp),
         )
         if (status == ServiceStatus.COMPLETED) {
           Icon(
@@ -159,7 +160,12 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
 fun ActionableButtonPreview() {
   ActionableButton(
     buttonProperties =
-      ButtonProperties(status = "OVERDUE", text = "Button Text", fillMaxWidth = true),
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.DUE.name,
+        text = "ANC Visit",
+        smallSized = true,
+      ),
     resourceData = ResourceData(Patient()),
     navController = rememberNavController()
   )
