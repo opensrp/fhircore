@@ -35,7 +35,7 @@ object ViewPropertiesSerializer :
     require(viewType != null && ViewType.values().contains(ViewType.valueOf(viewType))) {
       """Ensure that supported `viewType` property is included in your register view properties configuration.
          Supported types: ${ViewType.values()}
-         Parsed JSON:CenterVertically $jsonObject
+         Parsed JSON: $jsonObject
           """.trimMargin()
     }
     return when (ViewType.valueOf(viewType)) {

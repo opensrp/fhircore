@@ -36,6 +36,8 @@ import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -51,18 +53,23 @@ fun ExtendedFab(
   navController: NavController,
 ) {
   val firstFabAction = remember { fabActions.first() }
+  val firstFabEnabled =
+    firstFabAction.enabled.interpolate(resourceData?.computedValuesMap ?: emptyMap()).toBoolean()
 
   FloatingActionButton(
-    contentColor = Color.White,
+    contentColor = if (firstFabEnabled) Color.White else DefaultColor,
     shape = CircleShape,
     onClick = {
-      firstFabAction.actions?.handleClickEvent(
-        navController = navController,
-        resourceData = resourceData
-      )
+      if (firstFabEnabled) {
+        firstFabAction.actions?.handleClickEvent(
+          navController = navController,
+          resourceData = resourceData
+        )
+      }
     },
-    backgroundColor = MaterialTheme.colors.primary,
-    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG)
+    backgroundColor =
+      if (firstFabEnabled) MaterialTheme.colors.primary else DefaultColor.copy(alpha = 0.25f),
+    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG),
   ) {
     val text = remember { firstFabAction.display.uppercase() }
     val firstMenuIconConfig = remember { firstFabAction.menuIconConfig }
@@ -76,7 +83,7 @@ fun ExtendedFab(
       if (firstMenuIconConfig != null) {
         MenuIcon(
           menuIconConfig = firstMenuIconConfig,
-          color = Color.White,
+          color = if (firstFabEnabled) Color.White else DefaultColor,
           paddingEnd = if (text.isNotEmpty()) 8 else 0
         )
       }
@@ -88,6 +95,23 @@ fun ExtendedFab(
       }
     }
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun PreviewDisabledExtendedFab() {
+  ExtendedFab(
+    fabActions =
+      listOf(
+        NavigationMenuConfig(
+          id = "test",
+          display = "Fab Button",
+          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add"),
+          enabled = "false"
+        )
+      ),
+    navController = rememberNavController()
+  )
 }
 
 @Composable
