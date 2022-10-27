@@ -126,11 +126,9 @@ constructor(
 
     return patients.mapNotNull { patient ->
       if (isValidPatient(patient)) {
-        if (patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }) {
-          val transFormedPatient = transformPatientToHivRegisterData(patient)
-          if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
-            return@mapNotNull transFormedPatient
-          }
+        val transFormedPatient = transformPatientToHivRegisterData(patient)
+        if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
+          return@mapNotNull transFormedPatient
         }
       }
       return@mapNotNull null
