@@ -60,17 +60,22 @@ constructor(
 
   val searchText = mutableStateOf("")
 
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
+    MutableStateFlow(emptyFlow())
+
+  val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
+
   private val _totalRecordsCount = mutableStateOf(0L)
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
   private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
-    MutableStateFlow(emptyFlow())
-
   fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
-    paginatedRegisterData.value = getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
+    paginatedRegisterData.value =
+      pagesDataCache.getOrPut(currentPage.value) {
+        getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
+      }
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
