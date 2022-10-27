@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -125,7 +124,7 @@ fun ServiceCard(
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
         modifier = modifier.fillMaxHeight().width(1.dp),
-        thickness = 1.dp,
+        thickness = 0.5.dp,
         color = DividerColor
       )
     } else {
@@ -155,12 +154,13 @@ fun ServiceCard(
               .toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
-            ActionableButton(
-              modifier = modifier,
-              buttonProperties = serviceCardProperties.serviceButton!!,
-              navController = navController,
-              resourceData = resourceData
-            )
+            Column {
+              ActionableButton(
+                buttonProperties = serviceCardProperties.serviceButton!!,
+                navController = navController,
+                resourceData = resourceData
+              )
+            }
           } else {
             BigServiceButton(
               modifier = modifier,
@@ -170,14 +170,13 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column {
+          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
                 navController = navController,
                 resourceData = resourceData
               )
-              Spacer(modifier = modifier.height(8.dp))
             }
           }
         }
@@ -554,10 +553,9 @@ private fun ServiceCardANCServiceDuePreview() {
               showVerticalDivider = false,
               serviceButton =
                 ButtonProperties(
-                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
-                  smallSized = true
+                  smallSized = true,
                 )
             )
           )
