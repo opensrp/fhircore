@@ -44,6 +44,8 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.interpolate
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showCancelAlert
@@ -57,6 +59,7 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -83,6 +86,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
+  private lateinit var actionParams: List<ActionParameter>
+
+  private lateinit var prePopulationParams: List<ActionParameter>
+
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.clear()
@@ -102,13 +109,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         computedValuesMap
       )
 
+    actionParams =
+      intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
+        ?: emptyList()
+
+    actionParams =
+      actionParams.map {
+        ActionParameter(
+          key = it.key,
+          paramType = it.paramType,
+          dataType = it.dataType,
+          linkId = it.linkId,
+          value = it.value.interpolate(computedValuesMap)
+        )
+      }
+
+    prePopulationParams = actionParams.filter { it.paramType == ActionParameterType.PREPOPULATE }
+
     questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 
     lifecycleScope.launch(dispatcherProvider.io()) {
       questionnaireViewModel.run {
-        questionnaire = loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type)!!
+        questionnaire =
+          loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
         libraryEvaluator.initialize()
       }
 
@@ -211,7 +236,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
             questionnaireConfig.id,
-            questionnaireConfig.type
+            questionnaireConfig.type,
+            prePopulationParams
           )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
@@ -440,6 +466,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
     const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
+    const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -449,11 +476,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      computedValuesMap: Map<String, Any>?
+      computedValuesMap: Map<String, Any>?,
+      actionParams: List<ActionParameter>? = emptyList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
+        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap),
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
       )
         .apply {
           questionnaireResponse?.let {
