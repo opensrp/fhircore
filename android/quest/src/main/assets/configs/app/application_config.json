@@ -5,9 +5,7 @@
   "appTitle": "eCBIS",
   "remoteSyncPageSize": 100,
   "languages": [
-    "en",
-    "sw",
-    "fr"
+    "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
