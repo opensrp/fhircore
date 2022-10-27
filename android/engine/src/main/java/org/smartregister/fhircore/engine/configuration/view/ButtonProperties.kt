@@ -29,6 +29,7 @@ data class ButtonProperties(
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   val visible: String = "true",
+  val enabled: String = "true",
   val text: String? = null,
   val status: String,
   val smallSized: Boolean = false,

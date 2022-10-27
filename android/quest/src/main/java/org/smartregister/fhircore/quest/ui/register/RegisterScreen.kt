@@ -154,19 +154,21 @@ fun NoRegisterDataView(
       fontSize = 15.sp,
       color = Color.Gray
     )
-    Button(
-      modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-      onClick = onClick
-    ) {
-      Icon(
-        imageVector = Icons.Filled.Add,
-        contentDescription = null,
-        modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
-      )
-      Text(
-        text = noResults.actionButton?.display?.uppercase().toString(),
-        modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
-      )
+    if (noResults.actionButton != null) {
+      Button(
+        modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+        onClick = onClick
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          contentDescription = null,
+          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+        )
+        Text(
+          text = noResults.actionButton?.display?.uppercase().toString(),
+          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
+        )
+      }
     }
   }
 }

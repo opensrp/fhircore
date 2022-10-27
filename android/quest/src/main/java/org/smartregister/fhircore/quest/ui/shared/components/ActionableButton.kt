@@ -66,6 +66,8 @@ fun ActionableButton(
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+    val buttonEnabled =
+      buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
     OutlinedButton(
       onClick = {
         if (status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED) {
@@ -87,7 +89,8 @@ fun ActionableButton(
           .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() })
           .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
-          .testTag(ACTIONABLE_BUTTON_TEST_TAG)
+          .testTag(ACTIONABLE_BUTTON_TEST_TAG),
+      enabled = buttonEnabled
     ) {
       Row(
         modifier = modifier.background(Color.Transparent),
@@ -99,17 +102,23 @@ fun ActionableButton(
             if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
           contentDescription = null,
           tint =
-            when (status) {
-              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else -> statusColor.copy(alpha = 0.9f)
-            },
+            if (buttonEnabled)
+              when (status) {
+                ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+                else -> statusColor.copy(alpha = 0.9f)
+              }
+            else DefaultColor.copy(alpha = 0.9f),
         )
         Text(
           text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
           fontWeight = FontWeight.Medium,
           color =
-            if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
-            else statusColor.copy(alpha = 0.9f),
+            if (buttonEnabled)
+              when (status) {
+                ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
+                else -> statusColor.copy(alpha = 0.9f)
+              }
+            else DefaultColor.copy(0.9f),
           textAlign = TextAlign.Start,
           overflow = TextOverflow.Ellipsis,
           maxLines = 2,
@@ -165,6 +174,23 @@ fun ActionableButtonPreview() {
         status = ServiceStatus.DUE.name,
         text = "ANC Visit",
         smallSized = true,
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+fun DisabledActionableButtonPreview() {
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.COMPLETED.name,
+        text = "ANC Visit",
+        smallSized = true,
+        enabled = "true"
       ),
     resourceData = ResourceData(Patient()),
     navController = rememberNavController()
