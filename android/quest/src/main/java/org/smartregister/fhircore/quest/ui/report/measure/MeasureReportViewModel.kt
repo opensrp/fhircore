@@ -245,7 +245,10 @@ constructor(
               launchSingleTop = true
             }
           }
-          .onFailure { toggleProgressIndicatorVisibility(false) }
+          .onFailure {
+            Timber.w(it)
+            toggleProgressIndicatorVisibility(false)
+          }
       }
     }
   }
