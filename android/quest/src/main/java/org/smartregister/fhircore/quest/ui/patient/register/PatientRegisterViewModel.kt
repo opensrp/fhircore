@@ -175,7 +175,15 @@ constructor(
   fun paginateRegisterDataFlow(page: Int) =
     getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
 
-  fun filterRegisterDataFlow(text: String) = getPager(appFeatureName = appFeatureName, healthModule = healthModule, loadAll = false, searchFilter = text).flow.cachedIn(viewModelScope)
+  fun filterRegisterDataFlow(text: String) =
+    getPager(
+        appFeatureName = appFeatureName,
+        healthModule = healthModule,
+        loadAll = false,
+        searchFilter = text
+      )
+      .flow
+      .cachedIn(viewModelScope)
 
   fun paginateRegisterDataForSearch() {
     paginatedRegisterDataForSearch.value =

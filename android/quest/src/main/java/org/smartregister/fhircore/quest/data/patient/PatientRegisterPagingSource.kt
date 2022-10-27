@@ -49,21 +49,23 @@ class PatientRegisterPagingSource(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
-      val data = if (_patientPagingSourceState.searchFilter != null) {
-        patientRegisterRepository.searchByName(
-          currentPage = currentPage,
-          appFeatureName = _patientPagingSourceState.appFeatureName,
-          healthModule = _patientPagingSourceState.healthModule,
-          nameQuery = _patientPagingSourceState.searchFilter!!
-        )
-      } else {
-        patientRegisterRepository.loadRegisterData(
-          currentPage = currentPage,
-          appFeatureName = _patientPagingSourceState.appFeatureName,
-          healthModule = _patientPagingSourceState.healthModule,
-          loadAll = _patientPagingSourceState.loadAll
-        )
-      }.map { registerViewDataMapper.transformInputToOutputModel(it) }
+      val data =
+        if (_patientPagingSourceState.searchFilter != null) {
+            patientRegisterRepository.searchByName(
+              currentPage = currentPage,
+              appFeatureName = _patientPagingSourceState.appFeatureName,
+              healthModule = _patientPagingSourceState.healthModule,
+              nameQuery = _patientPagingSourceState.searchFilter!!
+            )
+          } else {
+            patientRegisterRepository.loadRegisterData(
+              currentPage = currentPage,
+              appFeatureName = _patientPagingSourceState.appFeatureName,
+              healthModule = _patientPagingSourceState.healthModule,
+              loadAll = _patientPagingSourceState.loadAll
+            )
+          }
+          .map { registerViewDataMapper.transformInputToOutputModel(it) }
       val prevKey =
         when {
           _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
