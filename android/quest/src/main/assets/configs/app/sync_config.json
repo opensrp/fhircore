@@ -37,7 +37,18 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Task",
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "patient.organization",
+        "base": [
           "RelatedPerson"
         ],
         "type": "token",
