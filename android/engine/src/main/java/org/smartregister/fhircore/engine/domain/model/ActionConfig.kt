@@ -41,4 +41,11 @@ data class ActionConfig(
     }
 }
 
-@Serializable data class ActionParameter(val key: String, val value: String)
+@Serializable
+data class ActionParameter(
+  val key: String,
+  val paramType: ActionParameterType? = null,
+  val dataType: DataType? = null,
+  val value: String,
+  val linkId: String? = null
+) : java.io.Serializable
