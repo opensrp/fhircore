@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -99,7 +100,7 @@ constructor(
                   if (event.resourceData != null) {
                     questionnaireResponse =
                       searchQuestionnaireResponses(
-                        subjectId = event.resourceData.baseResource.id,
+                        subjectId = event.resourceData.baseResource.id.extractLogicalIdUuid(),
                         subjectType = event.resourceData.baseResource.resourceType,
                         questionnaireId = questionnaireConfig.id
                       )
@@ -107,15 +108,17 @@ constructor(
                         ?.let { parser.encodeResourceToString(it) }
                   }
 
+                  val intentBundle =
+                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                      .apply {
+                        putString(
+                          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                          questionnaireResponse
+                        )
+                      }
+
                   event.context.launchQuestionnaire<QuestionnaireActivity>(
-                    intentBundle =
-                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
-                        .apply {
-                          putString(
-                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                            questionnaireResponse
-                          )
-                        },
+                    intentBundle = intentBundle,
                     questionnaireConfig = questionnaireConfig,
                     computedValuesMap = event.resourceData?.computedValuesMap
                   )
