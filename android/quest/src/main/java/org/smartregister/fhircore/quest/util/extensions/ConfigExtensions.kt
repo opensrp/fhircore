@@ -41,10 +41,8 @@ fun List<ActionConfig>.handleClickEvent(
         actionConfig.questionnaire?.let { questionnaireConfig ->
           navController.context.launchQuestionnaire<QuestionnaireActivity>(
             questionnaireConfig = questionnaireConfig,
-            intentBundle =
-              if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
-              else bundleOf(),
-            computedValuesMap = resourceData?.computedValuesMap
+            computedValuesMap = resourceData?.computedValuesMap,
+            actionParams = actionConfig.params
           )
         }
       }
