@@ -17,19 +17,27 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -42,6 +50,7 @@ fun List(
   navController: NavController,
   viewModel: ViewRendererViewModel = hiltViewModel(),
 ) {
+  val showPlaceholder = remember { mutableStateOf(true) }
   val resources = resourceData.relatedResourcesMap[viewProperties.baseResource]
   Column(
     modifier =
@@ -77,17 +86,27 @@ fun List(
                 relatedResourcesMap = newRelatedResources
               )
 
+            showPlaceholder.value = false
             value = ResourceData(resource, newRelatedResources, computedValuesMap)
           }
           .value
 
       Column {
         Spacer(modifier = modifier.height(5.dp))
-        ViewRenderer(
-          viewProperties = viewProperties.registerCard.views,
-          resourceData = listItemResourceData,
-          navController = navController,
-        )
+        Box(
+          modifier =
+            modifier.placeholder(
+              visible = showPlaceholder.value,
+              highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White),
+              color = DefaultColor.copy(alpha = 0.1f)
+            )
+        ) {
+          ViewRenderer(
+            viewProperties = viewProperties.registerCard.views,
+            resourceData = listItemResourceData,
+            navController = navController,
+          )
+        }
         Spacer(modifier = modifier.height(5.dp))
         if ((index < resources.lastIndex) && viewProperties.showDivider)
           Divider(color = DividerColor, thickness = 0.5.dp)
