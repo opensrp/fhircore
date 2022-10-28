@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -98,20 +97,25 @@ constructor(
                   var questionnaireResponse: String? = null
 
                   if (event.resourceData != null) {
-                    questionnaireResponse = searchQuestionnaireResponses(
-                      subjectId = event.resourceData.baseResource.id,
-                      subjectType = event.resourceData.baseResource.resourceType,
-                      questionnaireId = questionnaireConfig.id
-                    )
-                      .maxByOrNull { it.authored } // Get latest version
-                      ?.let { parser.encodeResourceToString(it) }
+                    questionnaireResponse =
+                      searchQuestionnaireResponses(
+                        subjectId = event.resourceData.baseResource.id,
+                        subjectType = event.resourceData.baseResource.resourceType,
+                        questionnaireId = questionnaireConfig.id
+                      )
+                        .maxByOrNull { it.authored } // Get latest version
+                        ?.let { parser.encodeResourceToString(it) }
                   }
 
                   event.context.launchQuestionnaire<QuestionnaireActivity>(
                     intentBundle =
-                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()).apply {
-                      putString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponse)
-                    },
+                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                        .apply {
+                          putString(
+                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                            questionnaireResponse
+                          )
+                        },
                     questionnaireConfig = questionnaireConfig,
                     computedValuesMap = event.resourceData?.computedValuesMap
                   )
