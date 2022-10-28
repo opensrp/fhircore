@@ -16,13 +16,19 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -48,6 +54,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
+
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   val profileUiState = mutableStateOf(ProfileUiState())
 
@@ -86,12 +94,28 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
-                event.context.launchQuestionnaire<QuestionnaireActivity>(
-                  intentBundle =
-                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
-                  questionnaireConfig = questionnaireConfig,
-                  computedValuesMap = event.resourceData?.computedValuesMap
-                )
+                viewModelScope.launch(dispatcherProvider.io()) {
+                  var questionnaireResponse: String? = null
+
+                  if (event.resourceData != null) {
+                    questionnaireResponse = searchQuestionnaireResponses(
+                      subjectId = event.resourceData.baseResource.id,
+                      subjectType = event.resourceData.baseResource.resourceType,
+                      questionnaireId = questionnaireConfig.id
+                    )
+                      .maxByOrNull { it.authored } // Get latest version
+                      ?.let { parser.encodeResourceToString(it) }
+                  }
+
+                  event.context.launchQuestionnaire<QuestionnaireActivity>(
+                    intentBundle =
+                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()).apply {
+                      putString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponse)
+                    },
+                    questionnaireConfig = questionnaireConfig,
+                    computedValuesMap = event.resourceData?.computedValuesMap
+                  )
+                }
               }
             }
             ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
@@ -154,4 +178,19 @@ constructor(
         .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
     }
   }
+
+  private suspend fun searchQuestionnaireResponses(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): List<QuestionnaireResponse> =
+    withContext(dispatcherProvider.io()) {
+      registerRepository.fhirEngine.search {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+      }
+    }
 }
