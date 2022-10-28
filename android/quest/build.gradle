@@ -141,8 +141,8 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.5-rc1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
+            versionName "0.1.6-rc1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         g6pd {
