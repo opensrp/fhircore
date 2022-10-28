@@ -70,7 +70,8 @@ fun ActionableButton(
       buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
     OutlinedButton(
       onClick = {
-        if (status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED) {
+        if (buttonEnabled && status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED
+        ) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData
