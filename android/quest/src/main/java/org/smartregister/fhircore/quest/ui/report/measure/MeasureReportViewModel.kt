@@ -210,21 +210,26 @@ constructor(
             }
 
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
-              val measureReport =
-                withContext(dispatcherProvider.io()) {
-                  fhirOperator.evaluateMeasure(
-                    measureUrl = measureUrl,
-                    start = startDateFormatted,
-                    end = endDateFormatted,
-                    reportType = SUBJECT,
-                    subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner =
-                      practitionerId?.asReference(ResourceType.Practitioner)?.reference,
-                    lastReceivedOn = null // Non-null value not supported yet
-                  )
+              val measureReport: MeasureReport? =
+                try {
+                  withContext(dispatcherProvider.io()) {
+                    fhirOperator.evaluateMeasure(
+                      measureUrl = measureUrl,
+                      start = startDateFormatted,
+                      end = endDateFormatted,
+                      reportType = SUBJECT,
+                      subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
+                      practitioner =
+                        practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+                      lastReceivedOn = null // Non-null value not supported yet
+                    )
+                  }
+                } catch (exception: IllegalArgumentException) {
+                  Timber.e(exception)
+                  null
                 }
 
-              if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+              if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
                 val population: MeasureReport.MeasureReportGroupPopulationComponent? =
                   measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
                 measureReportIndividualResult.value =
@@ -258,22 +263,28 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String
   ) {
-    val measureReport =
+    val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
-        fhirOperator.evaluateMeasure(
-          measureUrl = measureUrl,
-          start = startDateFormatted,
-          end = endDateFormatted,
-          reportType = POPULATION,
-          subject = null,
-          practitioner = null
-          /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-          practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-          lastReceivedOn = null // Non-null value not supported yet
-        )
+        try {
+          fhirOperator.evaluateMeasure(
+            measureUrl = measureUrl,
+            start = startDateFormatted,
+            end = endDateFormatted,
+            reportType = POPULATION,
+            subject = null,
+            practitioner = null
+            /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+            practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+            lastReceivedOn = null // Non-null value not supported yet
+          )
+        } catch (exception: IllegalArgumentException) {
+          Timber.e(exception)
+          null
+        }
       }
 
-    measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
+    if (measureReport != null)
+      measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
   }
 
   fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
@@ -323,11 +334,11 @@ constructor(
             }
         // if each stratum evaluated to single item, display all under one group else for each add a
         // separate group
-        val datalist =
+        val dataList =
           if (stratifierItems.all { it.count() <= 1 }) listOf(stratifierItems.flatten())
           else stratifierItems
 
-        datalist.map {
+        dataList.map {
           MeasureReportPopulationResult(
             title = reportGroup.id.replace("-", " "),
             count = reportGroup.findRatio(),
