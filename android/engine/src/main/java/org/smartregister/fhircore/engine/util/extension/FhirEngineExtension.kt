@@ -88,23 +88,26 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
-    if (!UrlUtil.isValid(path)) get<Library>(IdType(path).idPart)
+    if (!UrlUtil.isValid(path)) get(IdType(path).idPart)
     else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
 
   library?.let {
     JsonCqlMapper.getMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    it.content.find { it.contentType.contains(Regex(".*elm.*json.*")) }?.let {
-      val data =
-        it.data
-          .decodeToString()
-          .replace("\"translatorOptions\"", "\"type\" : \"CqlToElmInfo\",\"translatorOptions\"")
-          .replace("\"t\" :", "\"type\" : \"Annotation\",\"t\" :")
-          .replace("\"s\" : {", "\"type\" : \"Annotation\",\"s\" : {")
-          .replace("\"r\" : {", "\"type\" : \"Annotation\",\"r\" : {")
-          .replace("\"errorSeverity\" : ", "\"type\" : \"Locator\",\"errorSeverity\" : ")
+    it.content
+      .find { attachment -> attachment.contentType.contains(Regex(".*elm.*json.*")) }
+      ?.let { attachment ->
+        val data =
+          attachment
+            .data
+            .decodeToString()
+            .replace("\"translatorOptions\"", "\"type\" : \"CqlToElmInfo\",\"translatorOptions\"")
+            .replace("\"t\" :", "\"type\" : \"Annotation\",\"t\" :")
+            .replace("\"s\" : {", "\"type\" : \"Annotation\",\"s\" : {")
+            .replace("\"r\" : {", "\"type\" : \"Annotation\",\"r\" : {")
+            .replace("\"errorSeverity\" : ", "\"type\" : \"Locator\",\"errorSeverity\" : ")
 
-      it.data = data.encodeToByteArray()
-    }
+        attachment.data = data.encodeToByteArray()
+      }
     fhirOperator.loadLib(it)
 
     it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
@@ -126,14 +129,15 @@ suspend fun FhirEngine.loadLibraryAtPath(
 suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
   try {
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
-    val measure =
+    val measure: Measure? =
       if (UrlUtil.isValid(measurePath))
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }.first()
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }.firstOrNull()
       else get(measurePath)
 
-    measure.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-
-    measure.library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
+    measure?.apply {
+      relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+      library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
+    }
   } catch (exception: Exception) {
     Timber.e(exception)
   }
