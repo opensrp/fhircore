@@ -289,25 +289,34 @@ constructor(
     accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), false, callback, errorHandler)
   }
 
-  fun logout() {
-    getRefreshToken()?.run {
-      val logoutService: Call<ResponseBody> = oAuthService.logout(clientId(), clientSecret(), this)
+  fun logout(onLogout: () -> Unit = {}) {
+    val refreshToken = getRefreshToken()
+    if (refreshToken == null) {
+      onLogout()
+      Timber.w("Refresh token is null. User already logged out or device is offline.")
+      launchScreen(LoginActivity::class.java)
+    } else {
+      val logoutService: Call<ResponseBody> =
+        oAuthService.logout(clientId(), clientSecret(), refreshToken)
       logoutService.enqueue(
         object : Callback<ResponseBody> {
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if (response.isSuccessful) {
+              onLogout()
               localLogout()
               launchScreen(LoginActivity::class.java)
             } else {
+              onLogout()
               context.showToast(context.getString(R.string.cannot_logout_user))
             }
           }
 
           override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
+            onLogout()
             Timber.w(throwable)
-            context.run {
-              showToast(getString(R.string.error_logging_out, throwable.localizedMessage))
-            }
+            context.showToast(
+              context.getString(R.string.error_logging_out, throwable.localizedMessage)
+            )
           }
         }
       )
@@ -353,9 +362,7 @@ constructor(
   }
 
   fun localLogout() {
-    // Invalidate access token then launch login screen
     accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
-    // Reset session and refresh tokens to null to force re-login
     secureSharedPreference.deleteSessionTokens()
   }
 
