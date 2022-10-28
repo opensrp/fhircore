@@ -35,8 +35,11 @@ fun MeasureReportMainScreen(
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
+  // Use a different navController internally for navigating Report Composable screens
+  val navController = rememberNavController()
+
   NavHost(
-    navController = rememberNavController(),
+    navController = navController,
     startDestination = MeasureReportNavigationScreen.MeasureReportList.route
   ) {
 
@@ -47,7 +50,7 @@ fun MeasureReportMainScreen(
         dataList = measureReportViewModel.reportMeasuresList(),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, mainNavController)
+            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
           )
         }
       )
@@ -68,7 +71,7 @@ fun MeasureReportMainScreen(
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
         screenTitle = screenTitle,
-        navController = mainNavController,
+        navController = navController,
         measureReportViewModel = measureReportViewModel
       )
     }
@@ -76,7 +79,7 @@ fun MeasureReportMainScreen(
     // Page for selecting patient to evaluate their measure
     composable(MeasureReportNavigationScreen.PatientsList.route) {
       MeasureReportPatientsScreen(
-        navController = mainNavController,
+        navController = navController,
         measureReportViewModel = measureReportViewModel
       )
     }
@@ -84,7 +87,7 @@ fun MeasureReportMainScreen(
     // Page for displaying measure report results
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
-        navController = mainNavController,
+        navController = navController,
         measureReportViewModel = measureReportViewModel
       )
     }
