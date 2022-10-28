@@ -142,7 +142,7 @@ android {
             versionNameSuffix "-ecbis"
             versionCode 4
             versionName "0.1.6-rc1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         g6pd {

@@ -221,6 +221,8 @@ private fun BigServiceButton(
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+  val buttonEnabled =
+    buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
 
   Column(
     modifier =
@@ -235,13 +237,22 @@ private fun BigServiceButton(
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+          when {
+            buttonEnabled ->
+              if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+            else -> DefaultColor.copy(alpha = 0.25f)
+          }
         )
         .clickable {
-          buttonProperties.actions.handleClickEvent(
-            navController = navController,
-            resourceData = resourceData
-          )
+          if (buttonEnabled &&
+              extractedStatus != ServiceStatus.UPCOMING &&
+              extractedStatus != ServiceStatus.COMPLETED
+          ) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
         },
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
