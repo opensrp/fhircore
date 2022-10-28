@@ -52,8 +52,10 @@
         <string name="powered_by">Inatumia</string>
         <string name="already_fully_vaccinated">Hawezi kupokea dozi nyingine. Tayari amechanjwa kikamilifu</string>
         <string name="questionnaire_alert_back_pressed_message">Je, una uhakika unataka kurudi? Mabadiliko yaliyofanywa kwenye fomu yatapotea</string>
+        <string name="questionnaire_in_progress_alert_back_pressed_message">Je, una uhakika unataka kutupa majibu?</string>
         <string name="questionnaire_alert_back_pressed_title">Futa mabadiliko</string>
         <string name="questionnaire_alert_back_pressed_button_title">Futa</string>
+        <string name="questionnaire_alert_back_pressed_save_draft_button_title">Hifadhi rasimu ya sehemu</string>
         <string name="questionnaire_alert_submit_message">Thibitisha kuwa umemaliza kujaza maelezo ya mteja. Unaweza kuhariri maelezo ya mteja baadaye</string>
         <string name="questionnaire_alert_neutral_button_title">Ghairi</string>
         <string name="questionnaire_alert_confirm_button_title">Nido</string>
