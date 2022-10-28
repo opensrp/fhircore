@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.hl7.fhir.r4.model.TimeType
@@ -116,6 +117,14 @@ class TransformSupportServicesTest : RobolectricTest() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Group_Characteristic") is
         Group.GroupCharacteristicComponent
+    )
+  }
+
+  @Test
+  fun `createType() should return ObservationComponentComponent when given Observation_Component`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Observation_Component") is
+        Observation.ObservationComponentComponent
     )
   }
 

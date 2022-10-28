@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -32,6 +33,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
+import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -363,8 +365,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform location extraction`() {
     val locationQuestionnaireResponseString: String =
-      "content/general/location-response-sample.json".readFile()
-    val locationStructureMap = "content/general/location-structure-map.txt".readFile()
+      "content/general/location/location-response-sample.json".readFile()
+    val locationStructureMap = "content/general/location/location-structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -388,5 +390,47 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     scu.transform(contextR4, baseElement, map, targetResource)
 
     System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `perform supply chain snapshot observation`() {
+    val physicalInventoryCountQuestionnaireResponseString: String =
+      "content/general/supply-chain/questionnaire-response-standard.json".readFile()
+    val physicalInventoryCountStructureMap =
+      "content/general/supply-chain/physical _inventory _count_and_stock.map".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map =
+      scu.parse(physicalInventoryCountStructureMap, "Physical Inventory Count and Stock Supply")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        physicalInventoryCountQuestionnaireResponseString
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+
+    // for some weird reason, the `entry` has 9 resources instead of 8. The 1st resource is blank.
+    Assert.assertTrue(targetResource.entry.size == 9)
+    Assert.assertTrue(targetResource.entry[2].resource is Observation)
+
+    val observation = targetResource.entry[8].resource as Observation
+    Assert.assertTrue(observation.code.text == "under-reporting")
   }
 }
