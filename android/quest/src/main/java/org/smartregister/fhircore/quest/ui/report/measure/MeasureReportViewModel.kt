@@ -81,11 +81,6 @@ constructor(
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 ) : ViewModel() {
 
-  private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
-
-  private val measureReportDateFormatter =
-    SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
-
   val measureReportConfig: MutableState<MeasureReportConfig?> = mutableStateOf(null)
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
@@ -108,6 +103,11 @@ constructor(
   val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> by lazy {
     MutableStateFlow(retrieveAncPatients())
   }
+
+  private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
+
+  private val measureReportDateFormatter =
+    SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
@@ -372,7 +372,6 @@ constructor(
     const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
     const val SUBJECT = "subject"
     const val POPULATION = "population"
-    const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20
   }
 }

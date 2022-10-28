@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.ui.report.measure
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,22 +32,22 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 
 @Composable
 fun MeasureReportMainScreen(
-  navController: NavHostController = rememberNavController(),
+  mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
   NavHost(
-    navController = navController,
+    navController = rememberNavController(),
     startDestination = MeasureReportNavigationScreen.MeasureReportList.route
   ) {
 
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportList.route) {
       MeasureReportListScreen(
-        navController = navController,
+        mainNavController = mainNavController,
         dataList = measureReportViewModel.reportMeasuresList(),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
+            MeasureReportEvent.OnSelectMeasure(measureReportRowData, mainNavController)
           )
         }
       )
@@ -68,7 +68,7 @@ fun MeasureReportMainScreen(
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
         screenTitle = screenTitle,
-        navController = navController,
+        navController = mainNavController,
         measureReportViewModel = measureReportViewModel
       )
     }
@@ -76,7 +76,7 @@ fun MeasureReportMainScreen(
     // Page for selecting patient to evaluate their measure
     composable(MeasureReportNavigationScreen.PatientsList.route) {
       MeasureReportPatientsScreen(
-        navController = navController,
+        navController = mainNavController,
         measureReportViewModel = measureReportViewModel
       )
     }
@@ -84,7 +84,7 @@ fun MeasureReportMainScreen(
     // Page for displaying measure report results
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
-        navController = navController,
+        navController = mainNavController,
         measureReportViewModel = measureReportViewModel
       )
     }
