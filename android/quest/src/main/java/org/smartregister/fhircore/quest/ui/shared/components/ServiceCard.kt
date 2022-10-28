@@ -94,7 +94,7 @@ fun ServiceCard(
               resourceData = resourceData
             )
           }
-          .padding(top = 10.dp, bottom = 10.dp)
+          .padding(top = 12.dp, bottom = 12.dp)
           .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
       // When show div
