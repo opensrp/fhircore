@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "measureReport",
   "registerId": "ancRegister",
+  "registerDate": "2020-10-27",
   "reports": [
     {
       "id": "1",

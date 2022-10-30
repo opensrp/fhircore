@@ -20,8 +20,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = ""
+    val id: String = "",
+    val title: String = "",
+    val description: String = "",
+    val url: String = "",
 )

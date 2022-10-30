@@ -61,4 +61,11 @@ constructor(
       registerId = measureReportConfiguration.registerId
     )
   }
+
+  /**
+   * returns start date of campaign to get the month/year list start month
+   */
+  fun getCampaignStartDate():String{
+    return measureReportConfiguration.registerDate
+  }
 }

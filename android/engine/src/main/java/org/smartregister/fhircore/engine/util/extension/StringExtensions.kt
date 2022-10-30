@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.annotation.SuppressLint
 import java.text.MessageFormat
-import java.util.Locale
 import java.util.regex.Pattern
 import org.apache.commons.text.CaseUtils
 import org.apache.commons.text.StringSubstitutor
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
@@ -91,3 +93,10 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  * be a keycloak-uuid.
  */
 fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+
+
+/**
+ * Convert the string to date
+ */
+@SuppressLint("SimpleDateFormat")
+fun String.getYyyMmDd(format: String): Date? =  SimpleDateFormat(format).parse(this)

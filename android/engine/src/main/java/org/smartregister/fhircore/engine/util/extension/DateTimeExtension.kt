@@ -34,6 +34,10 @@ val SDF_MMM_YYYY = simpleDateFormatFor("MMM-yyyy")
 val SDF_YYYY_MMM = simpleDateFormatFor("yyyy-MMM")
 val SDF_YYYY = simpleDateFormatFor("yyyy")
 val SDF_MMM = simpleDateFormatFor("MMM")
+val SDF_MM = simpleDateFormatFor("MM")
+val SDF_MMMM_YYYY = simpleDateFormatFor("MMMM-yyyy\"")
+val SDF_MMMM = simpleDateFormatFor("MMMM")
+
 
 fun simpleDateFormatFor(pattern: String, locale: Locale = Locale.getDefault()) =
   SimpleDateFormat(pattern, locale)
@@ -52,6 +56,11 @@ fun Date?.asMmmYyyy(): String {
   return SDF_MMM_YYYY.format(this)
 }
 
+fun Date?.asMmmmYyyy(): String {
+  if (this == null) return ""
+  return SDF_MMMM_YYYY.format(this)
+}
+
 fun Date?.asYyyy(): String {
   if (this == null) return ""
   return SDF_YYYY.format(this)
@@ -60,6 +69,16 @@ fun Date?.asYyyy(): String {
 fun Date?.asMmm(): String {
   if (this == null) return ""
   return SDF_MMM.format(this)
+}
+
+fun Date?.asMm(): String {
+  if (this == null) return ""
+  return SDF_MM.format(this)
+}
+
+fun Date?.asMmmm(): String {
+  if (this == null) return ""
+  return SDF_MMMM.format(this)
 }
 
 fun SimpleDateFormat.tryParse(date: String): Date? =
@@ -78,6 +97,9 @@ fun List<SimpleDateFormat>.tryParse(date: String): Date? {
 }
 
 fun Date.asDdMmmYyyy(): String {
+  return SDF_DD_MMM_YYYY.format(this)
+}
+fun Date.asDdMmYyyy(): String {
   return SDF_DD_MMM_YYYY.format(this)
 }
 
@@ -100,8 +122,9 @@ fun Date?.prettifyDate(): String =
 
 fun isSameMonthYear(yearMonthValue1: String, yearMonthValue2: String) =
   listOf(SDF_MMM_YYYY, SDF_YYYY_MMM).let {
-    it.tryParse(yearMonthValue1)?.asMmmYyyy()?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) ==
-      true
+    it.tryParse(yearMonthValue1)?.asMmmYyyy()
+      ?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) ==
+            true
   }
 
 fun Date.daysPassed() =

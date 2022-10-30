@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,6 +82,7 @@ fun MeasureReportResultScreen(
   )
 }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun MeasureReportResultPage(
   screenTitle: String,
