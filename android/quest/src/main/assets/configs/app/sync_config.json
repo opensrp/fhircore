@@ -84,7 +84,8 @@
         "code": "_id",
         "base": [
           "StructureMap",
-          "PlanDefinition"
+          "PlanDefinition",
+          "Practitioner"
         ]
       }
     },

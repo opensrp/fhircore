@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "eCBIS",
+  "appTitle": "eCBIS CHSS",
   "remoteSyncPageSize": 100,
   "languages": [
     "en"

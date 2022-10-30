@@ -1,0 +1,131 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "practitionerRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Practitioner",
+      "dataQueries": [
+      ]
+    },
+    "relatedResources": [
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "practitionerName",
+      "practitionerId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "practitionerFirstName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerFirstName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(given[0])\"))"
+        ]
+      },
+      {
+        "name": "practitionerMiddleName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerMiddleName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(text)\"))"
+        ]
+      },
+      {
+        "name": "practitionerLastName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerLastName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(family)\"))"
+        ]
+      },
+      {
+        "name": "practitionerName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerName', data.get('practitionerFirstName') + ' ' + data.get('practitionerMiddleName') + ' ' + data.get('practitionerLastName'))"
+        ]
+      },
+      {
+        "name": "practitionerIdentifier",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerIdentifier', fhirPath.extractValue(Practitioner, 'Practitioner.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, 'Practitioner.id'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{practitionerName}",
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "",
+            "serviceButton": {
+              "visible": true,
+              "text": "0",
+              "status": "DUE",
+              "fontSize": 14.0,
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "practitionerProfile",
+                  "params": [
+                    {
+                      "key": "practitionerId",
+                      "value": "@{practitionerId}"
+                    }
+                  ]
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "practitionerProfile",
+                "params": [
+                  {
+                    "key": "practitionerId",
+                    "value": "@{practitionerId}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "noResults": {
+    "title": "No CHAs added",
+    "message": "Sorry, you haven't added any CHAs to your register",
+    "actionButton": {
+      "id": "noResultsButton",
+      "visible": false,
+      "display": "Add household",
+      "actions": [
+      ]
+    }
+  }
+}
