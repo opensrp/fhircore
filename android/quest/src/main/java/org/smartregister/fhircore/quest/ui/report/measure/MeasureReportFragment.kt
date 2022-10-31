@@ -30,19 +30,18 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class MeasureReportFragment : Fragment() {
 
-    val measureReportViewModel by viewModels<MeasureReportViewModel>()
+  val measureReportViewModel by viewModels<MeasureReportViewModel>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                AppTheme { MeasureReportMainScreen(measureReportViewModel = measureReportViewModel) }
-            }
-        }
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
+    return ComposeView(requireContext()).apply {
+      setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+      setContent {
+        AppTheme { MeasureReportMainScreen(measureReportViewModel = measureReportViewModel) }
+      }
     }
-
+  }
 }
