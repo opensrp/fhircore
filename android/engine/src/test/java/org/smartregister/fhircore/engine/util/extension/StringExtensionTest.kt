@@ -28,4 +28,8 @@ class StringExtensionTest {
       "my-keycloak-id".practitionerEndpointUrl()
     )
   }
+  @Test
+  fun checkTrueIfStringIsConvertedToYyyyMmDd(){
+    Assert.assertEquals("31-Oct-2022","2022-10-31".getYyyMmDd("yyyy-MM-dd")!!.asDdMmmYyyy())
+  }
 }
