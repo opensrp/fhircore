@@ -88,24 +88,52 @@
       ]
     },
     {
+      "name": "isChild",
+      "condition": "true",
+      "actions": [
+        "data.put('isChild',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+      ]
+    },
+    {
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+      ]
+    },
+    {
+      "name": "isEligibleForFP",
+      "condition": "true",
+      "actions": [
+        "data.put('isEligibleForFP',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+      ]
+    },
+    {
+      "name": "isPregnant",
+      "condition": "true",
+      "actions": [
+        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", false))"
       ]
     },
     {
       "name": "canHavePregnancyOutcome",
       "condition": "true",
       "actions": [
-        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
+        "data.put('canHavePregnancyOutcome',  (data.get('canBearChild') and data.get('isPregnant')))"
+      ]
+    },
+    {
+      "name": "canRegisterPregnancy",
+      "condition": "true",
+      "actions": [
+        "data.put('canRegisterPregnancy', data.get('canBearChild'))"
       ]
     },
     {
       "name": "canEnrollToFp",
       "condition": "true",
       "actions": [
-        "data.put('canEnrollToFp', data.get('canBearChild'))"
+        "data.put('canEnrollToFp', data.get('isEligibleForFP'))"
       ]
     },
     {
@@ -316,25 +344,6 @@
       ]
     },
     {
-      "title": "Pregnancy Outcome",
-      "titleColor": "#000000",
-      "visible": "@{canHavePregnancyOutcome}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "405619ff-cde8-4379-b674-0a4735098b33",
-            "title": "Pregnancy outcome",
-            "resourceIdentifier": "@{patientId}",
-            "planDefinitions": [
-              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
-            ]
-          }
-        }
-      ]
-    },
-    {
       "title": "Record as Sick",
       "titleColor": "#000000",
       "visible": "@{isChildOver2months}",
@@ -373,9 +382,47 @@
       ]
     },
     {
+      "title": "Register Pregnancy",
+      "titleColor": "#000000",
+      "visible": "@{canRegisterPregnancy}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "9b22f3ed-e7e1-4222-bf72-1ced42696189",
+            "title": "Record to ANC",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "a881d53a-590c-4d52-ae0f-c87b7ff04148"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "#000000",
+      "visible": "@{canHavePregnancyOutcome}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
+            "title": "Pregnancy outcome",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "title": "Enroll to FP",
       "titleColor": "#000000",
-      "visible": "@{canEnrollToFp}",
+      "visible": "@{isEligibleForFP}",
       "actions": [
         {
           "trigger": "ON_CLICK",

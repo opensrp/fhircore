@@ -107,31 +107,31 @@
       ]
     },
     {
-      "name": "canHavePregnancyOutcome",
-      "condition": "true",
-      "actions": [
-        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
-      ]
-    },
-    {
       "name": "isPregnant",
       "condition": "true",
       "actions": [
-        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.text = 'Pregnant' \", false))"
+        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", false))"
+      ]
+    },
+    {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome',  (data.get('canBearChild') and data.get('isPregnant')))"
       ]
     },
     {
       "name": "canRegisterPregnancy",
       "condition": "true",
       "actions": [
-        "data.put('canRegisterPregnancy', data.get('canBearChild') && data.get('!isPregnant'))"
+        "data.put('canRegisterPregnancy', data.get('canBearChild'))"
       ]
     },
     {
       "name": "canEnrollToFp",
       "condition": "true",
       "actions": [
-        "data.put('canEnrollToFp', data.get('isEligibleForFP') && data.get('!isPregnant'))"
+        "data.put('canEnrollToFp', data.get('isEligibleForFP'))"
       ]
     },
     {
@@ -398,7 +398,7 @@
     {
       "title": "Pregnancy Outcome",
       "titleColor": "#000000",
-      "visible": "@{isPregnant}",
+      "visible": "@{canHavePregnancyOutcome}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -417,7 +417,7 @@
     {
       "title": "Enroll to FP",
       "titleColor": "#000000",
-      "visible": "@{canEnrollToFp}",
+      "visible": "@{isEligibleForFP}",
       "actions": [
         {
           "trigger": "ON_CLICK",
