@@ -224,6 +224,20 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
+  fun testSearchRegisterDataByName() = runTest {
+    val data =
+      hivRegisterDao.searchByName(nameQuery = "John", currentPage = 0, appFeatureName = "HIV")
+
+    assertNotNull(data)
+    val hivRegisterData = data[0] as RegisterData.HivRegisterData
+    assertEquals(expected = "50y", actual = hivRegisterData.age)
+    assertEquals(expected = "Dist 1 City 1", actual = hivRegisterData.address)
+    assertEquals(expected = "John Doe", actual = hivRegisterData.name)
+    assertEquals(expected = HealthStatus.EXPOSED_INFANT, actual = hivRegisterData.healthStatus)
+    assertEquals(expected = Enumerations.AdministrativeGender.MALE, actual = hivRegisterData.gender)
+  }
+
+  @Test
   fun testLoadProfileData() {
     val data = runBlocking {
       hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1")
