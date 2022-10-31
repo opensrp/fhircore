@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -142,7 +141,7 @@ fun ServiceCard(
       modifier =
         modifier
           .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-          .padding(top = 10.dp, bottom = 10.dp),
+          .padding(top = 12.dp, bottom = 12.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -237,11 +236,7 @@ private fun BigServiceButton(
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          when {
-            buttonEnabled ->
-              if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-            else -> DefaultColor.copy(alpha = 0.25f)
-          }
+          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         )
         .clickable {
           if (buttonEnabled &&
@@ -257,30 +252,24 @@ private fun BigServiceButton(
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Column(
-      verticalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxSize().padding(4.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      if (extractedStatus == ServiceStatus.COMPLETED)
-        Icon(
-          modifier = modifier.size(16.dp),
-          imageVector = Icons.Filled.Check,
-          contentDescription = null,
-          tint =
-            when (extractedStatus) {
-              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else -> statusColor.copy(alpha = 0.9f)
-            }
-        )
-      Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
-        color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
-        textAlign = TextAlign.Center,
-        fontSize = buttonProperties.fontSize.sp,
-        overflow = TextOverflow.Ellipsis
+    if (extractedStatus == ServiceStatus.COMPLETED)
+      Icon(
+        modifier = modifier.size(16.dp),
+        imageVector = Icons.Filled.Check,
+        contentDescription = null,
+        tint =
+          when (extractedStatus) {
+            ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+            else -> statusColor.copy(alpha = 0.9f)
+          }
       )
-    }
+    Text(
+      text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
+      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
+      textAlign = TextAlign.Center,
+      fontSize = buttonProperties.fontSize.sp,
+      overflow = TextOverflow.Ellipsis
+    )
   }
 }
 
