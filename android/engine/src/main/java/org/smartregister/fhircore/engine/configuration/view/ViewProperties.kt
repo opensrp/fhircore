@@ -32,12 +32,13 @@ abstract class ViewProperties {
   abstract val padding: Int
   abstract val borderRadius: Int
   abstract val alignment: ViewAlignment
+  abstract val fillMaxWidth: Boolean
+  abstract val fillMaxHeight: Boolean
 }
 
 enum class ViewAlignment {
   START,
   END,
   CENTER,
-  FILL,
   NONE
 }

@@ -28,6 +28,8 @@ data class ColumnProperties(
   override val padding: Int = 0,
   override val borderRadius: Int = 0,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
   val spacedBy: Int = 8,
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,

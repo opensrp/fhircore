@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.util.extensions.conditional
 
 @Composable
 fun GenerateView(
@@ -184,7 +185,6 @@ fun RowScope.generateModifier(viewProperties: ViewProperties): Modifier {
     ViewAlignment.START -> modifier.align(Alignment.Top)
     ViewAlignment.END -> modifier.align(Alignment.Bottom)
     ViewAlignment.CENTER -> modifier.align(Alignment.CenterVertically)
-    ViewAlignment.FILL -> modifier.fillMaxHeight()
     else -> modifier
   }
 }
@@ -203,23 +203,19 @@ fun ColumnScope.generateModifier(viewProperties: ViewProperties): Modifier {
     ViewAlignment.START -> modifier.align(Alignment.Start)
     ViewAlignment.END -> modifier.align(Alignment.End)
     ViewAlignment.CENTER -> modifier.align(Alignment.CenterHorizontally)
-    ViewAlignment.FILL -> modifier.fillMaxWidth()
     else -> modifier
   }
 }
 
 @SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
-fun generateModifier(viewProperties: ViewProperties): Modifier {
-  val modifier = Modifier.applyCommonProperties(viewProperties)
-  return when (viewProperties.alignment) {
-    ViewAlignment.FILL -> modifier.fillMaxWidth()
-    else -> modifier
-  }
-}
+fun generateModifier(viewProperties: ViewProperties): Modifier =
+  Modifier.applyCommonProperties(viewProperties)
 
 @SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
-  this.background(viewProperties.backgroundColor.parseColor())
+  this.conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
+    .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
+    .background(viewProperties.backgroundColor.parseColor())
     .clip(RoundedCornerShape(viewProperties.borderRadius.dp))

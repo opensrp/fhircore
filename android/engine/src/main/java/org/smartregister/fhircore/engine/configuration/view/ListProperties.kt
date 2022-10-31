@@ -29,6 +29,8 @@ data class ListProperties(
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
   val baseResource: String,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
