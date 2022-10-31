@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
-import android.content.res.AssetManager
-import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.UrlUtil
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.android.fhir.FhirEngine
@@ -26,7 +23,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Identifier
@@ -34,10 +30,7 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.engine.serializing.jackson.JsonCqlMapper
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -53,37 +46,6 @@ suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Compos
       filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
     }
     .firstOrNull()
-
-suspend fun FhirEngine.loadCqlLibraryBundle(
-  context: Context,
-  sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperator,
-  resourcesBundlePath: String
-) =
-  try {
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    val savedResources =
-      sharedPreferencesHelper.read(SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name, "")
-
-    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-      val bundle = jsonParser.parseResource(it) as Bundle
-      bundle.entry.forEach { entry ->
-        if (entry.resource.resourceType == ResourceType.Library) {
-          fhirOperator.loadLib(entry.resource as Library)
-        } else {
-          if (!savedResources!!.contains(resourcesBundlePath)) {
-            create(entry.resource)
-            sharedPreferencesHelper.write(
-              SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name,
-              savedResources.plus(",").plus(resourcesBundlePath)
-            )
-          }
-        }
-      }
-    }
-  } catch (exception: Exception) {
-    Timber.e(exception)
-  }
 
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
