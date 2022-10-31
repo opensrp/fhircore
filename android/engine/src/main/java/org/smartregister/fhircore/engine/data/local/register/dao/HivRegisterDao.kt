@@ -18,14 +18,15 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
@@ -117,11 +118,9 @@ constructor(
             value = nameQuery
           }
         )
-        filter(Patient.ACTIVE, { value = of(true) })
-        filter(Patient.GENDER, { value = of(CodeType("male")) }, { value = of(CodeType("female")) })
+        filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
+        operation = Operation.OR
         sort(Patient.NAME, Order.ASCENDING)
-        count = PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
     return patients.mapNotNull { patient ->
