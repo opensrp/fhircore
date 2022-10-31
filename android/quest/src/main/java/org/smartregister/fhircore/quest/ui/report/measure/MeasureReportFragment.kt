@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
@@ -33,7 +32,6 @@ class MeasureReportFragment : Fragment() {
 
     val measureReportViewModel by viewModels<MeasureReportViewModel>()
 
-    private lateinit var job: Job
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
