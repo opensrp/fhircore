@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.engine.ui.components.register
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
@@ -26,9 +26,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.components.register.LOADER_DIALOG_PROGRESS_BAR_TAG
-import org.smartregister.fhircore.engine.ui.components.register.LOADER_DIALOG_PROGRESS_MSG_TAG
-import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 
 class LoaderViewKtTest : RobolectricTest() {
 
