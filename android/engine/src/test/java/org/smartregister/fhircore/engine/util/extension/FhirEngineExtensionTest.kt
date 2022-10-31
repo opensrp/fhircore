@@ -16,32 +16,20 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Composition
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class FhirEngineExtensionTest : RobolectricTest() {
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private val fhirEngine: FhirEngine = mockk()
-
-  private val fhirOperator: FhirOperator = mockk()
-
-  private val sharedPreferenceHelper: SharedPreferencesHelper = mockk()
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
@@ -53,27 +41,5 @@ class FhirEngineExtensionTest : RobolectricTest() {
     coVerify { fhirEngine.search<Composition>(any()) }
 
     Assert.assertEquals("123", result!!.logicalId)
-  }
-
-  @Test
-  fun loadCqlLibraryBundle() {
-    val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
-
-    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
-    every { sharedPreferenceHelper.read(prefsDataKey, any<String>()) } returns ""
-    every { sharedPreferenceHelper.write(prefsDataKey, any<String>()) } returns Unit
-    coEvery { fhirOperator.loadLib(any()) } returns Unit
-    coEvery { fhirEngine.create(any()) } returns listOf()
-
-    runBlocking {
-      fhirEngine.loadCqlLibraryBundle(
-        application,
-        sharedPreferenceHelper,
-        fhirOperator,
-        measureResourceBundleUrl
-      )
-    }
-
-    Assert.assertNotNull(sharedPreferenceHelper.read(prefsDataKey, ""))
   }
 }
