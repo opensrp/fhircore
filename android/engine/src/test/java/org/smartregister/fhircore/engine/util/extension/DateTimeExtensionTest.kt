@@ -75,6 +75,14 @@ class DateTimeExtensionTest : RobolectricTest() {
 
     assertEquals("Feb", result)
   }
+  @Test
+  fun `Date asMmmm() should return correct formatted date`() {
+    val date = DateUtils.parseDate("2022-03-02", "yyyy-MM-dd")
+
+    val result = date.asMmmm()
+
+    assertEquals("March", result)
+  }
 
   @Test
   fun `SimpleDateFormat tryParse() should parse given date correctly`() {

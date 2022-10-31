@@ -118,7 +118,6 @@ fun ReportTypeSelectorPage(
                 Box(
                     modifier = modifier
                         .fillMaxSize(),
-                    contentAlignment = Alignment.Center
                 ) {
 
 
@@ -149,7 +148,7 @@ fun ReportTypeSelectorPage(
 }
 
 /**
- * Demo 5: LazyColumn displaying a List<ReportRangeSelectionData> with clickable items, utilizing a StickyHeader
+ * LazyColumn displaying a List<ReportRangeSelectionData> with clickable items, utilizing a StickyHeader
  * A RecyclerView equivalent with rich UI populating it's items from a dataset with a sticky header
  */
 
@@ -236,13 +235,26 @@ fun ListItem(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun ReportFilterPreview() {
-
+    val ranges = HashMap<String, List<ReportRangeSelectionData>>()
+    val months = mutableListOf<ReportRangeSelectionData>()
+    val range = ReportRangeSelectionData(
+        "March", "2022",
+        "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!
+    )
+    months.add(range)
+    months.add(range)
+    months.add(range)
+    months.add(range)
+    ranges["2022"] = months
+    ranges["2021"] = months
+    ranges["2020"] = months
+    ranges["2019"] = months
     ReportTypeSelectorPage(
         screenTitle = "First ANC",
         onGenerateReportClicked = {},
         onBackPress = {},
         showProgressIndicator = false,
-        reportGenerationRange = HashMap()
+        reportGenerationRange = ranges
     )
 }
 
