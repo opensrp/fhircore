@@ -18,6 +18,10 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Condition
@@ -66,18 +70,22 @@ fun Patient.extractGender(context: Context): String? =
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
-  return getAgeStringFromDays(birthDate.daysPassed())
+  return getAgeStringFromDays(birthDate)
 }
 
-fun getAgeStringFromDays(days: Long): String {
+fun getAgeStringFromDays(date: Date): String {
   var elapseYearsString = ""
   var elapseMonthsString = ""
   var elapseWeeksString = ""
   var elapseDaysString = ""
-  val elapsedYears = days / DAYS_IN_YEAR
+  val startDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+  val endDate = LocalDate.now()
+  val period: Period = Period.between(startDate, endDate)
+  val days = ChronoUnit.DAYS.between(startDate, endDate)
   val diffDaysFromYear = days % DAYS_IN_YEAR
-  val elapsedMonths = diffDaysFromYear / DAYS_IN_MONTH
   val diffDaysFromMonth = diffDaysFromYear % DAYS_IN_MONTH
+  val elapsedYears = period.years
+  val elapsedMonths = period.months
   val elapsedWeeks = diffDaysFromMonth / DAYS_IN_WEEK
   val elapsedDays = diffDaysFromMonth % DAYS_IN_WEEK
   // TODO use translatable abbreviations - extract abbr to string resource
