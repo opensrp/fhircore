@@ -28,6 +28,8 @@ data class ButtonProperties(
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = true,
+  override val fillMaxHeight: Boolean = false,
   val visible: String = "true",
   val enabled: String = "true",
   val text: String? = null,
@@ -35,5 +37,4 @@ data class ButtonProperties(
   val smallSized: Boolean = false,
   val fontSize: Float = 10.0f,
   val actions: List<ActionConfig> = emptyList(),
-  val fillMaxWidth: Boolean = true
 ) : ViewProperties()

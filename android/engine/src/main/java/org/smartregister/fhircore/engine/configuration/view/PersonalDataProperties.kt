@@ -27,6 +27,8 @@ data class PersonalDataProperties(
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
   val personalDataItems: List<PersonalDataItem> = emptyList()
 ) : ViewProperties()
 

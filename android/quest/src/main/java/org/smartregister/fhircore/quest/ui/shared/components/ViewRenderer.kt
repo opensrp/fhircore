@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.RowArrangement
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
@@ -62,7 +63,7 @@ private fun PreviewWeightedViewsInRow() {
       listOf(
         RowProperties(
           viewType = ViewType.ROW,
-          alignment = ViewAlignment.FILL,
+          fillMaxWidth = true,
           children =
             listOf(
               ButtonProperties(
@@ -95,7 +96,7 @@ private fun PreviewWrappedViewsInRow() {
       listOf(
         RowProperties(
           viewType = ViewType.ROW,
-          alignment = ViewAlignment.FILL,
+          fillMaxWidth = true,
           wrapContent = true,
           children =
             listOf(
@@ -150,8 +151,10 @@ private fun PreviewSameSizedViewInRow() {
       listOf(
         RowProperties(
           viewType = ViewType.ROW,
-          alignment = ViewAlignment.FILL,
+          fillMaxWidth = true,
           wrapContent = false,
+          alignment = ViewAlignment.START,
+          arrangement = RowArrangement.CENTER,
           children =
             listOf(
               CompoundTextProperties(
@@ -160,7 +163,6 @@ private fun PreviewSameSizedViewInRow() {
                 primaryTextColor = "#000000",
                 primaryTextBackgroundColor = "#CFCFCF",
                 padding = 8,
-                weight = 1.0f
               ),
               CompoundTextProperties(
                 viewType = ViewType.COMPOUND_TEXT,
@@ -168,7 +170,6 @@ private fun PreviewSameSizedViewInRow() {
                 primaryTextColor = "#D2760D",
                 primaryTextBackgroundColor = "#FFECD6",
                 padding = 8,
-                weight = 1.0f,
                 alignment = ViewAlignment.END
               )
             )

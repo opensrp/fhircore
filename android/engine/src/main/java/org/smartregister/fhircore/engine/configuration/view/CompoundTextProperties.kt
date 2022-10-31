@@ -28,6 +28,8 @@ data class CompoundTextProperties(
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
