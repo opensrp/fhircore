@@ -133,7 +133,7 @@ fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
 
 fun Date.monthsPassed() = this.daysPassed().div(30.5).toInt()
 
-fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this.daysPassed())
+fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this)
 
 fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
