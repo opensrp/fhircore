@@ -34,6 +34,7 @@ internal class NetworkStateTest : RobolectricTest() {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
+  @Suppress("DEPRECATION")
   @Test
   fun invoke() {
     val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
@@ -44,6 +45,8 @@ internal class NetworkStateTest : RobolectricTest() {
     shadowOf(connectivityManager)
       .setNetworkCapabilities(connectivityManager.activeNetwork, networkCapabilities)
 
+    assertTrue(connectivityManager.activeNetworkInfo?.type != ConnectivityManager.TYPE_WIFI)
+    assertTrue(connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE)
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
   }

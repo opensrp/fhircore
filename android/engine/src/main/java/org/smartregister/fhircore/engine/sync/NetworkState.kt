@@ -34,16 +34,13 @@ class NetworkState(private val context: Context) {
         connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
       return when {
         networkCapability.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-          networkCapability.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-          networkCapability.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+          networkCapability.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
         else -> false
       }
     } else {
       connectivityManager.activeNetworkInfo?.run {
         return when (type) {
-          ConnectivityManager.TYPE_WIFI,
-          ConnectivityManager.TYPE_MOBILE,
-          ConnectivityManager.TYPE_ETHERNET -> true
+          ConnectivityManager.TYPE_WIFI, ConnectivityManager.TYPE_MOBILE -> true
           else -> false
         }
       }
