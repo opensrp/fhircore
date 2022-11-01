@@ -205,7 +205,7 @@ class PatientExtensionTest : RobolectricTest() {
     // passing days value for 1y 1m 4d
     Assert.assertEquals(expectedAge2, getAgeStringFromDays(getDateFromDaysAgo(399)))
 
-    val expectedAge3 = "1y"
+    val expectedAge3 = "1y 1w"
     // passing days value for 1y 1w
     Assert.assertEquals(expectedAge3, getAgeStringFromDays(getDateFromDaysAgo(372)))
 

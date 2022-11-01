@@ -99,6 +99,8 @@ fun getAgeStringFromDays(date: Date): String {
   } else if (days >= DAYS_IN_YEAR) {
     if (elapsedMonths > 0) {
       "$elapseYearsString $elapseMonthsString"
+    } else if (elapsedWeeks > 0) {
+      "$elapseYearsString $elapseWeeksString"
     } else elapseYearsString
   } else if (days >= DAYS_IN_MONTH) {
     if (elapsedWeeks > 0) {
