@@ -21,7 +21,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
 data class SpacerProperties(
-  override val viewType: ViewType = ViewType.BUTTON,
+  override val viewType: ViewType = ViewType.SPACER,
   override val weight: Float = 0f,
   override val backgroundColor: String? = "#FFFFFF",
   override val padding: Int = 0,
@@ -29,6 +29,7 @@ data class SpacerProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val height: Float? = null,
   val width: Float? = null,
 ) : ViewProperties()

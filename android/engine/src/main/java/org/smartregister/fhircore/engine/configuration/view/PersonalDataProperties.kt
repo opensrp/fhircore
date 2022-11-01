@@ -29,6 +29,7 @@ data class PersonalDataProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val personalDataItems: List<PersonalDataItem> = emptyList()
 ) : ViewProperties()
 

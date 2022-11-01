@@ -25,17 +25,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowRow
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 
 @Composable
 fun PersonalDataView(
   modifier: Modifier = Modifier,
   personalDataCardProperties: PersonalDataProperties,
-  computedValuesMap: Map<String, Any> = emptyMap()
+  resourceData: ResourceData,
+  navController: NavController
 ) {
   FlowRow(
     modifier =
@@ -43,7 +48,8 @@ fun PersonalDataView(
   ) {
     PersonalDataItem(
       personalDataCardProperties = personalDataCardProperties,
-      computedValuesMap = computedValuesMap
+      resourceData = resourceData,
+      navController = navController
     )
   }
 }
@@ -52,12 +58,21 @@ fun PersonalDataView(
 private fun PersonalDataItem(
   personalDataCardProperties: PersonalDataProperties,
   modifier: Modifier = Modifier,
-  computedValuesMap: Map<String, Any> = emptyMap()
+  resourceData: ResourceData,
+  navController: NavController
 ) {
   personalDataCardProperties.personalDataItems.forEach {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
-      CompoundText(compoundTextProperties = it.label, computedValuesMap = computedValuesMap)
-      CompoundText(compoundTextProperties = it.displayValue, computedValuesMap = computedValuesMap)
+      CompoundText(
+        compoundTextProperties = it.label,
+        resourceData = resourceData,
+        navController = navController
+      )
+      CompoundText(
+        compoundTextProperties = it.displayValue,
+        resourceData = resourceData,
+        navController = navController
+      )
     }
   }
 }
@@ -98,5 +113,9 @@ fun PersonalDataViewPreview() {
   val personaDataItems = listOf(genderDataItem, dobDataItem, ageDataItem)
   val personalDataCardProperties = PersonalDataProperties(personalDataItems = personaDataItems)
 
-  PersonalDataView(personalDataCardProperties = personalDataCardProperties)
+  PersonalDataView(
+    personalDataCardProperties = personalDataCardProperties,
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
 }

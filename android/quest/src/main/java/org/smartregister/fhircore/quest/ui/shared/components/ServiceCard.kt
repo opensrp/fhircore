@@ -106,7 +106,8 @@ fun ServiceCard(
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
-            computedValuesMap = resourceData.computedValuesMap
+            resourceData = resourceData,
+            navController = navController
           )
         }
       }

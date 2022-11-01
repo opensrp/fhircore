@@ -31,6 +31,7 @@ data class ListProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val baseResource: String,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,

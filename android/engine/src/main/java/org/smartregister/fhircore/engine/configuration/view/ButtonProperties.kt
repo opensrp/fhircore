@@ -30,6 +30,7 @@ data class ButtonProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = true,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "true",
   val visible: String = "true",
   val enabled: String = "true",
   val text: String? = null,
