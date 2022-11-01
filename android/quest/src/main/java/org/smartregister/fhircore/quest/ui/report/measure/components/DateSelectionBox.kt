@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
 import android.content.Context
-import android.view.View
-import android.widget.DatePicker
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,7 +46,6 @@ import androidx.core.util.Pair
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
-import java.lang.reflect.Field
 import java.util.Calendar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -136,30 +133,6 @@ fun showDateRangePicker(
     }
 }
 
-fun setCustomReflection(
-  dpd: MaterialDatePicker.Builder<Pair<Long, Long>>
-): MaterialDatePicker.Builder<Pair<Long, Long>> {
-  try {
-    val datePickerDialogFields: Array<Field> = dpd::class.java.declaredFields
-    for (datePickerDialogField in datePickerDialogFields) {
-      if (datePickerDialogField.name == "mDatePicker") {
-        datePickerDialogField.isAccessible = true
-        val datePicker = datePickerDialogField[dpd] as DatePicker
-        val datePickerFields = datePickerDialogField.type.declaredFields
-        for (datePickerField in datePickerFields) {
-          if ("mDaySpinner" == datePickerField.name) {
-            datePickerField.isAccessible = true
-            val dayPicker = datePickerField[datePicker]
-            (dayPicker as View).visibility = View.GONE
-          }
-        }
-      }
-    }
-  } catch (ex: Exception) {
-    ex.printStackTrace()
-  }
-  return dpd
-}
 
 @Composable
 @Preview(showBackground = true)

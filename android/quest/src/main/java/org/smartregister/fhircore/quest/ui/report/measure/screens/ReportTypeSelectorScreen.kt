@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,13 +39,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,7 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.util.Date
+import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
+import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
 import org.smartregister.fhircore.quest.R
@@ -120,10 +123,11 @@ fun ReportTypeSelectorPage(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.fillMaxSize()) {
-        Box(
-          modifier = modifier.fillMaxSize(),
-        ) {
-          if (showProgressIndicator) {
+        if (showProgressIndicator) {
+          Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+          ) {
             Column(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally,
@@ -135,9 +139,15 @@ fun ReportTypeSelectorPage(
                 modifier = modifier.padding(vertical = 16.dp)
               )
             }
-          } else {
+          }
+
+        } else {
+          Box(
+            modifier = modifier.fillMaxSize(),
+          ) {
             LazyMonthList(reportGenerationRange) { onGenerateReportClicked(it.date) }
           }
+
         }
       }
     }
@@ -162,18 +172,26 @@ fun LazyMonthList(
     reportRangeList.forEach { (year, monthList) ->
       stickyHeader {
         Row(
-          Modifier.fillMaxWidth().background(color = colorResource(id = R.color.other_light_gray))
+          Modifier
+            .fillMaxWidth()
+            .background(color = SearchHeaderColor)
         ) {
           Text(
             text = year,
             fontSize = 14.sp,
-            color = colorResource(id = R.color.dark_gray),
-            modifier = Modifier.padding(8.dp).weight(0.85f)
+            color = DefaultColor.copy(alpha = 0.7f),
+            modifier = Modifier
+              .padding(8.dp)
+              .weight(0.85f)
           )
-          Image(
-            painter = painterResource(id = R.drawable.ic_grey_down_arrow),
+          Icon(
+            Icons.Filled.KeyboardArrowDown,
             contentDescription = null,
-            modifier = Modifier.weight(0.15f).align(Alignment.CenterVertically)
+            tint = DefaultColor.copy(alpha = 0.7f),
+            modifier = Modifier
+              .padding(8.dp)
+              .weight(0.15f)
+              .align(Alignment.CenterVertically)
           )
         }
       }
@@ -188,17 +206,26 @@ fun LazyMonthList(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
-  Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
+  Row(
+    Modifier
+      .fillMaxWidth()
+      .clickable { selectedMonth(data) }) {
     Text(
       data.month,
       fontSize = 16.sp,
       style = MaterialTheme.typography.h5,
-      modifier = Modifier.padding(14.dp).weight(0.85f)
+      modifier = Modifier
+        .padding(12.dp)
+        .weight(0.85f)
     )
-    Image(
-      painter = painterResource(id = R.drawable.ic_grey_right_arrow),
+    Icon(
+      Icons.Filled.KeyboardArrowRight,
       contentDescription = null,
-      modifier = Modifier.weight(0.15f).align(Alignment.CenterVertically)
+      tint = DefaultColor.copy(alpha = 0.7f),
+      modifier = Modifier
+        .padding(8.dp)
+        .weight(0.15f)
+        .align(Alignment.CenterVertically)
     )
   }
   Divider(color = DividerColor, thickness = 0.5.dp)
