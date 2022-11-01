@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.util.Date
-import kotlin.collections.HashMap
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
@@ -96,6 +95,8 @@ fun ReportTypeSelectorScreen(
 }
 
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun ReportTypeSelectorPage(
   screenTitle: String,
   onGenerateReportClicked: (date: Date) -> Unit,
@@ -150,6 +151,8 @@ fun ReportTypeSelectorPage(
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun LazyMonthList(
   reportRangeList: Map<String, List<ReportRangeSelectionData>>,
   selectedMonth: (ReportRangeSelectionData) -> Unit
@@ -182,6 +185,8 @@ fun LazyMonthList(
 
 /** Composable function to represent a list item */
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
   Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
     Text(

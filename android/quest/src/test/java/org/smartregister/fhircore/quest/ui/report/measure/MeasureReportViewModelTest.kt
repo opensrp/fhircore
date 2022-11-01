@@ -48,6 +48,7 @@ import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -173,7 +174,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController)
+      MeasureReportEvent.GenerateReport(context = application, navController = navController),
+      "2022-10-31".getYyyMmDd("yyyy-MM-dd")
     )
 
     verify { measureReportViewModel.evaluateMeasure(navController) }
