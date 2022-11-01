@@ -97,8 +97,8 @@
               "memberResourceType": "Patient"
             },
             "planDefinitions": [
-              "9fac39bd-9750-4c1d-b355-1961de4e37f3",
-              "e994ab6f-30a5-4450-9a90-691c8199f379"
+              "340",
+              "306"
             ]
           }
         }

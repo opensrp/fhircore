@@ -296,7 +296,7 @@
         {
           "title": "New Pregnancy Registration",
           "focus": {
-            "reference": "Questionnaire/9b22f3ed-e7e1-4222-bf72-1ced42696189",
+            "reference": "Questionnaire/343",
             "identifier": {
               "value": "anc-patient-registration"
             }
@@ -306,7 +306,7 @@
         {
           "title": "Pregnancy Visit",
           "focus": {
-            "reference": "Questionnaire/f642fe17-1d75-45a2-b813-3cfb69706cb0",
+            "reference": "Questionnaire/372",
             "identifier": {
               "value": "anc-visit"
             }
@@ -316,7 +316,7 @@
         {
           "title": "Pregnancy Outcome",
           "focus": {
-            "reference": "Questionnaire/405619ff-cde8-4379-b674-0a4735098b33",
+            "reference": "Questionnaire/345",
             "identifier": {
               "value": "pregnancy-outcome"
             }
@@ -336,7 +336,7 @@
         {
           "title": "Child Immunization Completion",
           "focus": {
-            "reference": "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82",
+            "reference": "Questionnaire/370",
             "identifier": {
               "value": "child-immunization-completion"
             }
@@ -366,7 +366,7 @@
         {
           "title": "Counter Referral",
           "focus": {
-            "reference": "Questionnaire/c309abfa-7536-4c60-baea-cf631201f79e",
+            "reference": "Questionnaire/371",
             "identifier": {
               "value": "referral"
             }
@@ -376,7 +376,7 @@
         {
           "title": "New FP Registration",
           "focus": {
-            "reference": "Questionnaire/4acc8776-32b0-4440-a1b1-a11a12d79acb",
+            "reference": "Questionnaire/357",
             "identifier": {
               "value": "family-planning"
             }
@@ -386,7 +386,7 @@
         {
           "title": "FP Visit",
           "focus": {
-            "reference": "Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726",
+            "reference": "Questionnaire/356",
             "identifier": {
               "value": "fp-visit"
             }
@@ -641,7 +641,7 @@
         {
           "title": "FP Visit",
           "focus": {
-            "reference": "StructureMap/ce46c251-b44e-4cb9-89aa-213c8ea47eb2",
+            "reference": "StructureMap/354",
             "identifier": {
               "value": "eCBISUnderWeightPNCRoutineVisit"
             }
@@ -651,7 +651,7 @@
         {
           "title": "FP Referral",
           "focus": {
-            "reference": "StructureMap/6256caaa-8781-4b34-985d-b20dcb41a2b3",
+            "reference": "StructureMap/355",
             "identifier": {
               "value": "eCBISPNCReferral"
             }
