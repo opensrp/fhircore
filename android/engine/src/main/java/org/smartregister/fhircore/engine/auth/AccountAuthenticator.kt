@@ -314,12 +314,12 @@ constructor(
     }
   }
 
-  fun loadRefreshedSessionAccount(callback: AccountManagerCallback<Bundle>) {
+  fun refreshSessionAuthToken(): Bundle {
+    val bundle = Bundle()
     tokenManagerService.getActiveAccount()?.run {
       val accountType = getAccountType()
       var authToken = accountManager.peekAuthToken(this, accountType)
-      if (!tokenManagerService.isTokenActive(authToken)) {
-        // Attempt to refresh token
+      if (authToken.isNullOrBlank() || !tokenManagerService.isTokenActive(authToken)) {
         getRefreshToken()?.let {
           Timber.i("Saved active refresh token is available")
 
@@ -327,29 +327,28 @@ constructor(
             refreshToken(it)?.let { newTokenResponse ->
               authToken = newTokenResponse.accessToken!!
               updateSession(newTokenResponse)
+              // Update AuthToken saved in DB
+              accountManager.setAuthToken(this, accountType, authToken)
             }
           }
             .onFailure {
-              // Reset session and refresh tokens to null to force re-login?
-              accountManager.invalidateAuthToken(accountType, authToken)
               Timber.e("Refresh token expired before it was used", it.stackTraceToString())
             }
-            .onSuccess {
-              Timber.i("Got new accessToken")
-              tokenManagerService.getActiveAccount()?.let {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                  accountManager.notifyAccountAuthenticated(it)
-                }
-              }
-            }
+            .onSuccess { Timber.i("Got new accessToken") }
         }
       }
-      loadAccount(
-        this,
-        callback,
-        errorHandler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
-      )
+
+      bundle.putString(AccountManager.KEY_ACCOUNT_NAME, this.name)
+      bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, this.type)
+
+      if (authToken?.isNotBlank() == true) {
+        bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+          accountManager.notifyAccountAuthenticated(this)
+        }
+      }
     }
+    return bundle
   }
 
   fun localLogout() {
