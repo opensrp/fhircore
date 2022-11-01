@@ -303,7 +303,9 @@ private fun MenuActionButton(
   navigationConfiguration: NavigationConfiguration,
   navController: NavController
 ) {
-  if (navigationConfiguration.menuActionButton != null) {
+  if (navigationConfiguration.menuActionButton != null &&
+      navigationConfiguration.menuActionButton?.visible == true
+  ) {
     Row(
       modifier =
         modifier
