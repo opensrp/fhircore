@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.accounts.AccountManager
 import android.content.Context
-import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -144,15 +143,13 @@ constructor(
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {
-        accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
-          val bundle = accountBundleFuture.result
-          bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
-            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
-              return@let
-            }
-            accountAuthenticator.logout()
+
+        accountAuthenticator.refreshSessionAuthToken().let { bundle ->
+          if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+            syncBroadcaster.runSync()
+            return@let
           }
+          accountAuthenticator.logout()
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
