@@ -133,7 +133,6 @@ fun showDateRangePicker(
     }
 }
 
-
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport

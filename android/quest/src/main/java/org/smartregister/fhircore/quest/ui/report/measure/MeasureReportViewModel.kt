@@ -146,6 +146,7 @@ constructor(
             NavigationArg.bindArgumentsOf(
               Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig.title)
             )
+
         )
       }
       is MeasureReportEvent.GenerateReport ->

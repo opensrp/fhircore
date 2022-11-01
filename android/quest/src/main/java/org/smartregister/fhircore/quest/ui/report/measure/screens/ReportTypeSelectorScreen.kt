@@ -54,10 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.util.Date
-import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
@@ -124,10 +122,7 @@ fun ReportTypeSelectorPage(
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.fillMaxSize()) {
         if (showProgressIndicator) {
-          Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-          ) {
+          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally,
@@ -140,14 +135,10 @@ fun ReportTypeSelectorPage(
               )
             }
           }
-
         } else {
           Box(
             modifier = modifier.fillMaxSize(),
-          ) {
-            LazyMonthList(reportGenerationRange) { onGenerateReportClicked(it.date) }
-          }
-
+          ) { LazyMonthList(reportGenerationRange) { onGenerateReportClicked(it.date) } }
         }
       }
     }
@@ -171,27 +162,18 @@ fun LazyMonthList(
   LazyColumn {
     reportRangeList.forEach { (year, monthList) ->
       stickyHeader {
-        Row(
-          Modifier
-            .fillMaxWidth()
-            .background(color = SearchHeaderColor)
-        ) {
+        Row(Modifier.fillMaxWidth().background(color = SearchHeaderColor)) {
           Text(
             text = year,
             fontSize = 14.sp,
             color = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier
-              .padding(8.dp)
-              .weight(0.85f)
+            modifier = Modifier.padding(8.dp).weight(0.85f)
           )
           Icon(
             Icons.Filled.KeyboardArrowDown,
             contentDescription = null,
             tint = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier
-              .padding(8.dp)
-              .weight(0.15f)
-              .align(Alignment.CenterVertically)
+            modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
           )
         }
       }
@@ -206,26 +188,18 @@ fun LazyMonthList(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
-  Row(
-    Modifier
-      .fillMaxWidth()
-      .clickable { selectedMonth(data) }) {
+  Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
     Text(
       data.month,
       fontSize = 16.sp,
       style = MaterialTheme.typography.h5,
-      modifier = Modifier
-        .padding(12.dp)
-        .weight(0.85f)
+      modifier = Modifier.padding(12.dp).weight(0.85f)
     )
     Icon(
       Icons.Filled.KeyboardArrowRight,
       contentDescription = null,
       tint = DefaultColor.copy(alpha = 0.7f),
-      modifier = Modifier
-        .padding(8.dp)
-        .weight(0.15f)
-        .align(Alignment.CenterVertically)
+      modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
     )
   }
   Divider(color = DividerColor, thickness = 0.5.dp)
