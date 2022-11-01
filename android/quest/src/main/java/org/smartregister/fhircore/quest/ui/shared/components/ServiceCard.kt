@@ -65,6 +65,8 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.clickable
+import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
@@ -75,6 +77,7 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
+  val serviceCardClickable = serviceCardProperties.clickable(resourceData)
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -87,12 +90,17 @@ fun ServiceCard(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
         modifier
-          .clickable {
-            serviceCardProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
+          .conditional(
+            serviceCardClickable,
+            {
+              clickable {
+                serviceCardProperties.actions.handleClickEvent(
+                  navController = navController,
+                  resourceData = resourceData
+                )
+              }
+            }
+          )
           .padding(top = 12.dp, bottom = 12.dp)
           .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
@@ -223,6 +231,7 @@ private fun BigServiceButton(
   val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
   val buttonEnabled =
     buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+  val buttonClickable = buttonProperties.clickable(resourceData)
 
   Column(
     modifier =
@@ -240,10 +249,7 @@ private fun BigServiceButton(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         )
         .clickable {
-          if (buttonEnabled &&
-              extractedStatus != ServiceStatus.UPCOMING &&
-              extractedStatus != ServiceStatus.COMPLETED
-          ) {
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
             buttonProperties.actions.handleClickEvent(
               navController = navController,
               resourceData = resourceData
