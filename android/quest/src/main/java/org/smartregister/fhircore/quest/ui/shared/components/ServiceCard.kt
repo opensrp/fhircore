@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -90,6 +91,13 @@ fun ServiceCard(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
         modifier
+          .padding(top = 12.dp, bottom = 12.dp)
+          .conditional(
+            serviceCardProperties.serviceButton == null &&
+              serviceCardProperties.services.isNullOrEmpty(),
+            { fillMaxWidth() },
+            { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) }
+          )
           .conditional(
             serviceCardClickable,
             {
@@ -101,8 +109,6 @@ fun ServiceCard(
               }
             }
           )
-          .padding(top = 12.dp, bottom = 12.dp)
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
       // When show div
       Column(
