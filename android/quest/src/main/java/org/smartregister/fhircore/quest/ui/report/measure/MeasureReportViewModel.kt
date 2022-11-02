@@ -191,14 +191,14 @@ constructor(
 
   private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
     Pager(
-        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
-        pagingSourceFactory = {
-          MeasureReportPatientsPagingSource(
-            measureReportRepository,
-            measureReportPatientViewDataMapper
-          )
-        }
-      )
+      config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
+      pagingSourceFactory = {
+        MeasureReportPatientsPagingSource(
+          measureReportRepository,
+          measureReportPatientViewDataMapper
+        )
+      }
+    )
       .flow
       .cachedIn(viewModelScope)
 
@@ -238,7 +238,7 @@ constructor(
                     reportType = SUBJECT,
                     subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
                     practitioner =
-                      practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+                    practitionerId?.asReference(ResourceType.Practitioner)?.reference,
                     lastReceivedOn = null // Non-null value not supported yet
                   )
                 }
@@ -252,7 +252,7 @@ constructor(
                   )
               }
             } else if (reportTypeSelectorUiState.value.patientViewData == null &&
-                !individualEvaluation
+              !individualEvaluation
             ) {
               evaluatePopulationMeasure(measureUrl, startDateFormatted, endDateFormatted)
             }
@@ -285,7 +285,9 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+          practitioner = null
+          /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+          practitionerId?.asReference(ResourceType.Practitioner)?.reference*/,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }
