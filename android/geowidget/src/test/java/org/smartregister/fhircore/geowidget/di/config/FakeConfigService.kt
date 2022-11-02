@@ -35,7 +35,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
     )
   }
 
-  override fun provideSyncStrategyTags() =
+  override fun defineSyncTags() =
     listOf(
       SyncStrategyTag(
         type = ResourceType.CareTeam.name,
@@ -71,7 +71,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
       )
     )
 
-  override fun provideSyncStrategies(): List<String> = listOf("Location")
+//  override fun provideSyncStrategies(): List<String> = listOf("Location")
   override fun provideConfigurationSyncPageSize(): String {
     return "100"
   }

@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -124,7 +123,7 @@ constructor(
       resource.onEach {
         it.generateMissingId()
         if (addMandatoryTags) {
-          it.addTags(configService.provideMandatorySyncTags(sharedPreferencesHelper))
+          it.addTags(configService.provideSyncTags(sharedPreferencesHelper))
         }
       }
 

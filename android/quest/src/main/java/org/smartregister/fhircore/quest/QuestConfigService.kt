@@ -39,7 +39,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       accountType = context.getString(R.string.authenticator_account_type)
     )
 
-  override fun provideSyncStrategyTags() =
+  override fun defineSyncTags() =
     listOf(
       SyncStrategyTag(
         type = ResourceType.CareTeam.name,
@@ -75,9 +75,9 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       )
     )
 
-  override fun provideSyncStrategies(): List<String> {
-    return BuildConfig.SYNC_STRATEGIES.toList()
-  }
+//  override fun provideSyncStrategies(): List<String> {
+//    return BuildConfig.SYNC_STRATEGIES.toList()
+//  }
 
   override fun provideConfigurationSyncPageSize(): String {
     return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE

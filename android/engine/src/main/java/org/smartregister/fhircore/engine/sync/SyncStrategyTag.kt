@@ -18,4 +18,4 @@ package org.smartregister.fhircore.engine.sync
 
 import org.hl7.fhir.r4.model.Coding
 
-data class SyncStrategyTag(val type: String, var tag: Coding? = null)
+data class SyncStrategyTag(val type: String, var tag: Coding)

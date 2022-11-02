@@ -22,6 +22,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.sync.SyncStrategyTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -39,7 +40,7 @@ interface ConfigService {
    * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all
    * synced resource.
    */
-  fun provideSyncStrategyTags(): List<SyncStrategyTag>
+  fun defineSyncTags(): List<SyncStrategyTag>
 
   fun scheduleFhirTaskPlanWorker(context: Context) {
     WorkManager.getInstance(context)
@@ -50,23 +51,28 @@ interface ConfigService {
       )
   }
 
-  fun provideSyncStrategies(): List<String>
+//  fun provideSyncStrategies(): List<String>
 
-  fun provideMandatorySyncTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
-    val syncStrategies = provideSyncStrategies()
+  fun provideSyncTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
     val tags = mutableListOf<Coding>()
-    provideSyncStrategyTags().forEach { strategy ->
-      if (syncStrategies.contains(strategy.type)) {
-        if (strategy.type == SharedPreferenceKey.PRACTITIONER_ID.name) {
-          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)?.let { id ->
-            strategy.tag?.let { tags.add(it.copy().apply { code = id.extractLogicalIdUuid() }) }
+    defineSyncTags().forEach { strategy ->
+        if (strategy.type == ResourceType.Practitioner.name) {
+          val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+          if (id.isNullOrBlank()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() }) }
           }
         } else {
-          sharedPreferencesHelper.read<List<String>>(strategy.type)?.forEach { id ->
-            strategy.tag?.let { tags.add(it.copy().apply { code = id.extractLogicalIdUuid() }) }
+          val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+          if (ids.isNullOrEmpty()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            ids.forEach { id ->
+              strategy.tag.let { tag -> tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() }) }
+            }
           }
         }
-      }
     }
 
     return tags

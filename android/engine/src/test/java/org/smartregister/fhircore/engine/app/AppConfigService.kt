@@ -36,7 +36,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       accountType = context.packageName
     )
 
-  override fun provideSyncStrategyTags() =
+  override fun defineSyncTags() =
     listOf(
       SyncStrategyTag(
         type = ResourceType.CareTeam.name,
@@ -72,7 +72,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       )
     )
 
-  override fun provideSyncStrategies(): List<String> = listOf("Location", "Organization")
+//  override fun provideSyncStrategies(): List<String> = listOf("Location", "Organization")
   override fun provideConfigurationSyncPageSize(): String {
     return "100"
   }

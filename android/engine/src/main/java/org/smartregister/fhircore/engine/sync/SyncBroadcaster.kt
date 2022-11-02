@@ -103,9 +103,9 @@ constructor(
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     val organizationSyncStrategy =
-      configService.provideSyncStrategyTags().find { it.type == ResourceType.Organization.name }
+      configService.defineSyncTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    val mandatoryTags = configService.provideSyncTags(sharedPreferencesHelper)
 
     val relatedResourceTypes: List<String>? =
       sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
