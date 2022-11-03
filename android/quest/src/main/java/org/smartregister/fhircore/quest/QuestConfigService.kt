@@ -24,7 +24,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.sync.SyncStrategyTag
+import org.smartregister.fhircore.engine.sync.ResourceTag
 
 @Singleton
 class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
@@ -39,9 +39,9 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       accountType = context.getString(R.string.authenticator_account_type)
     )
 
-  override fun defineSyncTags() =
+  override fun defineResourceTags() =
     listOf(
-      SyncStrategyTag(
+      ResourceTag(
         type = ResourceType.CareTeam.name,
         tag =
           Coding().apply {
@@ -49,7 +49,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_careteam_display)
           }
       ),
-      SyncStrategyTag(
+      ResourceTag(
         type = ResourceType.Location.name,
         tag =
           Coding().apply {
@@ -57,7 +57,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_location_display)
           }
       ),
-      SyncStrategyTag(
+      ResourceTag(
         type = ResourceType.Organization.name,
         tag =
           Coding().apply {
@@ -65,7 +65,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_organization_display)
           }
       ),
-      SyncStrategyTag(
+      ResourceTag(
         type = ResourceType.Practitioner.name,
         tag =
           Coding().apply {
@@ -74,10 +74,6 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           }
       )
     )
-
-//  override fun provideSyncStrategies(): List<String> {
-//    return BuildConfig.SYNC_STRATEGIES.toList()
-//  }
 
   override fun provideConfigurationSyncPageSize(): String {
     return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE

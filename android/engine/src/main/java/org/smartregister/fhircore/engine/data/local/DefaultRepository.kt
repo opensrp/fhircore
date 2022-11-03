@@ -118,12 +118,12 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun create(addMandatoryTags: Boolean = true, vararg resource: Resource): List<String> {
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        if (addMandatoryTags) {
-          it.addTags(configService.provideSyncTags(sharedPreferencesHelper))
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
         }
       }
 
