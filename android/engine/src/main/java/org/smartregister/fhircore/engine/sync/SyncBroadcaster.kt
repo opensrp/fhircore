@@ -102,9 +102,10 @@ constructor(
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    val organizationIds: List<String>? = if (appConfig.syncStrategies.contains(ResourceType.Organization.name)) {
-      sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
-    } else null
+    val organizationIds: List<String>? =
+      if (appConfig.syncStrategies.contains(ResourceType.Organization.name)) {
+        sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
+      } else null
 
     val relatedResourceTypes: List<String>? =
       sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
