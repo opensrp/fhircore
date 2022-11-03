@@ -93,14 +93,16 @@ fun ReportTypeSelectorScreen(
       screenTitle = screenTitle,
       onMonthSelected = { date ->
         measureReportViewModel.onEvent(
-          MeasureReportEvent.GenerateReport(navController, context), date
+          MeasureReportEvent.GenerateReport(navController, context),
+          date
         )
       },
       onBackPress = {
         // Reset UI state
         measureReportViewModel.resetState()
         navController.popBackStack(
-          route = MeasureReportNavigationScreen.MeasureReportList.route, inclusive = false
+          route = MeasureReportNavigationScreen.MeasureReportList.route,
+          inclusive = false
         )
       },
       showProgressIndicator = uiState.showProgressIndicator,
@@ -112,10 +114,11 @@ fun ReportTypeSelectorScreen(
       endDate = uiState.endDate.ifEmpty { stringResource(id = R.string.end_date) },
       patientName = uiState.patientViewData?.name,
       generateReport =
-      uiState.startDate.isNotEmpty() &&
-        uiState.endDate.isNotEmpty() &&
-        (uiState.patientViewData != null ||
-          measureReportViewModel.reportTypeState.value == MeasureReport.MeasureReportType.SUMMARY),
+        uiState.startDate.isNotEmpty() &&
+          uiState.endDate.isNotEmpty() &&
+          (uiState.patientViewData != null ||
+            measureReportViewModel.reportTypeState.value ==
+              MeasureReport.MeasureReportType.SUMMARY),
       onGenerateReportClicked = {
         measureReportViewModel.onEvent(MeasureReportEvent.GenerateReport(navController, context))
       },
@@ -139,7 +142,6 @@ fun ReportTypeSelectorScreen(
       }
     )
   }
-
 }
 
 @Composable
@@ -197,16 +199,16 @@ fun ReportTypeSelectorPage(
               Spacer(modifier = modifier.size(28.dp))
               PatientSelectionBox(
                 radioOptions =
-                listOf(
-                  MeasureReportTypeData(
-                    textResource = R.string.all,
-                    measureReportType = MeasureReport.MeasureReportType.SUMMARY
+                  listOf(
+                    MeasureReportTypeData(
+                      textResource = R.string.all,
+                      measureReportType = MeasureReport.MeasureReportType.SUMMARY
+                    ),
+                    MeasureReportTypeData(
+                      textResource = R.string.individual,
+                      measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL
+                    )
                   ),
-                  MeasureReportTypeData(
-                    textResource = R.string.individual,
-                    measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL
-                  )
-                ),
                 patientName = patientName,
                 reportTypeState = reportTypeState,
                 onReportTypeSelected = onReportTypeSelected
@@ -229,6 +231,7 @@ fun ReportTypeSelectorPage(
     }
   }
 }
+
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
@@ -239,19 +242,20 @@ fun showFixedMonthYearListing(
   modifier: Modifier = Modifier,
   showProgressIndicator: Boolean = false,
   reportGenerationRange: Map<String, List<ReportRangeSelectionData>>,
+) {
 
-  ) {
-
-  Scaffold(topBar = {
-    TopAppBar(
-      title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
-      navigationIcon = {
-        IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
-      },
-      contentColor = Color.White,
-      backgroundColor = MaterialTheme.colors.primary
-    )
-  }) { innerPadding ->
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        navigationIcon = {
+          IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
+        },
+        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primary
+      )
+    }
+  ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.fillMaxSize()) {
         if (showProgressIndicator) {
@@ -295,27 +299,18 @@ fun LazyMonthList(
   LazyColumn {
     reportRangeList.forEach { (year, monthList) ->
       stickyHeader {
-        Row(
-          Modifier
-            .fillMaxWidth()
-            .background(color = SearchHeaderColor)
-        ) {
+        Row(Modifier.fillMaxWidth().background(color = SearchHeaderColor)) {
           Text(
             text = year,
             fontSize = 14.sp,
             color = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier
-              .padding(8.dp)
-              .weight(0.85f)
+            modifier = Modifier.padding(8.dp).weight(0.85f)
           )
           Icon(
             Icons.Filled.KeyboardArrowDown,
             contentDescription = null,
             tint = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier
-              .padding(8.dp)
-              .weight(0.15f)
-              .align(Alignment.CenterVertically)
+            modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
           )
         }
       }
@@ -324,7 +319,6 @@ fun LazyMonthList(
     }
   }
 }
-
 
 @Composable
 fun PatientSelectionBox(
@@ -358,17 +352,17 @@ fun PatientSelectionBox(
           text = stringResource(id = reportTypeData.textResource),
           fontSize = 16.sp,
           modifier =
-          modifier.clickable {
-            reportTypeState.value = reportTypeData.measureReportType
-            onReportTypeSelected(reportTypeState.value)
-          }
+            modifier.clickable {
+              reportTypeState.value = reportTypeData.measureReportType
+              onReportTypeSelected(reportTypeState.value)
+            }
         )
       }
       Spacer(modifier = modifier.size(4.dp))
     }
 
     if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
-      !patientName.isNullOrEmpty()
+        !patientName.isNullOrEmpty()
     ) {
       Row(modifier = modifier.padding(start = 24.dp)) {
         Spacer(modifier = modifier.size(8.dp))
@@ -409,16 +403,16 @@ fun PatientSelectionAllPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }
   PatientSelectionBox(
     radioOptions =
-    listOf(
-      MeasureReportTypeData(
-        textResource = R.string.all,
-        measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+      listOf(
+        MeasureReportTypeData(
+          textResource = R.string.all,
+          measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+        ),
+        MeasureReportTypeData(
+          textResource = R.string.individual,
+          measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
+        )
       ),
-      MeasureReportTypeData(
-        textResource = R.string.individual,
-        measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-      )
-    ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
     patientName = null
@@ -432,48 +426,39 @@ fun PatientSelectionIndividualPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.INDIVIDUAL) }
   PatientSelectionBox(
     radioOptions =
-    listOf(
-      MeasureReportTypeData(
-        textResource = R.string.all,
-        measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+      listOf(
+        MeasureReportTypeData(
+          textResource = R.string.all,
+          measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+        ),
+        MeasureReportTypeData(
+          textResource = R.string.individual,
+          measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
+        )
       ),
-      MeasureReportTypeData(
-        textResource = R.string.individual,
-        measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-      )
-    ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
     patientName = "John Jared"
   )
 }
 
-
 /** Composable function to represent a list item */
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
-  Row(
-    Modifier
-      .fillMaxWidth()
-      .clickable { selectedMonth(data) }) {
+  Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
     Text(
       data.month,
       fontSize = 16.sp,
       style = MaterialTheme.typography.h5,
-      modifier = Modifier
-        .padding(12.dp)
-        .weight(0.85f)
+      modifier = Modifier.padding(12.dp).weight(0.85f)
     )
     Icon(
       Icons.Filled.KeyboardArrowRight,
       contentDescription = null,
       tint = DefaultColor.copy(alpha = 0.7f),
-      modifier = Modifier
-        .padding(8.dp)
-        .weight(0.15f)
-        .align(Alignment.CenterVertically)
+      modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
     )
   }
   Divider(color = DividerColor, thickness = 0.5.dp)
@@ -485,9 +470,12 @@ fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectio
 fun FixedRangeListPreview() {
   val ranges = HashMap<String, List<ReportRangeSelectionData>>()
   val months = mutableListOf<ReportRangeSelectionData>()
-  val range = ReportRangeSelectionData(
-    "March", "2022", "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!
-  )
+  val range =
+    ReportRangeSelectionData(
+      "March",
+      "2022",
+      "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!
+    )
   months.add(range)
   months.add(range)
   months.add(range)
