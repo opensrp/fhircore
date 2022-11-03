@@ -26,5 +26,6 @@ data class MeasureReportConfiguration(
   override var configType: String = ConfigType.MeasureReport.name,
   val registerId: String,
   val registerDate: String,
+  val showFixedRangeSelection: Boolean? = null,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()

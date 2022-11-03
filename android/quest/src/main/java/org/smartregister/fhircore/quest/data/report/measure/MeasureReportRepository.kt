@@ -66,4 +66,7 @@ constructor(
   fun getCampaignStartDate(): String {
     return measureReportConfiguration.registerDate
   }
+
+  /** show month/year listing otherwise show datepicker */
+  fun showFixedRangeSelection() = measureReportConfiguration.showFixedRangeSelection ?: false
 }

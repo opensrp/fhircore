@@ -3,6 +3,7 @@
   "configType": "measureReport",
   "registerId": "ancRegister",
   "registerDate": "2020-10-27",
+  "showFixedRangeSelection": false,
   "reports": [
     {
       "id": "1",
