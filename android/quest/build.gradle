@@ -176,6 +176,15 @@ android {
             versionName "0.0.1"
             buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
+
+        echis {
+            dimension "apps"
+            applicationIdSuffix ".echis"
+            versionNameSuffix "-echis"
+            versionCode 1
+            versionName "0.0.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
+        }
     }
     sourceSets {
         main {
