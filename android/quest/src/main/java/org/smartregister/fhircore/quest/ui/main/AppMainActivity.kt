@@ -182,8 +182,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
                 encounterStatus
               )
             }
-            syncBroadcaster.runSync()
           }
+          else -> Unit
         }
       }
   }
