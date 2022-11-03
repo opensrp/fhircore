@@ -258,7 +258,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { configService.provideSyncTags(any()) } returns listOf()
+    coEvery { configService.provideResourceTags(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
