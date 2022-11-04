@@ -1,0 +1,205 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "in-progress",
+  "subject" : {
+    "reference" : "Patient/ac76cd00-0e67-45ab-bbca-95c03aaf0456"
+  },
+  "item": [
+    {
+      "linkId": "f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce",
+      "text": "Client disease",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "hiv",
+            "display": "HIV",
+            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "tb",
+            "display": "TB",
+            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "mental-health",
+            "display": "Mental health",
+            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8a95f774-5a50-4525-be74-d26d42a964d3",
+      "text": "Client status",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "looks-healthy",
+            "display": "Looks healthy",
+            "system": "urn:uuid:63155884-370a-41f6-8153-a716167422c2"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "c08bb617-4191-4f1f-8961-d962568461cc",
+      "text": "Mark Loss to Follow-up?"
+    },
+    {
+      "linkId": "26398b71-ed02-464f-870c-c4c0a7c2d623",
+      "text": "Services provided"
+    },
+    {
+      "linkId": "1f3d9af1-a274-4678-c2f4-1bd97f27a964",
+      "text": "Client on treatment?",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "yes",
+            "display": "Yes",
+            "system": "urn:uuid:7dbdfd38-1499-40e8-8ad6-a261c2d138c3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "48bb1074-8bec-43e4-8290-ba51cca0a699",
+      "text": "Adherence"
+    },
+    {
+      "linkId": "53191ed5-4e0c-4d41-b0b0-161ef2169a5d",
+      "text": "HIV medication has urgent side effects",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "vomiting",
+            "display": "Vomiting",
+            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "abdominal-pain",
+            "display": "Abdominal pain",
+            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "trouble-swallowing",
+            "display": "Trouble swallowing",
+            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "fever",
+            "display": "Fever",
+            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "74a1a7ac-9612-4850-8483-1ee41efa1b2f",
+      "text": "HIV medication non-urgent side effects",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "nervousness-or-anxiety",
+            "display": "Nervousness or anxiety",
+            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "loss-of-appetite",
+            "display": "Loss of appetite",
+            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "headache",
+            "display": "Headache",
+            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "weakness-or-fatigue",
+            "display": "Weakness or fatigue",
+            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "83d980b5-0c8a-4666-8b7a-63ed0bb44364",
+      "text": "TB medication urgent side effects",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "chest-pain",
+            "display": "Chest pain",
+            "system": "urn:uuid:2d5ab02b-f9bf-4493-bfef-865534ca07cd"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "74de574b-47ad-4362-8e6f-b29a553fc67f",
+      "text": "TB medication non-urgent side effects",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "weakness-or-fatigue",
+            "display": "Weakness or fatigue",
+            "system": "urn:uuid:049bd339-3a3b-4df0-9a5f-0b144df8b190"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f7cb6737-381b-4043-8ed5-f9e24d1d8d80",
+      "text": "Leprosy medication urgent side effects"
+    },
+    {
+      "linkId": "a1efbf04-7341-4b46-f8fc-ef4cd35dfdfd",
+      "text": "Leprosy medication non-urgent side effects"
+    },
+    {
+      "linkId": "38323a37-48b3-4990-88c4-865269da838a",
+      "text": "Mental health medication urgent side effects"
+    },
+    {
+      "linkId": "38e79c10-61ca-46d4-8a86-e3fa37980b0c",
+      "text": "Mental health medication nonurgent side effects"
+    },
+    {
+      "linkId": "c9efee08-96ab-4547-8aec-cbb141956269",
+      "text": "Buruli ulcer and lymphatic filariasis medication urgent side effects"
+    },
+    {
+      "linkId": "7a92aeca-84bd-4862-8b29-3077ba966299",
+      "text": "Buruli ulcer and lymphatic filariasis medication non-urgent side effects"
+    },
+    {
+      "linkId": "eb846946-76d9-4d3d-ae2b-d89ca7ef6f1b",
+      "text": "Referred to health facility",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "yes",
+            "display": "Yes",
+            "system": "urn:uuid:15a535c7-03be-4c6c-e7e7-0b9d8503f97c"
+          }
+        }
+      ]
+    }
+  ]
+}
