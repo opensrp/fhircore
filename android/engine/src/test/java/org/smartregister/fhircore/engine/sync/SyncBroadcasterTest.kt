@@ -196,6 +196,65 @@ class SyncBroadcasterTest : RobolectricTest() {
   }
 
   @Test
+  fun loadSyncParamsShouldHaveOrganizationId() {
+    val organizationId = "organization-id"
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    // Resource types that can be filtered based on Organization
+    val resourceTypes =
+      arrayOf(
+        ResourceType.CarePlan,
+        ResourceType.Condition,
+        ResourceType.Encounter,
+        ResourceType.Group,
+        ResourceType.Observation,
+        ResourceType.Patient,
+        ResourceType.RelatedPerson,
+        ResourceType.QuestionnaireResponse,
+        ResourceType.Task
+      )
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+    syncParam.filterKeys { it.isIn(*resourceTypes) }.values.forEach {
+      Assert.assertTrue(it.containsValue(organizationId))
+    }
+  }
+
+  // TODO: Not supported yet; need to refactor sync implementation to be based on tags.
+  @Test
+  fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
+    val careTeamId = "care-team-id"
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+    syncParam.values.forEach { Assert.assertFalse(it.containsValue(careTeamId)) }
+  }
+
+  // TODO: Not supported yet; need to refactor sync implementation to be based on tags.
+  @Test
+  fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
+    val locationId = "location-id"
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+    syncParam.values.forEach { Assert.assertFalse(it.containsValue(locationId)) }
+  }
+
+  // TODO: Not supported yet; need to refactor sync implementation to be based on tags.
+  @Test
+  fun loadSyncParamsShouldNotHavePractitionerIdNotSupported() {
+    val practitionerId = "practitioner-id"
+    sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+    syncParam.values.forEach { Assert.assertFalse(it.containsValue(practitionerId)) }
+  }
+
+  @Test
   fun testSchedulePeriodicSyncShouldPoll() = runTest {
     syncBroadcaster.schedulePeriodicSync()
     verify { syncJob.poll<FhirSyncWorker>(periodicSyncConfiguration = any(), clazz = any()) }
