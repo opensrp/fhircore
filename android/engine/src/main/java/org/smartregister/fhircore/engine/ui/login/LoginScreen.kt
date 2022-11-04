@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -71,6 +73,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,28 +96,35 @@ const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
 const val LOGIN_FOOTER = "loginFooter"
 const val APP_LOGO_TAG = "appLogoTag"
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
 
   val viewConfiguration by loginViewModel.loginViewConfiguration.observeAsState(
     loginViewConfigurationOf()
   )
+  val loadingConfig by loginViewModel.loadingConfig.observeAsState(true)
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
   val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
-
-  LoginPage(
-    viewConfiguration = viewConfiguration,
-    username = username,
-    onUsernameChanged = { loginViewModel.onUsernameUpdated(it) },
-    password = password,
-    onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
-    forgotPassword = { loginViewModel.forgotPassword() },
-    onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
-    loginErrorState = loginErrorState,
-    showProgressBar = showProgressBar,
-  )
+  AnimatedContent(targetState = loadingConfig) {
+    if (!loadingConfig) {
+      LoginPage(
+        viewConfiguration = viewConfiguration,
+        username = username,
+        onUsernameChanged = { loginViewModel.onUsernameUpdated(it) },
+        password = password,
+        onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
+        forgotPassword = { loginViewModel.forgotPassword() },
+        onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
+        loginErrorState = loginErrorState,
+        showProgressBar = showProgressBar,
+      )
+    } else {
+      LoginScreenLoadingConfig()
+    }
+  }
 }
 
 @Composable
@@ -380,6 +390,23 @@ fun ForgotPasswordDialog(
   )
 }
 
+@Composable
+fun LoginScreenLoadingConfig() {
+  Column(
+    modifier = Modifier.fillMaxSize(),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Column(
+      verticalArrangement = Arrangement.spacedBy(12.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      CircularProgressBar()
+      Text(text = stringResource(id = R.string.loading), textAlign = TextAlign.Center)
+    }
+  }
+}
+
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 @Composable
@@ -408,4 +435,11 @@ fun LoginScreenPreviewDarkMode() {
     forgotPassword = {},
     onLoginButtonClicked = {}
   )
+}
+
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+@Composable
+private fun LoginScreenLoadingConfigPreview() {
+  LoginScreenLoadingConfig()
 }
