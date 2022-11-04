@@ -1,0 +1,33 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/ef19b62e-6cbf-43d6-beb5-4c0d9d2c20b8" = "eCBIS Disease Registration"
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group DiseaseRegistration(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {
+    questionnaireResponse -> bundle.type = "collection" "r_bundle_type";
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as refPatient, evaluate(questionnaireResponse, 0) as count,
+        evaluate(questionnaireResponse, $this.item.where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.count()) as answerSize then
+            extractDiseaseConditions(count, answerSize, questionnaireResponse, bundle, refPatient) "r_bundle_entries";
+}
+group extractDiseaseConditions(source count: Integer, source answerSize: Integer, source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    questionnaireResponse where(count < answerSize) -> bundle.entry as entry, entry.resource = create("Condition") as condition then {
+        questionnaireResponse -> condition.id = uuid() "r_condition_id";
+        questionnaireResponse -> condition.onset = evaluate(questionnaireResponse, today().toString()) "r_condition_onset_date_val";
+        questionnaireResponse -> condition.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_condition_clinical_st";
+        questionnaireResponse -> condition.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_condition_verif_st";
+        questionnaireResponse -> condition.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis") "r_condition_category";
+        questionnaireResponse -> condition.subject = refPatient "r_condition_sub";
+        questionnaireResponse -> condition.recordedDate = evaluate(questionnaireResponse, now()) "r_condition_recorded";
+        questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.code[count].toString()) as valueAnswers then extractDiseaseCoding(questionnaireResponse, valueAnswers, condition) "rule_extract_disease_coding";
+
+        questionnaireResponse -> evaluate(questionnaireResponse, count + 1) as nextCount then extractDiseaseConditions(nextCount, answerSize, questionnaireResponse, bundle, refPatient) "r_condition_repeat";
+    } "r_condition_loop";
+}
+group extractDiseaseCoding(source questionnaireResponse: QuestionnaireResponse, source valueAnswers: Coding, target condition: Condition) {
+    questionnaireResponse -> evaluate(questionnaireResponse, "99990003") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_hiv";
+}
+group extractCoding(source questionnaireResponse: QuestionnaireResponse, source code: String, source displayText: String, target condition: Condition) {
+    questionnaireResponse -> condition.code = create("CodeableConcept") as codeableConceptDisease then {
+        questionnaireResponse -> codeableConceptDisease.coding = c("http://snomed.info/sct", code, displayText) as coding, coding.display = displayText "r_condition_code_coding";
+        questionnaireResponse -> codeableConceptDisease.text = displayText "r_condition_code_text";
+    } "r_condition_cc";
+}
