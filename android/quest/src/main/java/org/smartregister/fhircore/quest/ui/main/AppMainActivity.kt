@@ -183,7 +183,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
                 encounterStatus
               )
             }
-            syncBroadcaster.runSync()
             appMainViewModel.onTaskComplete(
               data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
             )
