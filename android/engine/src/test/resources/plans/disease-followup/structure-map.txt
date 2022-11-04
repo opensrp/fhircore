@@ -19,13 +19,12 @@ group ExtractCarePlan(source subject: Patient, source definition: ActivityDefini
 group ExtractActivityDetail(source subject : Patient, source definition: ActivityDefinition, source src: QuestionnaireResponse, target careplan : CarePlan){
     subject -> careplan.activity = create('CarePlan_Activity') as activity then {
         subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
-            subject -> evaluate(src, 0) as count,
-                       evaluate(src, src.descendants().where(linkId='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.count()) as answerItems then {
+            subject -> evaluate(src, src.descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce').answer.value.count()) as answerItems then {
             subject -> det.kind = 'Task',
                    det.status = 'in-progress',
                    det.description = evaluate(definition, $this.title),
                    det.performer = evaluate(subject, $this.generalPractitioner.first()),
-                   subject then ExtractDiseaseCode(count, answerItems, src, det) "r_act_det_data";
+                   subject then ExtractDiseaseCode(src, det) "r_act_det_data";
             subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
                    evaluate(timing, $this.repeat) as repeat then {
                 subject -> evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.count.toString().toInteger() - 1).toString() + ' \'months\'').toQuantity()) as maxDate
@@ -78,20 +77,26 @@ group ExtractPeriod(source start: DateType, source end: DateType, target period:
     end -> period.end = create('dateTime') as dt,
            dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
 }
-group ExtractDiseaseCode(source count:Integer, source answerItems: Integer, source src: QuestionnaireResponse, target det: ActivityDetail) {
-    src where (count < answerItems) -> evaluate(src, src.descendants().where(linkId='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.code[count].toString()) as vc then {
-        src where(vc.code='hiv') -> evaluate(src, "99990003") as code, evaluate(src, "HIV") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
-        src where(vc.code='tb') -> evaluate(src, "99990005") as code, evaluate(src, "TB") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
-        src where(vc.code='mental-health') -> evaluate(src, "99990004") as code, evaluate(src, "Mental Health") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
-        src where(vc.code='cm-ntd') -> evaluate(vc, $this.display) as dp then {
+group ExtractDiseaseCode(source src: QuestionnaireResponse, target det: ActivityDetail) {
+    src.item as dis_item where(src.descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce')) then {
+        dis_item.answer as hiv where(value.code='hiv') -> evaluate(hiv, value) as hivcode then ExtractCodeableConcept(src, hivcode, det) "r_det_c";
+        dis_item.answer as tb where(value.code='tb') -> evaluate(tb, value) as tbcode then ExtractCodeableConcept(src, tbcode, det) "r_det_c";
+        dis_item.answer as me where(value.code='mental-health') -> evaluate(me, value) as mecode then ExtractCodeableConcept(src, mecode, det) "r_det_c";
+        dis_item.answer as ntd where(value.code='cm-ntd') -> evaluate(ntd, value) as dp then {
             src -> evaluate(src, $this.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value) as nvc then {
                 src where(nvc.code='buruli-ulcer') -> evaluate(src, "99990000") as code, evaluate(src, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
                 src where(nvc.code='leprosy') -> evaluate(src, "99990001") as code, evaluate(src, "CM-NTD Leprosy") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
                 src where(nvc.code='lymphatic-filariasis') -> evaluate(src, "99990002") as code, evaluate(src, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
             } "r_det_n_cc";
         } "r_det_cc";
-        src -> evaluate(src, count + 1) as nextCount then ExtractDiseaseCode(nextCount, answerItems, src, det) "r_repeat";
+      //  src -> evaluate(src, count + 1) as nextCount then ExtractDiseaseCode(nextCount, answerItems, src, det) "r_repeat";
     } "r_det_c";
+}
+group ExtractCodeableConcept(source src: QuestionnaireResponse, source icoding: Coding, target det: ActivityDetail) {
+    src -> det.code = create("CodeableConcept") as ccDisease then {
+        src -> ccDisease.coding = icoding "r_det_code_coding";
+        src -> ccDisease.text = evaluate(icoding, $this.display) "r_det_code_text";
+    } "r_det_cc";
 }
 group ExtractCoding(source src: QuestionnaireResponse, source code: String, source displayText: String, target det: ActivityDetail) {
     src -> det.code = create("CodeableConcept") as ccDisease then {

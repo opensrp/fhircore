@@ -93,7 +93,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='dd55485e-322a-434e-d37d-235e37dd235c') and answer.value.count() > 0).exists()"
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a').descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce' and answer.count() > 0).exists()"
           }
         }
       ],

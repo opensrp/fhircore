@@ -1,6 +1,7 @@
 {
   "resourceType": "QuestionnaireResponse",
   "status": "in-progress",
+  "questionnaire": "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a",
   "subject" : {
     "reference" : "Patient/ac76cd00-0e67-45ab-bbca-95c03aaf0456"
   },
