@@ -92,7 +92,6 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  */
 fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
 
-/**
- * Remove double white spaces from text and also remove space before comma
- * */
-fun String.removeExtraWhiteSpaces(): String = this.replace("\\s+".toRegex(), " ").replace(" ,", ",").trim()
+/** Remove double white spaces from text and also remove space before comma */
+fun String.removeExtraWhiteSpaces(): String =
+  this.replace("\\s+".toRegex(), " ").replace(" ,", ",").trim()
