@@ -84,10 +84,6 @@ subprojects {
             }
         }
 
-        dokkaHtml {
-            outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
-        }
-
         dokkaHtmlMultiModule {
             outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
         }
