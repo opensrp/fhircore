@@ -22,6 +22,7 @@ import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -30,6 +31,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -65,6 +68,7 @@ constructor(
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
 
   val refreshDataState: MutableState<Int> = mutableStateOf(0)
+  val taskId: MutableStateFlow<String?> = MutableStateFlow(null)
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -184,6 +188,10 @@ constructor(
 
   fun onTimeOut() {
     accountAuthenticator.invalidateAccount()
+  }
+
+  fun onTaskComplete(id: String?) {
+    viewModelScope.launch { id?.let { taskId.emit(it) } }
   }
 
   companion object {

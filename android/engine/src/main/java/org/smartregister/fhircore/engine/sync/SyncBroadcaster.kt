@@ -49,28 +49,36 @@ class SyncBroadcaster(
 ) {
   fun runSync() {
     CoroutineScope(dispatcherProvider.io()).launch {
-      try {
-        syncJob.run(
-          fhirEngine = fhirEngine,
-          downloadManager =
-            ResourceParamsBasedDownloadWorkManager(
-              syncParams =
-                configService
-                  .loadRegistrySyncParams(
-                    configurationRegistry,
-                    sharedPreferencesHelper
-                      .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-                      ?.decodeJson<UserInfo>()
-                  )
-                  .toMap()
-            ),
-          subscribeTo = sharedSyncStatus,
-          resolver = AcceptLocalConflictResolver
-        )
-      } catch (exception: Exception) {
-        Timber.e("Error syncing data")
-        Timber.e(exception)
+      NetworkState(sharedPreferencesHelper.context).invoke().apply {
+        if (this) onRunSync()
+        else
+          sharedSyncStatus.emit(State.Failed(com.google.android.fhir.sync.Result.Error(listOf())))
       }
+    }
+  }
+
+  private suspend fun onRunSync() {
+    try {
+      syncJob.run(
+        fhirEngine = fhirEngine,
+        downloadManager =
+          ResourceParamsBasedDownloadWorkManager(
+            syncParams =
+              configService
+                .loadRegistrySyncParams(
+                  configurationRegistry,
+                  sharedPreferencesHelper
+                    .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
+                    ?.decodeJson<UserInfo>()
+                )
+                .toMap()
+          ),
+        subscribeTo = sharedSyncStatus,
+        resolver = AcceptLocalConflictResolver
+      )
+    } catch (exception: Exception) {
+      Timber.e("Error syncing data")
+      Timber.e(exception)
     }
   }
 
