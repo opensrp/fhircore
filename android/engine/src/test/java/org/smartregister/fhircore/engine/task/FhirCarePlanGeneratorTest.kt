@@ -855,7 +855,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
             emptyList()
-    coEvery { fhirEngine.get<StructureMap>("97cf9bfb-90be-4661-8810-1c60be88f593") } returns
+    coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
             structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 

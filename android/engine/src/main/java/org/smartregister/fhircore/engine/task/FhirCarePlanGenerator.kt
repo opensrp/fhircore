@@ -104,6 +104,8 @@ constructor(
               "PlanDefinition.expression.language=${it.expression.language} not supported"
             )
 
+          fhirPathEngine.evaluate(null, input, null, subject, it.expression.expression)
+
           fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
         }
       ) {
