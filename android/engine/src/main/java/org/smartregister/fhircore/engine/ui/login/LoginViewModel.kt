@@ -171,6 +171,10 @@ constructor(
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
 
+  private val _loadingConfig = MutableLiveData(true)
+  val loadingConfig: LiveData<Boolean>
+    get() = _loadingConfig
+
   fun fetchLoggedInPractitioner(userInfo: UserInfo) {
     if (!userInfo.keycloakUuid.isNullOrEmpty() &&
         sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
@@ -222,6 +226,7 @@ constructor(
 
   fun updateViewConfigurations(registerViewConfiguration: LoginViewConfiguration) {
     _loginViewConfiguration.value = registerViewConfiguration
+    _loadingConfig.value = false
   }
 
   fun onUsernameUpdated(username: String) {

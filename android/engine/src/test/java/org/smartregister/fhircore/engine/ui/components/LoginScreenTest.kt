@@ -53,6 +53,7 @@ class LoginScreenTest : RobolectricTest() {
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
+  private val loadingConfig = MutableLiveData(false)
   private val loginError: LiveData<LoginErrorState?> = MutableLiveData(null)
   private val showProgressBar = MutableLiveData(false)
   private val loginConfig = loginViewConfigurationOf()
@@ -64,6 +65,7 @@ class LoginScreenTest : RobolectricTest() {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenTest.username
         every { password } returns this@LoginScreenTest.password
+        every { loadingConfig } returns this@LoginScreenTest.loadingConfig
         every { loginErrorState } returns this@LoginScreenTest.loginError
         every { showProgressBar } returns this@LoginScreenTest.showProgressBar
         every { onUsernameUpdated(any()) } answers
