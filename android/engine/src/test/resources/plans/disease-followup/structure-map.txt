@@ -82,14 +82,14 @@ group ExtractDiseaseCode(source src: QuestionnaireResponse, target det: Activity
         dis_item.answer as hiv where(value.code='hiv') -> evaluate(hiv, value) as hivcode then ExtractCodeableConcept(src, hivcode, det) "r_det_c";
         dis_item.answer as tb where(value.code='tb') -> evaluate(tb, value) as tbcode then ExtractCodeableConcept(src, tbcode, det) "r_det_c";
         dis_item.answer as me where(value.code='mental-health') -> evaluate(me, value) as mecode then ExtractCodeableConcept(src, mecode, det) "r_det_c";
+
         dis_item.answer as ntd where(value.code='cm-ntd') -> evaluate(ntd, value) as dp then {
-            src -> evaluate(src, $this.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value) as nvc then {
-                src where(nvc.code='buruli-ulcer') -> evaluate(src, "99990000") as code, evaluate(src, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
-                src where(nvc.code='leprosy') -> evaluate(src, "99990001") as code, evaluate(src, "CM-NTD Leprosy") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
-                src where(nvc.code='lymphatic-filariasis') -> evaluate(src, "99990002") as code, evaluate(src, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(src, code, displayText, det) "r_det_c";
+            ntd.item as nvc where(src.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32')) then {
+                nvc.answer as bu where(value.code='buruli-ulcer') -> evaluate(bu, value) as bucode, evaluate(src, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(src, bucode, displayText, det) "r_det_c";
+                nvc.answer as lep where(value.code='leprosy') -> evaluate(lep, value) as lepcode, evaluate(src, "CM-NTD Leprosy") as displayText then ExtractCoding(src, lepcode, displayText, det) "r_det_c";
+                nvc.answer as lf where(value.code='lymphatic-filariasis') -> evaluate(lf, value) as lfcode, evaluate(src, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(src, lfcode, displayText, det) "r_det_c";
             } "r_det_n_cc";
         } "r_det_cc";
-      //  src -> evaluate(src, count + 1) as nextCount then ExtractDiseaseCode(nextCount, answerItems, src, det) "r_repeat";
     } "r_det_c";
 }
 group ExtractCodeableConcept(source src: QuestionnaireResponse, source icoding: Coding, target det: ActivityDetail) {
