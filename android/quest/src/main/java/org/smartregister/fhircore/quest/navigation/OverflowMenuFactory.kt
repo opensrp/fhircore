@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.quest.navigation
 
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.quest.R
-import javax.inject.Inject
 
 class OverflowMenuFactory @Inject constructor() {
   private val overflowMenuMap: Map<OverflowMenuHost, MutableList<OverflowMenuItem>> by lazy {
@@ -168,9 +168,9 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
     )
   ),
   TRACING_PROFILE(
-          listOf(
-                  OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
-                  OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
-          )
+    listOf(
+      OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
+    )
   )
 }

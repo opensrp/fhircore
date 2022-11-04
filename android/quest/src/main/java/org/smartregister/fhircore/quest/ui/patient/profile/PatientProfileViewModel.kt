@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
@@ -104,6 +106,27 @@ constructor(
     get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
+
+  fun completedTask(value: String) {
+    patientProfileData?.let { data ->
+      if (data is ProfileData.HivProfileData) {
+        val patientData =
+          data.copy(
+            tasks =
+              data.tasks.map { task ->
+                if (task.reasonReference.extractId() == value) {
+                  task.status = Task.TaskStatus.COMPLETED
+                  task
+                } else task
+              }
+          )
+        _patientProfileViewDataFlow.value =
+          profileViewDataMapper.transformInputToOutputModel(patientData) as
+            ProfileViewData.PatientProfileViewData
+        patientProfileData = patientData
+      }
+    }
+  }
 
   init {
     syncBroadcaster.registerSyncListener(

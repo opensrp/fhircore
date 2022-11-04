@@ -27,9 +27,15 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -56,7 +62,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
-import javax.inject.Inject
 
 @HiltViewModel
 class TracingProfileViewModel
@@ -79,7 +84,7 @@ constructor(
 
   var patientTracingProfileUiState: MutableState<TracingProfileUiState> =
     mutableStateOf(
-            TracingProfileUiState(
+      TracingProfileUiState(
         overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.TRACING_PROFILE)
       )
     )
@@ -126,18 +131,18 @@ constructor(
     }
   }
 
-//  fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
-//    if (healthModule == HealthModule.HIV) {
-//      patientTracingProfileUiState.value =
-//        TracingProfileUiState(
-//          overflowMenuFactory.retrieveOverflowMenuItems(
-//            getOverflowMenuHostByPatientType(
-//              (patientProfile as ProfileData.HivProfileData).healthStatus
-//            )
-//          )
-//        )
-//    }
-//  }
+  //  fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
+  //    if (healthModule == HealthModule.HIV) {
+  //      patientTracingProfileUiState.value =
+  //        TracingProfileUiState(
+  //          overflowMenuFactory.retrieveOverflowMenuItems(
+  //            getOverflowMenuHostByPatientType(
+  //              (patientProfile as ProfileData.HivProfileData).healthStatus
+  //            )
+  //          )
+  //        )
+  //    }
+  //  }
 
   fun filterGuardianVisitTasks() {
     if (patientProfileData != null) {
@@ -191,20 +196,21 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources
         )
-//      is TracingProfileEvent.OpenGuardianProfile -> {
-//        val urlParams =
-//          NavigationArg.bindArgumentsOf(
-//            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-//            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
-//            Pair(NavigationArg.PATIENT_ID, event.patientId)
-//          )
-//        if (healthModule == HealthModule.FAMILY)
-//          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-//        else
-//          event.navController.navigate(
-//            route = MainNavigationScreen.PatientProfile.route + urlParams
-//          )
-//      }
+    //      is TracingProfileEvent.OpenGuardianProfile -> {
+    //        val urlParams =
+    //          NavigationArg.bindArgumentsOf(
+    //            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+    //            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+    //            Pair(NavigationArg.PATIENT_ID, event.patientId)
+    //          )
+    //        if (healthModule == HealthModule.FAMILY)
+    //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +
+    // urlParams)
+    //        else
+    //          event.navController.navigate(
+    //            route = MainNavigationScreen.PatientProfile.route + urlParams
+    //          )
+    //      }
     }
   }
 
@@ -244,7 +250,7 @@ constructor(
           _patientProfileViewDataFlow.value =
             profileViewDataMapper.transformInputToOutputModel(it) as
               ProfileViewData.PatientProfileViewData
-          //refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
+          // refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
           paginateChildrenRegisterData(true)
           handleVisitType(isClientVisit.value)
         }

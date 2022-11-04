@@ -33,7 +33,7 @@ sealed class MainNavigationScreen(
   object PatientProfile :
     MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
   object TracingProfile :
-          MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
+    MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
   object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")

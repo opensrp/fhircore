@@ -27,11 +27,11 @@ sealed class TracingProfileEvent {
     TracingProfileEvent()
 
   data class OverflowMenuClick(
-//    val navController: NavHostController,
+    //    val navController: NavHostController,
     val context: Context,
     val menuId: Int
   ) : TracingProfileEvent()
 
-//  data class OpenGuardianProfile(val patientId: String, val navController: NavHostController) :
-//    TracingProfileEvent()
+  //  data class OpenGuardianProfile(val patientId: String, val navController: NavHostController) :
+  //    TracingProfileEvent()
 }

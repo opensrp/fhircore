@@ -184,13 +184,15 @@ private fun AppMainNavigationGraph(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { PatientProfileScreen(navController = navController) }
-          MainNavigationScreen.TracingProfile ->
-              composable(
-                      route =
-                      "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
-                      arguments = commonNavArgs.plus(patientIdNavArgument())
-              ) { TracingProfileScreen(navController = navController) }
+          ) {
+            PatientProfileScreen(navController = navController, appMainViewModel = appMainViewModel)
+          }
+        MainNavigationScreen.TracingProfile ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingProfileScreen(navController = navController) }
         MainNavigationScreen.PatientGuardians ->
           composable(
             route =
@@ -223,7 +225,10 @@ private fun AppMainNavigationGraph(
           ) { stackEntry ->
             val onART = stackEntry.arguments?.getString(NavigationArg.ON_ART) ?: "true"
             if (onART.toBoolean()) {
-              PatientProfileScreen(navController = navController)
+              PatientProfileScreen(
+                navController = navController,
+                appMainViewModel = appMainViewModel
+              )
             } else {
               GuardianRelatedPersonProfileScreen(onBackPress = { navController.popBackStack() })
             }

@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RES_ENCOUNTER
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -182,7 +183,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
                 encounterStatus
               )
             }
-            syncBroadcaster.runSync()
+            appMainViewModel.onTaskComplete(
+              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
+            )
           }
         }
       }
