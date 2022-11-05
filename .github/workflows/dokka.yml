@@ -24,15 +24,8 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Document engine module with dokka
-        run: ./gradlew :engine:dokkaHtml
-        working-directory: android
-        env:
-         FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
-         FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
-
-      - name: Document quest module with dokka
-        run: ./gradlew :quest:dokkaHtml
+      - name: Document modules with dokka
+        run: ./gradlew dokkaHtmlMultiModule
         working-directory: android
         env:
          FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
