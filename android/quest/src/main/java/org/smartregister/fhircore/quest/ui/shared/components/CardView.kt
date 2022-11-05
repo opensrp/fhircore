@@ -57,7 +57,8 @@ fun CardView(
         CompoundText(
           modifier = modifier.wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!,
-          computedValuesMap = resourceData.computedValuesMap
+          resourceData = resourceData,
+          navController = navController
         )
         // TODO Display viewAll action text
       }

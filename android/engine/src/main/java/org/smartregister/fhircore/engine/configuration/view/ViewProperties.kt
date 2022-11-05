@@ -34,6 +34,7 @@ abstract class ViewProperties {
   abstract val alignment: ViewAlignment
   abstract val fillMaxWidth: Boolean
   abstract val fillMaxHeight: Boolean
+  abstract val clickable: String
 }
 
 enum class ViewAlignment {

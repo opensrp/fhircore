@@ -30,6 +30,7 @@ data class RowProperties(
   override val alignment: ViewAlignment = ViewAlignment.START,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val spacedBy: Int = 8,
   val arrangement: RowArrangement? = null,
   val wrapContent: Boolean = false,

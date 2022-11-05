@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
@@ -30,6 +31,7 @@ data class CompoundTextProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
@@ -40,6 +42,8 @@ data class CompoundTextProperties(
   val secondaryTextBackgroundColor: String? = null,
   val primaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
   val secondaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
+  val primaryTextActions: List<ActionConfig> = emptyList(),
+  val secondaryTextActions: List<ActionConfig> = emptyList(),
 ) : ViewProperties()
 
 enum class TextFontWeight(val fontWeight: FontWeight) {

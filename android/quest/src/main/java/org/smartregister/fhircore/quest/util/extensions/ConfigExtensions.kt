@@ -20,10 +20,12 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -79,3 +81,6 @@ fun List<ActionConfig>.handleClickEvent(
     }
   }
 }
+
+fun ViewProperties.clickable(resourceData: ResourceData) =
+  this.clickable.interpolate(resourceData.computedValuesMap).toBoolean()

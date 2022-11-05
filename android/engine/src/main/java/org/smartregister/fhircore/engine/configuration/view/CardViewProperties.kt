@@ -29,6 +29,7 @@ data class CardViewProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "true",
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
