@@ -30,6 +30,7 @@ data class ColumnProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val spacedBy: Int = 8,
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,

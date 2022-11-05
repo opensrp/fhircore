@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -68,10 +69,10 @@ fun ActionableButton(
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
     val buttonEnabled =
       buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+    val clickable = buttonProperties.clickable(resourceData)
     OutlinedButton(
       onClick = {
-        if (buttonEnabled && status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED
-        ) {
+        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData

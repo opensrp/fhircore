@@ -64,7 +64,8 @@ fun GenerateView(
       CompoundText(
         modifier = modifier,
         compoundTextProperties = properties as CompoundTextProperties,
-        computedValuesMap = resourceData.computedValuesMap,
+        resourceData = resourceData,
+        navController = navController
       )
     }
     ViewType.BUTTON -> {
@@ -160,7 +161,8 @@ fun GenerateView(
       PersonalDataView(
         modifier = modifier,
         personalDataCardProperties = properties as PersonalDataProperties,
-        computedValuesMap = resourceData.computedValuesMap
+        resourceData = resourceData,
+        navController = navController
       )
     ViewType.SPACER ->
       SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
