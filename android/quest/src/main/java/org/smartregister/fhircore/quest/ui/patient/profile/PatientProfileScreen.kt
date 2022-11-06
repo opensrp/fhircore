@@ -85,7 +85,9 @@ fun PatientProfileScreen(
   val viewState = patientProfileViewModel.patientProfileUiState.value
   val taskId by appMainViewModel.taskId.collectAsState()
 
-  LaunchedEffect(taskId) { taskId?.let { patientProfileViewModel.completedTask(it) } }
+  LaunchedEffect(taskId) {
+    taskId?.let { patientProfileViewModel.fetchPatientProfileDataWithChildren() }
+  }
 
   Scaffold(
     topBar = {
