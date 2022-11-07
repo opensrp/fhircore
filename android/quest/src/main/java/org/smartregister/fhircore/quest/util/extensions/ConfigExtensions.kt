@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
 fun List<ActionConfig>.handleClickEvent(
@@ -41,11 +41,14 @@ fun List<ActionConfig>.handleClickEvent(
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          navController.context.launchQuestionnaire<QuestionnaireActivity>(
-            questionnaireConfig = questionnaireConfig,
-            computedValuesMap = resourceData?.computedValuesMap,
-            actionParams = actionConfig.params
-          )
+          if (navController.context is QuestionnaireHandler) {
+            (navController.context as QuestionnaireHandler).launchQuestionnaire(
+              context = navController.context,
+              questionnaireConfig = questionnaireConfig,
+              computedValuesMap = resourceData?.computedValuesMap,
+              actionParams = actionConfig.params
+            )
+          }
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {

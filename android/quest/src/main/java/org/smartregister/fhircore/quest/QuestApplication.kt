@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -24,7 +26,9 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAtta
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider {
+class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
+
+  @Inject lateinit var workerFactory: HiltWorkerFactory
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
@@ -32,9 +36,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
 
   override fun onCreate() {
     super.onCreate()
-    if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
-    }
+    if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
@@ -42,4 +44,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
     return configuration as DataCaptureConfig
   }
+
+  override fun getWorkManagerConfiguration(): Configuration =
+    Configuration.Builder()
+      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setWorkerFactory(workerFactory)
+      .build()
 }
