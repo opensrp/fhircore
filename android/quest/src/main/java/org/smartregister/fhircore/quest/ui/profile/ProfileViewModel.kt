@@ -17,13 +17,16 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -36,6 +39,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -167,19 +172,25 @@ constructor(
   }
 
   fun completeTask(
-    questionnaireSubmission: QuestionnaireSubmission,
+    navController: NavController,
     profileId: String,
     resourceId: String,
-    resourceConfig: FhirResourceConfig?
+    resourceConfig: FhirResourceConfig?,
+    questionnaireSubmission: QuestionnaireSubmission
   ) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       viewModelScope.launch {
-        fhirCarePlanGenerator.completeTask(taskId.extractLogicalIdUuid())
-        //        retrieveProfileUiState(
-        //          profileId = profileId,
-        //          resourceId = resourceId,
-        //          fhirResourceConfig = resourceConfig
-        //        )
+        withContext(dispatcherProvider.io()) {
+          fhirCarePlanGenerator.completeTask(taskId.extractLogicalIdUuid())
+        }
+        navController.navigate(
+          MainNavigationScreen.Profile.route,
+          bundleOf(
+            NavigationArg.PROFILE_ID to profileId,
+            NavigationArg.RESOURCE_ID to resourceId,
+            NavigationArg.RESOURCE_CONFIG to resourceConfig
+          )
+        )
       }
     }
   }

@@ -29,6 +29,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -84,11 +85,14 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     questionnaireSubmission?.let {
       with(profileFragmentArgs) {
         profileViewModel.completeTask(
+          navController = findNavController(),
           questionnaireSubmission = questionnaireSubmission,
           profileId = profileId,
           resourceId = resourceId,
           resourceConfig = resourceConfig
         )
+
+        // Reset state
         appMainViewModel.questionnaireSubmissionLiveData.value = null
       }
     }
