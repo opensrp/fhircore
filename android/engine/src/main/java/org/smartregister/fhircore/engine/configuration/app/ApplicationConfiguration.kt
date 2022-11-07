@@ -30,6 +30,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 30,
+  val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
 ) : Configuration()
