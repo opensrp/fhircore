@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -135,7 +136,7 @@ private fun CompoundTextPart(
   resourceData: ResourceData
 ) {
   Text(
-    text = text.interpolate(resourceData.computedValuesMap).trim(),
+    text = text.interpolate(resourceData.computedValuesMap).removeExtraWhiteSpaces(),
     color = textColor?.interpolate(resourceData.computedValuesMap)?.parseColor() ?: DefaultColor,
     modifier =
       modifier
