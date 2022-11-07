@@ -67,6 +67,6 @@ constructor(
     return measureReportConfiguration.registerDate
   }
 
-  /** show month/year listing otherwise show datepicker */
+  /** show month/year listing otherwise show date picker */
   fun showFixedRangeSelection() = measureReportConfiguration.showFixedRangeSelection ?: false
 }
