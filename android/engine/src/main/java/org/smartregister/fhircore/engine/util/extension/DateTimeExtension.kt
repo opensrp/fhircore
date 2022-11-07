@@ -34,12 +34,10 @@ val SDF_MMM_YYYY = simpleDateFormatFor("MMM-yyyy")
 val SDF_YYYY_MMM = simpleDateFormatFor("yyyy-MMM")
 val SDF_YYYY = simpleDateFormatFor("yyyy")
 val SDF_MMM = simpleDateFormatFor("MMM")
-val SDF_MM = simpleDateFormatFor("MM")
-val SDF_MMMM_YYYY = simpleDateFormatFor("MMMM-yyyy\"")
 val SDF_MMMM = simpleDateFormatFor("MMMM")
 
 fun simpleDateFormatFor(pattern: String, locale: Locale = Locale.getDefault()) =
-  SimpleDateFormat(pattern, locale)
+    SimpleDateFormat(pattern, locale)
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -55,11 +53,6 @@ fun Date?.asMmmYyyy(): String {
   return SDF_MMM_YYYY.format(this)
 }
 
-fun Date?.asMmmmYyyy(): String {
-  if (this == null) return ""
-  return SDF_MMMM_YYYY.format(this)
-}
-
 fun Date?.asYyyy(): String {
   if (this == null) return ""
   return SDF_YYYY.format(this)
@@ -70,21 +63,16 @@ fun Date?.asMmm(): String {
   return SDF_MMM.format(this)
 }
 
-fun Date?.asMm(): String {
-  if (this == null) return ""
-  return SDF_MM.format(this)
-}
-
 fun Date?.asMmmm(): String {
   if (this == null) return ""
   return SDF_MMMM.format(this)
 }
 
 fun SimpleDateFormat.tryParse(date: String): Date? =
-  kotlin.runCatching { parse(date) }.getOrNull() ?: tryParse(date, Locale.US)
+    kotlin.runCatching { parse(date) }.getOrNull() ?: tryParse(date, Locale.US)
 
 fun SimpleDateFormat.tryParse(date: String, locale: Locale): Date? =
-  kotlin.runCatching { SimpleDateFormat(this.toPattern(), locale).parse(date) }.getOrNull()
+    kotlin.runCatching { SimpleDateFormat(this.toPattern(), locale).parse(date) }.getOrNull()
 
 fun List<SimpleDateFormat>.tryParse(date: String): Date? {
   forEach { dateFormat ->
@@ -104,7 +92,7 @@ fun Date.asYyyyMmDd(): String {
 }
 
 fun Date.toHumanDisplay(): String =
-  SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
+    SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
 fun Date?.makeItReadable(): String {
   return if (this == null) "N/A"
@@ -114,16 +102,17 @@ fun Date?.makeItReadable(): String {
 }
 
 fun Date?.prettifyDate(): String =
-  if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
+    if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
 fun isSameMonthYear(yearMonthValue1: String, yearMonthValue2: String) =
-  listOf(SDF_MMM_YYYY, SDF_YYYY_MMM).let {
-    it.tryParse(yearMonthValue1)?.asMmmYyyy()?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) ==
-      true
-  }
+    listOf(SDF_MMM_YYYY, SDF_YYYY_MMM).let {
+      it.tryParse(yearMonthValue1)
+          ?.asMmmYyyy()
+          ?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) == true
+    }
 
 fun Date.daysPassed() =
-  TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
+    TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
 fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
 
@@ -178,9 +167,9 @@ fun Date.lastDayOfMonth(): Date {
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
 
 fun DateTimeType.format(): String =
-  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(value).let {
-    StringBuilder(it).insert(it.length - 2, ":").toString()
-  }
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(value).let {
+      StringBuilder(it).insert(it.length - 2, ":").toString()
+    }
 
 fun DateTimeType.plusDaysAsString(days: Int): String {
   val clone = this.copy()
