@@ -32,8 +32,6 @@ interface ConfigService {
   /** Define a list of [ResourceTag] for the application. */
   fun defineResourceTags(): List<ResourceTag>
 
-  fun provideSyncStrategies(): List<String>
-
   /**
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
