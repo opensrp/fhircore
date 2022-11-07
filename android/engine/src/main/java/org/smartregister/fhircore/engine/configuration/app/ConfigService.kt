@@ -16,14 +16,8 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import android.content.Context
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.sync.SyncStrategyTag
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -40,15 +34,6 @@ interface ConfigService {
    * synced resource.
    */
   fun provideSyncStrategyTags(): List<SyncStrategyTag>
-
-  fun scheduleFhirTaskPlanWorker(context: Context) {
-    WorkManager.getInstance(context)
-      .enqueueUniquePeriodicWork(
-        FhirTaskPlanWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.REPLACE,
-        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
-      )
-  }
 
   fun provideSyncStrategies(): List<String>
 

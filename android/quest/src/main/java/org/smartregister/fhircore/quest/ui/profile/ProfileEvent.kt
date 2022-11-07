@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import android.content.Context
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
@@ -26,7 +25,6 @@ sealed class ProfileEvent {
 
   data class OverflowMenuClick(
     val navController: NavController,
-    val context: Context,
     val resourceData: ResourceData?,
     val overflowMenuItemConfig: OverflowMenuItemConfig?,
     val managingEntity: ManagingEntityConfig? = null
