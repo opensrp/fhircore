@@ -99,10 +99,6 @@ fun Date.asDdMmmYyyy(): String {
   return SDF_DD_MMM_YYYY.format(this)
 }
 
-fun Date.asDdMmYyyy(): String {
-  return SDF_DD_MMM_YYYY.format(this)
-}
-
 fun Date.asYyyyMmDd(): String {
   return SDF_YYYY_MM_DD.format(this)
 }

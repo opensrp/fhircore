@@ -224,4 +224,13 @@ class DateTimeExtensionTest : RobolectricTest() {
     val formattedDate = date.toHumanDisplay()
     assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
   }
+  @Test
+  fun testDateAsMmmmYyyyShouldReturnFormattedDate() {
+    val date = DateUtils.parseDate("2022-02-02", "MMMM-yyyy\"")
+
+    val result = date.asMmmmYyyy()
+
+    assertEquals("February-2022", result)
+  }
+
 }
