@@ -56,4 +56,30 @@ object Faker {
 
     return configurationRegistry
   }
+  fun buildTestMeasureReportConfiguration(): ConfigurationRegistry {
+
+    val fhirResourceService = mockk<FhirResourceService>()
+    val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
+    val configurationRegistry =
+      spyk(
+        ConfigurationRegistry(
+          fhirEngine = mockk(),
+          fhirResourceDataSource = fhirResourceDataSource,
+          sharedPreferencesHelper = mockk(),
+          dispatcherProvider = mockk(),
+          configService = mockk()
+        )
+      )
+
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        appId = APP_DEBUG,
+        context = InstrumentationRegistry.getInstrumentation().targetContext
+      ) {}
+    }
+
+    return configurationRegistry
+  }
 }

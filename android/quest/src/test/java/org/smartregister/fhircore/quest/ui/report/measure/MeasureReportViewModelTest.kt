@@ -312,4 +312,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
     assertEquals(currentYear, result.keys.first())
     assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
   }
+  @Test
+  fun testShowFixedRangeSelection() {
+    val result = measureReportViewModel.showFixedRangeSelection()
+    assertEquals(false, result)
+  }
 }
