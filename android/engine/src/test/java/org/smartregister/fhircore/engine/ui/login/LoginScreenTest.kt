@@ -57,6 +57,7 @@ class LoginScreenTest : RobolectricTest() {
         every { username } returns MutableLiveData("demo")
         every { password } returns MutableLiveData("1234")
         every { loginErrorState } returns MutableLiveData(null)
+        every { loadingConfig } returns MutableLiveData(false)
         every { showProgressBar } returns MutableLiveData(false)
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
       }

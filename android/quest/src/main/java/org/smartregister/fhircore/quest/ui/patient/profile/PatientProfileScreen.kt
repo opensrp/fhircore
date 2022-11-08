@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,7 @@ import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R as R2
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -72,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 fun PatientProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
+  appMainViewModel: AppMainViewModel,
   patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
 ) {
 
@@ -80,6 +83,11 @@ fun PatientProfileScreen(
   val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
+  val taskId by appMainViewModel.taskId.collectAsState()
+
+  LaunchedEffect(taskId) {
+    taskId?.let { patientProfileViewModel.fetchPatientProfileDataWithChildren() }
+  }
 
   Scaffold(
     topBar = {
