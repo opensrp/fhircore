@@ -22,9 +22,12 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 
 object Faker {
 
@@ -37,49 +40,29 @@ object Faker {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
     val configurationRegistry =
-      spyk(
-        ConfigurationRegistry(
-          fhirEngine = mockk(),
-          fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
-          dispatcherProvider = mockk(),
-          configService = mockk()
-        )
-      )
+        spyk(
+            ConfigurationRegistry(
+                fhirEngine = mockk(),
+                fhirResourceDataSource = fhirResourceDataSource,
+                sharedPreferencesHelper = mockk(),
+                dispatcherProvider = mockk(),
+                configService = mockk()))
 
     runBlocking {
       configurationRegistry.loadConfigurations(
-        appId = APP_DEBUG,
-        context = InstrumentationRegistry.getInstrumentation().targetContext
-      ) {}
+          appId = APP_DEBUG, context = InstrumentationRegistry.getInstrumentation().targetContext) {
+          }
     }
 
     return configurationRegistry
   }
-  fun buildTestMeasureReportConfiguration(): ConfigurationRegistry {
 
-    val fhirResourceService = mockk<FhirResourceService>()
-    val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+  fun buildMeasureReportRepo(): MeasureReportRepository {
+    return MeasureReportRepository(mockk(), mockk(), buildTestConfigurationRegistry(), mockk())
+  }
 
-    val configurationRegistry =
-      spyk(
-        ConfigurationRegistry(
-          fhirEngine = mockk(),
-          fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
-          dispatcherProvider = mockk(),
-          configService = mockk()
-        )
-      )
-
-    runBlocking {
-      configurationRegistry.loadConfigurations(
-        appId = APP_DEBUG,
-        context = InstrumentationRegistry.getInstrumentation().targetContext
-      ) {}
-    }
-
-    return configurationRegistry
+  fun buildTestMeasureReportConfiguration(): MeasureReportConfiguration {
+    return MeasureReportConfiguration(
+        APP_DEBUG, ConfigType.MeasureReport.name, "1234", "2020-10-27", false, emptyList())
   }
 }
