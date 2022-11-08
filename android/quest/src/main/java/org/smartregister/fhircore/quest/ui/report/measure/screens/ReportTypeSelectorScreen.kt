@@ -83,6 +83,8 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSele
 
 const val SHOW_FIXED_RANGE_TEST_TAG = "SHOW_FIXED_RANGE_TEST_TAG"
 const val SHOW_PROGRESS_INDICATOR_TAG = "SHOW_PROGRESS_INDICATOR_TAG"
+const val TEST_MONTH_CLICK_TAG = "TEST_MONTH_CLICK_TAG"
+const val SHOW_DATE_PICKER_FORM_TAG = "SHOW_DATE_PICKER_FORM_TAG"
 
 @Composable
 fun ReportTypeSelectorScreen(
@@ -178,14 +180,17 @@ fun ReportTypeSelectorPage(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      Column(modifier = modifier.fillMaxSize()) {
+      Column(modifier = modifier.fillMaxSize().testTag(SHOW_DATE_PICKER_FORM_TAG)) {
         Box(modifier = modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center) {
           if (showProgressIndicator) {
             Column(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-              CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
+              CircularProgressIndicator(
+                modifier = modifier.size(40.dp).testTag(SHOW_PROGRESS_INDICATOR_TAG),
+                strokeWidth = 2.dp
+              )
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
@@ -454,7 +459,7 @@ fun PatientSelectionIndividualPreview() {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
-  Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
+  Row(Modifier.fillMaxWidth().testTag(TEST_MONTH_CLICK_TAG).clickable { selectedMonth(data) }) {
     Text(
       data.month,
       fontSize = 16.sp,
