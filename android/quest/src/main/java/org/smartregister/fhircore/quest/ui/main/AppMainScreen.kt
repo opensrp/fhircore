@@ -155,16 +155,15 @@ private fun AppMainNavigationGraph(
                 ?: stringResource(R.string.all_clients)
 
             val healthModule: HealthModule =
-              stackEntry.arguments?.getString(NavigationArg.HEALTH_MODULE) as HealthModule?
+              stackEntry.arguments?.getSerializable(
+                NavigationArg.HEALTH_MODULE,
+                HealthModule::class.java
+              )
                 ?: HealthModule.HIV
             if (healthModule == HealthModule.HOME_TRACING ||
                 healthModule == HealthModule.PHONE_TRACING
             ) {
-              TracingRegisterScreen(
-                navController = navController,
-                openDrawer = openDrawer,
-                screenTitle = screenTitle
-              )
+              TracingRegisterScreen(navController = navController, screenTitle = screenTitle)
             } else {
               PatientRegisterScreen(
                 navController = navController,

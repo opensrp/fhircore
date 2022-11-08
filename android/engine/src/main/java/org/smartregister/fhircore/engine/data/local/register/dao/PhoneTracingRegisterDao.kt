@@ -16,38 +16,36 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Search
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @Singleton
 class PhoneTracingRegisterDao
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
-  val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
-) : RegisterDao {
-  override suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean,
-    appFeatureName: String?
-  ): List<RegisterData> {
-    TODO("Not yet implemented")
-  }
+  fhirEngine: FhirEngine,
+  defaultRepository: DefaultRepository,
+  configurationRegistry: ConfigurationRegistry,
+  dispatcherProvider: DefaultDispatcherProvider
+) : TracingRegisterDao(fhirEngine, defaultRepository, configurationRegistry, dispatcherProvider) {
 
-  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
-    return super.loadProfileData(appFeatureName, resourceId)
-  }
-
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return super.countRegisterData(appFeatureName)
+  override fun Search.registerFilters() {
+    val coding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
+    filter(TokenClientParam("_tag"), { value = of(coding) })
+    filter(
+      Task.STATUS,
+      { value = of(Task.TaskStatus.READY.toCode()) },
+      { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+      operation = Operation.OR
+    )
   }
 }

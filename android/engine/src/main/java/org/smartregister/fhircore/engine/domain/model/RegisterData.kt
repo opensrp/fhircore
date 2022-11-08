@@ -106,7 +106,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val healthStatus: HealthStatus,
     val isPregnant: Boolean = false,
     val isBreastfeeding: Boolean = false,
-    val attempts: List<Any> = emptyList(),
+    val attempts: Int,
     val reasons: List<String> = emptyList()
   ) : RegisterData(logicalId = logicalId, name = name)
 }
