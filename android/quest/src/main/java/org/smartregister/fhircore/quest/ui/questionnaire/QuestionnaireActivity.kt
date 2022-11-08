@@ -343,8 +343,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     setResult(
       Activity.RESULT_OK,
       Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
-        putExtra(QUESTIONNAIRE_TASK_ID, questionnaireConfig.taskId)
+        putExtra(QUESTIONNAIRE_RESPONSE, parcelResponse)
+        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
       }
     )
     finish()
@@ -460,7 +460,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
-    const val QUESTIONNAIRE_TASK_ID = "questionnaire-task-id"
     const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
@@ -477,7 +476,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
       computedValuesMap: Map<String, Any>?,
-      actionParams: List<ActionParameter>? = emptyList()
+      actionParams: List<ActionParameter> = emptyList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),

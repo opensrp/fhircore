@@ -4,7 +4,6 @@ plugins {
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
     id 'de.mannodermaus.android-junit5'
-    id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
@@ -36,7 +35,6 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
-        buildConfigField("String[]", "SYNC_STRATEGIES", '{"Location"}')
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
@@ -133,7 +131,6 @@ android {
             applicationIdSuffix ".quest"
             versionNameSuffix "-quest"
             getIsDefault().set(true)
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         ecbis {
@@ -149,14 +146,12 @@ android {
             dimension "apps"
             applicationIdSuffix ".g6pd"
             versionNameSuffix "-g6pd"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         mwcore {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         afyayangu {
@@ -165,13 +160,20 @@ android {
             versionNameSuffix "-afyayangu"
             versionCode 1
             versionName "0.0.1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         map {
             dimension "apps"
             applicationIdSuffix ".map"
             versionNameSuffix "-map"
+            versionCode 1
+            versionName "0.0.1"
+        }
+
+        echis {
+            dimension "apps"
+            applicationIdSuffix ".echis"
+            versionNameSuffix "-echis"
             versionCode 1
             versionName "0.0.1"
             buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
@@ -223,6 +225,8 @@ dependencies {
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
+    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     implementation 'androidx.work:work-testing:2.7.1'
