@@ -34,6 +34,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -41,6 +42,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
@@ -64,6 +66,7 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
   val sharedPreference: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -314,34 +317,36 @@ constructor(
     }
   }
 
-  fun refreshSessionAuthToken(): Bundle {
+  suspend fun refreshSessionAuthToken(): Bundle {
     val bundle = Bundle()
     tokenManagerService.getActiveAccount()?.run {
+      val account = this
       val accountType = getAccountType()
       var authToken = accountManager.peekAuthToken(this, accountType)
-      if (authToken.isNullOrBlank() || !tokenManagerService.isTokenActive(authToken)) {
+      if (!tokenManagerService.isTokenActive(authToken)) {
         getRefreshToken()?.let {
           Timber.i("Saved active refresh token is available")
-
-          runCatching {
-            refreshToken(it)?.let { newTokenResponse ->
-              authToken = newTokenResponse.accessToken!!
-              updateSession(newTokenResponse)
-              // Update AuthToken saved in DB
-              accountManager.setAuthToken(this, accountType, authToken)
+          withContext(dispatcherProvider.io()) {
+            runCatching {
+              refreshToken(it)?.let { newTokenResponse ->
+                authToken = newTokenResponse.accessToken!!
+                updateSession(newTokenResponse)
+                // Update AuthToken saved in DB
+                accountManager.setAuthToken(account, accountType, authToken)
+              }
             }
+              .onFailure {
+                Timber.e("Refresh token expired before it was used", it.stackTraceToString())
+              }
+              .onSuccess { Timber.i("Got new accessToken") }
           }
-            .onFailure {
-              Timber.e("Refresh token expired before it was used", it.stackTraceToString())
-            }
-            .onSuccess { Timber.i("Got new accessToken") }
         }
       }
 
       bundle.putString(AccountManager.KEY_ACCOUNT_NAME, this.name)
       bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, this.type)
 
-      if (authToken?.isNotBlank() == true) {
+      if (authToken?.isNotBlank() == true && tokenManagerService.isTokenActive(authToken)) {
         bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
           accountManager.notifyAccountAuthenticated(this)
