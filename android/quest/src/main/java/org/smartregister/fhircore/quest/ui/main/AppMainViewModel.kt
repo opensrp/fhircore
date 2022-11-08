@@ -36,7 +36,6 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -144,15 +143,13 @@ constructor(
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {
-        viewModelScope.launch(dispatcherProvider.io()) {
+        viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
-            withContext(dispatcherProvider.main()) {
-              if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-                syncBroadcaster.runSync()
-                return@withContext
-              }
-              accountAuthenticator.logout()
+            if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+              syncBroadcaster.runSync()
+              return@let
             }
+            accountAuthenticator.logout()
           }
         }
       }
