@@ -54,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -80,206 +81,198 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.PatientSele
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportTypeData
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 
+const val SHOW_FIXED_RANGE_TEST_TAG = "SHOW_FIXED_RANGE_TEST_TAG"
+const val SHOW_PROGRESS_INDICATOR_TAG = "SHOW_PROGRESS_INDICATOR_TAG"
+
 @Composable
 fun ReportTypeSelectorScreen(
-  screenTitle: String,
-  navController: NavController,
-  measureReportViewModel: MeasureReportViewModel,
+    screenTitle: String,
+    navController: NavController,
+    measureReportViewModel: MeasureReportViewModel,
 ) {
   val context = LocalContext.current
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
   if (measureReportViewModel.showFixedRangeSelection()) {
     showFixedMonthYearListing(
-      screenTitle = screenTitle,
-      onMonthSelected = { date ->
-        measureReportViewModel.onEvent(
-          MeasureReportEvent.GenerateReport(navController, context),
-          date
-        )
-      },
-      onBackPress = {
-        // Reset UI state
-        measureReportViewModel.resetState()
-        navController.popBackStack(
-          route = MeasureReportNavigationScreen.MeasureReportList.route,
-          inclusive = false
-        )
-      },
-      showProgressIndicator = uiState.showProgressIndicator,
-      reportGenerationRange = measureReportViewModel.getReportGenerationRange(),
+        screenTitle = screenTitle,
+        onMonthSelected = { date ->
+          measureReportViewModel.onEvent(
+              MeasureReportEvent.GenerateReport(navController, context), date)
+        },
+        onBackPress = {
+          // Reset UI state
+          measureReportViewModel.resetState()
+          navController.popBackStack(
+              route = MeasureReportNavigationScreen.MeasureReportList.route, inclusive = false)
+        },
+        showProgressIndicator = uiState.showProgressIndicator,
+        reportGenerationRange = measureReportViewModel.getReportGenerationRange(),
     )
   } else {
     ReportTypeSelectorPage(
-      startDate = uiState.startDate.ifEmpty { stringResource(id = R.string.start_date) },
-      endDate = uiState.endDate.ifEmpty { stringResource(id = R.string.end_date) },
-      patientName = uiState.patientViewData?.name,
-      generateReport =
-        uiState.startDate.isNotEmpty() &&
-          uiState.endDate.isNotEmpty() &&
-          (uiState.patientViewData != null ||
-            measureReportViewModel.reportTypeState.value ==
-              MeasureReport.MeasureReportType.SUMMARY),
-      onGenerateReportClicked = {
-        measureReportViewModel.onEvent(MeasureReportEvent.GenerateReport(navController, context))
-      },
-      reportTypeState = measureReportViewModel.reportTypeState,
-      onReportTypeSelected = {
-        measureReportViewModel.onEvent(MeasureReportEvent.OnReportTypeChanged(it, navController))
-      },
-      showProgressIndicator = uiState.showProgressIndicator,
-      screenTitle = screenTitle,
-      dateRange = measureReportViewModel.dateRange,
-      onDateRangeSelected = { newDateRange ->
-        measureReportViewModel.onEvent(MeasureReportEvent.OnDateRangeSelected(newDateRange))
-      },
-      onBackPress = {
-        // Reset UI state
-        measureReportViewModel.resetState()
-        navController.popBackStack(
-          route = MeasureReportNavigationScreen.MeasureReportList.route,
-          inclusive = false
-        )
-      }
-    )
+        startDate = uiState.startDate.ifEmpty { stringResource(id = R.string.start_date) },
+        endDate = uiState.endDate.ifEmpty { stringResource(id = R.string.end_date) },
+        patientName = uiState.patientViewData?.name,
+        generateReport =
+            uiState.startDate.isNotEmpty() &&
+                uiState.endDate.isNotEmpty() &&
+                (uiState.patientViewData != null ||
+                    measureReportViewModel.reportTypeState.value ==
+                        MeasureReport.MeasureReportType.SUMMARY),
+        onGenerateReportClicked = {
+          measureReportViewModel.onEvent(MeasureReportEvent.GenerateReport(navController, context))
+        },
+        reportTypeState = measureReportViewModel.reportTypeState,
+        onReportTypeSelected = {
+          measureReportViewModel.onEvent(MeasureReportEvent.OnReportTypeChanged(it, navController))
+        },
+        showProgressIndicator = uiState.showProgressIndicator,
+        screenTitle = screenTitle,
+        dateRange = measureReportViewModel.dateRange,
+        onDateRangeSelected = { newDateRange ->
+          measureReportViewModel.onEvent(MeasureReportEvent.OnDateRangeSelected(newDateRange))
+        },
+        onBackPress = {
+          // Reset UI state
+          measureReportViewModel.resetState()
+          navController.popBackStack(
+              route = MeasureReportNavigationScreen.MeasureReportList.route, inclusive = false)
+        })
   }
 }
 
 @Composable
 fun ReportTypeSelectorPage(
-  screenTitle: String,
-  startDate: String,
-  endDate: String,
-  dateRange: MutableState<Pair<Long, Long>>,
-  onDateRangeSelected: (Pair<Long, Long>) -> Unit,
-  patientName: String?,
-  reportTypeState: MutableState<MeasureReport.MeasureReportType>,
-  onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
-  generateReport: Boolean,
-  onGenerateReportClicked: () -> Unit,
-  onBackPress: () -> Unit,
-  modifier: Modifier = Modifier,
-  showProgressIndicator: Boolean = false
+    screenTitle: String,
+    startDate: String,
+    endDate: String,
+    dateRange: MutableState<Pair<Long, Long>>,
+    onDateRangeSelected: (Pair<Long, Long>) -> Unit,
+    patientName: String?,
+    reportTypeState: MutableState<MeasureReport.MeasureReportType>,
+    onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
+    generateReport: Boolean,
+    onGenerateReportClicked: () -> Unit,
+    onBackPress: () -> Unit,
+    modifier: Modifier = Modifier,
+    showProgressIndicator: Boolean = false
 ) {
 
   Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
-        navigationIcon = {
-          IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
-        },
-        contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
-      )
-    }
-  ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
-      Column(modifier = modifier.fillMaxSize()) {
-        Box(modifier = modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center) {
-          if (showProgressIndicator) {
-            Column(
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-              CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
-              Text(
-                text = stringResource(R.string.please_wait),
-                textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
-              )
-            }
-          } else {
-            Column {
-              DateSelectionBox(
-                startDate = startDate,
-                endDate = endDate,
-                dateRange = dateRange,
-                onDateRangeSelected = onDateRangeSelected
-              )
-              Spacer(modifier = modifier.size(28.dp))
-              PatientSelectionBox(
-                radioOptions =
-                  listOf(
-                    MeasureReportTypeData(
-                      textResource = R.string.all,
-                      measureReportType = MeasureReport.MeasureReportType.SUMMARY
-                    ),
-                    MeasureReportTypeData(
-                      textResource = R.string.individual,
-                      measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL
-                    )
-                  ),
-                patientName = patientName,
-                reportTypeState = reportTypeState,
-                onReportTypeSelected = onReportTypeSelected
-              )
-              Column(
-                modifier = modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.Bottom
-              ) {
-                Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                  GenerateReportButton(
-                    generateReportEnabled = generateReport,
-                    onGenerateReportClicked = onGenerateReportClicked
-                  )
+      topBar = {
+        TopAppBar(
+            title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+            navigationIcon = {
+              IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
+            },
+            contentColor = Color.White,
+            backgroundColor = MaterialTheme.colors.primary)
+      }) { innerPadding ->
+        Box(modifier = modifier.padding(innerPadding)) {
+          Column(modifier = modifier.fillMaxSize()) {
+            Box(
+                modifier = modifier.padding(16.dp).fillMaxSize(),
+                contentAlignment = Alignment.Center) {
+                  if (showProgressIndicator) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                      CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
+                      Text(
+                          text = stringResource(R.string.please_wait),
+                          textAlign = TextAlign.Center,
+                          modifier = modifier.padding(vertical = 16.dp))
+                    }
+                  } else {
+                    Column {
+                      DateSelectionBox(
+                          startDate = startDate,
+                          endDate = endDate,
+                          dateRange = dateRange,
+                          onDateRangeSelected = onDateRangeSelected)
+                      Spacer(modifier = modifier.size(28.dp))
+                      PatientSelectionBox(
+                          radioOptions =
+                              listOf(
+                                  MeasureReportTypeData(
+                                      textResource = R.string.all,
+                                      measureReportType = MeasureReport.MeasureReportType.SUMMARY),
+                                  MeasureReportTypeData(
+                                      textResource = R.string.individual,
+                                      measureReportType =
+                                          MeasureReport.MeasureReportType.INDIVIDUAL)),
+                          patientName = patientName,
+                          reportTypeState = reportTypeState,
+                          onReportTypeSelected = onReportTypeSelected)
+                      Column(
+                          modifier = modifier.fillMaxHeight(),
+                          verticalArrangement = Arrangement.Bottom) {
+                            Row(
+                                modifier = modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Bottom) {
+                                  GenerateReportButton(
+                                      generateReportEnabled = generateReport,
+                                      onGenerateReportClicked = onGenerateReportClicked)
+                                }
+                          }
+                    }
+                  }
                 }
-              }
-            }
           }
         }
       }
-    }
-  }
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun showFixedMonthYearListing(
-  screenTitle: String,
-  onMonthSelected: (date: Date?) -> Unit,
-  onBackPress: () -> Unit,
-  modifier: Modifier = Modifier,
-  showProgressIndicator: Boolean = false,
-  reportGenerationRange: Map<String, List<ReportRangeSelectionData>>,
+    screenTitle: String,
+    onMonthSelected: (date: Date?) -> Unit,
+    onBackPress: () -> Unit,
+    modifier: Modifier = Modifier,
+    showProgressIndicator: Boolean = false,
+    reportGenerationRange: Map<String, List<ReportRangeSelectionData>>,
 ) {
 
   Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
-        navigationIcon = {
-          IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
-        },
-        contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
-      )
-    }
-  ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
-      Column(modifier = modifier.fillMaxSize()) {
-        if (showProgressIndicator) {
-          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-              CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
-              Text(
-                text = stringResource(R.string.please_wait),
-                textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
-              )
+      topBar = {
+        TopAppBar(
+            title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+            navigationIcon = {
+              IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
+            },
+            contentColor = Color.White,
+            backgroundColor = MaterialTheme.colors.primary)
+      }) { innerPadding ->
+        Box(modifier = modifier.padding(innerPadding).testTag(SHOW_FIXED_RANGE_TEST_TAG)) {
+          Column(modifier = modifier.fillMaxSize()) {
+            if (showProgressIndicator) {
+              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                  CircularProgressIndicator(
+                      modifier = modifier.size(40.dp).testTag(SHOW_PROGRESS_INDICATOR_TAG),
+                      strokeWidth = 2.dp)
+                  Text(
+                      text = stringResource(R.string.please_wait),
+                      textAlign = TextAlign.Center,
+                      modifier = modifier.padding(vertical = 16.dp))
+                }
+              }
+            } else {
+              Box(
+                  modifier = modifier.fillMaxSize(),
+              ) {
+                LazyMonthList(reportGenerationRange) { onMonthSelected(it.date) }
+              }
             }
           }
-        } else {
-          Box(
-            modifier = modifier.fillMaxSize(),
-          ) { LazyMonthList(reportGenerationRange) { onMonthSelected(it.date) } }
         }
       }
-    }
-  }
 }
 
 /**
@@ -292,8 +285,8 @@ fun showFixedMonthYearListing(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun LazyMonthList(
-  reportRangeList: Map<String, List<ReportRangeSelectionData>>,
-  selectedMonth: (ReportRangeSelectionData) -> Unit
+    reportRangeList: Map<String, List<ReportRangeSelectionData>>,
+    selectedMonth: (ReportRangeSelectionData) -> Unit
 ) {
 
   LazyColumn {
@@ -301,17 +294,15 @@ fun LazyMonthList(
       stickyHeader {
         Row(Modifier.fillMaxWidth().background(color = SearchHeaderColor)) {
           Text(
-            text = year,
-            fontSize = 14.sp,
-            color = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier.padding(8.dp).weight(0.85f)
-          )
+              text = year,
+              fontSize = 14.sp,
+              color = DefaultColor.copy(alpha = 0.7f),
+              modifier = Modifier.padding(8.dp).weight(0.85f))
           Icon(
-            Icons.Filled.KeyboardArrowDown,
-            contentDescription = null,
-            tint = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
-          )
+              Icons.Filled.KeyboardArrowDown,
+              contentDescription = null,
+              tint = DefaultColor.copy(alpha = 0.7f),
+              modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically))
         }
       }
 
@@ -322,77 +313,70 @@ fun LazyMonthList(
 
 @Composable
 fun PatientSelectionBox(
-  radioOptions: List<MeasureReportTypeData>,
-  patientName: String?,
-  reportTypeState: MutableState<MeasureReport.MeasureReportType>,
-  onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
-  modifier: Modifier = Modifier
+    radioOptions: List<MeasureReportTypeData>,
+    patientName: String?,
+    reportTypeState: MutableState<MeasureReport.MeasureReportType>,
+    onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
+    modifier: Modifier = Modifier
 ) {
   Column(
-    modifier = modifier.wrapContentWidth(),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.Start
-  ) {
-    Text(
-      text = stringResource(id = R.string.patient),
-      fontSize = 18.sp,
-      fontWeight = FontWeight.Bold
-    )
-
-    radioOptions.forEach { reportTypeData ->
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(
-          selected = reportTypeState.value == reportTypeData.measureReportType,
-          onClick = {
-            reportTypeState.value = reportTypeData.measureReportType
-            onReportTypeSelected(reportTypeState.value)
-          }
-        )
+      modifier = modifier.wrapContentWidth(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.Start) {
         Text(
-          text = stringResource(id = reportTypeData.textResource),
-          fontSize = 16.sp,
-          modifier =
-            modifier.clickable {
-              reportTypeState.value = reportTypeData.measureReportType
-              onReportTypeSelected(reportTypeState.value)
-            }
-        )
-      }
-      Spacer(modifier = modifier.size(4.dp))
-    }
+            text = stringResource(id = R.string.patient),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold)
 
-    if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
-        !patientName.isNullOrEmpty()
-    ) {
-      Row(modifier = modifier.padding(start = 24.dp)) {
-        Spacer(modifier = modifier.size(8.dp))
-        PatientSelector(
-          patientName = patientName,
-          onChangePatient = { onReportTypeSelected(reportTypeState.value) },
-        )
+        radioOptions.forEach { reportTypeData ->
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                selected = reportTypeState.value == reportTypeData.measureReportType,
+                onClick = {
+                  reportTypeState.value = reportTypeData.measureReportType
+                  onReportTypeSelected(reportTypeState.value)
+                })
+            Text(
+                text = stringResource(id = reportTypeData.textResource),
+                fontSize = 16.sp,
+                modifier =
+                    modifier.clickable {
+                      reportTypeState.value = reportTypeData.measureReportType
+                      onReportTypeSelected(reportTypeState.value)
+                    })
+          }
+          Spacer(modifier = modifier.size(4.dp))
+        }
+
+        if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
+            !patientName.isNullOrEmpty()) {
+          Row(modifier = modifier.padding(start = 24.dp)) {
+            Spacer(modifier = modifier.size(8.dp))
+            PatientSelector(
+                patientName = patientName,
+                onChangePatient = { onReportTypeSelected(reportTypeState.value) },
+            )
+          }
+        }
       }
-    }
-  }
 }
 
 @Composable
 fun GenerateReportButton(
-  generateReportEnabled: Boolean,
-  onGenerateReportClicked: () -> Unit,
-  modifier: Modifier = Modifier
+    generateReportEnabled: Boolean,
+    onGenerateReportClicked: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
   Column {
     Button(
-      enabled = generateReportEnabled,
-      onClick = onGenerateReportClicked,
-      modifier = modifier.fillMaxWidth()
-    ) {
-      Text(
-        color = Color.White,
-        text = stringResource(id = R.string.generate_report),
-        modifier = modifier.padding(8.dp)
-      )
-    }
+        enabled = generateReportEnabled,
+        onClick = onGenerateReportClicked,
+        modifier = modifier.fillMaxWidth()) {
+          Text(
+              color = Color.White,
+              text = stringResource(id = R.string.generate_report),
+              modifier = modifier.padding(8.dp))
+        }
   }
 }
 
@@ -402,21 +386,19 @@ fun GenerateReportButton(
 fun PatientSelectionAllPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }
   PatientSelectionBox(
-    radioOptions =
-      listOf(
-        MeasureReportTypeData(
-          textResource = R.string.all,
-          measureReportType = MeasureReport.MeasureReportType.SUMMARY,
-        ),
-        MeasureReportTypeData(
-          textResource = R.string.individual,
-          measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
-      ),
-    reportTypeState = reportTypeState,
-    onReportTypeSelected = {},
-    patientName = null
-  )
+      radioOptions =
+          listOf(
+              MeasureReportTypeData(
+                  textResource = R.string.all,
+                  measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+              ),
+              MeasureReportTypeData(
+                  textResource = R.string.individual,
+                  measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
+              )),
+      reportTypeState = reportTypeState,
+      onReportTypeSelected = {},
+      patientName = null)
 }
 
 @Composable
@@ -425,21 +407,19 @@ fun PatientSelectionAllPreview() {
 fun PatientSelectionIndividualPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.INDIVIDUAL) }
   PatientSelectionBox(
-    radioOptions =
-      listOf(
-        MeasureReportTypeData(
-          textResource = R.string.all,
-          measureReportType = MeasureReport.MeasureReportType.SUMMARY,
-        ),
-        MeasureReportTypeData(
-          textResource = R.string.individual,
-          measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
-      ),
-    reportTypeState = reportTypeState,
-    onReportTypeSelected = {},
-    patientName = "John Jared"
-  )
+      radioOptions =
+          listOf(
+              MeasureReportTypeData(
+                  textResource = R.string.all,
+                  measureReportType = MeasureReport.MeasureReportType.SUMMARY,
+              ),
+              MeasureReportTypeData(
+                  textResource = R.string.individual,
+                  measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
+              )),
+      reportTypeState = reportTypeState,
+      onReportTypeSelected = {},
+      patientName = "John Jared")
 }
 
 /** Composable function to represent a list item */
@@ -449,17 +429,15 @@ fun PatientSelectionIndividualPreview() {
 fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
   Row(Modifier.fillMaxWidth().clickable { selectedMonth(data) }) {
     Text(
-      data.month,
-      fontSize = 16.sp,
-      style = MaterialTheme.typography.h5,
-      modifier = Modifier.padding(12.dp).weight(0.85f)
-    )
+        data.month,
+        fontSize = 16.sp,
+        style = MaterialTheme.typography.h5,
+        modifier = Modifier.padding(12.dp).weight(0.85f))
     Icon(
-      Icons.Filled.KeyboardArrowRight,
-      contentDescription = null,
-      tint = DefaultColor.copy(alpha = 0.7f),
-      modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
-    )
+        Icons.Filled.KeyboardArrowRight,
+        contentDescription = null,
+        tint = DefaultColor.copy(alpha = 0.7f),
+        modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically))
   }
   Divider(color = DividerColor, thickness = 0.5.dp)
 }
@@ -471,11 +449,10 @@ fun FixedRangeListPreview() {
   val ranges = HashMap<String, List<ReportRangeSelectionData>>()
   val months = mutableListOf<ReportRangeSelectionData>()
   val range =
-    ReportRangeSelectionData(
-      "March",
-      "2022",
-      "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!
-    )
+      ReportRangeSelectionData(
+          "March",
+          "2022",
+          "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!)
   months.add(range)
   months.add(range)
   months.add(range)
@@ -485,12 +462,11 @@ fun FixedRangeListPreview() {
   ranges["2020"] = months
   ranges["2019"] = months
   showFixedMonthYearListing(
-    screenTitle = "First ANC",
-    onMonthSelected = {},
-    onBackPress = {},
-    showProgressIndicator = false,
-    reportGenerationRange = ranges
-  )
+      screenTitle = "First ANC",
+      onMonthSelected = {},
+      onBackPress = {},
+      showProgressIndicator = false,
+      reportGenerationRange = ranges)
 }
 
 @Composable
@@ -502,17 +478,16 @@ fun ReportFilterPreview() {
     mutableStateOf(Pair(Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis))
   }
   ReportTypeSelectorPage(
-    screenTitle = "First ANC",
-    startDate = "StartDate",
-    endDate = "EndDate",
-    dateRange = dateRange,
-    onDateRangeSelected = {},
-    patientName = "John Doe",
-    generateReport = true,
-    onGenerateReportClicked = {},
-    onReportTypeSelected = {},
-    reportTypeState = reportTypeState,
-    showProgressIndicator = false,
-    onBackPress = {}
-  )
+      screenTitle = "First ANC",
+      startDate = "StartDate",
+      endDate = "EndDate",
+      dateRange = dateRange,
+      onDateRangeSelected = {},
+      patientName = "John Doe",
+      generateReport = true,
+      onGenerateReportClicked = {},
+      onReportTypeSelected = {},
+      reportTypeState = reportTypeState,
+      showProgressIndicator = false,
+      onBackPress = {})
 }
