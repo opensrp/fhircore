@@ -16,18 +16,22 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -37,6 +41,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,26 +51,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import java.util.Locale
-import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R as R2
-import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
-import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
-import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
 fun TracingProfileScreen(
@@ -74,11 +77,7 @@ fun TracingProfileScreen(
   patientProfileViewModel: TracingProfileViewModel = hiltViewModel()
 ) {
 
-  TracingProfilePage(
-    modifier = modifier,
-    onBackPress = { navController.popBackStack() },
-    patientProfileViewModel = patientProfileViewModel
-  )
+  TracingProfilePage(modifier = modifier, onBackPress = { navController.popBackStack() })
 }
 
 @Composable
@@ -97,7 +96,7 @@ fun TracingProfilePage(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(stringResource(R.string.profile)) },
+        title = { Text(stringResource(id = R2.string.patient_details)) },
         navigationIcon = {
           IconButton(onClick = { onBackPress() }) { Icon(Icons.Filled.ArrowBack, null) }
         },
@@ -130,101 +129,86 @@ fun TracingProfilePage(
                         if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-              ) {
-                when (it.id) {
-                  R2.id.view_children -> {
-                    Text(text = profileViewData.viewChildText, color = it.titleColor)
-                  }
-                  R2.id.view_guardians -> {
-                    Text(
-                      text = stringResource(it.titleResource, profileViewData.guardians.size),
-                      color = it.titleColor
-                    )
-                  }
-                  else -> {
-                    Text(text = stringResource(id = it.titleResource), color = it.titleColor)
-                  }
-                }
-              }
+              ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
             }
           }
         }
       )
     }
   ) { innerPadding ->
-    Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
-      Box(modifier = Modifier.padding(innerPadding).weight(2.0f)) {
-        Column(
-          modifier =
-            modifier
-              .verticalScroll(rememberScrollState())
-              .background(PatientProfileSectionsBackgroundColor)
-        ) {
-          // Personal Data: e.g. sex, age, dob
-          PersonalData(profileViewData)
+    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData) {}
+  }
+}
 
-          // Patient tasks: List of tasks for the patients
-          if (profileViewData.tasks.isNotEmpty()) {
-            val appointmentDate =
-              profileViewData.carePlans
-                .singleOrNull { it.status == CarePlan.CarePlanStatus.ACTIVE }
-                ?.period
-                ?.end
-            ProfileCard(
-              title = {
-                Row(
-                  modifier = Modifier.weight(1f),
-                  horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                  Text(text = stringResource(R.string.clinic_visit).uppercase(Locale.getDefault()))
-                  if (appointmentDate != null) Text(text = appointmentDate.asDdMmmYyyy())
-                }
-              },
-              onActionClick = {},
-              showSeeAll = profileViewData.showListsHighlights,
-              profileViewSection = PatientProfileViewSection.TASKS
-            ) {
-              profileViewData.tasks.forEach {
-                ProfileActionableItem(
-                  it,
-                  onActionClick = { taskFormId, taskId ->
-                    patientProfileViewModel.onEvent(
-                      TracingProfileEvent.OpenTaskForm(
-                        context = context,
-                        taskFormId = taskFormId,
-                        taskId = taskId
-                      )
-                    )
-                  }
-                )
-              }
-            }
-          }
-        }
+@Composable
+fun TracingProfilePageView(
+  modifier: Modifier = Modifier,
+  innerPadding: PaddingValues = PaddingValues(all = 0.dp),
+  profileViewData: ProfileViewData.PatientProfileViewData =
+    ProfileViewData.PatientProfileViewData(),
+  onBackPress: () -> Unit
+) {
+  Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
+    Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
+      Column(
+        modifier =
+          modifier
+            .verticalScroll(rememberScrollState())
+            .background(PatientProfileSectionsBackgroundColor)
+      ) {
+        // Personal Data: e.g. sex, age, dob
+        PatientInfo(profileViewData)
+        Spacer(modifier = modifier.height(20.dp))
+        // Tracing Visit Due // pull tracingTask -> executionPeriod -> end
+        TracingVisitDue(profileViewData.dob)
+        // TracingVisitDue(profileViewData.tracingTask.executionPeriod.end.asDdMmYyyy())
+        Spacer(modifier = modifier.height(20.dp))
+        // Tracing Reason
+        TracingReasonBox(profileViewData.tracingTask, displayForHomeTrace = true)
+        Spacer(modifier = modifier.height(20.dp))
+        // Tracing Patient address/contact
+        TracingContactAddress(profileViewData, displayForHomeTrace = false)
+        Spacer(modifier = modifier.height(20.dp))
+        TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
       }
+    }
+  }
+}
 
-      //  Finish visit
-      if (profileViewData.carePlans.isNotEmpty() && profileViewData.tasks.isNotEmpty()) {
-        Button(
-          modifier = Modifier.fillMaxWidth().padding(0.dp),
-          shape = RectangleShape,
-          onClick = {
-            patientProfileViewModel.onEvent(
-              TracingProfileEvent.LoadQuestionnaire(
-                TracingProfileViewModel.PATIENT_FINISH_VISIT,
-                context
-              )
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+@Composable
+fun TracingScreenPreview() {
+  TracingProfilePageView(modifier = Modifier, onBackPress = {})
+}
+
+@Composable
+fun PatientInfo(
+  patientProfileViewData: ProfileViewData.PatientProfileViewData,
+  modifier: Modifier = Modifier,
+) {
+  Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+      InfoBoxItem(title = stringResource(R2.string.name), value = patientProfileViewData.name)
+      InfoBoxItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
+      InfoBoxItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
+      if (patientProfileViewData.identifier != null) {
+        var idKeyValue: String
+        if (patientProfileViewData.showIdentifierInProfile) {
+          idKeyValue =
+            stringResource(
+              R.string.idKeyValue,
+              patientProfileViewData.identifierKey,
+              patientProfileViewData.identifier.ifEmpty {
+                stringResource(R.string.identifier_unassigned)
+              }
             )
-          },
-          enabled = profileViewData.tasksCompleted
-        ) {
           Text(
-            modifier = Modifier.padding(10.dp),
-            text = stringResource(id = R.string.finish).uppercase(),
-            textAlign = TextAlign.Center,
+            text = idKeyValue,
+            color = StatusTextColor,
             fontSize = 18.sp,
-            fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.Medium
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
         }
       }
@@ -232,9 +216,215 @@ fun TracingProfilePage(
   }
 }
 
-// @Preview(showBackground = true)
-// @ExcludeFromJacocoGeneratedReport
-// @Composable
-// fun TracingScreenPreview() {
-//    TracingProfileScreen(navController = NavHostController(LocalContext.current))
-// }
+@Composable
+private fun InfoBoxItem(title: String, value: String, modifier: Modifier = Modifier) {
+  Row(modifier = modifier.padding(4.dp)) {
+    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor, fontSize = 18.sp)
+    Text(text = value, fontSize = 18.sp)
+  }
+}
+
+@Composable
+private fun TracingReasonItem(
+  title: String,
+  value: String,
+  verticalRenderOrientation: Boolean = false,
+  modifier: Modifier = Modifier
+) {
+  if (verticalRenderOrientation) {
+    Column(modifier = modifier.padding(4.dp)) {
+      Row(modifier = modifier.padding(bottom = 4.dp)) {
+        Text(text = title, modifier)
+        Text(
+          text = ":",
+          modifier.padding(end = 4.dp),
+        )
+      }
+      Text(text = value, color = StatusTextColor)
+    }
+  } else {
+    Row(modifier = modifier.padding(4.dp)) {
+      Text(text = title, modifier)
+      Text(text = ":", modifier.padding(end = 4.dp), color = StatusTextColor)
+      Text(text = value, color = StatusTextColor)
+    }
+  }
+}
+
+@Composable
+private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
+  Card(
+    elevation = 3.dp,
+    modifier = modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(12.dp),
+    border = BorderStroke(width = 2.dp, color = StatusTextColor)
+  ) {
+    Row(
+      modifier = modifier.padding(6.dp, 8.dp).fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Text(
+        text = stringResource(R2.string.tracing_visit_due),
+        modifier.padding(bottom = 4.dp),
+        color = StatusTextColor,
+        fontSize = 18.sp
+      )
+      Text(text = dueDate, fontSize = 18.sp)
+      Icon(imageVector = Icons.Filled.Sync, "", tint = StatusTextColor)
+    }
+  }
+}
+
+@Composable
+private fun TracingReasonBox(
+  tracingTask: Task,
+  displayForHomeTrace: Boolean = false,
+  modifier: Modifier = Modifier
+) {
+  Card(
+    elevation = 3.dp,
+    modifier = modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(12.dp),
+    border = BorderStroke(width = 2.dp, color = StatusTextColor)
+  ) {
+    Column(modifier = modifier.padding(horizontal = 4.dp)) {
+      TracingReasonItem(
+        title = stringResource(R2.string.reason_for_trace),
+        value = tracingTask.reasonCode?.codingFirstRep?.display ?: "High Viral Load"
+      )
+      if (displayForHomeTrace)
+        TracingReasonItem(
+          title = stringResource(R2.string.last_home_trace_outcome),
+          value = "Todo display reason text here",
+          verticalRenderOrientation = true
+        )
+      else
+        TracingReasonItem(
+          title = stringResource(R2.string.last_phone_trace_outcome),
+          value = "Todo display reason text here",
+          verticalRenderOrientation = true
+        )
+      TracingReasonItem(
+        title = stringResource(R2.string.date_of_last_attempt),
+        value = "todo DD/MM/yyyy"
+      )
+      TracingReasonItem(title = stringResource(R2.string.number_of_attempts), value = "X")
+    }
+  }
+}
+
+@Composable
+private fun TracingContactAddress(
+  patientProfileViewData: ProfileViewData.PatientProfileViewData,
+  displayForHomeTrace: Boolean = false,
+  modifier: Modifier = Modifier
+) {
+  Card(
+    elevation = 3.dp,
+    modifier = modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(12.dp),
+    border = BorderStroke(width = 2.dp, color = StatusTextColor)
+  ) {
+    Column(modifier = modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
+      if (displayForHomeTrace) {
+        TracingReasonItem(
+          title = stringResource(R2.string.patient_district),
+          value = patientProfileViewData.addressDistrict
+        )
+        TracingReasonItem(
+          title = stringResource(R2.string.patient_tracing_catchment),
+          value = patientProfileViewData.addressTracingCatchment
+        )
+        TracingReasonItem(
+          title = stringResource(R2.string.patient_physcal_locator),
+          value = patientProfileViewData.addressPhysicalLocator
+        )
+      } else {
+        TracingReasonItem(
+          title = stringResource(R2.string.patient_phone_number_1),
+          value = "" // patientProfileViewData.phoneContacts[0] ?: ""
+        )
+        TracingReasonItem(
+          title = stringResource(R2.string.patient_phone_owner_1),
+          value = "Patient"
+        )
+        Text(
+          text = "CALL",
+          textAlign = TextAlign.End,
+          fontSize = 14.sp,
+          color = SuccessColor,
+          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun TracingGuardianAddress(
+  guardiansRelatedPersonResource: List<RelatedPerson>,
+  modifier: Modifier = Modifier
+) {
+  if (guardiansRelatedPersonResource.isNotEmpty()) {
+    Card(
+      elevation = 3.dp,
+      modifier = modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(12.dp),
+      border = BorderStroke(width = 2.dp, color = StatusTextColor)
+    ) {
+      Column(modifier = modifier.padding(horizontal = 4.dp)) {
+        TracingReasonItem(
+          title = stringResource(R2.string.guardian_relation),
+          value =
+            "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
+        )
+        TracingReasonItem(
+          title = stringResource(R2.string.guardian_phone_number_1),
+          value = "" // guardiansRelatedPersonResource[0].telecomFirstRep.value
+        )
+        TracingReasonItem(
+          title = stringResource(R2.string.guardian_phone_owner_1),
+          value = "Guardian 1"
+        )
+        Text(
+          text = "CALL",
+          textAlign = TextAlign.End,
+          fontSize = 14.sp,
+          color = SuccessColor,
+          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+        )
+      }
+    }
+    if (guardiansRelatedPersonResource.size > 1) {
+      Card(
+        elevation = 3.dp,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(width = 2.dp, color = StatusTextColor)
+      ) {
+        Column(modifier = modifier.padding(horizontal = 4.dp)) {
+          TracingReasonItem(
+            title = stringResource(R2.string.guardian_phone_number_2),
+            value =
+              "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
+          )
+          TracingReasonItem(
+            title = stringResource(R2.string.guardian_phone_number_2),
+            value = "" // guardiansRelatedPersonResource[1].telecomFirstRep.value
+          )
+          TracingReasonItem(
+            title = stringResource(R2.string.guardian_phone_owner_2),
+            value = "Guardian 2"
+          )
+          Text(
+            text = "CALL",
+            textAlign = TextAlign.End,
+            fontSize = 14.sp,
+            color = SuccessColor,
+            modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          )
+        }
+      }
+    }
+  }
+}

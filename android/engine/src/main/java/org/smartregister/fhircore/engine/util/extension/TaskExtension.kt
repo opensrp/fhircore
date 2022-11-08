@@ -56,3 +56,12 @@ fun Task.isGuardianVisit(systemTag: String) =
 fun Task.isNotCompleted() = this.status != Task.TaskStatus.COMPLETED
 
 fun Task.canBeCompleted() = this.hasReasonReference().and(this.isNotCompleted())
+
+fun Task.extractedTracingCategoryIsPhone(filterTag: String): Boolean {
+  val tagList =
+    this.meta.tag.filter { it.system.equals(filterTag, true) }.filterNot { it.code.isNullOrBlank() }
+  return if (filterTag.isEmpty() || tagList.isEmpty()) false
+  else {
+    tagList.last().code.equals("phone-tracing")
+  }
+}
