@@ -20,14 +20,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.util.Calendar
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService

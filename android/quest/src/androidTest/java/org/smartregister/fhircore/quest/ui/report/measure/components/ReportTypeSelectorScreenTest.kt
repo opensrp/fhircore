@@ -38,7 +38,7 @@ class ReportTypeSelectorScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val monthList =
-      listOf(ReportRangeSelectionData("March", "October", "2022-02-02".getDate("dd mm yyyy")))
+    listOf(ReportRangeSelectionData("March", "October", "2022-02-02".getDate("dd mm yyyy")))
 
   private val dateRange = HashMap<String, List<ReportRangeSelectionData>>()
   @Before
@@ -50,32 +50,34 @@ class ReportTypeSelectorScreenTest {
   fun testMonthYearListDisplayed() {
     composeTestRule.setContent {
       showFixedMonthYearListing(
-          screenTitle = "Measure Report",
-          onMonthSelected = mockListener,
-          onBackPress = mockBackListener,
-          reportGenerationRange = dateRange,
-          showProgressIndicator = false)
+        screenTitle = "Measure Report",
+        onMonthSelected = mockListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = false
+      )
     }
     composeTestRule
-        .onNodeWithTag(SHOW_FIXED_RANGE_TEST_TAG, useUnmergedTree = true)
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithTag(SHOW_FIXED_RANGE_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
   fun testProgressIndicatorIsDisplayed() {
     composeTestRule.setContent {
       showFixedMonthYearListing(
-          screenTitle = "Measure Report",
-          onMonthSelected = mockListener,
-          onBackPress = mockBackListener,
-          reportGenerationRange = dateRange,
-          showProgressIndicator = true)
+        screenTitle = "Measure Report",
+        onMonthSelected = mockListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = true
+      )
     }
 
     composeTestRule
-        .onNodeWithTag(SHOW_PROGRESS_INDICATOR_TAG, useUnmergedTree = true)
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithTag(SHOW_PROGRESS_INDICATOR_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
