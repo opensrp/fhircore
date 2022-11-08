@@ -14,35 +14,41 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.extensions
+package org.smartregister.fhircore.quest.ui.shared
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.intentArgs
 
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
-  intentBundle: Bundle = bundleOf(),
-  questionnaireConfig: QuestionnaireConfig? = null,
-  computedValuesMap: Map<String, Any>?,
-  actionParams: List<ActionParameter>? = emptyList()
-) {
-  // TODO Refactor: startActivityForResult is deprecated
-  (this.getActivity())?.startActivityForResult(
-    Intent(this, Q::class.java)
-      .putExtras(
-        intentArgs(
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = computedValuesMap,
-          actionParams = actionParams
+interface QuestionnaireHandler {
+
+  val startForResult: ActivityResultLauncher<Intent>
+
+  fun launchQuestionnaire(
+    context: Context,
+    intentBundle: Bundle = bundleOf(),
+    questionnaireConfig: QuestionnaireConfig? = null,
+    computedValuesMap: Map<String, Any>?,
+    actionParams: List<ActionParameter> = emptyList()
+  ) {
+    startForResult.launch(
+      Intent(context, QuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.intentArgs(
+            questionnaireConfig = questionnaireConfig,
+            computedValuesMap = computedValuesMap,
+            actionParams = actionParams
+          )
         )
-      )
-      .putExtras(intentBundle),
-    0
-  )
+        .putExtras(intentBundle)
+    )
+  }
+
+  fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }

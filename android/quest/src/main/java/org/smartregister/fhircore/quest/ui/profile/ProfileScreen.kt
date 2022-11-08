@@ -43,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -69,7 +68,6 @@ fun ProfileScreen(
   onEvent: (ProfileEvent) -> Unit
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val context = LocalContext.current
 
   Scaffold(
     topBar = {
@@ -113,7 +111,6 @@ fun ProfileScreen(
                   onEvent(
                     ProfileEvent.OverflowMenuClick(
                       navController = navController,
-                      context = context,
                       resourceData = profileUiState.resourceData,
                       overflowMenuItemConfig = it,
                       managingEntity = profileUiState.profileConfiguration.managingEntity

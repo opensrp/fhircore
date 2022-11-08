@@ -17,12 +17,16 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.os.bundleOf
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -30,13 +34,17 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
+import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
 
 @HiltViewModel
@@ -46,8 +54,11 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
+
+  val launchQuestionnaireLiveData = MutableLiveData(false)
 
   val profileUiState = mutableStateOf(ProfileUiState())
 
@@ -59,7 +70,7 @@ constructor(
     fhirResourceConfig: FhirResourceConfig? = null
   ) {
     if (resourceId.isNotEmpty()) {
-      viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch {
         profileUiState.value =
           ProfileUiState(
             resourceData =
@@ -86,12 +97,17 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
-                event.context.launchQuestionnaire<QuestionnaireActivity>(
-                  intentBundle =
-                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
-                  questionnaireConfig = questionnaireConfig,
-                  computedValuesMap = event.resourceData?.computedValuesMap
-                )
+                if (event.navController.context is QuestionnaireHandler) {
+                  (event.navController.context as QuestionnaireHandler).launchQuestionnaire(
+                    context = event.navController.context,
+                    intentBundle =
+                      actionConfig.paramsBundle(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      ),
+                    questionnaireConfig = questionnaireConfig,
+                    computedValuesMap = event.resourceData?.computedValuesMap
+                  )
+                }
               }
             }
             ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
@@ -138,7 +154,7 @@ constructor(
               )
           )
         }
-    (event.context.getActivity())?.let { activity ->
+    (event.navController.context.getActivity())?.let { activity ->
       ProfileBottomSheetFragment(
           eligibleManagingEntities = eligibleManagingEntityList!!,
           onSaveClick = {
@@ -152,6 +168,30 @@ constructor(
           managingEntity = event.managingEntity
         )
         .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+    }
+  }
+
+  fun completeTask(
+    navController: NavController,
+    profileId: String,
+    resourceId: String,
+    resourceConfig: FhirResourceConfig?,
+    questionnaireSubmission: QuestionnaireSubmission
+  ) {
+    questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
+      viewModelScope.launch {
+        withContext(dispatcherProvider.io()) {
+          fhirCarePlanGenerator.completeTask(taskId.extractLogicalIdUuid())
+        }
+        navController.navigate(
+          MainNavigationScreen.Profile.route,
+          bundleOf(
+            NavigationArg.PROFILE_ID to profileId,
+            NavigationArg.RESOURCE_ID to resourceId,
+            NavigationArg.RESOURCE_CONFIG to resourceConfig
+          )
+        )
+      }
     }
   }
 }

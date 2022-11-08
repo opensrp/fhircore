@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -98,7 +99,8 @@ fun List(
             modifier.placeholder(
               visible = showPlaceholder.value,
               highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White),
-              color = DefaultColor.copy(alpha = 0.1f)
+              color = DefaultColor.copy(alpha = 0.15f),
+              shape = RoundedCornerShape(4.dp)
             )
         ) {
           ViewRenderer(
