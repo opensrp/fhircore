@@ -224,7 +224,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule),
             Pair(NavigationArg.PATIENT_ID, event.patientId)
           )
         if (healthModule == HealthModule.FAMILY)

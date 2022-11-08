@@ -16,18 +16,38 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
@@ -36,7 +56,8 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
@@ -44,7 +65,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 fun TracingRegisterScreen(
   modifier: Modifier = Modifier,
   screenTitle: String,
-  openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
   registerViewModel: TracingRegisterViewModel = hiltViewModel()
 ) {
@@ -59,13 +79,13 @@ fun TracingRegisterScreen(
   Scaffold(
     topBar = {
       // Top section has toolbar and a results counts view
-      TopScreenSection(
+      TopSection(
         title = screenTitle,
         searchText = searchText,
         onSearchTextChanged = { searchText ->
           registerViewModel.onEvent(TracingRegisterEvent.SearchRegister(searchText = searchText))
         }
-      ) { openDrawer(true) }
+      ) { navController.popBackStack() }
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
@@ -111,5 +131,56 @@ fun TracingRegisterScreen(
         )
       }
     }
+  }
+}
+
+@Composable
+fun TopSection(
+  modifier: Modifier = Modifier,
+  title: String,
+  searchText: String,
+  onSearchTextChanged: (String) -> Unit,
+  onNavIconClick: () -> Unit
+) {
+  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier.padding(vertical = 8.dp)
+    ) {
+      IconButton(onClick = onNavIconClick) {
+        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+      }
+      Text(text = title, fontSize = 20.sp, color = Color.White)
+      IconButton(onClick = onNavIconClick) {
+        Icon(Icons.Filled.FilterList, contentDescription = "Back", tint = Color.White)
+      }
+    }
+
+    OutlinedTextField(
+      colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
+      value = searchText,
+      onValueChange = { onSearchTextChanged(it) },
+      maxLines = 1,
+      singleLine = true,
+      placeholder = {
+        Text(
+          color = GreyTextColor,
+          text = stringResource(R.string.search_hint),
+        )
+      },
+      modifier =
+        modifier
+          .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(size = 10.dp))
+          .background(Color.White),
+      leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = "Search") },
+      trailingIcon = {
+        if (searchText.isNotEmpty())
+          IconButton(onClick = { onSearchTextChanged("") }) {
+            Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear", tint = Color.Gray)
+          }
+      }
+    )
   }
 }

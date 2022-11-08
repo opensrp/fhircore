@@ -125,7 +125,7 @@ fun AppDrawer(
                   MainNavigationScreen.Home.route +
                     NavigationArg.bindArgumentsOf(
                       Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
-                      Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
+                      Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule),
                       Pair(NavigationArg.SCREEN_TITLE, title)
                     )
               )

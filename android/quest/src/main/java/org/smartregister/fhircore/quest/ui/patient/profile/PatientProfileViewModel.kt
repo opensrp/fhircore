@@ -228,7 +228,7 @@ constructor(
             val commonParams =
               NavigationArg.bindArgumentsOf(
                 Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name)
+                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV)
               )
 
             event.navController.navigate(
@@ -240,7 +240,7 @@ constructor(
               val urlParams =
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY),
                   Pair(NavigationArg.PATIENT_ID, it)
                 )
               event.navController.navigate(
@@ -253,7 +253,7 @@ constructor(
               val urlParams =
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
                   Pair(NavigationArg.PATIENT_ID, it)
                 )
               event.navController.navigate(
@@ -320,7 +320,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule),
             Pair(NavigationArg.PATIENT_ID, event.patientId)
           )
         if (healthModule == HealthModule.FAMILY)

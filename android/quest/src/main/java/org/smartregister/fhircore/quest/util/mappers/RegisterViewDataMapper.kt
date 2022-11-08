@@ -135,7 +135,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           logicalId = inputModel.logicalId,
           title = inputModel.name,
           subtitle =
-            "${inputModel.attempts} attempt${if (inputModel.attempts.size > 1) "s" else ""}, ${inputModel.reasons.joinToString(" + ")}",
+            "${inputModel.attempts} attempt${if (inputModel.attempts > 1) "s" else ""}, ${inputModel.reasons.joinToString(" + ")}",
           registerType = inputModel::class,
           identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
               ?: "",
