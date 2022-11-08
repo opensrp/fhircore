@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
@@ -29,7 +30,15 @@ import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -37,9 +46,12 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -49,6 +61,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   lateinit var appMainActivity: AppMainActivity
 
@@ -160,5 +174,55 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       viewModel.formatLastSyncTimestamp(timestamp = stateFinished.result.timestamp),
       viewModel.retrieveLastSyncTimestamp()
     )
+  }
+
+  @Test
+  fun `handleTaskActivityResult should set task status in-progress when response status is in-progress`() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainActivity.handleTaskActivityResult(
+      "Task/12345",
+      Intent().apply {
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+          QuestionnaireResponse()
+            .apply { status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS }
+            .encodeResourceToString()
+        )
+      }
+    )
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+  }
+
+  @Test
+  fun `handleTaskActivityResult should set task status completed when response status is completed`() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainActivity.handleTaskActivityResult(
+      "Task/12345",
+      Intent().apply {
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+          QuestionnaireResponse()
+            .apply { status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED }
+            .encodeResourceToString()
+        )
+      }
+    )
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
+
+  @Test
+  fun `handleTaskActivityResult should not set task status when response does not exists`() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainActivity.handleTaskActivityResult("Task/12345", Intent())
+
+    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 }
