@@ -137,6 +137,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
+  override fun onStop() {
+    super.onStop()
+    // Clear the search term
+    registerViewModel.searchText.value = ""
+  }
+
   override fun onSync(state: State) {
     if (state is State.Finished || state is State.Failed) {
       with(registerFragmentArgs) {
