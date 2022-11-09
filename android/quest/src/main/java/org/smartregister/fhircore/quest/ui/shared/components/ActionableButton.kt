@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -155,6 +156,7 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
     ServiceStatus.COMPLETED -> DefaultColor
+    ServiceStatus.IN_PROGRESS -> WarningColor
   }
 }
 
@@ -173,7 +175,7 @@ fun ActionableButtonPreview() {
     buttonProperties =
       ButtonProperties(
         visible = "true",
-        status = ServiceStatus.DUE.name,
+        status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
         smallSized = true,
       ),

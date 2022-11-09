@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -189,22 +190,17 @@ constructor(
           .filter { it.reference.startsWith(ResourceType.Task.name) }
           .mapNotNull { getTask(it.extractId()) }
           .forEach {
-            if (it.status.isIn(
-                Task.TaskStatus.REQUESTED,
-                Task.TaskStatus.READY,
-                Task.TaskStatus.INPROGRESS
-              )
-            ) {
+            if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
               cancelTask(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
             }
           }
     }
   }
 
-  suspend fun completeTask(id: String) {
+  suspend fun transitionTaskTo(id: String, status: TaskStatus) {
     getTask(id)
       ?.apply {
-        this.status = Task.TaskStatus.COMPLETED
+        this.status = status
         this.lastModified = Date()
       }
       ?.run { defaultRepository.addOrUpdate(resource = this, addMandatoryTags = true) }
