@@ -32,7 +32,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 
 @Composable
 fun rememberLifecycleEvent(
@@ -47,7 +47,7 @@ fun rememberLifecycleEvent(
   return state
 }
 
-suspend fun MutableSharedFlow<SnackBarState>.showSnackBar(
+suspend fun MutableSharedFlow<SnackBarMessageConfig>.showSnackBar(
   scaffoldState: ScaffoldState,
   resourceData: ResourceData?,
   navController: NavController
@@ -57,7 +57,8 @@ suspend fun MutableSharedFlow<SnackBarState>.showSnackBar(
       val snackBarResult =
         scaffoldState.snackbarHostState.showSnackbar(
           message = snackBarState.message,
-          actionLabel = snackBarState.actionLabel
+          actionLabel = snackBarState.actionLabel,
+          duration = snackBarState.duration
         )
       when (snackBarResult) {
         SnackbarResult.ActionPerformed ->

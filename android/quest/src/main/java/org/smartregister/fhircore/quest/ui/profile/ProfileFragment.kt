@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
@@ -90,14 +89,8 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         val (questionnaireConfig, _) = questionnaireSubmission
 
         // Display SnackBar message
-        with(questionnaireConfig.snackBarMessage) {
-          profileViewModel.snackBarStateFlow.emit(
-            SnackBarState(
-              message = this?.message ?: "",
-              actionLabel = this?.actionLabel,
-              snackBarActions = this?.snackBarActions ?: emptyList()
-            )
-          )
+        questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+          profileViewModel.snackBarStateFlow.emit(snackBarMessageConfig)
         }
 
         // Reset activity livedata

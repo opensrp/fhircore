@@ -51,6 +51,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -58,7 +59,6 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
 import org.smartregister.fhircore.quest.util.extensions.showSnackBar
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
@@ -71,7 +71,7 @@ fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
   profileUiState: ProfileUiState,
-  snackStateFlow: MutableStateFlow<SnackBarState>,
+  snackStateFlow: MutableStateFlow<SnackBarMessageConfig>,
   onEvent: (ProfileEvent) -> Unit
 ) {
   val scaffoldState = rememberScaffoldState()
