@@ -77,12 +77,17 @@ constructor(
 
   private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
 
+  /**
+   * This function paginates the register data. An optional [clearCache] resets the data in the
+   * cache (this is necessary after a questionnaire has been submitted to refresh the register with
+   * new/updated data).
+   */
   fun paginateRegisterData(
     registerId: String,
     loadAll: Boolean = false,
-    refreshPageDataInCache: Boolean = false
+    clearCache: Boolean = false
   ) {
-    if (refreshPageDataInCache) pagesDataCache.remove(currentPage.value)
+    if (clearCache) pagesDataCache.clear()
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)

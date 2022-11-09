@@ -198,7 +198,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         registerViewModel.paginateRegisterData(
           registerId = registerFragmentArgs.registerId,
           loadAll = false,
-          refreshPageDataInCache = true
+          clearCache = true
         )
         appMainViewModel.retrieveAppMainUiState()
 
