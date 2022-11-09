@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.quest.ui.shared.models
 
-import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 
-data class ProfileUiState(
-  var resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarThemeConfig: SnackBarThemeConfig = SnackBarThemeConfig()
+data class SnackBarState(
+  val message: String = "",
+  val actionLabel: String? = null,
+  val snackBarActions: List<ActionConfig> = emptyList()
 )

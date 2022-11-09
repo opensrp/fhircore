@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +28,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
 
 @Composable
 fun rememberLifecycleEvent(
@@ -38,4 +45,27 @@ fun rememberLifecycleEvent(
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
   return state
+}
+
+suspend fun MutableSharedFlow<SnackBarState>.showSnackBar(
+  scaffoldState: ScaffoldState,
+  resourceData: ResourceData?,
+  navController: NavController
+) {
+  this.collectLatest { snackBarState ->
+    if (snackBarState.message.isNotEmpty()) {
+      val snackBarResult =
+        scaffoldState.snackbarHostState.showSnackbar(
+          message = snackBarState.message,
+          actionLabel = snackBarState.actionLabel
+        )
+      when (snackBarResult) {
+        SnackbarResult.ActionPerformed ->
+          snackBarState.snackBarActions.handleClickEvent(navController, resourceData)
+        SnackbarResult.Dismissed -> {
+          /* Do nothing (for now) when snackBar is dismissed */
+        }
+      }
+    }
+  }
 }
