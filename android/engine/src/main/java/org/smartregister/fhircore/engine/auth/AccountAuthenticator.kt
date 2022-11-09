@@ -310,6 +310,7 @@ constructor(
               launchScreen(LoginActivity::class.java)
             } else {
               onLogout()
+              Timber.w(response.body()?.string())
               context.showToast(context.getString(R.string.cannot_logout_user))
             }
           }
