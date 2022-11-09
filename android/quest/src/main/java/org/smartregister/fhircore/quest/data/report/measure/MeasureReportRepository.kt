@@ -31,16 +31,15 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 class MeasureReportRepository
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry,
-  val registerRepository: RegisterRepository
+    val fhirEngine: FhirEngine,
+    val dispatcherProvider: DefaultDispatcherProvider,
+    val configurationRegistry: ConfigurationRegistry,
+    val registerRepository: RegisterRepository
 ) : PagingSource<Int, MeasureReportConfig>() {
 
   private val measureReportConfiguration by lazy {
     configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(
-      ConfigType.MeasureReport
-    )
+        ConfigType.MeasureReport)
   }
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
@@ -57,15 +56,11 @@ constructor(
 
   suspend fun retrievePatients(currentPage: Int): List<ResourceData> {
     return registerRepository.loadRegisterData(
-      currentPage = currentPage,
-      registerId = measureReportConfiguration.registerId
-    )
+        currentPage = currentPage, registerId = measureReportConfiguration.registerId)
   }
 
   /** @return start date of campaign to get the month/year list start month */
-  fun getCampaignStartDate(): String {
-    return measureReportConfiguration.registerDate
-  }
+  fun getCampaignStartDate(): String = measureReportConfiguration.registerDate
 
   /** @return true or false show month/year listing otherwise show date picker */
   fun showFixedRangeSelection() = measureReportConfiguration.showFixedRangeSelection ?: false
