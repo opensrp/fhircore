@@ -23,12 +23,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -37,15 +36,12 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
 
 @HiltViewModel
@@ -55,8 +51,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
   val launchQuestionnaireLiveData = MutableLiveData(false)
@@ -64,7 +59,8 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
-  val snackBarStateFlow = MutableStateFlow(SnackBarMessageConfig())
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+  val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
@@ -80,7 +76,7 @@ constructor(
         ProfileUiState(
           resourceData = resourceData,
           profileConfiguration = retrieveProfileConfiguration(profileId),
-          snackBarThemeConfig = applicationConfiguration.snackBarTheme
+          snackBarTheme = applicationConfiguration.snackBarTheme
         )
     }
   }
@@ -175,17 +171,7 @@ constructor(
     }
   }
 
-  suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
-    questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
-      val status: TaskStatus =
-        when (questionnaireSubmission.questionnaireResponse.status) {
-          QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> TaskStatus.INPROGRESS
-          QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> TaskStatus.COMPLETED
-          else -> TaskStatus.COMPLETED
-        }
-      withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
-      }
-    }
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 }

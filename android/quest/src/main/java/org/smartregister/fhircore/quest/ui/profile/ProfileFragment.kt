@@ -80,17 +80,16 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        profileViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
         // Always refresh data when questionnaire is submitted
         with(profileFragmentArgs) {
           profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
         }
 
-        val (questionnaireConfig, _) = questionnaireSubmission
-
         // Display SnackBar message
+        val (questionnaireConfig, _) = questionnaireSubmission
         questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-          profileViewModel.snackBarStateFlow.emit(snackBarMessageConfig)
+          profileViewModel.emitSnackBarState(snackBarMessageConfig)
         }
 
         // Reset activity livedata

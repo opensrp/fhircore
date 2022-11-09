@@ -48,7 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -71,7 +71,7 @@ fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
   profileUiState: ProfileUiState,
-  snackStateFlow: MutableStateFlow<SnackBarMessageConfig>,
+  snackStateFlow: SharedFlow<SnackBarMessageConfig>,
   onEvent: (ProfileEvent) -> Unit
 ) {
   val scaffoldState = rememberScaffoldState()
@@ -161,9 +161,9 @@ fun ProfileScreen(
     snackbarHost = { snackBarHostState ->
       SnackBarMessage(
         snackBarHostState = snackBarHostState,
-        backgroundColorHex = profileUiState.snackBarThemeConfig.backgroundColor,
-        actionColorHex = profileUiState.snackBarThemeConfig.actionTextColor,
-        contentColorHex = profileUiState.snackBarThemeConfig.messageTextColor
+        backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
+        actionColorHex = profileUiState.snackBarTheme.actionTextColor,
+        contentColorHex = profileUiState.snackBarTheme.messageTextColor
       )
     }
   ) { innerPadding ->

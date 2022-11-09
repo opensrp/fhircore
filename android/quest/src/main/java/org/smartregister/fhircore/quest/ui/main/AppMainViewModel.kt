@@ -40,8 +40,11 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -54,6 +57,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -85,7 +89,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
-  val workManager: WorkManager
+  val workManager: WorkManager,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
@@ -308,6 +313,20 @@ constructor(
       ExistingPeriodicWorkPolicy.REPLACE,
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
+  }
+
+  suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
+    questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
+      val status: Task.TaskStatus =
+        when (questionnaireSubmission.questionnaireResponse.status) {
+          QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> Task.TaskStatus.INPROGRESS
+          QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
+          else -> Task.TaskStatus.COMPLETED
+        }
+      withContext(dispatcherProvider.io()) {
+        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
+      }
+    }
   }
 
   companion object {

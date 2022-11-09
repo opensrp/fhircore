@@ -29,7 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -47,7 +47,7 @@ fun rememberLifecycleEvent(
   return state
 }
 
-suspend fun MutableSharedFlow<SnackBarMessageConfig>.showSnackBar(
+suspend fun SharedFlow<SnackBarMessageConfig>.showSnackBar(
   scaffoldState: ScaffoldState,
   resourceData: ResourceData?,
   navController: NavController
