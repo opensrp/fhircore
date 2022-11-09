@@ -106,7 +106,8 @@
             ],
             "snackBarMessage": {
               "message": "Household member added",
-              "actionLabel": "UNDO"
+              "actionLabel": "UNDO",
+              "duration": "Short"
             }
           }
         }

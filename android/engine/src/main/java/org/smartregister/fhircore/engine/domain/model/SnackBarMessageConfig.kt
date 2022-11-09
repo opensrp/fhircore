@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import androidx.compose.material.SnackbarDuration
+
 @kotlinx.serialization.Serializable
 data class SnackBarMessageConfig(
   val message: String = "",
   val actionLabel: String? = null,
-  val snackBarActions: List<ActionConfig> = emptyList()
+  val duration: SnackbarDuration = SnackbarDuration.Short,
+  val snackBarActions: List<ActionConfig> = emptyList(),
 ) : java.io.Serializable
