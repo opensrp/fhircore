@@ -15,7 +15,12 @@
           "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,
-          "setOrganizationDetails": true
+          "setOrganizationDetails": true,
+          "snackBarMessage": {
+            "message": "Household has been created",
+            "actionLabel": "UNDO",
+            "duration": "Short"
+          }
         }
       }
     ]
