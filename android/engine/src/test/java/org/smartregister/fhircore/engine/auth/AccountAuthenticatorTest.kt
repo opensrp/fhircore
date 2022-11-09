@@ -30,6 +30,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -40,6 +41,7 @@ import io.mockk.verify
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.ResponseBody
 import org.junit.Assert
@@ -106,7 +108,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider,
         )
       )
   }
@@ -224,7 +227,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider,
         )
       )
 
@@ -279,7 +283,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider,
         )
       )
 
@@ -445,7 +450,35 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun loadRefreshedSessionAccountRefreshesAccessTokenIfExpired() = runBlockingTest {
+  fun refreshExpiredAuthTokenReturnsBundleWithNewToken() {
+    every { tokenManagerService.getActiveAccount() } returns mockk()
+    every { tokenManagerService.isTokenActive(any()) } returns false andThen true
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      mockk()
+    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
+    every { accountManager.notifyAccountAuthenticated(any()) } returns true
+    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.refreshToken(any()) } returns
+      OAuthResponse(accessToken = "new-access-token", refreshToken = "new-refresh-token")
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials(username = "test", password = "test123")
+
+    every { secureSharedPreference.saveCredentials(any()) } just Runs
+    every { accountManager.setAuthToken(any(), any(), any()) } just Runs
+
+    val bundle = runBlocking { accountAuthenticator.refreshSessionAuthToken() }
+
+    verify { accountAuthenticator.refreshToken(any()) }
+    verify { accountAuthenticator.updateSession(any()) }
+    verify { accountManager.setAuthToken(any(), any(), any()) }
+    verify { accountManager.notifyAccountAuthenticated(any()) }
+
+    Assert.assertNotNull(bundle)
+    Assert.assertEquals("new-access-token", bundle.getString((KEY_AUTHTOKEN)))
+  }
+
+  @Test
+  fun refreshAuthTokenReturnsBundleWithoutTokenIfNotActive() {
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -453,24 +486,17 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
     every { accountManager.notifyAccountAuthenticated(any()) } returns true
     every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.refreshToken(any()) } returns
+      OAuthResponse(accessToken = "new-access-token", refreshToken = "new-refresh-token")
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials(username = "test", password = "test123")
 
-    accountAuthenticator.loadRefreshedSessionAccount(mockk())
-    verify { accountAuthenticator.refreshToken(any()) }
-  }
+    every { secureSharedPreference.saveCredentials(any()) } just Runs
+    every { accountManager.setAuthToken(any(), any(), any()) } just Runs
 
-  @Test
-  fun loadRefreshedSessionAccountInvalidatesAccessTokenIfRefreshTokenExpired() = runBlockingTest {
-    every { tokenManagerService.getActiveAccount() } returns mockk()
-    every { tokenManagerService.isTokenActive(any()) } returns false
-    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
-      null
-    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
-    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
-    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
-    every { accountAuthenticator.refreshToken("refresh-token") } throws
-      Exception("Failed to refresh token")
+    val bundle = runBlocking { accountAuthenticator.refreshSessionAuthToken() }
 
-    accountAuthenticator.loadRefreshedSessionAccount(mockk())
-    verify { accountManager.invalidateAuthToken(any(), any()) }
+    Assert.assertNotNull(bundle)
+    Assert.assertFalse(bundle.containsKey(KEY_AUTHTOKEN))
   }
 }
