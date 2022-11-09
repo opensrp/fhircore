@@ -141,7 +141,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
                 Task.TaskStatus.INPROGRESS
               )
             }
-            QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> {
+            QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED, null -> {
               fhirCarePlanGenerator.transitionTaskTo(
                 taskId.extractLogicalIdUuid(),
                 Task.TaskStatus.COMPLETED

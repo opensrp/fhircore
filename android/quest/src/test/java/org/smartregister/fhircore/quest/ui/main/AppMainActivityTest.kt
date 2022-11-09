@@ -217,6 +217,24 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun `handleTaskActivityResult should set task status completed when response status is null`() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainActivity.handleTaskActivityResult(
+      "Task/12345",
+      Intent().apply {
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+          QuestionnaireResponse().encodeResourceToString()
+        )
+      }
+    )
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
+
+  @Test
   fun `handleTaskActivityResult should not set task status when response does not exists`() =
       runTest {
     coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
