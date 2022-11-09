@@ -28,6 +28,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -38,18 +39,24 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.data.remote.auth.FhirOAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -58,16 +65,20 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
+import timber.log.Timber
 
 @HiltViewModel
 @ExperimentalMaterialApi
@@ -80,7 +91,12 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val oAuthService: FhirOAuthService,
+  val fhirEngine: FhirEngine,
+  val configService: ConfigService,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val defaultRepository: DefaultRepository,
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -114,6 +130,40 @@ constructor(
           }
         }
       }
+  }
+
+  fun loadConfig() {
+    viewModelScope.launch {
+      val compositionResource =
+        fhirEngine.searchCompositionByIdentifier(
+          sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
+        )
+      compositionResource!!
+        .retrieveCompositionSections()
+        .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+        .groupBy { it.focus.reference.substringBeforeLast("/") }
+        .filter {
+          it.key == ResourceType.Questionnaire.name ||
+            it.key == ResourceType.StructureMap.name ||
+            it.key == ResourceType.Library.name
+        }
+        .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+          val ids = entry.value.joinToString(",") { it.focus.extractId() }
+          val resourceUrlPath =
+            entry.key +
+              "?${Composition.SP_RES_ID}=$ids" +
+              "&_count=${configService.provideConfigurationSyncPageSize()}"
+
+          Timber.d("Fetching config details $resourceUrlPath")
+
+          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+            defaultRepository.create(false, bundleEntryComponent.resource)
+            Timber.d("Fetched and processed config details $resourceUrlPath")
+          }
+        }
+      // Timber.e(res.toString())
+      // Timber.e(compositionResource.toString())
+    }
   }
 
   fun retrieveAppMainUiState() {

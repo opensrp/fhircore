@@ -112,6 +112,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
+    appMainViewModel.loadConfig()
+
+    /*MainScope().launch {
+      val resource = defaultRepository.loadResource<Questionnaire>("e5155788-8831-4916-a3f5-486915ce34b2")
+      Timber.e(resource?.id)
+    }*/
+
     configService.scheduleFhirTaskPlanWorker(this)
   }
 
