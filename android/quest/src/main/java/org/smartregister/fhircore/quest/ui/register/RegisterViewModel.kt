@@ -77,7 +77,12 @@ constructor(
 
   private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
 
-  fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
+  fun paginateRegisterData(
+    registerId: String,
+    loadAll: Boolean = false,
+    refreshPageDataInCache: Boolean = false
+  ) {
+    if (refreshPageDataInCache) pagesDataCache.remove(currentPage.value)
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)

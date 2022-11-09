@@ -34,10 +34,10 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.State
@@ -53,6 +53,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import org.smartregister.fhircore.quest.util.extensions.showSnackBar
 
 @ExperimentalMaterialApi
@@ -92,6 +93,13 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
           }
         }
+
+        // Close side menu (drawer) when activity is not in foreground
+        val lifecycleEvent = rememberLifecycleEvent()
+        LaunchedEffect(lifecycleEvent) {
+          if (lifecycleEvent == Lifecycle.Event.ON_PAUSE) scaffoldState.drawerState.close()
+        }
+
         LaunchedEffect(Unit) {
           registerViewModel.snackBarStateFlow.showSnackBar(
             scaffoldState = scaffoldState,
@@ -187,9 +195,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
 
         // Always refresh data when registration happens
-        with(registerFragmentArgs) {
-          registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
-        }
+        registerViewModel.paginateRegisterData(
+          registerId = registerFragmentArgs.registerId,
+          loadAll = false,
+          refreshPageDataInCache = true
+        )
+        appMainViewModel.retrieveAppMainUiState()
 
         // Display SnackBar message
         val (questionnaireConfig, _) = questionnaireSubmission
