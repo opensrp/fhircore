@@ -5,10 +5,15 @@ uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
 group newFpRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.type = "collection" "r_bundle_type";
-    src.item as isFPTriggered where( linkId='55b1164d-7492-4635-9b83-0806fbed77d3' and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)')) or (linkId='7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec' and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)') or (answer.value.code = 'IUD') or (answer.value.code = 'Implant') or (answer.value.code = 'The standard day method (SDM) using Cycle Bead') or (answer.value.code = 'Lactational Amenorrhea Method (LAM)')))).exists() then {
-    src -> evaluate(src, $this.subject) as refPatient then extractFPCondition(src, bundle, refPatient) "r_bundle_entries";
+    src.item as selectFpMethod where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and (answer.value.code != 'withdrawal' or answer.value.code != 'abstinence')) then {
+        src.item as pregnancyCheck where(linkId = 'c765c021-4a9a-4791-a922-772beafd7999' and answer.value.exists() and answer.value.code = 'no') then {
+            src -> evaluate(src, $this.subject) as refPatient then extractFPCondition(src, bundle, refPatient) "r_bundle_entries";
+        } "rule_pregnancy_check";
     } "r_fp_ext";
-    src -> evaluate(src, $this.subject) as refPatient then ExtractObservation(src, bundle, refPatient) "r_obs_entry";
+    src.item as currentFpMethod where(linkId = '7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec' and answer.value.exists() and (answer.value.code != 'withdrawal' or answer.value.code != 'abstinence')) then {
+        src -> evaluate(src, $this.subject) as refPatient then extractFPCondition(src, bundle, refPatient) "r_bundle_entries";
+    } "rule_current_fp_method_check";
+    src -> evaluate(src, $this.subject) as refPatient then extractObservation(src, bundle, refPatient) "r_obs_entry";
 }
 
 
@@ -29,7 +34,7 @@ group extractFPCondition(source src : QuestionnaireResponse, target bundle : Bun
     } "r_cnd";
 }
 
-group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+group extractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
 
     // if selected method is male condom
     src.item as male_condom where(linkId ='e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51' and answer.value.exists() and answer.value.code = 'yes') then {
