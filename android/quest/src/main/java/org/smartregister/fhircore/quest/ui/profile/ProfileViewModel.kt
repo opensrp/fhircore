@@ -25,7 +25,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
@@ -167,8 +169,14 @@ constructor(
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
+      val status: TaskStatus =
+        when (questionnaireSubmission.questionnaireResponse.status) {
+          QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> TaskStatus.INPROGRESS
+          QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> TaskStatus.COMPLETED
+          else -> TaskStatus.COMPLETED
+        }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.completeTask(taskId.extractLogicalIdUuid())
+        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
       }
     }
   }
