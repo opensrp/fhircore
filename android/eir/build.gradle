@@ -80,7 +80,7 @@ android {
     // See https://developer.android.com/studio/write/java8-support
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=compatibility']
+        freeCompilerArgs = ['-Xjvm-default=all-compatibility']
     }
 
     // avoid errors with message 'Duplicate files copied in APK ...'
@@ -94,7 +94,7 @@ android {
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.3.2'
     }
 
     testOptions {
