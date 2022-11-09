@@ -36,7 +36,9 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -53,7 +56,10 @@ import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
+import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
+import org.smartregister.fhircore.quest.util.extensions.showSnackBar
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -65,11 +71,18 @@ fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
   profileUiState: ProfileUiState,
+  snackStateFlow: MutableStateFlow<SnackBarState>,
   onEvent: (ProfileEvent) -> Unit
 ) {
+  val scaffoldState = rememberScaffoldState()
   var showOverflowMenu by remember { mutableStateOf(false) }
 
+  LaunchedEffect(Unit) {
+    snackStateFlow.showSnackBar(scaffoldState, profileUiState.resourceData, navController)
+  }
+
   Scaffold(
+    scaffoldState = scaffoldState,
     topBar = {
       TopAppBar(
         modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
@@ -144,6 +157,14 @@ fun ProfileScreen(
           navController = navController
         )
       }
+    },
+    snackbarHost = { snackBarHostState ->
+      SnackBarMessage(
+        snackBarHostState = snackBarHostState,
+        backgroundColorHex = profileUiState.snackBarThemeConfig.backgroundColor,
+        actionColorHex = profileUiState.snackBarThemeConfig.actionTextColor,
+        contentColorHex = profileUiState.snackBarThemeConfig.messageTextColor
+      )
     }
   ) { innerPadding ->
     Box(

@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -30,6 +31,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomShee
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
 import timber.log.Timber
 
 @HiltViewModel
@@ -57,8 +60,11 @@ constructor(
 ) : ViewModel() {
 
   val launchQuestionnaireLiveData = MutableLiveData(false)
-
   val profileUiState = mutableStateOf(ProfileUiState())
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+  val snackBarStateFlow = MutableStateFlow(SnackBarState())
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
@@ -70,10 +76,12 @@ constructor(
     if (resourceId.isNotEmpty()) {
       val resourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
-      val configs = retrieveProfileConfiguration(profileId)
       profileUiState.value =
-        ProfileUiState(resourceData = resourceData, profileConfiguration = configs)
-      profileUiState.value = profileUiState.value.copy(resourceData = resourceData)
+        ProfileUiState(
+          resourceData = resourceData,
+          profileConfiguration = retrieveProfileConfiguration(profileId),
+          snackBarThemeConfig = applicationConfiguration.snackBarTheme
+        )
     }
   }
 

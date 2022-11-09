@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.SnackBarState
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
@@ -59,7 +60,8 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
           ProfileScreen(
             navController = findNavController(),
             profileUiState = profileViewModel.profileUiState.value,
-            onEvent = profileViewModel::onEvent
+            onEvent = profileViewModel::onEvent,
+            snackStateFlow = profileViewModel.snackBarStateFlow
           )
         }
       }
@@ -84,6 +86,20 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         with(profileFragmentArgs) {
           profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
         }
+
+        val (questionnaireConfig, _) = questionnaireSubmission
+
+        // Display SnackBar message
+        with(questionnaireConfig.snackBarMessage) {
+          profileViewModel.snackBarStateFlow.emit(
+            SnackBarState(
+              message = this?.message ?: "",
+              actionLabel = this?.actionLabel,
+              snackBarActions = this?.snackBarActions ?: emptyList()
+            )
+          )
+        }
+
         // Reset activity livedata
         appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }

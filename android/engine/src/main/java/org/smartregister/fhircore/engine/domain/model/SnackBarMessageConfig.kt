@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
-
-data class ProfileUiState(
-  var resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarThemeConfig: SnackBarThemeConfig = SnackBarThemeConfig()
-)
+@kotlinx.serialization.Serializable
+data class SnackBarMessageConfig(
+  val message: String = "",
+  val actionLabel: String? = null,
+  val snackBarActions: List<ActionConfig> = emptyList()
+) : java.io.Serializable
