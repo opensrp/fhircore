@@ -178,7 +178,7 @@ constructor(
 
         registerUiState.value =
           RegisterUiState(
-            screenTitle = screenTitle,
+            screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
