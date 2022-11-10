@@ -58,6 +58,11 @@
 
     <fragment
         android:id="@+id/measureReportFragment"
-        android:name="org.smartregister.fhircore.quest.ui.report.measure.MeasureReportFragment" />
-
+        android:name="org.smartregister.fhircore.quest.ui.report.measure.MeasureReportFragment">
+        <argument
+            android:name="reportId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
 </navigation>

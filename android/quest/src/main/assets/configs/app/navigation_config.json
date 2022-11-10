@@ -237,7 +237,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports",
+      "display": "Household Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -246,7 +246,23 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "navigateToReportsScreen"
+          "id": "householdMeasureReport"
+        }
+      ]
+    },
+    {
+      "id": "otherReports",
+      "visible": true,
+      "display": "Other Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "defaultMeasureReport"
         }
       ]
     },

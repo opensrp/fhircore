@@ -24,6 +24,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class MeasureReportConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.MeasureReport.name,
+  val id: String,
   val registerId: String,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()
