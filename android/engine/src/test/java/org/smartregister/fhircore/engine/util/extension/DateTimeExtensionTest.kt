@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import org.apache.commons.lang3.time.DateUtils
 import org.hl7.fhir.r4.model.DateType
@@ -68,15 +67,6 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `Date asMmm() should return correct formatted date`() {
-    val date = DateUtils.parseDate("2022-02-02", "yyyy-MM-dd")
-
-    val result = date.asMmm()
-
-    assertEquals("Feb", result)
-  }
-
-  @Test
   fun `SimpleDateFormat tryParse() should parse given date correctly`() {
     val dateFormat = SimpleDateFormat("yyyy-MMM-dd")
 
@@ -119,19 +109,6 @@ class DateTimeExtensionTest : RobolectricTest() {
     val result = dateFormat.tryParse("2022-Fee-28")
 
     assertNull(result)
-  }
-
-  @Test
-  fun `SimpleDateFormat tryParse() with list should parse given date with locale`() {
-    val dateFormat1 = SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH)
-    val dateFormat2 = SimpleDateFormat("yyyy-MMM-dd", Locale.FRENCH)
-
-    val result = listOf(dateFormat1, dateFormat2).tryParse("2022-Feb-28")
-    val calendarDate = Calendar.getInstance().apply { time = result }
-
-    assertEquals(2022, calendarDate.get(Calendar.YEAR))
-    assertEquals(1, calendarDate.get(Calendar.MONTH)) // months are 0 indexed
-    assertEquals(28, calendarDate.get(Calendar.DATE))
   }
 
   @Test
@@ -211,9 +188,12 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `Date#toHumanDisplay() should return Date in the correct format`() {
-    val date = Date("Fri, 1 Oct 2021 13:30:00")
-    val formattedDate = date.toHumanDisplay()
-    assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
+  fun isTodayWithDateTodayShouldReturnTrue() {
+    assertTrue(today().isToday())
+  }
+
+  @Test
+  fun isTodayWithDateYesterdayShouldReturnFalse() {
+    assertFalse(yesterday().isToday())
   }
 }

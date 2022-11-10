@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -28,45 +26,29 @@ import org.hl7.fhir.r4.model.DateType
 import org.ocpsoft.prettytime.PrettyTime
 
 val SDF_DD_MMM_YYYY = simpleDateFormatFor("dd-MMM-yyyy")
-val SDF_DD_MMM = simpleDateFormatFor("dd MMM")
 val SDF_YYYY_MM_DD = simpleDateFormatFor("yyyy-MM-dd")
 val SDF_MMM_YYYY = simpleDateFormatFor("MMM-yyyy")
 val SDF_YYYY_MMM = simpleDateFormatFor("yyyy-MMM")
-val SDF_YYYY = simpleDateFormatFor("yyyy")
-val SDF_MMM = simpleDateFormatFor("MMM")
+
+fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
+
+fun today(): Date = DateTimeType.today().value
+
+fun Date.isToday() = this.asYyyyMmDd() == today().asYyyyMmDd()
 
 fun simpleDateFormatFor(pattern: String, locale: Locale = Locale.getDefault()) =
   SimpleDateFormat(pattern, locale)
-
-fun OffsetDateTime.asString(): String {
-  return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
-}
-
-fun Date?.asDdMmm(): String {
-  if (this == null) return ""
-  return SDF_DD_MMM.format(this)
-}
 
 fun Date?.asMmmYyyy(): String {
   if (this == null) return ""
   return SDF_MMM_YYYY.format(this)
 }
 
-fun Date?.asYyyy(): String {
-  if (this == null) return ""
-  return SDF_YYYY.format(this)
-}
-
-fun Date?.asMmm(): String {
-  if (this == null) return ""
-  return SDF_MMM.format(this)
-}
-
 fun SimpleDateFormat.tryParse(date: String): Date? =
-  kotlin.runCatching { parse(date) }.getOrNull() ?: tryParse(date, Locale.US)
-
-fun SimpleDateFormat.tryParse(date: String, locale: Locale): Date? =
-  kotlin.runCatching { SimpleDateFormat(this.toPattern(), locale).parse(date) }.getOrNull()
+  kotlin.runCatching { parse(date) }.getOrNull()
+    ?: kotlin
+      .runCatching { SimpleDateFormat(this.toPattern(), Locale.ENGLISH).parse(date) }
+      .getOrNull()
 
 fun List<SimpleDateFormat>.tryParse(date: String): Date? {
   forEach { dateFormat ->
@@ -84,9 +66,6 @@ fun Date.asDdMmmYyyy(): String {
 fun Date.asYyyyMmDd(): String {
   return SDF_YYYY_MM_DD.format(this)
 }
-
-fun Date.toHumanDisplay(): String =
-  SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
 fun Date?.makeItReadable(): String {
   return if (this == null) "N/A"
@@ -158,18 +137,3 @@ fun Date.lastDayOfMonth(): Date {
 }
 
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
-
-fun DateTimeType.format(): String =
-  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(value).let {
-    StringBuilder(it).insert(it.length - 2, ":").toString()
-  }
-
-fun DateTimeType.plusDaysAsString(days: Int): String {
-  val clone = this.copy()
-  clone.add(Calendar.DATE, days)
-  return clone.value.asDdMmmYyyy()
-}
-
-fun DateTimeType.toDisplay(): String {
-  return value?.asDdMmmYyyy() ?: ""
-}

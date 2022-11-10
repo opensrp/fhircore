@@ -22,6 +22,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -31,7 +32,6 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.hasStarted
-import org.smartregister.fhircore.engine.util.extension.isLastTask
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
@@ -84,6 +84,9 @@ constructor(
     Timber.i("Done task scheduling")
     return Result.success()
   }
+
+  private fun CarePlan.isLastTask(task: Task) =
+    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
 
   companion object {
     const val WORK_ID = "fhirTaskPlanWorker"

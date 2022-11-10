@@ -26,7 +26,6 @@ import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -34,12 +33,12 @@ import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -88,17 +87,15 @@ constructor(
       when (exception) {
         // Just display error message for undefined variable; expected for missing facts
         is JexlException.Variable ->
-          logWarning(
+          Timber.w(
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
         else -> Timber.e(exception)
       }
-    } else {
-      logError(exception)
-    }
+    } else Timber.e(exception)
 
   override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
-    logError("Evaluation error", exception)
+    Timber.e("Evaluation error", exception)
   }
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
@@ -261,9 +258,9 @@ constructor(
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             }
-          ) {
+          )
             label
-          } else null
+          else null
         }
         ?.joinToString(",")
 
@@ -283,37 +280,13 @@ constructor(
     fun extractAge(patient: Patient): String = patient.extractAge()
 
     /**
-     * This function extracts the gender from patient's reosurce.
-     *
-     * It the returns strings representation of the age.
+     * This function extracts and returns a translated string for the gender in Patient resource.
      */
-    fun extractGender(patient: Patient): String {
-      return if (patient.hasGender()) {
-        when (AdministrativeGender.valueOf(patient.gender.name)) {
-          AdministrativeGender.MALE -> context.getString(R.string.male)
-          AdministrativeGender.FEMALE -> context.getString(R.string.female)
-          AdministrativeGender.OTHER -> context.getString(R.string.other)
-          AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
-          AdministrativeGender.NULL -> ""
-        }
-      } else ""
-    }
+    fun extractGender(patient: Patient): String = patient.extractGender(context) ?: ""
 
     /** This function extracts the patient's DOB from the FHIR resource */
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
-  }
-
-  fun logWarning(message: String) {
-    Timber.d(message)
-  }
-
-  fun logError(exception: Exception?) {
-    Timber.e(exception)
-  }
-
-  fun logError(message: String, exception: Exception?) {
-    Timber.e(message, exception)
   }
 
   companion object {
