@@ -241,7 +241,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     verify { syncBroadcaster.runSync() }
@@ -251,7 +251,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     verify { accountAuthenticator.logout() }
