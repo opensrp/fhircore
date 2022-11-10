@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -201,11 +202,11 @@ constructor(
     }
   }
 
-  suspend fun completeTask(id: String) {
+  suspend fun transitionTaskTo(id: String, status: TaskStatus) {
     defaultRepository.create(
       true,
       getTask(id).apply {
-        this.status = Task.TaskStatus.COMPLETED
+        this.status = status
         this.lastModified = Date()
       }
     )
