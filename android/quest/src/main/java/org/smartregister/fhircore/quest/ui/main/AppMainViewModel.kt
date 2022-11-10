@@ -94,7 +94,6 @@ constructor(
   val oAuthService: FhirOAuthService,
   val fhirEngine: FhirEngine,
   val configService: ConfigService,
-  val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
 ) : ViewModel() {
 
@@ -155,7 +154,7 @@ constructor(
 
           Timber.d("Fetching config details $resourceUrlPath")
 
-          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+          oAuthService.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent ->
             defaultRepository.create(false, bundleEntryComponent.resource)
             Timber.d("Fetched and processed config details $resourceUrlPath")
           }
