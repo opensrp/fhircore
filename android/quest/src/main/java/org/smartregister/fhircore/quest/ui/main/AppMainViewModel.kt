@@ -130,7 +130,7 @@ constructor(
       }
   }
 
-  fun loadConfig() {
+  fun fetchResourcesFromComposition() {
     viewModelScope.launch {
       val compositionResource =
         fhirEngine.searchCompositionByIdentifier(
