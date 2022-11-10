@@ -176,6 +176,7 @@ constructor(
 
   fun getUserInfo(): Call<ResponseBody> = oAuthService.userInfo()
 
+  @Throws(NetworkErrorException::class)
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken
@@ -183,7 +184,7 @@ constructor(
       oAuthService.fetchToken(data).execute().body()
     } catch (exception: Exception) {
       Timber.e("Failed to refresh token, refresh token may have expired", exception)
-      return null
+      throw NetworkErrorException(exception)
     }
   }
 
@@ -349,7 +350,7 @@ constructor(
     launchScreen(AppSettingActivity::class.java)
   }
 
-  fun loadRefreshedSessionAccount(callback: AccountManagerCallback<Bundle>) {
+  fun refreshSessionAuthToken(callback: AccountManagerCallback<Bundle>) {
     tokenManagerService.getActiveAccount()?.run {
       val accountType = getAccountType()
       var authToken = accountManager.peekAuthToken(this, accountType)
