@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.Context
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -24,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.ocpsoft.prettytime.PrettyTime
+import org.smartregister.fhircore.engine.R
 
 val SDF_DD_MMM_YYYY = simpleDateFormatFor("dd-MMM-yyyy")
 val SDF_YYYY_MM_DD = simpleDateFormatFor("yyyy-MM-dd")
@@ -90,8 +95,6 @@ fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
 
 fun Date.monthsPassed() = this.daysPassed().div(30.5).toInt()
 
-fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this)
-
 fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
   clone.add(Calendar.DATE, weeks * 7)
@@ -137,3 +140,28 @@ fun Date.lastDayOfMonth(): Date {
 }
 
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
+
+/**
+ * This function calculates the age from [date] then translates the abbreviation for the the
+ * periods. If year is > 0 display the age in years, if year is 0 then display age in month and
+ * weeks, if month is 0 display age in weeks and days otherwise if week is 0 display age in days.
+ */
+fun calculateAge(date: Date, context: Context): String {
+  val theDate: LocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+  val period = Period.between(theDate, LocalDate.now())
+  val weeks = period.days / 7
+  val days = period.days % 7
+  return when {
+    period.years > 0 -> context.abbreviateString(R.string.year, period.years)
+    period.months > 0 ->
+      context.abbreviateString(R.string.month, period.months) +
+        context.abbreviateString(R.string.weeks, weeks)
+    weeks > 0 ->
+      context.abbreviateString(R.string.weeks, weeks) +
+        context.abbreviateString(R.string.days, days)
+    else -> context.abbreviateString(R.string.days, days)
+  }
+}
+
+private fun Context.abbreviateString(resourceId: Int, content: Int) =
+  if (content > 0) "$content${this.getString(resourceId).lowercase().abbreviate()} " else ""
