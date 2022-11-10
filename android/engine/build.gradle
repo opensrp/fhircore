@@ -94,6 +94,12 @@ android {
             }
         }
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force "ca.uhn.hapi.fhir:org.hl7.fhir.utilities:5.5.7"
+        }
+    }
 }
 
 dependencies {

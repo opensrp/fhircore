@@ -482,6 +482,10 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun loadRefreshedSessionAccountRefreshesAccessTokenIfExpired() = runBlockingTest {
+    val callMock = mockk<Call<OAuthResponse>>()
+    val mockResponse = Response.success<OAuthResponse?>(OAuthResponse("testToken"))
+    every { callMock.execute() } returns mockResponse
+    every { oAuthService.fetchToken(any()) } returns callMock
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -489,8 +493,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
     every { accountManager.notifyAccountAuthenticated(any()) } returns true
     every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.updateSession(any()) } returns mockk()
 
-    accountAuthenticator.loadRefreshedSessionAccount(mockk())
+    accountAuthenticator.refreshSessionAuthToken(mockk())
     verify { accountAuthenticator.refreshToken(any()) }
   }
 
@@ -506,7 +511,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountAuthenticator.refreshToken("refresh-token") } throws
       Exception("Failed to refresh token")
 
-    accountAuthenticator.loadRefreshedSessionAccount(mockk())
+    accountAuthenticator.refreshSessionAuthToken(mockk())
     verify { accountManager.invalidateAuthToken(any(), any()) }
   }
 }
