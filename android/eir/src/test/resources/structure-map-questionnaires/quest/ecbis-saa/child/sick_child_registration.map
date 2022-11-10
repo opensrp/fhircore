@@ -33,8 +33,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
     src.item as infancy_act where(linkId ='1a6b70d7-9aae-4556-8730-49d0f7094c16' and answer.value.exists() and answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(1x6)-tablets(2-11-months)') then {
         src.item as given where(linkId ='74abfd30-0b1e-4671-9262-429dc3bfc031' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/90b10fdb-592c-47b6-a265-c8806a15d77c") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/90b10fdb-592c-47b6-a265-c8806a15d77c") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_infancy_act";
@@ -42,8 +42,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
     src.item as malaria_infancy_act where(linkId ='c3e43a3c-d79b-41a7-95fd-d44308c38b0a' and answer.value.exists() and answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(1x6)-tablets(2-11-months)') then {
         src.item as given where(linkId ='6d142ebd-c10e-4043-8bff-6ead88ce77f1' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/90b10fdb-592c-47b6-a265-c8806a15d77c") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/90b10fdb-592c-47b6-a265-c8806a15d77c") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_malaria_infancy_act";
@@ -51,8 +51,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as toddler_act where(linkId ='2cc8de99-3482-4348-894f-222e40dad14f' and answer.value.exists() and answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(2x6)-tablets(1-5-years)') then {
         src.item as given where(linkId ='df6cbd9a-70e1-472d-8c9f-2f0e12d70dc4' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 2) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_toddler_act";
@@ -60,8 +60,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as malaria_act where(linkId ='76db3c8a-da61-44ee-83bf-db30038f3866' and answer.value.exists() and answer.value.code = 'al:-artemether-20mg-+-lumefatrine-120mg-(2x6)-tablets(1-5-years)') then {
         src.item as given where(linkId ='10b83409-d91b-4770-98eb-d32d41e9f774' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 2) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_malaria_act";
@@ -69,8 +69,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as artesunate where(linkId ='e57feacd-33cd-4968-8181-740d5befe347' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='fa3c1ddc-e6a8-4089-89d7-2222fdfc638d' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_artesunate";
@@ -78,8 +78,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as artesunate where(linkId ='9230c34b-11cc-4c58-81b7-e091b25daf7d' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='46427f09-47d8-46f4-9470-a14a4545c210' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 2) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_artesunate";
@@ -87,8 +87,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as asaq where(linkId ='1a6b70d7-9aae-4556-8730-49d0f7094c16' and answer.value.exists() and answer.value.code = 'asaq:-as-(25mg)---+---aq-(67.5mg)---(-2-11months)-tablets') then {
         src.item as given where(linkId ='1e5b769f-074c-444c-e497-50c242d4ec7e' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/b339a63b-84db-45e8-b357-7fcce3bddc34") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/b339a63b-84db-45e8-b357-7fcce3bddc34") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_asaq";
@@ -96,8 +96,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as asaq where(linkId ='c3e43a3c-d79b-41a7-95fd-d44308c38b0a' and answer.value.exists() and answer.value.code = 'asaq:-as-(25mg)---+---aq-(67.5mg)---(-2-11months)-tablets') then {
         src.item as given where(linkId ='fad4209d-74c6-45f6-e577-793211e45cb3' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/b339a63b-84db-45e8-b357-7fcce3bddc34") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/b339a63b-84db-45e8-b357-7fcce3bddc34") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_asaq";
@@ -105,8 +105,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as asaq where(linkId ='2cc8de99-3482-4348-894f-222e40dad14f' and answer.value.exists() and answer.value.code = 'asaq:-as-(50mg)-+-aq-(135mg)-(-1-5years)-tablets') then {
         src.item as given where(linkId ='0042964e-6c13-4324-9ae1-27e2ff92de28' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_asaq";
@@ -114,8 +114,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as asaq where(linkId ='76db3c8a-da61-44ee-83bf-db30038f3866' and answer.value.exists() and answer.value.code = 'asaq:-as-(50mg)-+-aq-(135mg)-(-1-5years)-tablets') then {
         src.item as given where(linkId ='cc2b8970-2ba5-4d7d-ed56-749e193120f8' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Strips") as qtyUnit, 
-				evaluate(src, "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4") as refSubject 
+				evaluate(src, "Strips") as qtyUnit,
+				evaluate(src, "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_asaq";
@@ -123,8 +123,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as rdt where(linkId ='c337ea18-44f4-4074-8380-d871095ef446' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='14b00b90-ecd5-4936-8215-b4ed08dd750b' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Tests") as qtyUnit, 
-				evaluate(src, "Group/24dcbee9-a665-4b3e-b97d-61b3ff675589") as refSubject 
+				evaluate(src, "Tests") as qtyUnit,
+				evaluate(src, "Group/24dcbee9-a665-4b3e-b97d-61b3ff675589") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_rdt";
@@ -132,8 +132,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as amoxicillin where(linkId ='4a035bfe-4d43-4814-88c9-476f73d729f6' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='fcbb4f5c-7120-4fa8-879b-cea44481934d' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_amoxicillin";
@@ -141,8 +141,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as pneumonia where(linkId ='c6a971ad-8117-4ef0-88d0-1aa347b345d7' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='f04aec03-c24d-42a0-fca3-3135ea3da639' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 1) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_pneumonia";
@@ -150,8 +150,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as amoxicilin where(linkId ='0a2fdbff-f9a2-46b3-8e91-3e924ee6d7ab' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='63ec1a00-d04e-4b9b-ec92-05c64ec2c3ab' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 2) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_amoxicilin";
@@ -159,17 +159,17 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as pneumonia where(linkId ='9e4e2863-2a9e-4fe3-bcbd-2202d5c0060a' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='2c18cbd8-ff7b-42cf-86d4-7e6c04a773e8' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 2) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_pneumonia";
 
 	src.item as ors where(linkId ='410cb6b7-c486-4559-8f2d-169efd723a08' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='adcbe143-87a3-4c77-8cb1-74838b063219' and answer.value.exists() and answer.value.code = 'yes') then {
-			src -> evaluate(src, 3) as qtyValue,
-				evaluate(src, "Sachets") as qtyUnit, 
-				evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject 
+			src -> evaluate(src, 1) as qtyValue,
+				evaluate(src, "Sachets") as qtyUnit,
+				evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_ors";
@@ -177,8 +177,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as ors where(linkId ='f3c23ac2-d405-44dc-f462-28ac9ec30931' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='9be433bb-0aa2-4b27-876b-f58cd8d73cb3' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 3) as qtyValue,
-				evaluate(src, "Sachets") as qtyUnit, 
-				evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject 
+				evaluate(src, "Sachets") as qtyUnit,
+				evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_ors";
@@ -186,8 +186,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as zinc where(linkId ='f32ffc48-806f-4220-818b-c6191a363aad' and answer.value.exists() and answer.value.code = '20mg-zinc') then {
         src.item as given where(linkId ='180652dc-748b-4e09-8d58-4560dacbb55f' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 10) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/6815d390-1c8b-11ed-861d-0242ac120002") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/6815d390-1c8b-11ed-861d-0242ac120002") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_zinc";
@@ -195,8 +195,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as paracetamol where(linkId ='c3e60e46-38eb-4244-860f-a0822cb0b6a7' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='bef088be-4384-4cdc-cc5a-6469cf8f775f' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 9) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/567ec5f2-db90-4fac-b578-6e07df3f48de") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/567ec5f2-db90-4fac-b578-6e07df3f48de") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_paracetamol";
@@ -204,8 +204,8 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
 	src.item as paracetamol where(linkId ='522de694-2c29-4d26-b058-4096d924ac08' and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as given where(linkId ='f3df1c61-d58d-4fa3-bf96-8a7386287274' and answer.value.exists() and answer.value.code = 'yes') then {
 			src -> evaluate(src, 18) as qtyValue,
-				evaluate(src, "Tablets") as qtyUnit, 
-				evaluate(src, "Group/567ec5f2-db90-4fac-b578-6e07df3f48de") as refSubject 
+				evaluate(src, "Tablets") as qtyUnit,
+				evaluate(src, "Group/567ec5f2-db90-4fac-b578-6e07df3f48de") as refSubject
 					then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
         } "r_given";
     } "r_paracetamol";
