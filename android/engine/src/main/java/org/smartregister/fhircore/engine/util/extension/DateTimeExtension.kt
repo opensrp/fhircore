@@ -159,7 +159,7 @@ fun calculateAge(date: Date, context: Context): String {
     weeks > 0 ->
       context.abbreviateString(R.string.weeks, weeks) +
         context.abbreviateString(R.string.days, days)
-    else -> context.abbreviateString(R.string.days, days)
+    else -> "$days${context.getString(R.string.days).lowercase().abbreviate()} "
   }
 }
 
