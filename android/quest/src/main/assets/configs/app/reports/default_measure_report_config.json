@@ -1,20 +1,9 @@
 {
   "appId": "app",
   "configType": "measureReport",
-  "registerId": "ancRegister",
+  "id": "defaultMeasureReport",
+  "registerId": "patientRegister",
   "reports": [
-    {
-      "id": "1",
-      "title": "Household Members",
-      "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01"
-    },
-    {
-      "id": "2",
-      "title": "Household Members ANC",
-      "description": "Number of Households, Household members enrolled into ANC, disaggregated by age",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDPREGNANCY"
-    },
     {
       "id": "3",
       "title": "TB Clients",
