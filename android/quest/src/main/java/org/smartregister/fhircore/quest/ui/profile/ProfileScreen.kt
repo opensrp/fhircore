@@ -119,7 +119,7 @@ fun ProfileScreen(
               )
                 return@forEach
               val enabled =
-                !it.enabled
+                it.enabled
                   .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
                   .toBoolean()
               if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
