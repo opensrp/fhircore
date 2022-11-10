@@ -31,6 +31,7 @@ import android.os.Looper
 import androidx.core.os.bundleOf
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -185,7 +186,7 @@ constructor(
       oAuthService.fetchToken(data).execute().body()
     } catch (exception: Exception) {
       Timber.e("Failed to refresh token, refresh token may have expired", exception)
-      return null
+      throw exception
     }
   }
 
@@ -336,9 +337,19 @@ constructor(
               }
             }
               .onFailure {
-                Timber.e("Refresh token expired before it was used", it.stackTraceToString())
+                bundle.putInt(
+                  AccountManager.KEY_ERROR_CODE,
+                  AccountManager.ERROR_CODE_NETWORK_ERROR
+                )
+                if (it is UnknownHostException) {
+                  bundle.putString(
+                    AccountManager.KEY_ERROR_MESSAGE,
+                    context.getString(R.string.refresh_token_fail_error_message)
+                  )
+                }
+                Timber.e("Failed to get the refresh token", it.stackTraceToString())
               }
-              .onSuccess { Timber.i("Got new accessToken") }
+              .onSuccess { Timber.i("Got new access token") }
           }
         }
       }
