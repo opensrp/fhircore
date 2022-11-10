@@ -22,9 +22,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.RowArrangement
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -171,6 +174,124 @@ private fun PreviewSameSizedViewInRow() {
                 primaryTextBackgroundColor = "#FFECD6",
                 padding = 8,
                 alignment = ViewAlignment.END
+              )
+            )
+        )
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCardViewWithRows() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        CardViewProperties(
+          viewType = ViewType.CARD,
+          fillMaxWidth = true,
+          header =
+            CompoundTextProperties(
+              viewType = ViewType.COMPOUND_TEXT,
+              primaryText = "PATIENTS",
+              primaryTextColor = "#6F7274",
+              padding = 8
+            ),
+          content =
+            listOf(
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "HHs",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "33",
+                            primaryTextColor = "#6F7274",
+                            secondaryText = "(Overdue)",
+                            secondaryTextColor = "#FF0000",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  ),
+              ),
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "PNC",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "10",
+                            primaryTextColor = "#6F7274",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  )
+              ),
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "ANC",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "2",
+                            primaryTextColor = "#6F7274",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  )
               )
             )
         )

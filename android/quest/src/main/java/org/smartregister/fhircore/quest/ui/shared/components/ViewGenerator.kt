@@ -92,7 +92,13 @@ fun GenerateView(
       } else {
         val isWeighted = remember { children.any { it.weight > 0 } }
         Column(
-          horizontalAlignment = Alignment.Start,
+          horizontalAlignment =
+            when (properties.alignment) {
+              ViewAlignment.START -> Alignment.Start
+              ViewAlignment.END -> Alignment.End
+              ViewAlignment.CENTER -> Alignment.CenterHorizontally
+              ViewAlignment.NONE -> Alignment.Start
+            },
           modifier = modifier.padding(properties.padding.dp),
           verticalArrangement =
             if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
@@ -125,7 +131,13 @@ fun GenerateView(
       } else {
         val isWeighted = remember { children.any { it.weight > 0 } }
         Row(
-          verticalAlignment = Alignment.CenterVertically,
+          verticalAlignment =
+            when (properties.alignment) {
+              ViewAlignment.START -> Alignment.Top
+              ViewAlignment.END -> Alignment.Bottom
+              ViewAlignment.CENTER -> Alignment.CenterVertically
+              ViewAlignment.NONE -> Alignment.CenterVertically
+            },
           modifier = modifier.padding(properties.padding.dp),
           horizontalArrangement =
             if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
