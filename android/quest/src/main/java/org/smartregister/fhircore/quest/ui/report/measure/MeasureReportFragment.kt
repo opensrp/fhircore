@@ -25,12 +25,14 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
 class MeasureReportFragment : Fragment() {
 
+  private val measureReportFragmentArgs by navArgs<MeasureReportFragmentArgs>()
   val measureReportViewModel by viewModels<MeasureReportViewModel>()
 
   override fun onCreateView(
@@ -43,6 +45,7 @@ class MeasureReportFragment : Fragment() {
       setContent {
         AppTheme {
           MeasureReportMainScreen(
+            reportId = measureReportFragmentArgs.reportId,
             measureReportViewModel = measureReportViewModel,
             mainNavController = findNavController()
           )

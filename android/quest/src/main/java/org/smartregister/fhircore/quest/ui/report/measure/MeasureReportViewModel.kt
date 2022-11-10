@@ -37,6 +37,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,7 +45,11 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -77,7 +82,8 @@ constructor(
   val fhirOperator: FhirOperator,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val measureReportRepository: MeasureReportRepository,
+  val configurationRegistry: ConfigurationRegistry,
+  val registerRepository: RegisterRepository,
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 ) : ViewModel() {
 
@@ -100,9 +106,8 @@ constructor(
 
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
 
-  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> by lazy {
-    MutableStateFlow(retrieveAncPatients())
-  }
+  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
+    MutableStateFlow(emptyFlow())
 
   private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
 
@@ -121,10 +126,20 @@ constructor(
       MaterialDatePicker.todayInUtcMilliseconds()
     )
 
-  fun reportMeasuresList(): Flow<PagingData<MeasureReportConfig>> =
-    Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) { measureReportRepository }
+  fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
+    val measureReportConfiguration = retrieveMeasureReportConfig(reportId)
+    return Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) {
+        MeasureReportRepository(measureReportConfiguration, registerRepository)
+      }
       .flow
       .cachedIn(viewModelScope)
+  }
+
+  private fun retrieveMeasureReportConfig(reportId: String): MeasureReportConfiguration =
+    configurationRegistry.retrieveConfiguration(
+      configType = ConfigType.MeasureReport,
+      configId = reportId
+    )
 
   fun onEvent(event: MeasureReportEvent) {
     when (event) {
@@ -164,24 +179,29 @@ constructor(
           reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
       is MeasureReportEvent.OnSearchTextChanged ->
         patientsData.value =
-          retrieveAncPatients().map { pagingData: PagingData<MeasureReportPatientViewData> ->
+          retrievePatients(event.reportId).map {
+            pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
     }
   }
 
-  private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
-    Pager(
-        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
-        pagingSourceFactory = {
-          MeasureReportPatientsPagingSource(
-            measureReportRepository,
-            measureReportPatientViewDataMapper
-          )
-        }
-      )
-      .flow
-      .cachedIn(viewModelScope)
+  fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
+    val measureReportConfig = retrieveMeasureReportConfig(reportId)
+    patientsData.value =
+      Pager(
+          config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
+          pagingSourceFactory = {
+            MeasureReportPatientsPagingSource(
+              MeasureReportRepository(measureReportConfig, registerRepository),
+              measureReportPatientViewDataMapper
+            )
+          }
+        )
+        .flow
+        .cachedIn(viewModelScope)
+    return patientsData.value
+  }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   fun evaluateMeasure(navController: NavController) {

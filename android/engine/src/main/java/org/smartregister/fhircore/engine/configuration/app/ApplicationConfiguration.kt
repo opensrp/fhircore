@@ -32,5 +32,6 @@ data class ApplicationConfiguration(
   val syncInterval: Long = 30,
   val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
-  val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
+  val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig()
 ) : Configuration()

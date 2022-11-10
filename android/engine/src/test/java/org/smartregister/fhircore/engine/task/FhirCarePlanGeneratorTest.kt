@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.After
@@ -824,5 +825,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertTrue(task1.description.isNotEmpty())
         Assert.assertTrue(task1.description == "OPV at Birth Vaccine")
       }
+  }
+
+  @Test
+  fun `transitionTaskTo should update task status`() = runTest {
+    coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
+    coEvery { defaultRepository.create(true, *anyVararg()) } returns emptyList()
+
+    fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED)
+
+    val task = slot<Task>()
+    coVerify { defaultRepository.create(true, capture(task)) }
+
+    Assert.assertEquals(TaskStatus.COMPLETED, task.captured.status)
   }
 }

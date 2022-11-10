@@ -37,5 +37,6 @@ sealed class MeasureReportEvent {
   ) : MeasureReportEvent()
   data class OnPatientSelected(val patientViewData: MeasureReportPatientViewData) :
     MeasureReportEvent()
-  data class OnSearchTextChanged(val searchText: String) : MeasureReportEvent()
+  data class OnSearchTextChanged(val reportId: String, val searchText: String) :
+    MeasureReportEvent()
 }

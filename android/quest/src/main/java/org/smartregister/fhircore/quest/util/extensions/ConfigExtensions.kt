@@ -52,10 +52,10 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
-        actionConfig.id?.let {
+        actionConfig.id?.let { id ->
           val args =
             bundleOf(
-              NavigationArg.PROFILE_ID to it,
+              NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResource?.logicalId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig
             )
@@ -65,13 +65,15 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_REGISTER -> {
         val args =
           bundleOf(
-            Pair(NavigationArg.REGISTER_ID, navMenu?.id),
+            Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, navMenu?.display)
           )
         navController.navigate(MainNavigationScreen.Home.route, args)
       }
-      ApplicationWorkflow.LAUNCH_REPORT ->
-        navController.navigate(MainNavigationScreen.Reports.route)
+      ApplicationWorkflow.LAUNCH_REPORT -> {
+        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        navController.navigate(MainNavigationScreen.Reports.route, args)
+      }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)

@@ -92,8 +92,8 @@ fun CompoundText(
         navController = navController
       )
     }
-    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
-      // Separate the primary and secondary text
+    // Separate the primary and secondary text
+    if (!compoundTextProperties.separator.isNullOrEmpty()) {
       Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
         Text(
           text = compoundTextProperties.separator ?: "-",
@@ -102,6 +102,8 @@ fun CompoundText(
           textAlign = TextAlign.Center
         )
       }
+    }
+    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
