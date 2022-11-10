@@ -277,7 +277,7 @@ constructor(
     ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
-    fun extractAge(patient: Patient): String = patient.extractAge()
+    fun extractAge(patient: Patient): String = patient.extractAge(context)
 
     /**
      * This function extracts and returns a translated string for the gender in Patient resource.

@@ -179,15 +179,6 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testDateAgeDisplayShouldReturnCorrectAge() {
-    val date = Calendar.getInstance().apply { add(Calendar.YEAR, -9) }.time
-
-    val age = date.toAgeDisplay()
-
-    assertEquals("9y", age)
-  }
-
-  @Test
   fun isTodayWithDateTodayShouldReturnTrue() {
     assertTrue(today().isToday())
   }
