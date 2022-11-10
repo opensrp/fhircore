@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
-data class MeasureReportConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.MeasureReport.name,
-  val id: String,
-  val registerId: String,
-  val reports: List<MeasureReportConfig> = emptyList()
-) : Configuration()
+data class SnackBarThemeConfig(
+  val messageTextColor: String = "#FFFFFF",
+  val actionTextColor: String = "#FFE400",
+  val backgroundColor: String = "#2c2c2c"
+) : java.io.Serializable

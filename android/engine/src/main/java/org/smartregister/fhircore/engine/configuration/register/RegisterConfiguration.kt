@@ -27,7 +27,7 @@ data class RegisterConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.Register.name,
   val id: String,
-  val registerTitle: String = "",
+  val registerTitle: String? = null,
   val fhirResource: FhirResourceConfig,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,

@@ -18,30 +18,15 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.google.android.fhir.FhirEngine
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
-class MeasureReportRepository
-@Inject
-constructor(
-  val fhirEngine: FhirEngine,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry,
-  val registerRepository: RegisterRepository
+class MeasureReportRepository(
+  private val measureReportConfiguration: MeasureReportConfiguration,
+  private val registerRepository: RegisterRepository
 ) : PagingSource<Int, MeasureReportConfig>() {
-
-  private val measureReportConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(
-      ConfigType.MeasureReport
-    )
-  }
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
     return state.anchorPosition

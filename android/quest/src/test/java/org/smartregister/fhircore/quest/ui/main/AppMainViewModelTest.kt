@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Result
@@ -27,6 +29,8 @@ import com.google.android.fhir.sync.State
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -233,9 +237,23 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun onRefreshAuthToken() {
+  fun onRefreshAuthTokenRunsSyncWhenTokenRefreshed() {
+    val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+
     appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
 
-    verify { accountAuthenticator.loadRefreshedSessionAccount(any()) }
+    coVerify { accountAuthenticator.refreshSessionAuthToken() }
+    verify { syncBroadcaster.runSync() }
+  }
+
+  @Test
+  fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
+
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+
+    coVerify { accountAuthenticator.refreshSessionAuthToken() }
+    verify { accountAuthenticator.logout() }
   }
 }
