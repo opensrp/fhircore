@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -117,8 +118,13 @@ fun ProfileScreen(
                   .toBoolean()
               )
                 return@forEach
+              val enabled =
+                !it.enabled
+                  .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+                  .toBoolean()
               if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
               DropdownMenuItem(
+                enabled = enabled,
                 onClick = {
                   showOverflowMenu = false
                   onEvent(
@@ -139,7 +145,12 @@ fun ProfileScreen(
                         if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-              ) { Text(text = it.title, color = it.titleColor.parseColor()) }
+              ) {
+                Text(
+                  text = it.title,
+                  color = if (enabled) it.titleColor.parseColor() else DefaultColor
+                )
+              }
             }
           }
         },

@@ -233,6 +233,13 @@
                     ]
                   },
                   {
+                    "name": "patientTextColor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientTextColor', Patient.active ? '#000000' : 'DefaultColor')"
+                    ]
+                  },
+                  {
                     "name": "patientGender",
                     "condition": "true",
                     "actions": [
@@ -292,7 +299,7 @@
                     "name": "showMemberTasks",
                     "condition": "true",
                     "actions": [
-                      "data.put('showMemberTasks', size(Task) > 0)"
+                      "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                     ]
                   },
                   {
@@ -394,7 +401,7 @@
                       {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientName}",
-                        "primaryTextColor": "#000000"
+                        "primaryTextColor": "@{patientTextColor}"
                       },
                       {
                         "viewType": "COMPOUND_TEXT",
@@ -408,6 +415,7 @@
                       "text": "@{taskDescription}",
                       "status": "@{serviceStatus}",
                       "smallSized": true,
+                      "enabled": "@{patientActive}",
                       "actions": [
                         {
                           "trigger": "ON_CLICK",
