@@ -185,7 +185,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
         )
         if (hasAuthError) {
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(this))
         }
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
       }
