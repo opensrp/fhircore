@@ -26,6 +26,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,10 +51,13 @@ import timber.log.Timber
 
 @Composable
 fun MeasureReportPatientsScreen(
+  reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
   modifier: Modifier = Modifier
 ) {
+  LaunchedEffect(Unit) { measureReportViewModel.retrievePatients(reportId) }
+
   val pagingItems =
     measureReportViewModel.patientsData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
 
@@ -61,8 +65,10 @@ fun MeasureReportPatientsScreen(
     topBar = {
       Column {
         SearchBar(
-          onTextChanged = {
-            measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged(it))
+          onTextChanged = { text ->
+            measureReportViewModel.onEvent(
+              MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = text)
+            )
           },
           onBackPress = { navController.popBackStack() },
           searchTextState = measureReportViewModel.searchTextState

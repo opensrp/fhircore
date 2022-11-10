@@ -1,0 +1,102 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "patientRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    }
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.by.name }}",
+    "computedRules": [
+      "patientName",
+      "patientId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "patientFirstName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+        ]
+      },
+      {
+        "name": "patientMiddleName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+        ]
+      },
+      {
+        "name": "patientLastName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+        ]
+      },
+      {
+        "name": "patientAge",
+        "condition": "true",
+        "actions": [
+          "data.put('patientAge', service.extractAge(Patient))"
+        ]
+      },
+      {
+        "name": "patientGender",
+        "condition": "true",
+        "actions": [
+          "data.put('patientGender', service.extractGender(Patient))"
+        ]
+      },
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', (data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName')).trim() + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' + data.get('patientAge'))"
+        ]
+      },
+      {
+        "name": "patientId",
+        "condition": "true",
+        "actions": [
+          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{patientId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": false,
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "defaultProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
