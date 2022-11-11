@@ -21,6 +21,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
@@ -49,6 +51,8 @@ class FhirTaskExpireUtil(val appContext: Context) {
           { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
+        //filterBy(DataQuery())
+        //count = size
       }
       .filter { it.isPastExpiry() }
 
@@ -58,7 +62,7 @@ class FhirTaskExpireUtil(val appContext: Context) {
 
   suspend fun markTaskExpired(tasks: List<Task>) {
 
-    val fhirEngine = FhirEngineProvider.getInstance(context = appContext)
+    val fhirEngine = getFhirEngine()
 
     // This allows the Fhir Engine to index the values
     tasks.forEach { task ->
