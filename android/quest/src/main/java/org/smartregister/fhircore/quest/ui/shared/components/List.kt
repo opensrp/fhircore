@@ -111,7 +111,7 @@ fun List(
           )
         }
         Spacer(modifier = modifier.height(5.dp))
-        if ((index < resources.lastIndex) && viewProperties.showDivider)
+        if (index < resources.lastIndex && viewProperties.showDivider)
           Divider(color = DividerColor, thickness = 0.5.dp)
       }
     }

@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.quest.ui.report.measure.models
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
+import java.util.Date
 
-@Serializable
-data class MeasureReportConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.MeasureReport.name,
-  val id: String,
-  val registerId: String,
-  val registerDate: String? = null,
-  val showFixedRangeSelection: Boolean? = null,
-  val reports: List<MeasureReportConfig> = emptyList()
-) : Configuration()
+data class ReportRangeSelectionData(val month: String, val year: String, val date: Date)
