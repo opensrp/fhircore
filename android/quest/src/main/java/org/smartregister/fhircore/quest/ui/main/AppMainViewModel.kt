@@ -111,7 +111,7 @@ constructor(
       }
       is AppMainEvent.RefreshAuthToken -> {
         Timber.e("Refreshing token")
-        accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
+        accountAuthenticator.refreshSessionAuthToken { accountBundleFuture ->
           val bundle = accountBundleFuture.result
           bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
             if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
