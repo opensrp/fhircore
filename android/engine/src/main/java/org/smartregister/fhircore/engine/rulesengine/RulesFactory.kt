@@ -64,7 +64,9 @@ constructor(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "DateTimeHelper" to Class.forName("org.smartregister.fhircore.engine.rulesengine.DateTimeHelper"),
+          "prettyTime" to Class.forName("org.ocpsoft.prettytime.PrettyTime")
         )
       )
       .silent(false)
