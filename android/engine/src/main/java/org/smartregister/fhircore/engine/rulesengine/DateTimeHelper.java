@@ -17,6 +17,6 @@ public class DateTimeHelper {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return new SimpleDateFormat("MMM-dd").format(date);
+        return new SimpleDateFormat("E, MMM dd yyyy").format(date);
     }
 }
