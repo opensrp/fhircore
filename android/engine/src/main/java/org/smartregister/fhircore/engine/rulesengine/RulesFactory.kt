@@ -307,11 +307,20 @@ constructor(
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
 
     /**
-     * This function takes [inputDate] like 2022-7-1 and returns a difference (for examples 7 hours
-     * ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDate] can give given as 2022-02 or 2022
+     * This function takes [inputDate] and returns a difference (for examples 7 hours ago, 2 days
+     * ago, 5 months ago, 3 years ago etc)
      */
-    fun formatDate(inputDate: String): String {
-      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDate).toDate())
+    fun convertDateForDifference(inputDate: Date): String {
+      return PrettyTime(Locale.ENGLISH).format(inputDate)
+    }
+
+    /**
+     * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
+     * hours ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDateString] can give given as
+     * 2022-02 or 2022
+     */
+    fun convertDateForDifference(inputDateString: String): String {
+      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
     }
 
     /**
