@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
@@ -101,6 +104,10 @@ constructor(
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
 
+  private val _showTracingOutcomes = MutableLiveData<Boolean>()
+  val showTracingOutcomes: LiveData<Boolean>
+    get() = _showTracingOutcomes
+
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
@@ -131,19 +138,6 @@ constructor(
     }
   }
 
-  //  fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
-  //    if (healthModule == HealthModule.HIV) {
-  //      patientTracingProfileUiState.value =
-  //        TracingProfileUiState(
-  //          overflowMenuFactory.retrieveOverflowMenuItems(
-  //            getOverflowMenuHostByPatientType(
-  //              (patientProfile as ProfileData.HivProfileData).healthStatus
-  //            )
-  //          )
-  //        )
-  //    }
-  //  }
-
   fun filterGuardianVisitTasks() {
     if (patientProfileData != null) {
       val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
@@ -168,6 +162,10 @@ constructor(
     }
   }
 
+  fun showTracingOutcomes() {
+    _showTracingOutcomes.value = true
+  }
+
   fun onEvent(event: TracingProfileEvent) {
     val profile = patientProfileViewData.value
 
@@ -186,6 +184,7 @@ constructor(
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
+          R.id.tracing_history -> event.context.showToast("//todo Tracing History action here")
           else -> {}
         }
       }
@@ -196,21 +195,6 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources
         )
-    //      is TracingProfileEvent.OpenGuardianProfile -> {
-    //        val urlParams =
-    //          NavigationArg.bindArgumentsOf(
-    //            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-    //            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
-    //            Pair(NavigationArg.PATIENT_ID, event.patientId)
-    //          )
-    //        if (healthModule == HealthModule.FAMILY)
-    //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +
-    // urlParams)
-    //        else
-    //          event.navController.navigate(
-    //            route = MainNavigationScreen.PatientProfile.route + urlParams
-    //          )
-    //      }
     }
   }
 
@@ -238,7 +222,6 @@ constructor(
         }
       patientTracingProfileUiState.value =
         patientTracingProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-      filterGuardianVisitTasks()
     }
   }
 
@@ -297,15 +280,6 @@ constructor(
     )
 
   companion object {
-    const val REMOVE_FAMILY_FORM = "remove-family"
-    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-    const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
     const val EDIT_PROFILE_FORM = "edit-patient-profile"
-    const val VIRAL_LOAD_RESULTS_FORM = "art-client-viral-load-test-results"
-    const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
-    const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
-      "contact-and-community-positive-hiv-test-and-next-appointment"
-    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
-    const val PATIENT_FINISH_VISIT = "patient-finish-visit"
   }
 }

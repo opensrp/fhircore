@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -49,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -63,6 +66,8 @@ import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
+import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
@@ -136,7 +141,11 @@ fun TracingProfilePage(
       )
     }
   ) { innerPadding ->
-    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData) {}
+    TracingProfilePageView(
+      innerPadding = innerPadding,
+      profileViewData = profileViewData,
+      onShowTraceOutcomes = { patientProfileViewModel.showTracingOutcomes() }
+    )
   }
 }
 
@@ -146,9 +155,9 @@ fun TracingProfilePageView(
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
   profileViewData: ProfileViewData.PatientProfileViewData =
     ProfileViewData.PatientProfileViewData(),
-  onBackPress: () -> Unit
+  onShowTraceOutcomes: () -> Unit
 ) {
-  Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
+  Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
     Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
       Column(
         modifier =
@@ -171,6 +180,23 @@ fun TracingProfilePageView(
         Spacer(modifier = modifier.height(20.dp))
         TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
       }
+      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+        Button(
+          colors =
+            ButtonDefaults.buttonColors(
+              backgroundColor = LoginButtonColor,
+              LoginFieldBackgroundColor
+            ),
+          onClick = onShowTraceOutcomes,
+          modifier = modifier.fillMaxWidth()
+        ) {
+          Text(
+            color = Color.White,
+            text = stringResource(id = R2.string.tracing_outcomes),
+            modifier = modifier.padding(8.dp)
+          )
+        }
+      }
     }
   }
 }
@@ -179,7 +205,7 @@ fun TracingProfilePageView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun TracingScreenPreview() {
-  TracingProfilePageView(modifier = Modifier, onBackPress = {})
+  TracingProfilePageView(modifier = Modifier, onShowTraceOutcomes = {})
 }
 
 @Composable
