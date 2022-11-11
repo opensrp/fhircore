@@ -83,14 +83,16 @@ fun List(
               )
             )
           }
-        val computedValuesMap =
+        val listComputedValuesMap =
           viewModel.rulesFactory.fireRule(
             ruleConfigs = viewProperties.registerCard.rules,
             baseResource = resource,
             relatedResourcesMap = newRelatedResources
           )
         showPlaceholder = false
-        listItemResourceData = ResourceData(resource, newRelatedResources, computedValuesMap)
+        // Include all the previously computed values from the provided resourceData for re-use
+        val allComputedValues = listComputedValuesMap.plus(resourceData.computedValuesMap)
+        listItemResourceData = ResourceData(resource, newRelatedResources, allComputedValues)
       }
 
       Column {
