@@ -33,6 +33,8 @@ import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
+import org.joda.time.DateTime
+import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -64,9 +66,7 @@ constructor(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
-          "DateTimeHelper" to Class.forName("org.smartregister.fhircore.engine.rulesengine.DateTimeHelper"),
-          "prettyTime" to Class.forName("org.ocpsoft.prettytime.PrettyTime")
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
         )
       )
       .silent(false)
@@ -304,6 +304,14 @@ constructor(
     /** This function extracts the patient's DOB from the FHIR resource */
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+
+    fun formatDate(inputDate : String): String {
+      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDate).toDate())
+    }
+
+    fun formatDate(inputDate : String, inputDateFormat : String, expectedFormat : String = "E, MMM dd yyyy"): String {
+      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run { format(SimpleDateFormat(inputDateFormat, Locale.ENGLISH).parse(inputDate)) }
+    }
   }
 
   fun logWarning(message: String) {

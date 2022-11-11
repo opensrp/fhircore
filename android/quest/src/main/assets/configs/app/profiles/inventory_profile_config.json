@@ -46,7 +46,7 @@
       "name": "lastUpdatedDate",
       "condition": "true",
       "actions": [
-        "data.put('lastUpdatedDate', 'Last count ' + DateTimeHelper:makeItReadable(data.get('lastUpdated')))"
+        "data.put('lastUpdatedDate', 'Last count ' + service.formatDate(data.get('lastUpdated')))"
       ]
     },
     {

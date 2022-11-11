@@ -95,13 +95,6 @@ fun Date?.makeItReadable(): String {
   }
 }
 
-fun Date?.makeItReadable(inputFormat : String) : String {
-  return if (this == null) "N/A"
-  else {
-    SimpleDateFormat(inputFormat, Locale.getDefault()).run { format(this@makeItReadable) }
-  }
-}
-
 fun Date?.prettifyDate(): String =
   if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
