@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.sync
 import android.app.Application
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Rule
@@ -26,6 +27,7 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowNetworkCapabilities
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 internal class NetworkStateTest : RobolectricTest() {
@@ -49,5 +51,8 @@ internal class NetworkStateTest : RobolectricTest() {
     assertTrue(connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE)
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java,"SDK_INT", 23)
+
   }
 }
