@@ -37,15 +37,16 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -185,8 +186,8 @@ private fun NavBottomSection(
       menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
-      endTextColor = SubtitleTextColor,
-      showEndText = true
+      showEndText = true,
+      endTextColor = SubtitleTextColor
     ) { onSideMenuClick(AppMainEvent.SyncData) }
   }
 }
@@ -202,9 +203,9 @@ private fun OtherPatientsItem(
     menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title = stringResource(R.string.other_patients),
     endText = "",
-    endTextColor = SubtitleTextColor,
     showEndText = false,
-    endIconResource = R.drawable.ic_right_arrow
+    endImageVector = Icons.Filled.KeyboardArrowRight,
+    endTextColor = SubtitleTextColor,
   ) {
     openDrawer(false)
     onSideMenuClick(
@@ -347,7 +348,7 @@ private fun SideMenuItem(
   endText: String = "",
   endTextColor: Color = Color.White,
   showEndText: Boolean,
-  endIconResource: Int? = null,
+  endImageVector: ImageVector? = null,
   onSideMenuClick: () -> Unit
 ) {
   Row(
@@ -366,12 +367,12 @@ private fun SideMenuItem(
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
     }
-    endIconResource?.let { icon ->
+    endImageVector?.let { imageVector ->
       Icon(
-        modifier = modifier.testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG).padding(end = 10.dp),
-        painter = painterResource(id = icon),
-        contentDescription = SIDE_MENU_ICON,
-        tint = MenuItemColor
+        imageVector = imageVector,
+        contentDescription = null,
+        tint = MenuItemColor,
+        modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG)
       )
     }
   }

@@ -34,7 +34,7 @@ class DateTimeExtensionTest : RobolectricTest() {
   fun testDateTypeAsDdMmmYyyyShouldReturnFormattedDate() {
     val date = DateType("2012-10-12").dateTimeValue().value
 
-    val result = date.asDdMmmYyyy()
+    val result = date.formatDate(SDF_DD_MMM_YYYY)
 
     assertEquals("12-Oct-2012", result)
   }
@@ -61,12 +61,11 @@ class DateTimeExtensionTest : RobolectricTest() {
   fun testDateAsMmmYyyyShouldReturnFormattedDate() {
     val date = DateUtils.parseDate("2022-02-02", "yyyy-MM-dd")
 
-    val result = date.asMmmYyyy()
+    val result = date.formatDate(SDF_MMM_YYYY)
 
     assertEquals("Feb-2022", result)
   }
 
-  @Test
   fun `SimpleDateFormat tryParse() should parse given date correctly`() {
     val dateFormat = SimpleDateFormat("yyyy-MMM-dd")
 
@@ -164,7 +163,7 @@ class DateTimeExtensionTest : RobolectricTest() {
   fun testDatePlusYearsShouldAddYearsToDate() {
     val date = DateType("2010-10-12").value
 
-    val added = date.plusYears(8).asYyyyMmDd()
+    val added = date.plusYears(8).formatDate(SDF_YYYY_MM_DD)
 
     assertTrue("2018-10-12".contentEquals(added))
   }

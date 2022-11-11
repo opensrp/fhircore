@@ -30,47 +30,28 @@ import org.hl7.fhir.r4.model.DateType
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.R
 
-val SDF_DD_MMM_YYYY = simpleDateFormatFor("dd-MMM-yyyy")
-val SDF_YYYY_MM_DD = simpleDateFormatFor("yyyy-MM-dd")
-val SDF_MMM_YYYY = simpleDateFormatFor("MMM-yyyy")
-val SDF_YYYY_MMM = simpleDateFormatFor("yyyy-MMM")
+const val SDF_DD_MMM_YYYY = "dd-MMM-yyyy"
+const val SDF_YYYY_MM_DD = "yyyy-MM-dd"
+const val SDF_MMM_YYYY = "MMM-yyyy"
+const val SDF_YYYY_MMM = "yyyy-MMM"
+const val SDF_MMMM = "MMM"
+const val SDF_YYYY = "yyyy"
+const val SDF_D_MMM_YYYY_WITH_COMA = "d MMM, yyyy"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
 fun today(): Date = DateTimeType.today().value
 
-fun Date.isToday() = this.asYyyyMmDd() == today().asYyyyMmDd()
+fun Date.formatDate(pattern: String): String =
+  SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
 
-fun simpleDateFormatFor(pattern: String, locale: Locale = Locale.getDefault()) =
-  SimpleDateFormat(pattern, locale)
-
-fun Date?.asMmmYyyy(): String {
-  if (this == null) return ""
-  return SDF_MMM_YYYY.format(this)
-}
+fun Date.isToday() = this.formatDate(SDF_YYYY_MM_DD) == today().formatDate(SDF_YYYY_MM_DD)
 
 fun SimpleDateFormat.tryParse(date: String): Date? =
   kotlin.runCatching { parse(date) }.getOrNull()
     ?: kotlin
       .runCatching { SimpleDateFormat(this.toPattern(), Locale.ENGLISH).parse(date) }
       .getOrNull()
-
-fun List<SimpleDateFormat>.tryParse(date: String): Date? {
-  forEach { dateFormat ->
-    dateFormat.tryParse(date)?.let {
-      return it
-    }
-  }
-  return null
-}
-
-fun Date.asDdMmmYyyy(): String {
-  return SDF_DD_MMM_YYYY.format(this)
-}
-
-fun Date.asYyyyMmDd(): String {
-  return SDF_YYYY_MM_DD.format(this)
-}
 
 fun Date?.makeItReadable(): String {
   return if (this == null) "N/A"
@@ -82,11 +63,12 @@ fun Date?.makeItReadable(): String {
 fun Date?.prettifyDate(): String =
   if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
-fun isSameMonthYear(yearMonthValue1: String, yearMonthValue2: String) =
-  listOf(SDF_MMM_YYYY, SDF_YYYY_MMM).let {
-    it.tryParse(yearMonthValue1)?.asMmmYyyy()?.equals(it.tryParse(yearMonthValue2)?.asMmmYyyy()) ==
-      true
-  }
+fun isSameMonthYear(monthYear: String, yearMonth: String): Boolean {
+  val firstDate = monthYear.parseDate(SDF_MMM_YYYY)?.formatDate(SDF_MMM_YYYY)
+  val secondDate = yearMonth.parseDate(SDF_YYYY_MMM)?.formatDate(SDF_MMM_YYYY)
+  if (firstDate.isNullOrEmpty() || secondDate.isNullOrEmpty()) return false
+  return firstDate == secondDate
+}
 
 fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
@@ -110,13 +92,13 @@ fun DateType.plusMonthsAsString(months: Int): String {
 fun Date.calendar(): Calendar = Calendar.getInstance().apply { time = this@calendar }
 
 fun Date.plusYears(years: Int): Date {
-  val clone = this.calendar()
+  val clone = calendar()
   clone.add(Calendar.YEAR, years)
   return clone.time
 }
 
 fun Date.plusDays(days: Int): Date {
-  val clone = this.calendar()
+  val clone = calendar()
   clone.add(Calendar.DATE, days)
   return clone.time
 }
