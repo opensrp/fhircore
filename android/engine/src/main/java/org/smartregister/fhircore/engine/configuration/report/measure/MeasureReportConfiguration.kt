@@ -28,6 +28,5 @@ data class MeasureReportConfiguration(
   val registerId: String,
   val registerDate: String? = null,
   val showFixedRangeSelection: Boolean? = null,
-  val reportModule: String? = null,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()
