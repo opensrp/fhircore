@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
@@ -305,12 +306,37 @@ constructor(
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
 
-    fun formatDate(inputDate : String): String {
+    /**
+     * This function takes [inputDate] like 2022-7-1 and returns a difference (for examples 7 hours
+     * ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDate] can give given as 2022-02 or 2022
+     */
+    fun formatDate(inputDate: String): String {
       return PrettyTime(Locale.ENGLISH).format(DateTime(inputDate).toDate())
     }
 
-    fun formatDate(inputDate : String, inputDateFormat : String, expectedFormat : String = "E, MMM dd yyyy"): String {
-      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run { format(SimpleDateFormat(inputDateFormat, Locale.ENGLISH).parse(inputDate)) }
+    /**
+     * This function is responsible for formatting a date for whatever expectedFormat we need. It
+     * takes an [inputDate] string along with the [inputDateFormat] so it can convert it to the Date
+     * and then it gives output in expected Format, [expectedFormat] is by default (Example: Mon,
+     * Nov 5 2021)
+     */
+    fun formatDate(
+      inputDate: String,
+      inputDateFormat: String,
+      expectedFormat: String = "E, MMM dd yyyy"
+    ): String {
+      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run {
+        format(SimpleDateFormat(inputDateFormat, Locale.ENGLISH).parse(inputDate))
+      }
+    }
+
+    /**
+     * This function is responsible for formatting a date for whatever expectedFormat we need. It
+     * takes an input a [date] as input and then it gives output in expected Format,
+     * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
+     */
+    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
+      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run { format(date) }
     }
   }
 
