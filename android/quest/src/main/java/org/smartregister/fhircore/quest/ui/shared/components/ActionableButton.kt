@@ -85,7 +85,9 @@ fun ActionableButton(
           backgroundColor =
             buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor =
-            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledContentColor = DefaultColor.copy(alpha = 0.9f),
         ),
       modifier =
         modifier
@@ -194,7 +196,7 @@ fun DisabledActionableButtonPreview() {
         status = ServiceStatus.COMPLETED.name,
         text = "ANC Visit",
         smallSized = true,
-        enabled = "true"
+        enabled = "false"
       ),
     resourceData = ResourceData(Patient()),
     navController = rememberNavController()

@@ -56,7 +56,7 @@
       "name": "patientActive",
       "condition": "true",
       "actions": [
-        "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+        "data.put('patientActive', fhirPath.extractValue(Patient.get(0), 'Patient.active'))"
       ]
     },
     {
@@ -280,6 +280,7 @@
                     "text": "@{taskDescription}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
+                    "enabled": "@{patientActive}",
                     "actions": [
                       {
                         "trigger": "ON_CLICK",

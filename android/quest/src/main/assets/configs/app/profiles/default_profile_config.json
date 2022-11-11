@@ -306,6 +306,7 @@
                     "text": "@{taskDescription}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
+                    "enabled": "@{patientActive}",
                     "actions": [
                       {
                         "trigger": "ON_CLICK",
