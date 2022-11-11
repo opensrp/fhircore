@@ -52,7 +52,6 @@ internal class NetworkStateTest : RobolectricTest() {
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
     assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
 
-    ReflectionHelpers.setStaticField(Build.VERSION::class.java,"SDK_INT", 23)
-
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 23)
   }
 }
