@@ -256,11 +256,6 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group.member.run {
-            remove(
-              this.find { it.entity.reference == "${resource.resourceType}/${resource.logicalId}" }
-            )
-          }
           group
             .managingEntity
             ?.let { reference ->

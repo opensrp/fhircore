@@ -58,8 +58,8 @@ class ExtendedFabTest {
                 )
             )
           ),
-        navController = navController,
-        resourceData = ResourceData(Patient())
+        resourceData = ResourceData(Patient()),
+        navController = navController
       )
     }
   }

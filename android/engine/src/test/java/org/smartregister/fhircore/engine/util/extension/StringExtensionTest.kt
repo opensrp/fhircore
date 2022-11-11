@@ -30,7 +30,12 @@ class StringExtensionTest {
   }
 
   @Test
-  fun checkTrueIfStringIsConvertedToYyyyMmDd() {
-    Assert.assertEquals("31-Oct-2022", "2022-10-31".getYyyMmDd("yyyy-MM-dd")!!.asDdMmmYyyy())
+  fun shouldRemoveExtraSpaces() {
+    val beforeFormatExampleOne = "Aurang    zaib        umer   ,   M,           43y"
+    val beforeFormatExampleTwo = "  Aurang    zaib   umer   , M, 43y          "
+    val expected = "Aurang zaib umer, M, 43y"
+
+    Assert.assertEquals(expected, beforeFormatExampleOne.removeExtraWhiteSpaces())
+    Assert.assertEquals(expected, beforeFormatExampleTwo.removeExtraWhiteSpaces())
   }
 }

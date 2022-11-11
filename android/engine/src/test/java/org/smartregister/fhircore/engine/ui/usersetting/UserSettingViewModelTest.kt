@@ -229,14 +229,14 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testShowLoaderViewShouldUpdateShowProgressFlagCorrectly() {
-    Assert.assertEquals(false, userSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(false, userSettingViewModel.progressBarState.value)
 
-    val userSettingsEvent = UserSettingsEvent.ShowLoaderView
+    val userSettingsEvent = UserSettingsEvent.ShowLoaderView(true, 0)
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     ShadowLooper.idleMainLooper()
-    Assert.assertEquals(true, userSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(true, userSettingViewModel.progressBarState.value)
   }
 
   @Test
@@ -302,18 +302,5 @@ class UserSettingViewModelTest : RobolectricTest() {
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.launchScreen(any()) }
-  }
-
-  @Test
-  fun testLogoutUserShouldCallAuthLogoutServiceX() {
-
-    Assert.assertNull(userSettingViewModel.onLogout.value)
-    every { accountAuthenticator.logout() } returns Unit
-
-    userSettingViewModel.logoutUser()
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-    Assert.assertEquals(true, userSettingViewModel.onLogout.value)
-    verify(exactly = 1) { accountAuthenticator.logout() }
   }
 }

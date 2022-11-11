@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.annotation.SuppressLint
 import java.text.MessageFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -95,6 +94,12 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  */
 fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
 
-/** Convert the string to date */
-@SuppressLint("SimpleDateFormat")
-fun String.getYyyMmDd(format: String): Date? = SimpleDateFormat(format).parse(this)
+/** Remove double white spaces from text and also remove space before comma */
+fun String.removeExtraWhiteSpaces(): String =
+  this.replace("\\s+".toRegex(), " ").replace(" ,", ",").trim()
+
+/** Return an abbreviation for the provided string */
+fun String?.abbreviate() = this?.firstOrNull() ?: ""
+
+fun String.parseDate(pattern: String): Date? =
+  SimpleDateFormat(pattern, Locale.ENGLISH).tryParse(this)

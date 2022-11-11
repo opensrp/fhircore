@@ -32,7 +32,7 @@
       "name": "quantity",
       "condition": "true",
       "actions": [
-        "data.put('quantity', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value'))"
+        "var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Integer', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return x; } ; data.put('quantity', balance(Observation))"
       ]
     },
     {
@@ -52,35 +52,37 @@
   ],
   "views": [
     {
-      "viewType": "COLUMN",
-      "children": [
+      "viewType": "CARD",
+      "padding": 0,
+      "content": [
         {
-          "viewType": "CARD",
-          "padding": 0,
-          "content": [
+          "viewType": "COLUMN",
+          "children": [
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "@{commodityName}",
+              "primaryTextColor": "#000000"
+            },
+            {
+              "viewType": "SPACER",
+              "height": 10
+            },
             {
               "viewType": "COLUMN",
               "children": [
-                {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "@{commodityName}",
-                  "primaryTextColor": "#000000"
-                },
-                {
-                  "viewType": "SPACER",
-                  "height": 10
-                },
                 {
                   "viewType": "ROW",
                   "children": [
                     {
                       "viewType": "PERSONAL_DATA",
+                      "weight": 1.0,
                       "personalDataItems": [
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
                             "primaryText": "@{quantity}",
-                            "primaryTextColor": "#000000"
+                            "primaryTextColor": "#000000",
+                            "primaryTextFontWeight": "SEMI_BOLD"
                           },
                           "displayValue": {
                             "viewType": "COMPOUND_TEXT",
@@ -92,17 +94,15 @@
                       ]
                     },
                     {
-                      "viewType": "SPACER",
-                      "height": 10
-                    },
-                    {
                       "viewType": "PERSONAL_DATA",
+                      "weight": 1.0,
                       "personalDataItems": [
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
                             "primaryText": "@{unitsOfMeasure}",
-                            "primaryTextColor": "#000000"
+                            "primaryTextColor": "#000000",
+                            "primaryTextFontWeight": "SEMI_BOLD"
                           },
                           "displayValue": {
                             "viewType": "COMPOUND_TEXT",
@@ -118,10 +118,6 @@
               ]
             }
           ]
-        },
-        {
-          "viewType": "SPACER",
-          "height": 16
         }
       ]
     }
@@ -131,18 +127,38 @@
       "id": "ActionButton",
       "visible": true,
       "display": "Adjust/Restock",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_add"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-            "title": "@{commodityName",
+            "title": "@{commodityName}",
             "saveButtonText": "ADJUST STOCK LEVELS",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
-            "resourceIdentifier": "@{taskFor}"
-          }
+            "resourceIdentifier": "@{commodityId}"
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
+              "dataType": "STRING",
+              "key": "commodityName",
+              "value": "@{commodityName}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
+              "dataType": "INTEGER",
+              "key": "currentBalance",
+              "value": "@{quantity}"
+            }
+          ]
         }
       ]
     }

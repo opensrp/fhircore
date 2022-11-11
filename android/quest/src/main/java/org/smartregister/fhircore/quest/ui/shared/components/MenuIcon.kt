@@ -19,23 +19,59 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
+import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 
+const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 
 @Composable
-fun MenuIcon(modifier: Modifier = Modifier, menuIconConfig: MenuIconConfig) {
-  if (menuIconConfig.decodedBitmap != null) {
-    Image(
-      modifier =
-        modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG).padding(end = 10.dp).size(24.dp),
-      bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
-      contentDescription = null
-    )
+fun MenuIcon(
+  modifier: Modifier = Modifier,
+  menuIconConfig: MenuIconConfig?,
+  color: Color,
+  paddingEnd: Int = 8
+) {
+  if (menuIconConfig != null) {
+    when (menuIconConfig.type) {
+      ICON_TYPE_LOCAL -> {
+        LocalContext.current.retrieveResourceId(menuIconConfig.reference)?.let { drawableId ->
+          Icon(
+            modifier =
+              modifier
+                .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+                .padding(end = paddingEnd.dp)
+                .size(24.dp),
+            painter = painterResource(id = drawableId),
+            contentDescription = SIDE_MENU_ICON,
+            tint = color
+          )
+        }
+      }
+      ICON_TYPE_REMOTE ->
+        if (menuIconConfig.decodedBitmap != null) {
+          Image(
+            modifier =
+              modifier
+                .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+                .padding(end = paddingEnd.dp)
+                .size(24.dp),
+            bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
+            contentDescription = null
+          )
+        }
+    }
   }
 }

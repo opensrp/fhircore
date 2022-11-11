@@ -17,13 +17,11 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "managing-entity.patient.organization",
+        "name": "_id",
+        "code": "_id",
         "base": [
           "Group"
-        ],
-        "type": "token",
-        "expression": "#organization"
+        ]
       }
     },
     {

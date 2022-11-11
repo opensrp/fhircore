@@ -24,7 +24,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
@@ -52,7 +52,7 @@ constructor(
       name =
         fhirPathDataExtractor.extractValue(patient, "Patient.name.select(given + ' ' + family)"),
       gender = patient.gender.translateGender(context).first().uppercase(),
-      age = patient.birthDate?.toAgeDisplay() ?: "N/A",
+      age = patient.extractAge(context),
       family =
         context.getString(
           R.string.family_suffix,

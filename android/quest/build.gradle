@@ -138,7 +138,8 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.5-rc1"
+            versionName "0.1.6-rc1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
         }
 
         g6pd {
@@ -224,6 +225,8 @@ dependencies {
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
+    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     implementation 'androidx.work:work-testing:2.7.1'

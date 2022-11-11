@@ -308,7 +308,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun testGetReportGenerationRange() {
     val result =
       measureReportViewModel.getReportGenerationRange(
-        "2022-09-27".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)
+        "2022-09-27".getYyyMmDd(MeasureReportViewModel.SDF_MEASURE_REPORT_DATE_FORMAT)
       )
     val currentMonth = Calendar.getInstance().time.asMmmm()
     val currentYear = Calendar.getInstance().time.asYyyy()

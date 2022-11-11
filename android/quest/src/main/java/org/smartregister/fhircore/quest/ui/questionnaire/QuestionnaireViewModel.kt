@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -63,6 +64,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -104,10 +106,18 @@ constructor(
       ?.extractLogicalIdUuid()
   }
 
-  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
+  suspend fun loadQuestionnaire(
+    id: String,
+    type: QuestionnaireType,
+    prePopulationParams: List<ActionParameter>? = emptyList()
+  ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
         item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
+      }
+      // prepopulate questionnaireItems with initial values
+      if (prePopulationParams?.isNotEmpty() == true) {
+        item.prePopulateInitialValues(prePopulationParams)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061

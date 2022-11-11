@@ -61,6 +61,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 @Composable
 fun MeasureReportResultScreen(
+  reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {

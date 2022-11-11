@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -71,7 +72,8 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportEvent
@@ -88,14 +90,15 @@ const val SHOW_DATE_PICKER_FORM_TAG = "SHOW_DATE_PICKER_FORM_TAG"
 
 @Composable
 fun ReportTypeSelectorScreen(
+  reportId: String,
   screenTitle: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
 ) {
   val context = LocalContext.current
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
-  if (measureReportViewModel.showFixedRangeSelection()) {
-    showFixedMonthYearListing(
+  if (measureReportViewModel.showFixedRangeSelection(reportId)) {
+    FixedMonthYearListing(
       screenTitle = screenTitle,
       onMonthSelected = { date ->
         measureReportViewModel.onEvent(
@@ -112,7 +115,7 @@ fun ReportTypeSelectorScreen(
         )
       },
       showProgressIndicator = uiState.showProgressIndicator,
-      reportGenerationRange = measureReportViewModel.getReportGenerationRange(),
+      reportGenerationRange = measureReportViewModel.getReportGenerationRange(reportId),
     )
   } else {
     ReportTypeSelectorPage(
@@ -242,9 +245,7 @@ fun ReportTypeSelectorPage(
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun showFixedMonthYearListing(
+fun FixedMonthYearListing(
   screenTitle: String,
   onMonthSelected: (date: Date?) -> Unit,
   onBackPress: () -> Unit,
@@ -252,7 +253,6 @@ fun showFixedMonthYearListing(
   showProgressIndicator: Boolean = false,
   reportGenerationRange: Map<String, List<ReportRangeSelectionData>>,
 ) {
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -287,7 +287,7 @@ fun showFixedMonthYearListing(
         } else {
           Box(
             modifier = modifier.fillMaxSize(),
-          ) { LazyMonthList(reportGenerationRange) { onMonthSelected(it.date) } }
+          ) { LazyMonthList(reportRangeList = reportGenerationRange) { onMonthSelected(it.date) } }
         }
       }
     }
@@ -296,39 +296,64 @@ fun showFixedMonthYearListing(
 
 /**
  * LazyColumn displaying a List<ReportRangeSelectionData> with clickable items, utilizing a
- * StickyHeader A RecyclerView equivalent with rich UI populating it's items from a dataset with a
- * sticky header
+ * StickyHeader for displaying the years.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun LazyMonthList(
+  modifier: Modifier = Modifier,
   reportRangeList: Map<String, List<ReportRangeSelectionData>>,
   selectedMonth: (ReportRangeSelectionData) -> Unit
 ) {
-
   LazyColumn {
     reportRangeList.forEach { (year, monthList) ->
       stickyHeader {
-        Row(Modifier.fillMaxWidth().background(color = SearchHeaderColor)) {
-          Text(
-            text = year,
-            fontSize = 14.sp,
-            color = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier.padding(8.dp).weight(0.85f)
-          )
+        Row(
+          modifier = modifier.fillMaxWidth().background(color = SearchHeaderColor).padding(16.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Text(text = year, fontSize = 14.sp, color = DefaultColor)
           Icon(
             Icons.Filled.KeyboardArrowDown,
             contentDescription = null,
-            tint = DefaultColor.copy(alpha = 0.7f),
-            modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
+            tint = DefaultColor.copy(alpha = 0.9f).copy(alpha = 0.7f),
           )
         }
       }
-
-      items(items = monthList, itemContent = { ListItem(data = it, selectedMonth = selectedMonth) })
+      itemsIndexed(
+        items = monthList,
+        itemContent = { index, item ->
+          ListItem(data = item, selectedMonth = selectedMonth)
+          if (index < monthList.lastIndex) Divider(color = DividerColor, thickness = 0.8.dp)
+        }
+      )
     }
+  }
+}
+
+@Composable
+private fun ListItem(
+  modifier: Modifier = Modifier,
+  data: ReportRangeSelectionData,
+  selectedMonth: (ReportRangeSelectionData) -> Unit
+) {
+  Row(
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .clickable { selectedMonth(data) }
+        .padding(16.dp)
+        .testTag(TEST_MONTH_CLICK_TAG),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Text(text = data.month, fontSize = 16.sp, style = MaterialTheme.typography.h5)
+    Icon(
+      imageVector = Icons.Filled.KeyboardArrowRight,
+      contentDescription = null,
+      tint = DefaultColor.copy(alpha = 0.7f)
+    )
   }
 }
 
@@ -350,7 +375,6 @@ fun PatientSelectionBox(
       fontSize = 18.sp,
       fontWeight = FontWeight.Bold
     )
-
     radioOptions.forEach { reportTypeData ->
       Row(verticalAlignment = Alignment.CenterVertically) {
         RadioButton(
@@ -372,7 +396,6 @@ fun PatientSelectionBox(
       }
       Spacer(modifier = modifier.size(4.dp))
     }
-
     if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
         !patientName.isNullOrEmpty()
     ) {
@@ -454,40 +477,13 @@ fun PatientSelectionIndividualPreview() {
   )
 }
 
-/** Composable function to represent a list item */
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun ListItem(data: ReportRangeSelectionData, selectedMonth: (ReportRangeSelectionData) -> Unit) {
-  Row(Modifier.fillMaxWidth().testTag(TEST_MONTH_CLICK_TAG).clickable { selectedMonth(data) }) {
-    Text(
-      data.month,
-      fontSize = 16.sp,
-      style = MaterialTheme.typography.h5,
-      modifier = Modifier.padding(12.dp).weight(0.85f)
-    )
-    Icon(
-      Icons.Filled.KeyboardArrowRight,
-      contentDescription = null,
-      tint = DefaultColor.copy(alpha = 0.7f),
-      modifier = Modifier.padding(8.dp).weight(0.15f).align(Alignment.CenterVertically)
-    )
-  }
-  Divider(color = DividerColor, thickness = 0.5.dp)
-}
-
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun FixedRangeListPreview() {
   val ranges = HashMap<String, List<ReportRangeSelectionData>>()
   val months = mutableListOf<ReportRangeSelectionData>()
-  val range =
-    ReportRangeSelectionData(
-      "March",
-      "2022",
-      "2021-12-12".getYyyMmDd(MeasureReportViewModel.MEASURE_REPORT_DATE_FORMAT)!!
-    )
+  val range = ReportRangeSelectionData("March", "2022", "2021-12-12".parseDate(SDF_YYYY_MM_DD)!!)
   months.add(range)
   months.add(range)
   months.add(range)
@@ -496,7 +492,7 @@ fun FixedRangeListPreview() {
   ranges["2021"] = months
   ranges["2020"] = months
   ranges["2019"] = months
-  showFixedMonthYearListing(
+  FixedMonthYearListing(
     screenTitle = "First ANC",
     onMonthSelected = {},
     onBackPress = {},
