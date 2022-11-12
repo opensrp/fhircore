@@ -410,14 +410,9 @@
     },
     {
       "title": "Pregnancy Outcome",
-<<<<<<< HEAD
-      "titleColor": "#000000",
-      "visible": "@{canHavePregnancyOutcome}",
-=======
       "titleColor": "@{patientTextColor}",
       "visible": "@{isPregnant}",
       "enabled": "@{patientActive}",
->>>>>>> 54e8ca1fef84b86a4a0722f7f874a93ec75d7c7d
       "actions": [
         {
           "trigger": "ON_CLICK",
