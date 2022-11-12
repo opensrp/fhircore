@@ -31,9 +31,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,6 +52,10 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
+import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.displayText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -61,15 +64,22 @@ import org.smartregister.fhircore.engine.util.extension.findPercentage
 import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.findStratumForMonth
+import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.isMonthlyReport
+import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
+import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.reportingPeriodMonthsSpan
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
+import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 import timber.log.Timber
@@ -109,11 +119,6 @@ constructor(
   val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
-
-  private val measureReportDateFormatter =
-    SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
-
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
       .read(key = SharedPreferenceKey.PRACTITIONER_ID.name, null)
@@ -127,7 +132,7 @@ constructor(
     )
 
   fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
-    val measureReportConfiguration = retrieveMeasureReportConfig(reportId)
+    val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
     return Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) {
         MeasureReportRepository(measureReportConfiguration, registerRepository)
       }
@@ -135,13 +140,14 @@ constructor(
       .cachedIn(viewModelScope)
   }
 
-  private fun retrieveMeasureReportConfig(reportId: String): MeasureReportConfiguration =
+  private fun retrieveMeasureReportConfiguration(reportId: String): MeasureReportConfiguration =
     configurationRegistry.retrieveConfiguration(
       configType = ConfigType.MeasureReport,
       configId = reportId
     )
 
-  fun onEvent(event: MeasureReportEvent) {
+  fun onEvent(event: MeasureReportEvent, selectedDate: Date? = null) {
+
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
         measureReportConfig.value = event.measureReportConfig
@@ -152,14 +158,24 @@ constructor(
             )
         )
       }
-      is MeasureReportEvent.GenerateReport -> evaluateMeasure(event.navController)
+      is MeasureReportEvent.GenerateReport -> {
+        if (selectedDate != null) {
+          reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
+          reportTypeSelectorUiState.value =
+            reportTypeSelectorUiState.value.copy(
+              startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
+            )
+        }
+        evaluateMeasure(event.navController)
+      }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
         dateRange.value = event.newDateRange
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(
-            startDate = dateRangeDateFormatter.format(Date(dateRange.value.first)),
-            endDate = dateRangeDateFormatter.format(Date(dateRange.value.second))
+            startDate = Date(dateRange.value.first).formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+            endDate = Date(dateRange.value.second).formatDate(SDF_D_MMM_YYYY_WITH_COMA)
           )
       }
       is MeasureReportEvent.OnReportTypeChanged -> {
@@ -187,7 +203,7 @@ constructor(
   }
 
   fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
-    val measureReportConfig = retrieveMeasureReportConfig(reportId)
+    val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
     patientsData.value =
       Pager(
           config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
@@ -208,16 +224,23 @@ constructor(
     // Run evaluate measure only for existing report
     if (measureReportConfig.value != null) {
       val measureUrl = measureReportConfig.value!!.url
+
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
-      // Retrieve and parse dates from this format (16 Nov, 2020) to this (2020-11-16)
+
+      // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
-        measureReportDateFormatter.format(
-          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.startDate)!!
-        )
+        reportTypeSelectorUiState
+          .value
+          .startDate
+          .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
+          ?.formatDate(SDF_YYYY_MM_DD)!!
+
       val endDateFormatted =
-        measureReportDateFormatter.format(
-          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.endDate)!!
-        )
+        reportTypeSelectorUiState
+          .value
+          .endDate
+          .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
+          ?.formatDate(SDF_YYYY_MM_DD)!!
 
       viewModelScope.launch {
         kotlin
@@ -328,7 +351,6 @@ constructor(
 
         // report group is stratifier/stratum denominator
         val denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
-
         val stratifierItems: List<List<MeasureReportIndividualResult>> =
           if (reportGroup.isMonthlyReport())
             measureReport.reportingPeriodMonthsSpan.map {
@@ -352,7 +374,8 @@ constructor(
                 )
               }
             }
-        // if each stratum evaluated to single item, display all under one group else for each add a
+        // if each stratum evaluated to single item, display all under one group else for each add
+        // a
         // separate group
         val dataList =
           if (stratifierItems.all { it.count() <= 1 }) listOf(stratifierItems.flatten())
@@ -370,18 +393,24 @@ constructor(
       .apply {
         measureReport
           .contained
-          .filter {
+          .groupBy {
             it as Observation
-            it.resourceType == ResourceType.Observation
+            it.extension
+              .flatMap { it.extension }
+              .firstOrNull { it.url == POPULATION_OBS_URL }
+              ?.value
+              ?.valueToString()
           }
-          .map { it as Observation }
-          .groupBy { it.code.coding.find { it.code.startsWith(POPULATION) }?.display }
-          .map {
-            it.key to
-              it.value
-                .distinctBy { it.code.coding.find { !it.code.startsWith(POPULATION) }?.code }
-                .count()
+          .map { it.key to it.value.map { it as Observation } }
+          .map { group ->
+            group
+              .second
+              .distinctBy { it.code.codingFirstRep.code }
+              .count { it.code.codingFirstRep.code.isNotBlank() }
+              .let { group.first to it }
           }
+          .filter { it.first?.isNotBlank() == true }
+          .distinctBy { it.first }
           .forEach {
             this.add(
               0,
@@ -391,6 +420,37 @@ constructor(
       }
   }
 
+  /** This function returns a map of year-month for all months falling in given measure period */
+  fun getReportGenerationRange(
+    reportId: String,
+    startDate: Date? = null
+  ): Map<String, List<ReportRangeSelectionData>> {
+
+    val reportConfiguration = retrieveMeasureReportConfiguration(reportId)
+    val yearMonths = mutableListOf<ReportRangeSelectionData>()
+    val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
+    var lastDate = endDate?.firstDayOfMonth()
+
+    while (lastDate!!.after(
+      startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
+    )) {
+      yearMonths.add(
+        ReportRangeSelectionData(
+          lastDate.formatDate(SDF_MMMM),
+          lastDate.formatDate(SDF_YYYY),
+          lastDate
+        )
+      )
+
+      lastDate = lastDate.plusMonths(-1)
+    }
+    return yearMonths.toList().groupBy { it.year }
+  }
+
+  /** This function lists the fixed range selection in months for the entire year */
+  fun showFixedRangeSelection(reportId: String) =
+    retrieveMeasureReportConfiguration(reportId).showFixedRangeSelection == true
+
   fun resetState() {
     reportTypeSelectorUiState.value = ReportTypeSelectorUiState()
     dateRange.value = defaultDateRangeState()
@@ -399,10 +459,9 @@ constructor(
   }
 
   companion object {
-    const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
-    const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
-    const val SUBJECT = "subject"
-    const val POPULATION = "population"
+    private const val SUBJECT = "subject"
+    private const val POPULATION = "population"
+    private const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20
   }
 }

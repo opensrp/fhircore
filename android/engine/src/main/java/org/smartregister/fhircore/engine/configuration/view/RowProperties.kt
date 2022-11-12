@@ -27,7 +27,7 @@ data class RowProperties(
   override val backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 0,
-  override val alignment: ViewAlignment = ViewAlignment.START,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
