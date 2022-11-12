@@ -111,7 +111,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
-    appMainViewModel.schedulePeriodicJobs()
+    // Setup the drawer and schedule jobs
+    appMainViewModel.run {
+      retrieveAppMainUiState()
+      schedulePeriodicJobs()
+    }
   }
 
   override fun onSync(state: State) {

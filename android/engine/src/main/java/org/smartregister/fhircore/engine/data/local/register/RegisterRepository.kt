@@ -114,12 +114,14 @@ constructor(
     // Retrieve related resources recursively
     relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
       val relatedResources =
-        searchRelatedResources(
-          resourceConfig = resourceConfig,
-          baseResourceType = baseResourceType,
-          baseResource = baseResource,
-          fhirPathExpression = resourceConfig.fhirPathExpression
-        )
+        withContext(dispatcherProvider.io()) {
+          searchRelatedResources(
+            resourceConfig = resourceConfig,
+            baseResourceType = baseResourceType,
+            baseResource = baseResource,
+            fhirPathExpression = resourceConfig.fhirPathExpression
+          )
+        }
       currentRelatedResources.addAll(relatedResources)
     }
 

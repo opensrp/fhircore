@@ -141,4 +141,8 @@
     <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
     <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
     <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="weeks">Week(s)</string>
+    <string name="days">Days(s)</string>
 </resources>

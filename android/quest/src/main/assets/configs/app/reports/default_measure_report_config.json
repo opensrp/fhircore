@@ -1,6 +1,8 @@
 {
   "appId": "app",
   "configType": "measureReport",
+  "registerDate": "2020-10-27",
+  "showFixedRangeSelection": true,
   "id": "defaultMeasureReport",
   "registerId": "patientRegister",
   "reports": [

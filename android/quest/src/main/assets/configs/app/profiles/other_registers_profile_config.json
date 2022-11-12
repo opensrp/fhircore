@@ -53,6 +53,20 @@
       ]
     },
     {
+      "name": "patientActive",
+      "condition": "true",
+      "actions": [
+        "data.put('patientActive', fhirPath.extractValue(Patient.get(0), 'Patient.active'))"
+      ]
+    },
+    {
+      "name": "patientTextColor",
+      "condition": "true",
+      "actions": [
+        "data.put('patientTextColor', Patient.active ? '#000000' : 'DefaultColor')"
+      ]
+    },
+    {
       "name": "patientIdentifier",
       "condition": "true",
       "actions": [
@@ -287,6 +301,7 @@
                     "text": "@{taskDescription}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
+                    "enabled": "@{patientActive}",
                     "actions": [
                       {
                         "trigger": "ON_CLICK",
@@ -315,8 +330,9 @@
   "overFlowMenuItems": [
     {
       "title": "Registration info",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "true",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -337,9 +353,30 @@
       ]
     },
     {
+      "title": "Pregnancy Outcome",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canHavePregnancyOutcome}",
+      "enabled": "@{patientActive}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
+            "title": "Pregnancy outcome",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "title": "Record as Sick",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "@{isChildOver2months}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -357,8 +394,9 @@
     },
     {
       "title": "Record as Sick",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "@{isChildUnder2months}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -414,8 +452,14 @@
     },
     {
       "title": "Enroll to FP",
+<<<<<<< HEAD
       "titleColor": "#000000",
       "visible": "@{isEligibleForFP}",
+=======
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canEnrollToFp}",
+      "enabled": "@{patientActive}",
+>>>>>>> 54e8ca1fef84b86a4a0722f7f874a93ec75d7c7d
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -434,8 +478,9 @@
     },
     {
       "title": "Register with Disease",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "true",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -455,7 +500,8 @@
     {
       "title": "Remove this person",
       "titleColor": "#FF0000",
-      "visible": "true",
+      "visible": "@{patientActive}",
+      "enabled": "@{patientActive}",
       "showSeparator": "true",
       "actions": [
         {

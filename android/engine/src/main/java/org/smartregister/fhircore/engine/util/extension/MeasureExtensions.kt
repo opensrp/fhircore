@@ -69,8 +69,7 @@ val MeasureReport.reportingPeriodMonthsSpan
       var currentDate = it.copy().start.firstDayOfMonth()
 
       while (currentDate.before(it.end)) {
-        yearMonths.add(currentDate.asMmmYyyy())
-
+        yearMonths.add(currentDate.formatDate(SDF_MMM_YYYY))
         currentDate = currentDate.plusMonths(1)
       }
       yearMonths.toList()
