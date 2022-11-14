@@ -43,11 +43,11 @@ class PatientExtensionTest : RobolectricTest() {
     val expectedAge = "1y"
     Assert.assertEquals(expectedAge, calculateAge(getDateFromDaysAgo(365), context))
 
-    val expectedAge2 = "1y 1m"
+    val expectedAge2 = "1y"
     // passing days value for 1y 1m 4d
     Assert.assertEquals(expectedAge2, calculateAge(getDateFromDaysAgo(399), context))
 
-    val expectedAge3 = "1y 1w"
+    val expectedAge3 = "1y"
     // passing days value for 1y 1w
     Assert.assertEquals(expectedAge3, calculateAge(getDateFromDaysAgo(372), context))
 
@@ -66,7 +66,7 @@ class PatientExtensionTest : RobolectricTest() {
     val expectedAge8 = "3d"
     Assert.assertEquals(expectedAge8, calculateAge(getDateFromDaysAgo(3), context))
 
-    val expectedAge9 = "1y 2m"
+    val expectedAge9 = "1y"
     Assert.assertEquals(expectedAge9, calculateAge(getDateFromDaysAgo(450), context))
 
     val expectedAge10 = "40y 3m"

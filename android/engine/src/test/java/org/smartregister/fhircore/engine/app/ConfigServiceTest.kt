@@ -57,22 +57,7 @@ class ConfigServiceTest : RobolectricTest() {
     sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
   }
 
-  @Test
-  fun testSchedulePlanShouldEnqueueUniquePeriodicWork() {
-    val workManager = mockk<WorkManagerImpl>()
-    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
 
-    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
-    configService.scheduleFhirTaskPlanWorker(mockk())
-
-    verify {
-      workManager.enqueueUniquePeriodicWork(
-        eq(FhirTaskPlanWorker.WORK_ID),
-        eq(ExistingPeriodicWorkPolicy.REPLACE),
-        any()
-      )
-    }
-  }
 
   @Test
   fun testProvideSyncTagsShouldHaveOrganizationId() {
