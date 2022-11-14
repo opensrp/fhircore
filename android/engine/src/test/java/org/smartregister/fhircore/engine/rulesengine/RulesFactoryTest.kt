@@ -23,9 +23,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
@@ -48,6 +52,7 @@ import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
+import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -55,12 +60,16 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.TimberRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @get:ClassRule(order = 1) val timberRuler = TimberRule()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
@@ -262,7 +271,7 @@ class RulesFactoryTest : RobolectricTest() {
     )
 
     verify {
-      rulesFactory.logWarning(
+      Timber.e(
         "jexl exception, consider checking for null before usage: e.g func != null"
       )
     }
@@ -281,7 +290,7 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify { rulesFactory.logError(exception) }
+    verify { Timber.e(exception) }
   }
 
   @Test
@@ -297,7 +306,9 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify { rulesFactory.logError("Evaluation error", exception) }
+    mockkObject(Timber::class)
+    verify { Timber.e("Evaluation error", exception) }
+    unmockkObject(Timber::class)
   }
 
   private fun populateFactsWithResources() {
