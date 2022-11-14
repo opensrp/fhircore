@@ -454,6 +454,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
       Questionnaire().apply {
+        id = "12345"
         addUseContext().apply {
           code = Coding().apply { code = "focus" }
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
@@ -462,7 +463,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      questionnaireResponse = QuestionnaireResponse(),
+      questionnaireResponse =
+        QuestionnaireResponse().apply { subject = Reference().apply { reference = "Patient/2" } },
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
@@ -491,6 +493,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val patientSlot = slot<Resource>()
     val questionnaire =
       Questionnaire().apply {
+        id = "12345"
         addUseContext().apply {
           code = Coding().apply { code = "focus" }
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
@@ -502,7 +505,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      questionnaireResponse = QuestionnaireResponse(),
+      questionnaireResponse =
+        QuestionnaireResponse().apply { subject = Reference().apply { reference = "Patient/2" } },
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
