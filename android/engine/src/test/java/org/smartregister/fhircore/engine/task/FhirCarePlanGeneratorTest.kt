@@ -142,8 +142,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
@@ -225,8 +224,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         group,
         Bundle()
@@ -287,13 +285,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapRegister =
-      structureMapUtilities
-        .parse("plans/sick-child-visit/structure-map-register.txt".readFile(), "SickChildCarePlan")
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-register.txt".readFile(),
+          "SickChildCarePlan"
+        )
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities
-        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     // coEvery { defaultRepository.create(any(),any()) } returns emptyList()
@@ -301,8 +300,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("131900") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
@@ -414,16 +412,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities
-        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
@@ -438,18 +434,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
-        resourcesSlot
-          .map { it as Task }
-          .also { Assert.assertEquals(1, it.size) }
-          .first()
-          .let {
-            Assert.assertTrue(it.status == TaskStatus.READY)
-            Assert.assertTrue(
-              it.basedOn.first().reference == plandefinition.asReference().reference
-            )
-            Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
-            Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
-          }
+        resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
+          Assert.assertTrue(it.status == TaskStatus.READY)
+          Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
+          Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
+          Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+        }
       }
   }
 
@@ -468,8 +458,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities
-        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     val createdTasksSlot = mutableListOf<Resource>()
@@ -494,8 +483,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         status = TaskStatus.READY
       }
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
@@ -555,8 +543,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
@@ -601,13 +588,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       DateType(lmp)
 
     val structureMapRegister =
-      structureMapUtilities
-        .parse("plans/anc-visit/structure-map-register.txt".readFile(), "ANCCarePlan")
+      structureMapUtilities.parse(
+          "plans/anc-visit/structure-map-register.txt".readFile(),
+          "ANCCarePlan"
+        )
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities
-        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     val resourcesSlot = mutableListOf<Resource>()
@@ -618,8 +606,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
@@ -646,8 +633,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
 
         Assert.assertEquals(
-          questionnaireResponse
-            .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+          questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!
             .answer
             .first()
             .valueDateType
@@ -765,8 +751,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator
-      .generateOrUpdateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })

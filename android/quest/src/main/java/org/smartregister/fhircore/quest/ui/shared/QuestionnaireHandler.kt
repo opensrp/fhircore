@@ -30,7 +30,7 @@ interface QuestionnaireHandler {
 
   val startForResult: ActivityResultLauncher<Intent>
 
-  fun launchQuestionnaire(
+  fun <T> launchQuestionnaire(
     context: Context,
     intentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,

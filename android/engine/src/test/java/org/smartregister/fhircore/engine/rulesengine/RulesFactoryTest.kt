@@ -24,12 +24,10 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
@@ -270,11 +268,7 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify {
-      Timber.e(
-        "jexl exception, consider checking for null before usage: e.g func != null"
-      )
-    }
+    verify { Timber.e("jexl exception, consider checking for null before usage: e.g func != null") }
   }
 
   @Test
