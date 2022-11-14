@@ -421,8 +421,7 @@ constructor(
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
 
-    while (lastDate!!.after(
-        startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD))) {
+    while (lastDate!!.after(startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD))) {
       yearMonths.add(
           ReportRangeSelectionData(
               lastDate.formatDate(SDF_MMMM), lastDate.formatDate(SDF_YYYY), lastDate))
@@ -445,7 +444,7 @@ constructor(
 
   companion object {
     private const val SUBJECT = "subject"
-    private const val POPULATION = "population"
+    const val POPULATION = "population"
     private const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20
   }
