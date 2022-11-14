@@ -24,6 +24,7 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import timber.log.Timber
 
 class WorkManagerRule : TestRule {
 
@@ -37,11 +38,7 @@ class WorkManagerRule : TestRule {
             .setExecutor(SynchronousExecutor())
             .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-        try {
-          base.evaluate()
-        } finally {
-          Log.d("WorkManagerRule", "Do some teardown")
-        }
+        base.evaluate()
       }
     }
   }
