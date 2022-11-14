@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -311,7 +312,7 @@ constructor(
      * ago, 5 months ago, 3 years ago etc)
      */
     fun convertDateForDifference(inputDate: Date): String {
-      return PrettyTime(Locale.ENGLISH).format(inputDate)
+      return inputDate.prettifyDate()
     }
 
     /**
@@ -320,7 +321,7 @@ constructor(
      * 2022-02 or 2022
      */
     fun convertDateForDifference(inputDateString: String): String {
-      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
+      return PrettyTime(Locale.getDefault()).format(DateTime(inputDateString).toDate())
     }
 
     /**
@@ -334,8 +335,8 @@ constructor(
       inputDateFormat: String,
       expectedFormat: String = "E, MMM dd yyyy"
     ): String {
-      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run {
-        format(SimpleDateFormat(inputDateFormat, Locale.ENGLISH).parse(inputDate))
+      return SimpleDateFormat(expectedFormat, Locale.getDefault()).run {
+        format(SimpleDateFormat(inputDateFormat, Locale.getDefault()).parse(inputDate))
       }
     }
 
@@ -345,7 +346,7 @@ constructor(
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
-      return SimpleDateFormat(expectedFormat, Locale.ENGLISH).run { format(date) }
+      return SimpleDateFormat(expectedFormat, Locale.getDefault()).run { format(date) }
     }
   }
 
