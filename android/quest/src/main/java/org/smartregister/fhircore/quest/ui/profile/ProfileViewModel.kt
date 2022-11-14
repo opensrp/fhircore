@@ -17,34 +17,31 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
 
 @HiltViewModel
@@ -54,30 +51,33 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
   val launchQuestionnaireLiveData = MutableLiveData(false)
-
   val profileUiState = mutableStateOf(ProfileUiState())
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+  val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
-  fun retrieveProfileUiState(
+  suspend fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null
   ) {
     if (resourceId.isNotEmpty()) {
-      viewModelScope.launch {
-        profileUiState.value =
-          ProfileUiState(
-            resourceData =
-              registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig),
-            profileConfiguration = retrieveProfileConfiguration(profileId),
-          )
-      }
+      val resourceData =
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+      profileUiState.value =
+        ProfileUiState(
+          resourceData = resourceData,
+          profileConfiguration = retrieveProfileConfiguration(profileId),
+          snackBarTheme = applicationConfiguration.snackBarTheme
+        )
     }
   }
 
@@ -171,27 +171,7 @@ constructor(
     }
   }
 
-  fun completeTask(
-    navController: NavController,
-    profileId: String,
-    resourceId: String,
-    resourceConfig: FhirResourceConfig?,
-    questionnaireSubmission: QuestionnaireSubmission
-  ) {
-    questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
-      viewModelScope.launch {
-        withContext(dispatcherProvider.io()) {
-          fhirCarePlanGenerator.completeTask(taskId.extractLogicalIdUuid())
-        }
-        navController.navigate(
-          MainNavigationScreen.Profile.route,
-          bundleOf(
-            NavigationArg.PROFILE_ID to profileId,
-            NavigationArg.RESOURCE_ID to resourceId,
-            NavigationArg.RESOURCE_CONFIG to resourceConfig
-          )
-        )
-      }
-    }
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 }

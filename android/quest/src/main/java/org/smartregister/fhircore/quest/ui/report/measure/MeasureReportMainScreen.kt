@@ -32,6 +32,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 
 @Composable
 fun MeasureReportMainScreen(
+  reportId: String,
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
@@ -47,7 +48,7 @@ fun MeasureReportMainScreen(
     composable(MeasureReportNavigationScreen.MeasureReportList.route) {
       MeasureReportListScreen(
         mainNavController = mainNavController,
-        dataList = measureReportViewModel.reportMeasuresList(),
+        dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
             MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
@@ -70,6 +71,7 @@ fun MeasureReportMainScreen(
     ) { stackEntry ->
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
+        reportId = reportId,
         screenTitle = screenTitle,
         navController = navController,
         measureReportViewModel = measureReportViewModel
@@ -79,6 +81,7 @@ fun MeasureReportMainScreen(
     // Page for selecting patient to evaluate their measure
     composable(MeasureReportNavigationScreen.PatientsList.route) {
       MeasureReportPatientsScreen(
+        reportId = reportId,
         navController = navController,
         measureReportViewModel = measureReportViewModel
       )
@@ -87,6 +90,7 @@ fun MeasureReportMainScreen(
     // Page for displaying measure report results
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
+        reportId = reportId,
         navController = navController,
         measureReportViewModel = measureReportViewModel
       )

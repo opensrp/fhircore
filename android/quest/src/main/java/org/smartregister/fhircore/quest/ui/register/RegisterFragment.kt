@@ -35,7 +35,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.State
@@ -49,11 +51,14 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
+import org.smartregister.fhircore.quest.util.extensions.showSnackBar
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
-class RegisterFragment : Fragment(), OnSyncListener {
+class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmission?> {
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
@@ -70,9 +75,16 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
     syncListenerManager.registerSyncListener(this, lifecycle)
+
+    with(registerFragmentArgs) {
+      lifecycleScope.launchWhenCreated {
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+      }
+    }
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
+        val appConfig = appMainViewModel.applicationConfiguration
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
@@ -81,18 +93,22 @@ class RegisterFragment : Fragment(), OnSyncListener {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
           }
         }
-        AppTheme {
-          // Retrieve data when Lifecycle state is resuming
-          val lifecycleEvent = rememberLifecycleEvent()
-          LaunchedEffect(lifecycleEvent) {
-            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
-              appMainViewModel.retrieveAppMainUiState()
-              with(registerFragmentArgs) {
-                registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
-              }
-            }
-          }
 
+        // Close side menu (drawer) when activity is not in foreground
+        val lifecycleEvent = rememberLifecycleEvent()
+        LaunchedEffect(lifecycleEvent) {
+          if (lifecycleEvent == Lifecycle.Event.ON_PAUSE) scaffoldState.drawerState.close()
+        }
+
+        LaunchedEffect(Unit) {
+          registerViewModel.snackBarStateFlow.showSnackBar(
+            scaffoldState = scaffoldState,
+            resourceData = null,
+            navController = findNavController()
+          )
+        }
+
+        AppTheme {
           val pagingItems =
             registerViewModel
               .paginatedRegisterData
@@ -118,6 +134,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 navController = navController,
                 mainNavigationScreens = MainNavigationScreen.appScreens
               )*/
+            },
+            snackbarHost = { snackBarHostState ->
+              SnackBarMessage(
+                snackBarHostState = snackBarHostState,
+                backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
+                actionColorHex = appConfig.snackBarTheme.actionTextColor,
+                contentColorHex = appConfig.snackBarTheme.messageTextColor
+              )
             }
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
@@ -137,6 +161,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
+  override fun onStop() {
+    super.onStop()
+    registerViewModel.searchText.value = "" // Clear the search term
+  }
+
   override fun onSync(state: State) {
     if (state is State.Finished || state is State.Failed) {
       with(registerFragmentArgs) {
@@ -145,6 +174,42 @@ class RegisterFragment : Fragment(), OnSyncListener {
           pagesDataCache.clear()
           retrieveRegisterUiState(registerId, screenTitle)
         }
+      }
+    }
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+  }
+
+  /**
+   * Overridden method for [Observer] class used to address [QuestionnaireSubmission] triggered
+   * while performing registration . A new [Observer] is needed for every fragment since the
+   * [AppMainViewModel]'s questionnaireSubmissionLiveData outlives the Fragment. Cannot use Kotlin
+   * Observer { } as it is optimized to a singleton resulting to an exception using an observer from
+   * a detached fragment.
+   */
+  override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
+    lifecycleScope.launch {
+      questionnaireSubmission?.let {
+        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+
+        // Always refresh data when registration happens
+        registerViewModel.paginateRegisterData(
+          registerId = registerFragmentArgs.registerId,
+          loadAll = false,
+          clearCache = true
+        )
+        appMainViewModel.retrieveAppMainUiState()
+
+        // Display SnackBar message
+        val (questionnaireConfig, _) = questionnaireSubmission
+        questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+          registerViewModel.emitSnackBarState(snackBarMessageConfig)
+        }
+
+        // Reset activity livedata
+        appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
   }

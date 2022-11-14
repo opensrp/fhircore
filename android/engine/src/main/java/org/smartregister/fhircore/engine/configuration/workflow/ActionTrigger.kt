@@ -23,9 +23,6 @@ enum class ActionTrigger {
    */
   ON_CLICK,
 
-  /** An action triggered when the user exits their current screen */
-  ON_CLOSE,
-
   /** Action that is triggered to count register items */
   ON_COUNT
 }

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.domain.model
 
-import kotlinx.serialization.Serializable
+import androidx.compose.material.SnackbarDuration
 
-@Serializable
-data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = ""
-)
+@kotlinx.serialization.Serializable
+data class SnackBarMessageConfig(
+  val message: String = "",
+  val actionLabel: String? = null,
+  val duration: SnackbarDuration = SnackbarDuration.Short,
+  val snackBarActions: List<ActionConfig> = emptyList(),
+) : java.io.Serializable

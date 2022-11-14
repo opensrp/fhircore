@@ -29,7 +29,6 @@ import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -112,7 +111,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
-    appMainViewModel.schedulePeriodicJobs()
+    // Setup the drawer and schedule jobs
+    appMainViewModel.run {
+      retrieveAppMainUiState()
+      schedulePeriodicJobs()
+    }
   }
 
   override fun onSync(state: State) {
@@ -169,11 +172,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
         QuestionnaireConfig?
 
     if (questionnaireConfig != null && questionnaireResponse != null) {
-      if (questionnaireConfig.taskId?.startsWith(ResourceType.Task.name) == true) {
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(
-          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-        )
-      }
+      appMainViewModel.questionnaireSubmissionLiveData.postValue(
+        QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+      )
     }
   }
 }

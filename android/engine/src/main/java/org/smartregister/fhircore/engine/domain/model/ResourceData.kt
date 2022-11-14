@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import androidx.compose.runtime.Stable
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
 
@@ -29,6 +30,7 @@ import org.hl7.fhir.r4.model.Resource
  * For example. For every Patient resource we return also their Immunization and Observation
  * resources
  */
+@Stable
 data class ResourceData(
   val baseResource: Resource,
   val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
@@ -39,6 +41,7 @@ data class ResourceData(
  * @property resource A valid FHIR resource
  * @property relatedResources Nested list of [RelatedResourceData]
  */
+@Stable
 data class RelatedResourceData(
   val resource: Resource,
   val relatedResources: LinkedList<RelatedResourceData> = LinkedList()

@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -84,7 +85,9 @@ fun ActionableButton(
           backgroundColor =
             buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor =
-            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledContentColor = DefaultColor.copy(alpha = 0.9f),
         ),
       modifier =
         modifier
@@ -155,6 +158,7 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
     ServiceStatus.COMPLETED -> DefaultColor
+    ServiceStatus.IN_PROGRESS -> WarningColor
   }
 }
 
@@ -173,7 +177,7 @@ fun ActionableButtonPreview() {
     buttonProperties =
       ButtonProperties(
         visible = "true",
-        status = ServiceStatus.DUE.name,
+        status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
         smallSized = true,
       ),
@@ -192,7 +196,7 @@ fun DisabledActionableButtonPreview() {
         status = ServiceStatus.COMPLETED.name,
         text = "ANC Visit",
         smallSized = true,
-        enabled = "true"
+        enabled = "false"
       ),
     resourceData = ResourceData(Patient()),
     navController = rememberNavController()

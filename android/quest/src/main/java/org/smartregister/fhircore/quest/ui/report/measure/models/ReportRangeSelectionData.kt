@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.quest.ui.report.measure.models
 
-import kotlinx.serialization.Serializable
+import java.util.Date
 
-@Serializable
-data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = ""
-)
+data class ReportRangeSelectionData(val month: String, val year: String, val date: Date)

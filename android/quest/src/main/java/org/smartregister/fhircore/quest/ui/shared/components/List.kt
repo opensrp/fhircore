@@ -25,9 +25,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -51,7 +53,7 @@ fun List(
   navController: NavController,
   viewModel: ViewRendererViewModel = hiltViewModel(),
 ) {
-  val showPlaceholder = remember { mutableStateOf(true) }
+  var showPlaceholder by remember { mutableStateOf(true) }
   val resources = resourceData.relatedResourcesMap[viewProperties.baseResource]
   Column(
     modifier =
@@ -66,38 +68,39 @@ fun List(
   ) {
     resources?.forEachIndexed { index, resource ->
       // Retrieve available related resources proceed to compute rules
-      val listItemResourceData =
-        produceState(ResourceData(resource)) {
-            val newRelatedResources =
-              viewProperties.relatedResources.associate {
-                Pair(
-                  it.resourceType,
-                  viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
-                    resource = resource,
-                    relatedResourceType = it.resourceType,
-                    fhirPathExpression = it.fhirPathExpression,
-                    resourceData = resourceData
-                  )
-                )
-              }
-            val computedValuesMap =
-              viewModel.rulesFactory.fireRule(
-                ruleConfigs = viewProperties.registerCard.rules,
-                baseResource = resource,
-                relatedResourcesMap = newRelatedResources
-              )
+      var listItemResourceData by remember { mutableStateOf(ResourceData(resource)) }
 
-            showPlaceholder.value = false
-            value = ResourceData(resource, newRelatedResources, computedValuesMap)
+      SideEffect {
+        val newRelatedResources =
+          viewProperties.relatedResources.associate {
+            Pair(
+              it.resourceType,
+              viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
+                resource = resource,
+                relatedResourceType = it.resourceType,
+                fhirPathExpression = it.fhirPathExpression,
+                resourceData = resourceData
+              )
+            )
           }
-          .value
+        val listComputedValuesMap =
+          viewModel.rulesFactory.fireRule(
+            ruleConfigs = viewProperties.registerCard.rules,
+            baseResource = resource,
+            relatedResourcesMap = newRelatedResources
+          )
+        showPlaceholder = false
+        // Include all the previously computed values from the provided resourceData for re-use
+        val allComputedValues = listComputedValuesMap.plus(resourceData.computedValuesMap)
+        listItemResourceData = ResourceData(resource, newRelatedResources, allComputedValues)
+      }
 
       Column {
         Spacer(modifier = modifier.height(5.dp))
         Box(
           modifier =
             modifier.placeholder(
-              visible = showPlaceholder.value,
+              visible = showPlaceholder,
               highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White),
               color = DefaultColor.copy(alpha = 0.15f),
               shape = RoundedCornerShape(4.dp)
@@ -110,7 +113,7 @@ fun List(
           )
         }
         Spacer(modifier = modifier.height(5.dp))
-        if ((index < resources.lastIndex) && viewProperties.showDivider)
+        if (index < resources.lastIndex && viewProperties.showDivider)
           Divider(color = DividerColor, thickness = 0.5.dp)
       }
     }

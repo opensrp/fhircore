@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = ""
-)
+data class SnackBarThemeConfig(
+  val messageTextColor: String = "#FFFFFF",
+  val actionTextColor: String = "#FFE400",
+  val backgroundColor: String = "#2c2c2c"
+) : java.io.Serializable

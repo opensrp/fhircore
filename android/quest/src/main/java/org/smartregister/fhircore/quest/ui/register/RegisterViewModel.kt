@@ -29,7 +29,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -38,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -53,6 +56,9 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
+
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+  val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
   val registerUiState = mutableStateOf(RegisterUiState())
 
@@ -71,7 +77,17 @@ constructor(
 
   private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
 
-  fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
+  /**
+   * This function paginates the register data. An optional [clearCache] resets the data in the
+   * cache (this is necessary after a questionnaire has been submitted to refresh the register with
+   * new/updated data).
+   */
+  fun paginateRegisterData(
+    registerId: String,
+    loadAll: Boolean = false,
+    clearCache: Boolean = false
+  ) {
+    if (clearCache) pagesDataCache.clear()
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
@@ -162,7 +178,7 @@ constructor(
 
         registerUiState.value =
           RegisterUiState(
-            screenTitle = screenTitle,
+            screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -181,5 +197,9 @@ constructor(
           )
       }
     }
+  }
+
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 }
