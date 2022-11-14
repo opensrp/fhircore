@@ -1,0 +1,24 @@
+{
+  "unversionedId": "apps/smart-vax-certs",
+  "id": "apps/smart-vax-certs",
+  "title": "OpenSRP FHIR Core Smart Vaccination Certificates",
+  "description": "OpenSRP FHIR Core for Smart Vaccination Certificates for Android implements the Smart Certificates protocol for recording, storing, validation, and generating certificates verifying vaccination status. All the Patient data is eventually going to be mapped as an  International Patient Summary (IPS) document, i.e. as an electronic health record extract containing essential healthcare information about a subject of care. As specified in EN 17269 and ISO/DIS 27269, it is designed to support 'unplanned, cross border care', but it is not limited to this. It is intended to be international by providing a generic solutions for global application beyond a particular region or country.",
+  "source": "@site/docs/apps/smart-vax-certs.md",
+  "sourceDirName": "apps",
+  "slug": "/apps/smart-vax-certs",
+  "permalink": "/apps/smart-vax-certs",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/apps/smart-vax-certs.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "README",
+    "permalink": "/"
+  },
+  "next": {
+    "title": "FHIR Core Configuration",
+    "permalink": "/configurations/"
+  }
+}

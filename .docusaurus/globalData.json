@@ -1,0 +1,38 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "in-app-reporting",
+          "docs": [
+            {
+              "id": "in-app-reporting",
+              "path": "/in-app-reporting",
+              "sidebar": "defaultSidebar"
+            },
+            {
+              "id": "testing-resources",
+              "path": "/testing-resources",
+              "sidebar": "defaultSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "defaultSidebar": {
+              "link": {
+                "path": "/in-app-reporting",
+                "label": "in-app-reporting"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

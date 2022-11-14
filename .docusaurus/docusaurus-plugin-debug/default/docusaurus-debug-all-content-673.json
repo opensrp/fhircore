@@ -1,0 +1,86 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "loadedVersions": [
+        {
+          "versionName": "current",
+          "label": "Next",
+          "banner": null,
+          "badge": false,
+          "noIndex": false,
+          "className": "docs-version-current",
+          "path": "/",
+          "tagsPath": "/tags",
+          "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs",
+          "editUrlLocalized": "https://github.com/opensrp/fhircore/tree/main/docs/i18n/en/docusaurus-plugin-content-docs/current",
+          "isLast": true,
+          "routePriority": -1,
+          "contentPath": "/home/smutuku/Documents/Github/fhircore/docs",
+          "contentPathLocalized": "/home/smutuku/Documents/Github/fhircore/i18n/en/docusaurus-plugin-content-docs/current",
+          "docs": [
+            {
+              "unversionedId": "in-app-reporting",
+              "id": "in-app-reporting",
+              "title": "in-app-reporting",
+              "description": "In App Reporting",
+              "source": "@site/docs/in-app-reporting.md",
+              "sourceDirName": ".",
+              "slug": "/in-app-reporting",
+              "permalink": "/in-app-reporting",
+              "draft": false,
+              "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/in-app-reporting.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {},
+              "sidebar": "defaultSidebar",
+              "next": {
+                "title": "Testing FHIR Resources",
+                "permalink": "/testing-resources"
+              }
+            },
+            {
+              "unversionedId": "testing-resources",
+              "id": "testing-resources",
+              "title": "Testing FHIR Resources",
+              "description": "Step 1 - Creating Patient Resources",
+              "source": "@site/docs/testing-resources.md",
+              "sourceDirName": ".",
+              "slug": "/testing-resources",
+              "permalink": "/testing-resources",
+              "draft": false,
+              "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/testing-resources.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {},
+              "sidebar": "defaultSidebar",
+              "previous": {
+                "title": "in-app-reporting",
+                "permalink": "/in-app-reporting"
+              }
+            }
+          ],
+          "drafts": [],
+          "sidebars": {
+            "defaultSidebar": [
+              {
+                "type": "doc",
+                "id": "in-app-reporting"
+              },
+              {
+                "type": "doc",
+                "id": "testing-resources"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "docusaurus-plugin-content-pages": {
+    "default": null
+  },
+  "docusaurus-plugin-debug": {},
+  "docusaurus-theme-classic": {},
+  "docusaurus-bootstrap-plugin": {},
+  "docusaurus-mdx-fallback-plugin": {}
+}
