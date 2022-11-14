@@ -124,12 +124,18 @@ fun DateType.format(): String = value.formatDate(SDF_YYYY_MM_DD)
 fun calculateAge(date: Date, context: Context): String {
   val theDate: LocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
   val period = Period.between(theDate, LocalDate.now())
+  val years = period.years
+  val months = period.months
   val weeks = period.days / 7
   val days = period.days % 7
+
   return when {
-    period.years > 0 -> context.abbreviateString(R.string.year, period.years)
-    period.months > 0 ->
-      context.abbreviateString(R.string.month, period.months) +
+    years in 1..4 ->
+      context.abbreviateString(R.string.year, years) +
+        context.abbreviateString(R.string.month, months)
+    years >= 5 -> context.abbreviateString(R.string.year, years)
+    months > 0 ->
+      context.abbreviateString(R.string.month, months) +
         context.abbreviateString(R.string.weeks, weeks)
     weeks > 0 ->
       context.abbreviateString(R.string.weeks, weeks) +
