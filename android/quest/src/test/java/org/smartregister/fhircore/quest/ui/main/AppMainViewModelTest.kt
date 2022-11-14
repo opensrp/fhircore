@@ -24,6 +24,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import com.google.gson.Gson
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.data.remote.auth.FhirOAuthService
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -61,6 +63,7 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.QuestConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -79,6 +82,12 @@ class AppMainViewModelTest : RobolectricTest() {
   private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+
+  private val fhirOAuthService: FhirOAuthService = mockk(relaxed = true)
+
+  var fhirEngine: FhirEngine = mockk()
+
+  @Inject lateinit var configService: QuestConfigService
 
   private val secureSharedPreference: SecureSharedPreference = mockk()
 
@@ -109,7 +118,11 @@ class AppMainViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          oAuthService = fhirOAuthService,
+          fhirEngine = fhirEngine,
+          configService = configService,
+          defaultRepository = mockk()
         )
       )
 
