@@ -19,11 +19,17 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.datacapture.AttachmentResolver
 import com.google.android.fhir.get
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Binary
+
+interface AttachmentResolver {
+
+  suspend fun resolveBinaryResource(uri: String): Binary?
+
+  suspend fun resolveImageUrl(uri: String): Bitmap?
+}
 
 @Singleton
 class ReferenceAttachmentResolver

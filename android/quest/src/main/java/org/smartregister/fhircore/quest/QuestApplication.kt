@@ -89,8 +89,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
-    configuration =
-      configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+    configuration = configuration ?: DataCaptureConfig()
     return configuration as DataCaptureConfig
   }
 
