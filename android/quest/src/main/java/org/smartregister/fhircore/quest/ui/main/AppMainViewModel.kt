@@ -39,6 +39,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -55,7 +56,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.data.remote.auth.FhirOAuthService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -143,6 +143,7 @@ constructor(
         .filter {
           it.key == ResourceType.Questionnaire.name ||
             it.key == ResourceType.StructureMap.name ||
+            it.key == ResourceType.List.name ||
             it.key == ResourceType.Library.name
         }
         .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
@@ -155,12 +156,32 @@ constructor(
           Timber.d("Fetching config details $resourceUrlPath")
 
           oAuthService.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent ->
-            defaultRepository.create(false, bundleEntryComponent.resource)
-            Timber.d("Fetched and processed config details $resourceUrlPath")
+            when (bundleEntryComponent.resource) {
+              is ListResource -> {
+                val list = bundleEntryComponent.resource as ListResource
+                list.entry.forEach { listEntryComponent ->
+                  /*Here we extract the keys and ids for the resources listed in
+                  the List resource */
+                  val resourceKey = listEntryComponent.item.reference.substringBeforeLast("/")
+                  val resourceId = listEntryComponent.item.reference.substringAfterLast("/")
+                  /*Using the extracted keys and values we make a server call to fetch those resources */
+                  val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                  oAuthService.getResource(listResourceUrlPath).entry.forEach {
+                    listEntryResourceBundle ->
+                    /*Finally these resources and downloaded and saved */
+                    defaultRepository.create(false, listEntryResourceBundle.resource)
+                    Timber.e("listEntryResource Processed ${listEntryResourceBundle.resource}")
+                  }
+                }
+                Timber.d("Fetched and processed config details $resourceUrlPath")
+              }
+              else -> {
+                defaultRepository.create(false, bundleEntryComponent.resource)
+                Timber.d("Fetched and processed config details $resourceUrlPath")
+              }
+            }
           }
         }
-      // Timber.e(res.toString())
-      // Timber.e(compositionResource.toString())
     }
   }
 
@@ -205,7 +226,8 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished, is State.Failed -> {
+          is State.Finished,
+          is State.Failed -> {
             if (event.state is State.Finished) {
               sharedPreferencesHelper.write(
                 SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
@@ -283,14 +305,17 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }.forEach { menuConfig ->
-      val countAction =
-        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
-      if (countAction != null) {
-        countsMap[countAction.id ?: menuConfig.id] =
-          registerRepository.countRegisterData(menuConfig.id)
+    this.filter { it.showCount }
+      .forEach { menuConfig ->
+        val countAction =
+          menuConfig.actions?.find { actionConfig ->
+            actionConfig.trigger == ActionTrigger.ON_COUNT
+          }
+        if (countAction != null) {
+          countsMap[countAction.id ?: menuConfig.id] =
+            registerRepository.countRegisterData(menuConfig.id)
+        }
       }
-    }
   }
 
   private fun loadCurrentLanguage() =
