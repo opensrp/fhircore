@@ -170,14 +170,13 @@ constructor(
                     listEntryResourceBundle ->
                     /*Finally these resources and downloaded and saved */
                     defaultRepository.create(false, listEntryResourceBundle.resource)
-                    Timber.e("listEntryResource Processed ${listEntryResourceBundle.resource}")
+                    Timber.d("Fetched and processed list reference $listResourceUrlPath")
                   }
                 }
-                Timber.d("Fetched and processed config details $resourceUrlPath")
               }
               else -> {
                 defaultRepository.create(false, bundleEntryComponent.resource)
-                Timber.d("Fetched and processed config details $resourceUrlPath")
+                Timber.d("Fetched and processed resources $resourceUrlPath")
               }
             }
           }
@@ -226,8 +225,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished,
-          is State.Failed -> {
+          is State.Finished, is State.Failed -> {
             if (event.state is State.Finished) {
               sharedPreferencesHelper.write(
                 SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
@@ -305,17 +303,14 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }
-      .forEach { menuConfig ->
-        val countAction =
-          menuConfig.actions?.find { actionConfig ->
-            actionConfig.trigger == ActionTrigger.ON_COUNT
-          }
-        if (countAction != null) {
-          countsMap[countAction.id ?: menuConfig.id] =
-            registerRepository.countRegisterData(menuConfig.id)
-        }
+    this.filter { it.showCount }.forEach { menuConfig ->
+      val countAction =
+        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
+      if (countAction != null) {
+        countsMap[countAction.id ?: menuConfig.id] =
+          registerRepository.countRegisterData(menuConfig.id)
       }
+    }
   }
 
   private fun loadCurrentLanguage() =
