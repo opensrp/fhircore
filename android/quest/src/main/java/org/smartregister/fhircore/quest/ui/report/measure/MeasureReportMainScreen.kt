@@ -32,68 +32,61 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 
 @Composable
 fun MeasureReportMainScreen(
-  reportId: String,
-  mainNavController: NavController,
-  measureReportViewModel: MeasureReportViewModel
+    reportId: String,
+    mainNavController: NavController,
+    measureReportViewModel: MeasureReportViewModel
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
 
   NavHost(
-    navController = navController,
-    startDestination = MeasureReportNavigationScreen.MeasureReportList.route
-  ) {
+      navController = navController,
+      startDestination = MeasureReportNavigationScreen.MeasureReportList.route) {
 
-    // Display list of supported measures for reporting
-    composable(MeasureReportNavigationScreen.MeasureReportList.route) {
-      MeasureReportListScreen(
-        mainNavController = mainNavController,
-        dataList = measureReportViewModel.reportMeasuresList(reportId),
-        onReportMeasureClicked = { measureReportRowData ->
-          measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
-          )
+        // Display list of supported measures for reporting
+        composable(MeasureReportNavigationScreen.MeasureReportList.route) {
+          MeasureReportListScreen(
+              mainNavController = mainNavController,
+              dataList = measureReportViewModel.reportMeasuresList(reportId),
+              onReportMeasureClicked = { measureReportRowData ->
+                measureReportViewModel.onEvent(
+                    MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController))
+              })
         }
-      )
-    }
-    // Choose report type; for either individual or population
-    composable(
-      route =
-        MeasureReportNavigationScreen.ReportTypeSelector.route +
-          NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
-      arguments =
-        listOf(
-          navArgument(NavigationArg.SCREEN_TITLE) {
-            type = NavType.StringType
-            defaultValue = ""
-          }
-        )
-    ) { stackEntry ->
-      val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
-      ReportTypeSelectorScreen(
-        reportId = reportId,
-        screenTitle = screenTitle,
-        navController = navController,
-        measureReportViewModel = measureReportViewModel
-      )
-    }
+        // Choose report type; for either individual or population
+        composable(
+            route =
+                MeasureReportNavigationScreen.ReportTypeSelector.route +
+                    NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
+            arguments =
+                listOf(
+                    navArgument(NavigationArg.SCREEN_TITLE) {
+                      type = NavType.StringType
+                      defaultValue = ""
+                    })) { stackEntry ->
+              val screenTitle: String =
+                  stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
+              ReportTypeSelectorScreen(
+                  reportId = reportId,
+                  screenTitle = screenTitle,
+                  navController = navController,
+                  measureReportViewModel = measureReportViewModel)
+            }
 
-    // Page for selecting patient to evaluate their measure
-    composable(MeasureReportNavigationScreen.PatientsList.route) {
-      MeasureReportPatientsScreen(
-        reportId = reportId,
-        navController = navController,
-        measureReportViewModel = measureReportViewModel
-      )
-    }
+        // Page for selecting patient to evaluate their measure
+        composable(MeasureReportNavigationScreen.PatientsList.route) {
+          MeasureReportPatientsScreen(
+              reportId = reportId,
+              navController = navController,
+              measureReportViewModel = measureReportViewModel)
+        }
 
-    // Page for displaying measure report results
-    composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
-      MeasureReportResultScreen(
-        reportId = reportId,
-        navController = navController,
-        measureReportViewModel = measureReportViewModel
-      )
-    }
-  }
+        // Page for displaying measure report results
+        composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
+          MeasureReportResultScreen(
+              reportId = reportId,
+              navController = navController,
+              measureReportViewModel = measureReportViewModel)
+        }
+      }
 }
