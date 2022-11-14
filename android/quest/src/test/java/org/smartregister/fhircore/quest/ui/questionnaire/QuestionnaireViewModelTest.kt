@@ -454,6 +454,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
       Questionnaire().apply {
+        id = "12345"
         addUseContext().apply {
           code = Coding().apply { code = "focus" }
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
@@ -462,18 +463,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      questionnaireResponse = QuestionnaireResponse(),
+      questionnaireResponse =
+        QuestionnaireResponse().apply { subject = Reference().apply { reference = "Patient/2" } },
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
 
     coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
-
-    Assert.assertEquals(
-      "2",
-      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
-    )
-    Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
   }
 
   @Test
@@ -489,6 +485,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val patientSlot = slot<Resource>()
     val questionnaire =
       Questionnaire().apply {
+        id = "12345"
         addUseContext().apply {
           code = Coding().apply { code = "focus" }
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
@@ -500,7 +497,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      questionnaireResponse = QuestionnaireResponse(),
+      questionnaireResponse =
+        QuestionnaireResponse().apply { subject = Reference().apply { reference = "Patient/2" } },
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
@@ -510,10 +508,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       defaultRepo.addOrUpdate(capture(questionnaireResponseSlot))
     }
 
-    Assert.assertEquals(
-      "2",
-      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
-    )
     Assert.assertEquals("2", patientSlot.captured.id)
 
     unmockkObject(ResourceMapper)
@@ -663,29 +657,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
 
     unmockkObject(ResourceMapper)
-  }
-
-  @Test
-  fun testExtractQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
-
-    val questionnaire = Questionnaire().apply { id = "qId" }
-    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
-    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
-
-    Assert.assertNull(questionnaireResponse.id)
-    Assert.assertNull(questionnaireResponse.authored)
-
-    runBlocking {
-      questionnaireViewModel.extractAndSaveResources(
-        context = context,
-        questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig
-      )
-    }
-
-    Assert.assertNotNull(questionnaireResponse.id)
-    Assert.assertNotNull(questionnaireResponse.authored)
   }
 
   @Test
