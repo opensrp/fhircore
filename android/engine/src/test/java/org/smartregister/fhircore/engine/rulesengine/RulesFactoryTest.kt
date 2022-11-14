@@ -210,6 +210,42 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun shouldFormatDateWithExpectedFormat() {
+    val inputDate = Date("2021/10/10")
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals("10-10-2021", rulesEngineService.formatDate(inputDate, expectedFormat))
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals("10 2021", rulesEngineService.formatDate(inputDate, expectedFormat2))
+
+    Assert.assertEquals("Sun, Oct 10 2021", rulesEngineService.formatDate(inputDate))
+  }
+
+  @Test
+  fun shouldInputDateStringWithExpectedFormat() {
+    val inputDateString = "2021-10-10"
+    val inputDateFormat = "yyyy-MM-dd"
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "10-10-2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals(
+      "10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat2)
+    )
+
+    Assert.assertEquals(
+      "Sun, Oct 10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat)
+    )
+  }
+
+  @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
     val resources =

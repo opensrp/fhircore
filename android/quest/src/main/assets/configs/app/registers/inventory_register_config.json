@@ -63,6 +63,13 @@
         ]
       },
       {
+        "name": "lastUpdatedDate",
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+        ]
+      },
+      {
         "name": "status",
         "condition": "true",
         "actions": [
@@ -84,7 +91,7 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{lastUpdated}",
+                "primaryText": "@{lastUpdatedDate}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
               }
