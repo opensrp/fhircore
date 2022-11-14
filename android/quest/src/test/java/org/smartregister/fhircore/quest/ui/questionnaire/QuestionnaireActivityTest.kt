@@ -387,7 +387,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() {
     val questionnaire = buildQuestionnaireWithConstraints()
 
-    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(resource = any()) } just runs
     every { questionnaireFragment.getQuestionnaireResponse() } returns
       QuestionnaireResponse().apply {
         addItem().apply { linkId = "1" }
