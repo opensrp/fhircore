@@ -1,0 +1,24 @@
+{
+  "unversionedId": "configurations/application-config",
+  "id": "configurations/application-config",
+  "title": "application-config",
+  "description": "",
+  "source": "@site/docs/configurations/application-config.md",
+  "sourceDirName": "configurations",
+  "slug": "/configurations/application-config",
+  "permalink": "/configurations/application-config",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/configurations/application-config.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "FHIR Core Configuration",
+    "permalink": "/configurations/"
+  },
+  "next": {
+    "title": "composition-config",
+    "permalink": "/configurations/composition-config"
+  }
+}

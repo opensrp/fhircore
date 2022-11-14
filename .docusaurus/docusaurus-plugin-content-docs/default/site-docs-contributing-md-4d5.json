@@ -1,0 +1,24 @@
+{
+  "unversionedId": "contributing",
+  "id": "contributing",
+  "title": "How to Contribute",
+  "description": "For us to accept your patches and contributions to this project there are a few small guidelines you need to follow.",
+  "source": "@site/docs/contributing.md",
+  "sourceDirName": ".",
+  "slug": "/contributing",
+  "permalink": "/contributing",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/contributing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "view-configurations",
+    "permalink": "/configurations/view-configurations"
+  },
+  "next": {
+    "title": "Purpose of this document",
+    "permalink": "/covax-demo-app"
+  }
+}
