@@ -308,8 +308,8 @@ constructor(
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
 
     /**
-     * This function takes [inputDate] and returns a difference (for examples 7 hours ago, 2 days
-     * ago, 5 months ago, 3 years ago etc)
+     * This function takes [inputDate] and returns a difference
+     * (for examples 7 hours, 2 day, 5 months, 3 years etc)
      */
     fun convertDateForDifference(inputDate: Date): String {
       return inputDate.prettifyDate()
