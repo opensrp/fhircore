@@ -43,6 +43,8 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -293,10 +295,10 @@ constructor(
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
 
     /**
-     * This function takes [inputDate] and returns a difference
-     * (for examples 7 hours, 2 day, 5 months, 3 years etc)
+     * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
+     * months, 3 years etc)
      */
-    fun convertDateForDifference(inputDate: Date): String {
+    fun prettifyDate(inputDate: Date): String {
       return inputDate.prettifyDate()
     }
 
@@ -305,8 +307,8 @@ constructor(
      * hours ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDateString] can give given as
      * 2022-02 or 2022
      */
-    fun convertDateForDifference(inputDateString: String): String {
-      return PrettyTime(Locale.getDefault()).format(DateTime(inputDateString).toDate())
+    fun prettifyDate(inputDateString: String): String {
+      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
     }
 
     /**
@@ -319,10 +321,8 @@ constructor(
       inputDate: String,
       inputDateFormat: String,
       expectedFormat: String = "E, MMM dd yyyy"
-    ): String {
-      return SimpleDateFormat(expectedFormat, Locale.getDefault()).run {
-        format(SimpleDateFormat(inputDateFormat, Locale.getDefault()).parse(inputDate))
-      }
+    ): String? {
+      return inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
     }
 
     /**
@@ -331,7 +331,7 @@ constructor(
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
-      return SimpleDateFormat(expectedFormat, Locale.getDefault()).run { format(date) }
+      return date.formatDate(expectedFormat)
     }
   }
 
