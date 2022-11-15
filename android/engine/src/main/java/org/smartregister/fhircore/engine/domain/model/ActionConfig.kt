@@ -40,7 +40,7 @@ data class ActionConfig(
         putString(it.first, it.second)
       }
     }
-  
+
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
 }

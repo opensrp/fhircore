@@ -1,32 +1,32 @@
 {
-	"appId": "app",
-	"configType": "application",
-	"theme": "DEFAULT",
-	"appTitle": "eCBIS CHSS",
-	"remoteSyncPageSize": 100,
-	"languages": [
-		"en"
-	],
-	"useDarkTheme": false,
-	"syncInterval": 30,
-	"syncStrategy": [
-		"Location"
-	],
-	"loginConfig": {
-		"showLogo": true,
-		"enablePin": true
-	},
-	"deviceToDeviceSync": {
-		"resourcesToSync": [
-			"Group",
-			"Patient",
-			"CarePlan",
-			"Task",
-			"Encounter",
-			"Observation",
-			"Condition",
-			"Questionnaire",
-			"QuestionnaireResponse"
-		]
-	}
+  "appId": "app",
+  "configType": "application",
+  "theme": "DEFAULT",
+  "appTitle": "eCBIS (CHA & CHSS)",
+  "remoteSyncPageSize": 100,
+  "languages": [
+    "en"
+  ],
+  "useDarkTheme": false,
+  "syncInterval": 30,
+  "syncStrategy": [
+    "Location"
+  ],
+  "loginConfig": {
+    "showLogo": true,
+    "enablePin": true
+  },
+  "deviceToDeviceSync": {
+    "resourcesToSync": [
+      "Group",
+      "Patient",
+      "CarePlan",
+      "Task",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "Questionnaire",
+      "QuestionnaireResponse"
+    ]
+  }
 }
