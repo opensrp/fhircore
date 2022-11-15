@@ -36,6 +36,6 @@ fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display
 
 fun Task.isPastExpiry() =
   this.hasRestriction() &&
-          this.restriction.hasPeriod() &&
-          this.restriction.period.hasEnd() &&
-          !this.restriction.period.end.after(today())
+    this.restriction.hasPeriod() &&
+    this.restriction.period.hasEnd() &&
+    !this.restriction.period.end.after(today())

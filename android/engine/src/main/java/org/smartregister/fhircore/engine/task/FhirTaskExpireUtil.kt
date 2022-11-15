@@ -17,52 +17,78 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Date
+import javax.inject.Inject
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.domain.model.DataQuery
-import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
-class FhirTaskExpireUtil(val appContext: Context) {
+class FhirTaskExpireUtil
+@Inject
+constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEngine) {
 
-
-  internal fun getFhirEngine() : FhirEngine {
-    return FhirEngineProvider.getInstance(appContext)
-  }
-
-
-  suspend fun fetchOverdueTasks() : List<Task> {
+  /**
+   * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
+   * "in-progress" and "received" and Task.restriction.period.end is <= today. It also returns the
+   * max(Task.authoredOn) date. The size of the tasks is between 0 to (tasksCount * 2). It is not
+   * guaranteed that the list of tasks returned will be of size tasksCount. The calling function
+   * should stop once the length of returned tasks is 0 meaning there are no more.
+   */
+  suspend fun fetchOverdueTasks(
+    tasksCount: Int = 20,
+    from: Date? = null
+  ): Pair<Date?, MutableList<Task>> {
     Timber.i("Start fetching overdue tasks")
 
-    val fhirEngine = getFhirEngine()
+    val tasksPastExpiry = mutableListOf<Task>()
 
-    // TODO: Limit & page the results for better performance
-    val tasksPastExpiry = fhirEngine
-      .search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-          { value = of(Task.TaskStatus.READY.toCoding()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
-        )
-        //filterBy(DataQuery())
-        //count = size
+    while (tasksPastExpiry.size == 0 && tasksPastExpiry.size < tasksCount) {
+      val tasksResult =
+        fhirEngine.search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+            { value = of(Task.TaskStatus.READY.toCoding()) },
+            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
+            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          )
+
+          if (from != null) {
+            filter(
+              Task.AUTHORED_ON,
+              {
+                prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+                value = of(DateType(from))
+              }
+            )
+          }
+          count = tasksCount
+
+          sort(Task.AUTHORED_ON, Order.ASCENDING)
+        }
+
+      if (tasksResult.isEmpty()) {
+        break
+      } else {
+        tasksPastExpiry.addAll(tasksResult.filter { it.isPastExpiry() })
       }
-      .filter { it.isPastExpiry() }
+    }
+
+    val maxDate = tasksPastExpiry.maxOfOrNull { it.authoredOn }
 
     Timber.i("Done fetching overdue tasks")
-    return tasksPastExpiry
+    return Pair(maxDate, tasksPastExpiry)
   }
 
   suspend fun markTaskExpired(tasks: List<Task>) {
-
-    val fhirEngine = getFhirEngine()
 
     // This allows the Fhir Engine to index the values
     tasks.forEach { task ->
@@ -72,9 +98,5 @@ class FhirTaskExpireUtil(val appContext: Context) {
     }
 
     Timber.i("${tasks.size} tasks updated to cancelled")
-  }
-
-  companion object {
-    const val WORK_ID = "PlanWorker"
   }
 }
