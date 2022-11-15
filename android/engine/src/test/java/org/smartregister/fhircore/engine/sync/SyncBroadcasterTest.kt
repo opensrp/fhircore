@@ -16,50 +16,29 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import android.content.Context
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.SyncJob
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
-import org.junit.Before
-import org.mockito.Mock
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-internal class SyncBroadcasterTest {
+class SyncBroadcasterTest : RobolectricTest() {
 
-  @Mock private lateinit var fhirResourceService: FhirResourceService
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @Mock private lateinit var configService: ConfigService
-  @Mock private lateinit var context: Context
-  @Mock private lateinit var syncJob: SyncJob
-  @Mock private lateinit var fhirEngine: FhirEngine
-  @Mock private lateinit var dispatcherProvider: DispatcherProvider
-  @Mock private lateinit var configurationRegistry: ConfigurationRegistry
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
-
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var syncBroadcaster: SyncBroadcaster
+  private val context: Application = ApplicationProvider.getApplicationContext()
 
-  @Before
-  fun setup() {
-    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
-    syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        sharedPreferencesHelper,
-        configService,
-        syncJob,
-        fhirEngine,
-        sharedSyncStatus,
-        dispatcherProvider
-      )
+  @Test
+  fun runSync() {
+    runBlockingTest {
+      syncBroadcaster = mockk()
+      every { syncBroadcaster.runSync() } returns Unit
+      syncBroadcaster.runSync()
+      verify { syncBroadcaster.runSync() }
+    }
   }
 }

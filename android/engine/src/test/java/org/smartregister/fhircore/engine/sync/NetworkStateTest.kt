@@ -22,12 +22,14 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowNetworkCapabilities
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 internal class NetworkStateTest : RobolectricTest() {
@@ -39,19 +41,26 @@ internal class NetworkStateTest : RobolectricTest() {
   @Suppress("DEPRECATION")
   @Test
   fun invoke() {
+    val networkState = mockk<NetworkState>()
+    every { networkState.invoke() } returns false
+
+    networkState.invoke()
+
+    verify { networkState.invoke() }
+
     val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
-
     val networkCapabilities = ShadowNetworkCapabilities.newInstance()
-    shadowOf(networkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-    shadowOf(networkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-    shadowOf(connectivityManager)
-      .setNetworkCapabilities(connectivityManager.activeNetwork, networkCapabilities)
 
-    assertTrue(connectivityManager.activeNetworkInfo?.type != ConnectivityManager.TYPE_WIFI)
-    assertTrue(connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE)
-    assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
-    assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-
-    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 23)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      shadowOf(connectivityManager)
+        .setNetworkCapabilities(connectivityManager.activeNetwork, networkCapabilities)
+      shadowOf(networkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+      shadowOf(networkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+      assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+      assertTrue(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+    } else {
+      assertTrue(connectivityManager.activeNetworkInfo?.type != ConnectivityManager.TYPE_WIFI)
+      assertTrue(connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE)
+    }
   }
 }
