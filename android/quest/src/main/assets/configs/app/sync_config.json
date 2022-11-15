@@ -50,7 +50,11 @@
 				"code": "_id",
 				"base": [
 					"StructureMap",
-					"PlanDefinition"
+					"PlanDefinition",
+					"PractitionerRole",
+					"OrganizationAffiliation",
+					"Organization",
+					"Location"
 				]
 			}
 		},
