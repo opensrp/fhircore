@@ -4,15 +4,15 @@
  * Modify the docusaurus.config.js file at your site's root instead.
  */
 export default {
-  "title": "opensrp-fhircore",
+  "title": "opensrp-fhircore-documentation",
   "tagline": "fhir-core",
-  "url": "https://org.smartregister.opensrp-fhricore.com",
+  "url": "https://org.smartregister.opensrp.fhircore-documentation",
   "baseUrl": "/",
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",
   "favicon": "img/fhircore.png",
-  "organizationName": "org.smartregister",
-  "projectName": "https://github.com/opensrp/fhircore.gite",
+  "organizationName": "opensrp",
+  "projectName": "fhircore",
   "i18n": {
     "defaultLocale": "en",
     "locales": [
@@ -27,7 +27,7 @@ export default {
       {
         "docs": {
           "routeBasePath": "/",
-          "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs"
+          "editUrl": "https://github.com/opensrp/fhircore/tree/main/"
         },
         "blog": false
       }
