@@ -39,8 +39,14 @@ export default [
   },
   {
     path: '/',
-    component: ComponentCreator('/', '0df'),
+    component: ComponentCreator('/', 'cf8'),
     routes: [
+      {
+        path: '/',
+        component: ComponentCreator('/', '678'),
+        exact: true,
+        sidebar: "defaultSidebar"
+      },
       {
         path: '/in-app-reporting',
         component: ComponentCreator('/in-app-reporting', '516'),

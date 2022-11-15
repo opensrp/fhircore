@@ -8,11 +8,16 @@
           "label": "Next",
           "isLast": true,
           "path": "/",
-          "mainDocId": "in-app-reporting",
+          "mainDocId": "intro",
           "docs": [
             {
               "id": "in-app-reporting",
               "path": "/in-app-reporting",
+              "sidebar": "defaultSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/",
               "sidebar": "defaultSidebar"
             },
             {
