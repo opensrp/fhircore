@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy FHIRCORE docs to GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Build output to publish to the `gh-pages` branch:
+          target_branch: app-configuration-docusaurus
+          build_dir: build
           publish_dir: ./build
 
           user_name: github-actions[bot]

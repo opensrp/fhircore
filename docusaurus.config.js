@@ -6,18 +6,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'opensrp-fhircore',
+  title: 'opensrp-fhircore-documentation',
   tagline: 'fhir-core',
-  url: 'https://org.smartregister.opensrp-fhricore.com',
+  url: 'https://opensrp.fhircore-documentation',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
-
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'org.smartregister', // Usually your GitHub org/user name.
-  projectName: 'https://github.com/opensrp/fhircore.gite', // Usually your repo name.
+  organizationName: 'opensrp', // Usually your GitHub org/user name.
+  projectName: 'fhircore', // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -35,7 +32,7 @@ const config = {
           routeBasePath:'/',
            // Please change this to your repo.
            // Remove this to remove the "edit this page" links.
-           editUrl:'https://github.com/opensrp/fhircore/tree/main/docs',
+           editUrl:'https://github.com/opensrp/fhircore/tree/main/',
          },
          blog: false
        }),
