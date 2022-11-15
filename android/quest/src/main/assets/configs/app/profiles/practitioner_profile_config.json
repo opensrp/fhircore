@@ -1,0 +1,145 @@
+{
+    "appId": "chss",
+    "configType": "profile",
+    "id": "practitionerProfile",
+    "fhirResource": {
+        "baseResource": {
+            "resource": "Practitioner"
+        },
+        "relatedResources": [
+            {
+                "resource": "PractitionerRole",
+                "searchParameter": "practitioner",
+                "relatedResources": [
+                    {
+                        "resource": "Organization",
+                        "fhirPathExpression": "PractitionerRole.organization",
+                        "relatedResources": [
+                            {
+                                "resource": "OrganizationAffiliation",
+                                "searchParameter": "primary-organization",
+                                "relatedResources": [
+                                    {
+                                        "resource": "Location",
+                                        "fhirPathExpression": "OrganizationAffiliation.location"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "rules": [
+        {
+            "name": "practitionerFirstName",
+            "condition": "true",
+            "actions": [
+                "data.put('practitionerFirstName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(given[0])\"))"
+            ]
+        },
+        {
+            "name": "practitionerLastName",
+            "condition": "true",
+            "actions": [
+                "data.put('practitionerLastName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(family)\"))"
+            ]
+        },
+        {
+            "name": "practitionerName",
+            "condition": "true",
+            "actions": [
+                "data.put('practitionerName', data.get('practitionerFirstName') + ' ' + data.get('practitionerLastName'))"
+            ]
+        },
+        {
+            "name": "assignedTeam",
+            "condition": "true",
+            "actions": [
+                "data.put('assignedTeam', fhirPath.extractValue(size(Organization) > 0 ? Organization.get(0) : null, 'Organization.name'))"
+            ]
+        },
+        {
+            "name": "assignedLocation",
+            "condition": "true",
+            "actions": [
+                "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
+            ]
+        }
+    ],
+    "views": [
+        {
+            "viewType": "COLUMN",
+            "children": [
+                {
+                    "viewType": "CARD",
+                    "padding": 0,
+                    "content": [
+                        {
+                            "viewType": "COLUMN",
+                            "children": [
+                                {
+                                    "viewType": "COMPOUND_TEXT",
+                                    "primaryText": "@{practitionerName}",
+                                    "primaryTextColor": "#000000"
+                                },
+                                {
+                                    "viewType": "COMPOUND_TEXT",
+                                    "primaryText": "Team: @{assignedTeam}",
+                                    "fontSize": 13.0,
+                                    "primaryTextColor": "#000000"
+                                },
+                                {
+                                    "viewType": "COMPOUND_TEXT",
+                                    "primaryText": "Location: @{assignedLocation}",
+                                    "fontSize": 13.0,
+                                    "primaryTextColor": "#000000"
+                                },
+                                {
+                                    "viewType": "SPACER",
+                                    "height": 10
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "viewType": "SPACER",
+                    "height": 8
+                },
+                {
+                    "viewType": "CARD",
+                    "padding": 16,
+                    "header": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "PATIENTS",
+                        "primaryTextColor": "#6F7274",
+                        "fontSize": 16.0,
+                        "padding": 16
+                    },
+                    "content": [
+                        {
+                            "viewType": "ROW",
+                            "children": [
+                                {
+                                    "viewType": "COMPOUND_TEXT",
+                                    "primaryText": "Patient Name",
+                                    "primaryTextColor": "#6F7274",
+                                    "fontSize": 14.0
+                                },
+                                {
+                                    "viewType": "COMPOUND_TEXT",
+                                    "primaryText": "Patient ID",
+                                    "primaryTextColor": "#6F7274",
+                                    "fontSize": 14.0
+                                },
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "overFlowMenuItems": []
+}
