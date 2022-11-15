@@ -27,6 +27,8 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
@@ -35,6 +37,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.quest.Faker
 import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.waitUntilExists
@@ -51,6 +54,7 @@ class ProfileScreenTest {
   @Before
   fun setUp() {
     hiltRule.inject()
+    val snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>().asSharedFlow()
     runBlocking {
       val profileUiState =
         ProfileUiState(
@@ -62,7 +66,8 @@ class ProfileScreenTest {
         ProfileScreen(
           navController = rememberNavController(),
           profileUiState = profileUiState,
-          onEvent = spyk({})
+          onEvent = spyk({}),
+          snackStateFlow = snackBarStateFlow
         )
       }
     }

@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
@@ -32,6 +33,8 @@ import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
+import org.joda.time.DateTime
+import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -40,6 +43,9 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -287,6 +293,46 @@ constructor(
     /** This function extracts the patient's DOB from the FHIR resource */
     fun extractDOB(patient: Patient, dateFormat: String): String =
       SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+
+    /**
+     * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
+     * months, 3 years etc)
+     */
+    fun prettifyDate(inputDate: Date): String {
+      return inputDate.prettifyDate()
+    }
+
+    /**
+     * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
+     * hours ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDateString] can give given as
+     * 2022-02 or 2022
+     */
+    fun prettifyDate(inputDateString: String): String {
+      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
+    }
+
+    /**
+     * This function is responsible for formatting a date for whatever expectedFormat we need. It
+     * takes an [inputDate] string along with the [inputDateFormat] so it can convert it to the Date
+     * and then it gives output in expected Format, [expectedFormat] is by default (Example: Mon,
+     * Nov 5 2021)
+     */
+    fun formatDate(
+      inputDate: String,
+      inputDateFormat: String,
+      expectedFormat: String = "E, MMM dd yyyy"
+    ): String? {
+      return inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
+    }
+
+    /**
+     * This function is responsible for formatting a date for whatever expectedFormat we need. It
+     * takes an input a [date] as input and then it gives output in expected Format,
+     * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
+     */
+    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
+      return date.formatDate(expectedFormat)
+    }
   }
 
   companion object {

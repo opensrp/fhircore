@@ -42,7 +42,7 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           if (navController.context is QuestionnaireHandler) {
-            (navController.context as QuestionnaireHandler).launchQuestionnaire(
+            (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
               questionnaireConfig = questionnaireConfig,
               computedValuesMap = resourceData?.computedValuesMap,

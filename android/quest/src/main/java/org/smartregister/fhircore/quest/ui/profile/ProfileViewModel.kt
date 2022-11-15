@@ -98,7 +98,7 @@ constructor(
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
                 if (event.navController.context is QuestionnaireHandler) {
-                  (event.navController.context as QuestionnaireHandler).launchQuestionnaire(
+                  (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
                     context = event.navController.context,
                     intentBundle =
                       actionConfig.paramsBundle(

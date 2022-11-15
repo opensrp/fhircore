@@ -146,7 +146,7 @@ class UserSettingScreenKtTest : RobolectricTest() {
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           onEvent = mockUserSettingsEventListener,
-          progressBarState = isShowProgressBar,
+          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
           showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
           isDebugVariant = isDebugVariant
         )

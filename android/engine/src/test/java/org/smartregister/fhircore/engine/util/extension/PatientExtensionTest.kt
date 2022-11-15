@@ -44,10 +44,10 @@ class PatientExtensionTest : RobolectricTest() {
     Assert.assertEquals(expectedAge, calculateAge(getDateFromDaysAgo(365), context))
 
     val expectedAge2 = "1y 1m"
-    // passing days value for 1y 1m 4d
+    // passing days value for 1y 1m
     Assert.assertEquals(expectedAge2, calculateAge(getDateFromDaysAgo(399), context))
 
-    val expectedAge3 = "1y 1w"
+    val expectedAge3 = "1y"
     // passing days value for 1y 1w
     Assert.assertEquals(expectedAge3, calculateAge(getDateFromDaysAgo(372), context))
 
@@ -78,6 +78,14 @@ class PatientExtensionTest : RobolectricTest() {
     val expectedAge12 = "0d"
     // if difference b/w current date and DOB is O from extractAge extension
     Assert.assertEquals(expectedAge12, calculateAge(getDateFromDaysAgo(0), context))
+
+    val expectedAge13 = "1y 6m"
+    // passing days value for 1y 6m
+    Assert.assertEquals(expectedAge13, calculateAge(getDateFromDaysAgo(550), context))
+
+    val expectedAge14 = "5y"
+    // passing days value for 5y
+    Assert.assertEquals(expectedAge14, calculateAge(getDateFromDaysAgo(1826), context))
   }
 
   @Test

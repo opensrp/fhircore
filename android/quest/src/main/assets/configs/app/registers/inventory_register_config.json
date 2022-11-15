@@ -1,152 +1,159 @@
 {
-	"appId": "app",
-	"configType": "register",
-	"id": "inventoryRegister",
-	"fhirResource": {
-		"baseResource": {
-			"resource": "Group",
-			"dataQueries": [
-				{
-					"id": "commoditiesQueryByCode",
-					"filterType": "TOKEN",
-					"key": "code",
-					"valueType": "CODEABLECONCEPT",
-					"valueCoding": {
-						"system": "http://snomed.info/sct",
-						"code": "386452003"
-					}
-				}
-			]
-		},
-		"relatedResources": [
-			{
-				"resource": "Observation",
-				"searchParameter": "subject"
-			}
-		]
-	},
-	"searchBar": {
-		"visible": true,
-		"display": "Search by name",
-		"computedRules": [
-			"commodityName"
-		]
-	},
-	"registerCard": {
-		"rules": [
-			{
-				"name": "commodityName",
-				"condition": "true",
-				"actions": [
-					"data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
-				]
-			},
-			{
-				"name": "commodityId",
-				"condition": "true",
-				"actions": [
-					"data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
-				]
-			},
-			{
-				"name": "quantity",
-				"condition": "true",
-				"actions": [
-					"var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Integer', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return x; } ; data.put('quantity', balance(Observation))"
-				]
-			},
-			{
-				"name": "lastUpdated",
-				"condition": "true",
-				"actions": [
-					"data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
-				]
-			},
-			{
-				"name": "status",
-				"condition": "true",
-				"actions": [
-					"data.put('status', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value') == '' ? 'UPCOMING' : 'DUE')"
-				]
-			}
-		],
-		"views": [
-			{
-				"viewType": "COLUMN",
-				"children": [
-					{
-						"viewType": "SERVICE_CARD",
-						"details": [
-							{
-								"viewType": "COMPOUND_TEXT",
-								"primaryText": "@{commodityName}",
-								"primaryTextColor": "#000000"
-							},
-							{
-								"viewType": "COMPOUND_TEXT",
-								"primaryText": "@{lastUpdated}",
-								"fontSize": 14.0,
-								"primaryTextColor": "#5A5A5A"
-							}
-						],
-						"showVerticalDivider": false,
-						"serviceButton": {
-							"visible": true,
-							"text": "@{quantity}",
-							"status": "@{status}",
-							"fontSize": 14.0,
-							"smallSized": false,
-							"actions": [
-								{
-									"trigger": "ON_CLICK",
-									"workflow": "LAUNCH_QUESTIONNAIRE",
-									"questionnaire": {
-										"id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-										"title": "@{commodityName}",
-										"saveButtonText": "ADJUST STOCK LEVELS",
-										"setPractitionerDetails": true,
-										"setOrganizationDetails": true,
-										"resourceIdentifier": "@{commodityId}"
-									},
-									"params": [
-										{
-											"paramType": "PREPOPULATE",
-											"linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
-											"dataType": "STRING",
-											"key": "commodityName",
-											"value": "@{commodityName}"
-										},
-										{
-											"paramType": "PREPOPULATE",
-											"linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
-											"dataType": "INTEGER",
-											"key": "currentBalance",
-											"value": "@{quantity}"
-										}
-									]
-								}
-							]
-						},
-						"actions": [
-							{
-								"trigger": "ON_CLICK",
-								"workflow": "LAUNCH_PROFILE",
-								"id": "inventoryProfile",
-								"params": [
-									{
-										"key": "commodityId",
-										"value": "@{commodityId}"
-									}
-								]
-							}
-						]
-					}
-				]
-			}
-		]
-	},
-	"noResults": {
-		"title": "No Commodities",
-		"message": "Sorry, stock commodities have not been setup yet"
-	}
+  "appId": "app",
+  "configType": "register",
+  "id": "inventoryRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "commoditiesQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "386452003"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Observation",
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search by name",
+    "computedRules": [
+      "commodityName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "commodityName",
+        "condition": "true",
+        "actions": [
+          "data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
+      },
+      {
+        "name": "commodityId",
+        "condition": "true",
+        "actions": [
+          "data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
+      {
+        "name": "quantity",
+        "condition": "true",
+        "actions": [
+          "var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Integer', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return x; } ; data.put('quantity', balance(Observation))"
+        ]
+      },
+      {
+        "name": "lastUpdated",
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
+        ]
+      },
+      {
+        "name": "lastUpdatedDate",
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+        ]
+      },
+      {
+        "name": "status",
+        "condition": "true",
+        "actions": [
+          "data.put('status', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value') == '' ? 'UPCOMING' : 'DUE')"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{commodityName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{lastUpdatedDate}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{quantity}",
+              "status": "@{status}",
+              "fontSize": 14.0,
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+                    "title": "@{commodityName}",
+                    "saveButtonText": "ADJUST STOCK LEVELS",
+                    "setPractitionerDetails": true,
+                    "setOrganizationDetails": true,
+                    "resourceIdentifier": "@{commodityId}"
+                  },
+                  "params": [
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
+                      "dataType": "STRING",
+                      "key": "commodityName",
+                      "value": "@{commodityName}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
+                      "dataType": "INTEGER",
+                      "key": "currentBalance",
+                      "value": "@{quantity}"
+                    }
+                  ]
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "inventoryProfile",
+                "params": [
+                  {
+                    "key": "commodityId",
+                    "value": "@{commodityId}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "noResults": {
+    "title": "No Commodities",
+    "message": "Sorry, stock commodities have not been setup yet"
+  }
 }

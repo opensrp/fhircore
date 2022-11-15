@@ -63,13 +63,6 @@ fun Date?.makeItReadable(): String {
 fun Date?.prettifyDate(): String =
   if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
-fun isSameMonthYear(monthYear: String, yearMonth: String): Boolean {
-  val firstDate = monthYear.parseDate(SDF_MMM_YYYY)?.formatDate(SDF_MMM_YYYY)
-  val secondDate = yearMonth.parseDate(SDF_YYYY_MMM)?.formatDate(SDF_MMM_YYYY)
-  if (firstDate.isNullOrEmpty() || secondDate.isNullOrEmpty()) return false
-  return firstDate == secondDate
-}
-
 fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
@@ -121,7 +114,7 @@ fun Date.lastDayOfMonth(): Date {
   return clone.time
 }
 
-fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
+fun DateType.format(): String = value.formatDate(SDF_YYYY_MM_DD)
 
 /**
  * This function calculates the age from [date] then translates the abbreviation for the the
@@ -131,18 +124,24 @@ fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
 fun calculateAge(date: Date, context: Context): String {
   val theDate: LocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
   val period = Period.between(theDate, LocalDate.now())
+  val years = period.years
+  val months = period.months
   val weeks = period.days / 7
   val days = period.days % 7
+
   return when {
-    period.years > 0 -> context.abbreviateString(R.string.year, period.years)
-    period.months > 0 ->
-      context.abbreviateString(R.string.month, period.months) +
+    years in 1..4 ->
+      context.abbreviateString(R.string.year, years) +
+        context.abbreviateString(R.string.month, months)
+    years >= 5 -> context.abbreviateString(R.string.year, years)
+    months > 0 ->
+      context.abbreviateString(R.string.month, months) +
         context.abbreviateString(R.string.weeks, weeks)
     weeks > 0 ->
       context.abbreviateString(R.string.weeks, weeks) +
         context.abbreviateString(R.string.days, days)
     else -> "$days${context.getString(R.string.days).lowercase().abbreviate()} "
-  }
+  }.trim()
 }
 
 private fun Context.abbreviateString(resourceId: Int, content: Int) =
