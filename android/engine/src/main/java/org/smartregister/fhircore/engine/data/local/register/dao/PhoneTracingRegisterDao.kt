@@ -16,14 +16,10 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
-import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Operation
-import com.google.android.fhir.search.Search
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -38,14 +34,6 @@ constructor(
   dispatcherProvider: DefaultDispatcherProvider
 ) : TracingRegisterDao(fhirEngine, defaultRepository, configurationRegistry, dispatcherProvider) {
 
-  override fun Search.registerFilters() {
-    val coding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
-    filter(TokenClientParam("_tag"), { value = of(coding) })
-    filter(
-      Task.STATUS,
-      { value = of(Task.TaskStatus.READY.toCode()) },
-      { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-      operation = Operation.OR
-    )
-  }
+  override val tracingCoding: Coding =
+    Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
 }
