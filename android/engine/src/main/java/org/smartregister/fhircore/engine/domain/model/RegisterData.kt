@@ -107,6 +107,8 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val isPregnant: Boolean = false,
     val isBreastfeeding: Boolean = false,
     val attempts: Int,
+    val lastAttemptDate: Date? = null,
+    val firstAdded: Date? = null, // date first assigned to tracing register
     val reasons: List<String> = emptyList()
   ) : RegisterData(logicalId = logicalId, name = name)
 }
