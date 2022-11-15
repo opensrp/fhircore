@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -30,7 +28,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class SyncBroadcasterTest : RobolectricTest() {
 
   private lateinit var syncBroadcaster: SyncBroadcaster
-  private val context: Application = ApplicationProvider.getApplicationContext()
 
   @Test
   fun runSync() {

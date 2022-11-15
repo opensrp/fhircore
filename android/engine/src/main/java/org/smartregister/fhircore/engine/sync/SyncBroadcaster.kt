@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ResourceSyncException
+import com.google.android.fhir.sync.Result.Error
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
@@ -50,25 +52,16 @@ class SyncBroadcaster(
   val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) {
-  fun runSync() {
+  fun runSync(networkState: (Context) -> Boolean = { NetworkState(it).invoke() }) {
     CoroutineScope(dispatcherProvider.io()).launch {
-      NetworkState(sharedPreferencesHelper.context).invoke().apply {
+      networkState(sharedPreferencesHelper.context).apply {
         if (this) onRunSync()
-        else
-          sharedSyncStatus.emit(
-            State.Failed(
-              com.google.android.fhir.sync.Result.Error(
-                listOf(
-                  ResourceSyncException(
-                    ResourceType.Flag,
-                    java.lang.Exception(
-                      sharedPreferencesHelper.context.getString(R.string.unable_to_sync)
-                    )
-                  )
-                )
-              )
-            )
-          )
+        else {
+          val message = sharedPreferencesHelper.context.getString(R.string.unable_to_sync)
+          val resourceSyncException =
+            listOf(ResourceSyncException(ResourceType.Flag, java.lang.Exception(message)))
+          sharedSyncStatus.emit(State.Failed(Error(resourceSyncException)))
+        }
       }
     }
   }
