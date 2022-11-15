@@ -1,5 +1,5 @@
 {
-  "pluginId": "default",
+  "pluginId": "intro",
   "version": "current",
   "label": "Next",
   "banner": null,
@@ -18,7 +18,7 @@
       {
         "type": "link",
         "label": "intro",
-        "href": "/",
+        "href": "/intro",
         "docId": "intro"
       },
       {

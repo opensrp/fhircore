@@ -6,9 +6,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'fhircore-documentation',
+  title: 'opensrp-fhircore',
   tagline: 'fhir-core',
-  url: 'https://org.smartregister.fhricore.com',
+  url: 'https://org.smartregister.opensrp-fhricore.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -16,8 +16,8 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'org.smartregister', // Usually your GitHub org/user name.
+  projectName: 'https://github.com/opensrp/fhircore.gite', // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -32,11 +32,10 @@ const config = {
        'classic',
        ({
          docs: {
-           routeBasePath:'/',
+          routeBasePath:'/',
            // Please change this to your repo.
            // Remove this to remove the "edit this page" links.
-           editUrl:
-             'https://github.com/opensrp/fhircore/tree/main/docs',
+           editUrl:'https://github.com/opensrp/fhircore/tree/main/docs',
          },
          blog: false
        }),
@@ -47,18 +46,19 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'FHIR Core documentation',
+        title: 'Opensrp FHIRCORE',
         logo: {
           alt: 'FHIR Core documentation',
           src: 'img/fhircore.png',
+
         },
         items: [
-          {
-            type: 'doc',
-            docId: 'in-app-reporting',
-            position: 'left',
-            label: 'Documentation',
-          },
+//          {
+//            type: 'doc',
+//            docId: 'in-app-reporting',
+//            position: 'left',
+//            label: 'Documentation',
+//          },
           {
             href: 'https://github.com/opensrp/fhircore/tree/main',
             label: 'GitHub',
@@ -68,35 +68,7 @@ const config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} OPENSRP FHIRCORE, Inc. Built by Ona.`,
       },
       prism: {
         theme: lightCodeTheme,

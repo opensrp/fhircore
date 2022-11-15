@@ -34,6 +34,33 @@
               "frontMatter": {},
               "sidebar": "defaultSidebar",
               "next": {
+                "title": "intro",
+                "permalink": "/"
+              }
+            },
+            {
+              "unversionedId": "intro",
+              "id": "intro",
+              "title": "intro",
+              "description": "This is FHIRCORE client Documentation HomePage",
+              "source": "@site/docs/intro.md",
+              "sourceDirName": ".",
+              "slug": "/",
+              "permalink": "/",
+              "draft": false,
+              "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/intro.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "id": "intro",
+                "slug": "/"
+              },
+              "sidebar": "defaultSidebar",
+              "previous": {
+                "title": "in-app-reporting",
+                "permalink": "/in-app-reporting"
+              },
+              "next": {
                 "title": "Testing FHIR Resources",
                 "permalink": "/testing-resources"
               }
@@ -54,8 +81,8 @@
               "frontMatter": {},
               "sidebar": "defaultSidebar",
               "previous": {
-                "title": "in-app-reporting",
-                "permalink": "/in-app-reporting"
+                "title": "intro",
+                "permalink": "/"
               }
             }
           ],
@@ -65,6 +92,10 @@
               {
                 "type": "doc",
                 "id": "in-app-reporting"
+              },
+              {
+                "type": "doc",
+                "id": "intro"
               },
               {
                 "type": "doc",

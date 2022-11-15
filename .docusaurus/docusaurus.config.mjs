@@ -4,15 +4,15 @@
  * Modify the docusaurus.config.js file at your site's root instead.
  */
 export default {
-  "title": "fhircore-documentation",
+  "title": "opensrp-fhircore",
   "tagline": "fhir-core",
-  "url": "https://org.smartregister.fhricore.com",
+  "url": "https://org.smartregister.opensrp-fhricore.com",
   "baseUrl": "/",
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",
   "favicon": "img/fhircore.png",
-  "organizationName": "facebook",
-  "projectName": "docusaurus",
+  "organizationName": "org.smartregister",
+  "projectName": "https://github.com/opensrp/fhircore.gite",
   "i18n": {
     "defaultLocale": "en",
     "locales": [
@@ -35,18 +35,12 @@ export default {
   ],
   "themeConfig": {
     "navbar": {
-      "title": "FHIR Core documentation",
+      "title": "Opensrp FHIRCORE",
       "logo": {
         "alt": "FHIR Core documentation",
         "src": "img/fhircore.png"
       },
       "items": [
-        {
-          "type": "doc",
-          "docId": "in-app-reporting",
-          "position": "left",
-          "label": "Documentation"
-        },
         {
           "href": "https://github.com/opensrp/fhircore/tree/main",
           "label": "GitHub",
@@ -57,35 +51,8 @@ export default {
     },
     "footer": {
       "style": "dark",
-      "links": [
-        {
-          "title": "Docs",
-          "items": [
-            {
-              "label": "Tutorial",
-              "to": "/docs/intro"
-            }
-          ]
-        },
-        {
-          "title": "Community",
-          "items": [
-            {
-              "label": "Stack Overflow",
-              "href": "https://stackoverflow.com/questions/tagged/docusaurus"
-            },
-            {
-              "label": "Discord",
-              "href": "https://discordapp.com/invite/docusaurus"
-            },
-            {
-              "label": "Twitter",
-              "href": "https://twitter.com/docusaurus"
-            }
-          ]
-        }
-      ],
-      "copyright": "Copyright © 2022 My Project, Inc. Built with Docusaurus."
+      "copyright": "Copyright © 2022 OPENSRP FHIRCORE, Inc. Built by Ona.",
+      "links": []
     },
     "prism": {
       "theme": {

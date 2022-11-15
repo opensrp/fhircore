@@ -1,0 +1,14 @@
+{
+  "label": "Demo",
+  "permalink": "/tags/demo",
+  "allTagsPath": "/tags",
+  "count": 1,
+  "items": [
+    {
+      "id": "intro",
+      "title": "A doc with tags",
+      "description": "This is FHIRCORE client Documentation HomePage",
+      "permalink": "/intro"
+    }
+  ]
+}
