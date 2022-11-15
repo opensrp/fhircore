@@ -23,11 +23,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
@@ -46,11 +44,9 @@ import org.hl7.fhir.r4.model.StringType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
-import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -58,16 +54,12 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rule.TimberRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import timber.log.Timber
 
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
-  @get:ClassRule(order = 1) val timberRuler = TimberRule()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
@@ -294,51 +286,30 @@ class RulesFactoryTest : RobolectricTest() {
   fun onFailureLogsWarningForJexlException_Variable() {
     val exception = mockk<JexlException.Variable>()
     every { exception.localizedMessage } returns "jexl exception"
-    every { exception.variable } returns "func"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onFailure",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
-    verify { Timber.e("jexl exception, consider checking for null before usage: e.g func != null") }
+    every { exception.variable } returns "var"
+    rulesFactory.onFailure(mockk(relaxed = true), mockk(relaxed = true), exception)
+    verify {
+      rulesFactory.log(
+        exception,
+        "jexl exception, consider checking for null before usage: e.g var != null"
+      )
+    }
   }
 
   @Test
   fun onFailureLogsErrorForException() {
     val exception = mockk<Exception>()
     every { exception.localizedMessage } returns "jexl exception"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onFailure",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
-    verify { Timber.e(exception) }
+    rulesFactory.onFailure(mockk(relaxed = true), mockk(relaxed = true), exception)
+    verify { rulesFactory.log(exception) }
   }
 
   @Test
   fun onEvaluationErrorLogsError() {
     val exception = mockk<Exception>()
     every { exception.localizedMessage } returns "jexl exception"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onEvaluationError",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
-    mockkObject(Timber::class)
-    verify { Timber.e("Evaluation error", exception) }
-    unmockkObject(Timber::class)
+    rulesFactory.onEvaluationError(mockk(relaxed = true), mockk(relaxed = true), exception)
+    verify { rulesFactory.log(exception, "Evaluation error") }
   }
 
   private fun populateFactsWithResources() {

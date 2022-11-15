@@ -88,23 +88,26 @@ constructor(
     }
   }
 
-  override fun onFailure(rule: Rule, facts: Facts, exception: Exception?) =
+  override fun onFailure(rule: Rule, facts: Facts, exception: Exception) =
     if (exception is JexlException) {
       when (exception) {
         // Just display error message for undefined variable; expected for missing facts
         is JexlException.Variable ->
-          Timber.w(
+          log(
+            exception,
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
-        else -> Timber.e(exception)
+        else -> log(exception)
       }
-    } else Timber.e(exception)
+    } else log(exception)
 
   override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
-    Timber.e("Evaluation error", exception)
+    log(exception, "Evaluation error")
   }
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
+
+  fun log(exception: java.lang.Exception, message: String? = null) = Timber.e(exception, message)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
