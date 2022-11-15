@@ -1,109 +1,109 @@
 {
-	"appId": "app",
-	"configType": "navigation",
-	"menuActionButton": {
-		"id": "mainActionButton",
-		"visible": false,
-		"display": "Add Household",
-		"actions": [
-		]
-	},
-	"clientRegisters": [
-		{
-			"id": "practitionerRegister",
-			"display": "CHAs",
-			"showCount": true,
-			"menuIconConfig": {
-				"type": "local",
-				"reference": "ic_households"
-			},
-			"actions": [
-				{
-					"trigger": "ON_CLICK",
-					"workflow": "LAUNCH_REGISTER",
-					"id": "practitionerRegister"
-				},
-				{
-					"trigger": "ON_COUNT",
-					"id": "practitionerRegister"
-				}
-			]
-		}
-	],
-	"bottomSheetRegisters": {
-		"display": "Other patients",
-		"visible": false,
-		"menuIconConfig": {
-			"type": "local",
-			"reference": "ic_user"
-		},
-		"registers": [
-		]
-	},
-	"staticMenu": [
-		{
-			"id": "chaReports",
-			"visible": true,
-			"display": "CHA Reports",
-			"menuIconConfig": {
-				"type": "local",
-				"reference": "ic_reports"
-			},
-			"actions": [
-				{
-					"trigger": "ON_CLICK",
-					"workflow": "LAUNCH_REPORT",
-					"id": "navigateToReportsScreen"
-				}
-			]
-		},
-		{
-			"id": "reports",
-			"visible": true,
-			"display": "Reports",
-			"menuIconConfig": {
-				"type": "local",
-				"reference": "ic_reports"
-			},
-			"actions": [
-				{
-					"trigger": "ON_CLICK",
-					"workflow": "LAUNCH_REPORT",
-					"id": "navigateToReportsScreen"
-				}
-			]
-		},
-		{
-			"id": "p2p_sync",
-			"visible": true,
-			"display": "Transfer Data",
-			"menuIconConfig": {
-				"type": "local",
-				"reference": "ic_p2p"
-			},
-			"actions": [
-				{
-					"trigger": "ON_CLICK",
-					"workflow": "DEVICE_TO_DEVICE_SYNC",
-					"id": "navigateToP2PScreen"
-				}
-			]
-		},
-		{
-			"id": "settings",
-			"visible": true,
-			"display": "Settings",
-			"menuIconConfig": {
-				"type": "local",
-				"reference": "ic_settings"
-			},
-			"actions": [
-				{
-					"trigger": "ON_CLICK",
-					"workflow": "LAUNCH_SETTINGS",
-					"id": "navigateToSettingsScreen"
-				}
-			]
-		}
-	]
+  "appId": "app",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": false,
+    "display": "Add Household",
+    "actions": [
+    ]
+  },
+  "clientRegisters": [
+    {
+      "id": "practitionerRegister",
+      "display": "CHAs",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_households"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "practitionerRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "practitionerRegister"
+        }
+      ]
+    }
+  ],
+  "bottomSheetRegisters": {
+    "display": "Other patients",
+    "visible": false,
+    "menuIconConfig": {
+      "type": "local",
+      "reference": "ic_user"
+    },
+    "registers": [
+    ]
+  },
+  "staticMenu": [
+    {
+      "id": "chaReports",
+      "visible": true,
+      "display": "CHA Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "navigateToReportsScreen"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "visible": true,
+      "display": "Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "navigateToReportsScreen"
+        }
+      ]
+    },
+    {
+      "id": "p2p_sync",
+      "visible": true,
+      "display": "Transfer Data",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_p2p"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "DEVICE_TO_DEVICE_SYNC",
+          "id": "navigateToP2PScreen"
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "visible": true,
+      "display": "Settings",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_settings"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ]
 }
