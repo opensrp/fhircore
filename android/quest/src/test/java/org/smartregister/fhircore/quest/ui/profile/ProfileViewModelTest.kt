@@ -80,8 +80,7 @@ class ProfileViewModelTest : RobolectricTest() {
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor,
-        fhirCarePlanGenerator = fhirCarePlanGenerator
+        fhirPathDataExtractor = fhirPathDataExtractor
       )
   }
 

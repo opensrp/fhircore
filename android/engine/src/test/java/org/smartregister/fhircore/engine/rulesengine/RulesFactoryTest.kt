@@ -23,9 +23,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
@@ -48,6 +50,7 @@ import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
+import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -55,12 +58,16 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.TimberRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @get:ClassRule(order = 1) val timberRuler = TimberRule()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
@@ -201,6 +208,42 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun shouldFormatDateWithExpectedFormat() {
+    val inputDate = Date("2021/10/10")
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals("10-10-2021", rulesEngineService.formatDate(inputDate, expectedFormat))
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals("10 2021", rulesEngineService.formatDate(inputDate, expectedFormat2))
+
+    Assert.assertEquals("Sun, Oct 10 2021", rulesEngineService.formatDate(inputDate))
+  }
+
+  @Test
+  fun shouldInputDateStringWithExpectedFormat() {
+    val inputDateString = "2021-10-10"
+    val inputDateFormat = "yyyy-MM-dd"
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "10-10-2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals(
+      "10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat2)
+    )
+
+    Assert.assertEquals(
+      "Sun, Oct 10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat)
+    )
+  }
+
+  @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
     val resources =
@@ -261,11 +304,7 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify {
-      rulesFactory.logWarning(
-        "jexl exception, consider checking for null before usage: e.g func != null"
-      )
-    }
+    verify { Timber.e("jexl exception, consider checking for null before usage: e.g func != null") }
   }
 
   @Test
@@ -281,7 +320,7 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify { rulesFactory.logError(exception) }
+    verify { Timber.e(exception) }
   }
 
   @Test
@@ -297,7 +336,9 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Exception::class.java, exception)
     )
 
-    verify { rulesFactory.logError("Evaluation error", exception) }
+    mockkObject(Timber::class)
+    verify { Timber.e("Evaluation error", exception) }
+    unmockkObject(Timber::class)
   }
 
   private fun populateFactsWithResources() {

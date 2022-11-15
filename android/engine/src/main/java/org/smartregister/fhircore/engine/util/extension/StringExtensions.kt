@@ -103,3 +103,7 @@ fun String?.abbreviate() = this?.firstOrNull() ?: ""
 
 fun String.parseDate(pattern: String): Date? =
   SimpleDateFormat(pattern, Locale.ENGLISH).tryParse(this)
+
+/** Compare characters of identical strings */
+fun String.compare(anotherString: String): Boolean =
+  this.toSortedSet().containsAll(anotherString.toSortedSet())

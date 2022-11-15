@@ -41,6 +41,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 class ConfigExtensionsKtTest : RobolectricTest() {
 
@@ -109,7 +110,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
     Assert.assertEquals(2, slotBundle.captured.size())
-    Assert.assertEquals("id", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
+    Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
   }
 
@@ -126,11 +127,18 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun testLaunchReportActionOnClick() {
     val clickAction =
-      ActionConfig(trigger = ActionTrigger.ON_CLICK, workflow = ApplicationWorkflow.LAUNCH_REPORT)
+      ActionConfig(
+        id = "reportId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REPORT
+      )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
-    verify { navController.navigate(capture(slotInt)) }
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
+    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
   }
 
   @Test
@@ -172,6 +180,14 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         questionnaire = QuestionnaireConfig(id = "qid", title = "Form")
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
-    verify { context.launchQuestionnaire<QuestionnaireActivity>(any(), any(), any()) }
+    verify {
+      (context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+        context = any(),
+        intentBundle = any(),
+        questionnaireConfig = any(),
+        computedValuesMap = any(),
+        actionParams = any()
+      )
+    }
   }
 }
