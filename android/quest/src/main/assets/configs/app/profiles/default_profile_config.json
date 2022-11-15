@@ -51,6 +51,20 @@
       ]
     },
     {
+      "name": "patientActive",
+      "condition": "true",
+      "actions": [
+        "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+      ]
+    },
+    {
+      "name": "patientTextColor",
+      "condition": "true",
+      "actions": [
+        "data.put('patientTextColor', Patient.active ? '#000000' : 'DefaultColor')"
+      ]
+    },
+    {
       "name": "patientIdentifier",
       "condition": "true",
       "actions": [
@@ -82,14 +96,14 @@
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient, 'dd/MM/YY'))"
+        "data.put('patientDOB', service.extractDOB(Patient, 'dd MM'))"
       ]
     },
     {
       "name": "isChild",
       "condition": "true",
       "actions": [
-        "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+        "data.put('isChild',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
       ]
     },
     {
@@ -107,38 +121,45 @@
       ]
     },
     {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
+      ]
+    },
+    {
       "name": "isPregnant",
       "condition": "true",
       "actions": [
-        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", false))"
+        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.text = 'Pregnant' \", false))"
       ]
     },
     {
       "name": "canRegisterPregnancy",
       "condition": "true",
       "actions": [
-        "data.put('canRegisterPregnancy', data.get('canBearChild'))"
+        "data.put('canRegisterPregnancy', data.get('canBearChild') && data.get('!isPregnant'))"
+      ]
+    },
+    {
+      "name": "canEnrollToFp",
+      "condition": "true",
+      "actions": [
+        "data.put('canEnrollToFp', data.get('isEligibleForFP') && data.get('!isPregnant'))"
       ]
     },
     {
       "name": "isChildUnder2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildUnder2months', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate > today() - 2 'months')\"))"
+        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate > today() - 2 'months')\"))"
       ]
     },
     {
       "name": "isChildOver2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildOver2months', fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
-      ]
-    },
-    {
-      "name": "canHavePregnancyOutcome",
-      "condition": "true",
-      "actions": [
-        "data.put('canHavePregnancyOutcome', data.get('canBearChild'))"
+        "data.put('isChildOver2months',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
       ]
     }
   ],
@@ -285,6 +306,7 @@
                     "text": "@{taskDescription}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
+                    "enabled": "@{patientActive}",
                     "actions": [
                       {
                         "trigger": "ON_CLICK",
@@ -310,8 +332,9 @@
   "overFlowMenuItems": [
     {
       "title": "Registration info",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "true",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -333,8 +356,9 @@
     },
     {
       "title": "Record as Sick",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "@{isChildOver2months}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -352,8 +376,9 @@
     },
     {
       "title": "Record as Sick",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "@{isChildUnder2months}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -371,8 +396,9 @@
     },
     {
       "title": "Register Pregnancy",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "@{canRegisterPregnancy}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -390,8 +416,9 @@
     },
     {
       "title": "Pregnancy Outcome",
-      "titleColor": "#000000",
-      "visible": "@{canHavePregnancyOutcome}",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{isPregnant}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -409,8 +436,9 @@
     },
     {
       "title": "Enroll to FP",
-      "titleColor": "#000000",
-      "visible": "@{isEligibleForFP}",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canEnrollToFp}",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -429,8 +457,9 @@
     },
     {
       "title": "Register with Disease",
-      "titleColor": "#000000",
+      "titleColor": "@{patientTextColor}",
       "visible": "true",
+      "enabled": "@{patientActive}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -450,7 +479,8 @@
     {
       "title": "Remove this person",
       "titleColor": "#FF0000",
-      "visible": "true",
+      "visible": "@{patientActive}",
+      "enabled": "@{patientActive}",
       "showSeparator": "true",
       "actions": [
         {
