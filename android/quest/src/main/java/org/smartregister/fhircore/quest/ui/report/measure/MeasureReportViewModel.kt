@@ -27,7 +27,9 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +42,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -243,8 +246,27 @@ constructor(
               // Show Progress indicator while evaluating measure
               toggleProgressIndicatorVisibility(true)
 
-              withContext(dispatcherProvider.io()) {
-                fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
+              val result =
+                  fhirEngine.search<MeasureReport> {
+                    filter(
+                        MeasureReport.PERIOD,
+                        {
+                          value = of(DateTimeType(startDateFormatted))
+                          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+                        },
+                        {
+                          value = of(DateTimeType(endDateFormatted))
+                          prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+                        },
+                        operation = com.google.android.fhir.search.Operation.AND)
+                  }
+
+              if (result.isEmpty()) {
+                withContext(dispatcherProvider.io()) {
+                  fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
+                }
+              } else {
+                formatPopulationMeasureReport(result[0])
               }
 
               if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
@@ -410,7 +432,7 @@ constructor(
         }
   }
 
-  /** This function returns a map of year-month for all months falling in given measure period */
+  /** This function @returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
       reportId: String,
       startDate: Date? = null
@@ -421,7 +443,8 @@ constructor(
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
 
-    while (lastDate!!.after(startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD))) {
+    while (lastDate!!.after(
+        startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD))) {
       yearMonths.add(
           ReportRangeSelectionData(
               lastDate.formatDate(SDF_MMMM), lastDate.formatDate(SDF_YYYY), lastDate))
