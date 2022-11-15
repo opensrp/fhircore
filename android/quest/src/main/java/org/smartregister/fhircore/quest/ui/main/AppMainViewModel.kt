@@ -27,7 +27,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -70,7 +69,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -92,7 +90,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val oAuthService: FhirOAuthService,
-  val fhirEngine: FhirEngine,
   val configService: ConfigService,
   val defaultRepository: DefaultRepository,
 ) : ViewModel() {
@@ -130,23 +127,19 @@ constructor(
       }
   }
 
-  fun fetchResourcesFromComposition() {
+  fun fetchResourcesFromComposition(compositionResource: Composition?) {
     viewModelScope.launch {
-      val compositionResource =
-        fhirEngine.searchCompositionByIdentifier(
-          sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
-        )
-      compositionResource!!
-        .retrieveCompositionSections()
-        .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-        .groupBy { it.focus.reference.substringBeforeLast("/") }
-        .filter {
+      compositionResource
+        ?.retrieveCompositionSections()
+        ?.filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+        ?.groupBy { it.focus.reference.substringBeforeLast("/") }
+        ?.filter {
           it.key == ResourceType.Questionnaire.name ||
             it.key == ResourceType.StructureMap.name ||
             it.key == ResourceType.List.name ||
             it.key == ResourceType.Library.name
         }
-        .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+        ?.forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
           val resourceUrlPath =
             entry.key +

@@ -28,6 +28,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import com.google.gson.Gson
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,6 +42,10 @@ import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -49,6 +54,7 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -63,7 +69,6 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.QuestConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -75,7 +80,8 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var gson: Gson
 
@@ -85,11 +91,11 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val fhirOAuthService: FhirOAuthService = mockk(relaxed = true)
 
-  var fhirEngine: FhirEngine = mockk()
+  val fhirEngine = mockk<FhirEngine>()
 
-  @Inject lateinit var configService: QuestConfigService
+  private val configService = mockk<ConfigService>()
 
-  private val secureSharedPreference: SecureSharedPreference = mockk()
+  private val secureSharedPreference = mockk<SecureSharedPreference>()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -108,6 +114,7 @@ class AppMainViewModelTest : RobolectricTest() {
     sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
     appMainViewModel =
       spyk(
@@ -120,12 +127,11 @@ class AppMainViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           oAuthService = fhirOAuthService,
-          fhirEngine = fhirEngine,
           configService = configService,
           defaultRepository = mockk()
         )
       )
-
+    coEvery { appMainViewModel.defaultRepository.create(any(), any()) } returns emptyList()
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
@@ -268,5 +274,28 @@ class AppMainViewModelTest : RobolectricTest() {
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     verify { accountAuthenticator.logout() }
+  }
+
+  @Test
+  fun testFetchConfigurations() = runBlocking {
+    val composition =
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "StructureMap/123456"
+              identifier = Identifier().apply { value = "012345" }
+            }
+        }
+      }
+    val bundle =
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply {
+          this.resource = StructureMap().apply { StructureMap@ this.id = "123456" }
+        }
+      }
+    coEvery { fhirOAuthService.getResource(any()) } returns bundle
+    appMainViewModel.fetchResourcesFromComposition(composition)
+    coVerify { appMainViewModel.defaultRepository.create(any(), any()) }
   }
 }
