@@ -63,13 +63,6 @@
                 ]
             },
             {
-                "name": "assignedTeam",
-                "condition": "true",
-                "actions": [
-                    "data.put('assignedTeam', fhirPath.extractValue(size(Organization) > 0 ? Organization.get(0) : null, 'Organization.name'))"
-                ]
-            },
-            {
                 "name": "assignedLocation",
                 "condition": "true",
                 "actions": [
@@ -91,13 +84,7 @@
                             },
                             {
                                 "viewType": "COMPOUND_TEXT",
-                                "primaryText": "Team: @{assignedTeam}",
-                                "fontSize": 13.0,
-                                "primaryTextColor": "#000000"
-                            },
-                            {
-                                "viewType": "COMPOUND_TEXT",
-                                "primaryText": "Location: @{assignedLocation}",
+                                "primaryText": "Village: @{assignedLocation}",
                                 "fontSize": 13.0,
                                 "primaryTextColor": "#000000"
                             }

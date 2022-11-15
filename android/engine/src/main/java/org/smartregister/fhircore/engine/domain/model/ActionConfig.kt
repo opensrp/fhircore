@@ -28,6 +28,7 @@ data class ActionConfig(
   val trigger: ActionTrigger,
   val workflow: ApplicationWorkflow? = null,
   val id: String? = null,
+  val display: String? = null,
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
   val params: List<ActionParameter> = emptyList(),
@@ -39,6 +40,9 @@ data class ActionConfig(
         putString(it.first, it.second)
       }
     }
+  
+  fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
+    display?.interpolate(computedValuesMap) ?: ""
 }
 
 @Serializable
