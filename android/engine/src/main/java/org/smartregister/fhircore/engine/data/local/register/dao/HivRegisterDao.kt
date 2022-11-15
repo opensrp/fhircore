@@ -50,6 +50,9 @@ import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
+import org.smartregister.fhircore.engine.util.extension.extractAddressState
+import org.smartregister.fhircore.engine.util.extension.extractAddressText
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractGivenName
@@ -148,6 +151,9 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
+      addressDistrict = patient.extractAddressDistrict(),
+      addressTracingCatchment = patient.extractAddressState(),
+      addressPhysicalLocator = patient.extractAddressText(),
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,

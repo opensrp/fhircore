@@ -51,6 +51,7 @@ import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRo
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
+import org.smartregister.fhircore.quest.ui.tracing.profile.TracingProfileScreen
 import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterScreen
 
 @Composable
@@ -185,6 +186,12 @@ private fun AppMainNavigationGraph(
           ) {
             PatientProfileScreen(navController = navController, appMainViewModel = appMainViewModel)
           }
+        MainNavigationScreen.TracingProfile ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingProfileScreen(navController = navController) }
         MainNavigationScreen.PatientGuardians ->
           composable(
             route =

@@ -231,7 +231,7 @@ constructor(
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
         else
           event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
+            route = MainNavigationScreen.TracingProfile.route + urlParams
           )
       }
     }
