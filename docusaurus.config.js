@@ -8,13 +8,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'opensrp-fhircore-documentation',
   tagline: 'fhir-core',
-  url: 'https://opensrp.fhircore-documentation',
-  baseUrl: '/',
+  url: 'https://opensrp.github.io/',
+  baseUrl: '/fhircore/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
   organizationName: 'opensrp', // Usually your GitHub org/user name.
   projectName: 'fhircore', // Usually your repo name.
+  trailingSlash: false,
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -30,8 +31,6 @@ const config = {
        ({
          docs: {
           routeBasePath:'/',
-           // Please change this to your repo.
-           // Remove this to remove the "edit this page" links.
            editUrl:'https://github.com/opensrp/fhircore/tree/main/',
          },
          blog: false
