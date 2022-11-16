@@ -214,6 +214,23 @@
   },
   "staticMenu": [
     {
+      "id": "practitionerRegister",
+      "display": "CHAs",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local","reference": "ic_households"},
+      "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_REGISTER",
+      "id": "practitionerRegister"},
+    {
+      "trigger": "ON_COUNT",
+      "id": "practitionerRegister"
+    }
+  ]
+},
+    {
       "id": "inventoryRegister",
       "display": "Stock Inventory",
       "icon": "",
