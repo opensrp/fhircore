@@ -38,10 +38,6 @@ allprojects {
             url 'https://oss.sonatype.org/content/repositories/snapshots'
         }
         maven {
-            name = "fhirsdk"
-            url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
-        }
-        maven {
             url 'https://jcenter.bintray.com/'
         }
     }

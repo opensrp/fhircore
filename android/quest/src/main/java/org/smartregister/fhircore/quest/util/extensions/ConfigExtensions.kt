@@ -66,7 +66,11 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(NavigationArg.SCREEN_TITLE, navMenu?.display)
+            Pair(
+              NavigationArg.SCREEN_TITLE,
+              resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
+            ),
+            Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
           )
         navController.navigate(MainNavigationScreen.Home.route, args)
       }
