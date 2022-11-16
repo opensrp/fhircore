@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -31,6 +32,8 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -47,6 +50,7 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   @Inject lateinit var loginService: LoginService
+  @Inject lateinit var libraryEvaluator: LibraryEvaluator
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -54,7 +58,9 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
-    val isLoggedIn = accountAuthenticator.hasActiveSession()
+    setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
+
+    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
 
     with(appSettingViewModel) {
       val appSettingActivity = this@AppSettingActivity
@@ -133,7 +139,7 @@ class AppSettingActivity : AppCompatActivity() {
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)
-        fetchConfigurations(!isLoggedIn)
+        fetchConfigurations(!accountAuthenticator.hasActiveSession())
       }
     }
       ?: run {

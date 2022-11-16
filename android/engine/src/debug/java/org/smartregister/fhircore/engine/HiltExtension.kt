@@ -51,19 +51,21 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
         themeResId
       )
 
-  ActivityScenario.launch<HiltActivityForTest>(startActivityIntent).onActivity { activity ->
-    val fragment: Fragment =
-      activity.supportFragmentManager.fragmentFactory.instantiate(
-        checkNotNull(T::class.java.classLoader),
-        T::class.java.name
-      )
-    fragment.arguments = fragmentArgs
-    activity
-      .supportFragmentManager
-      .beginTransaction()
-      .add(android.R.id.content, fragment, "")
-      .commitNow()
+  ActivityScenario.launch<HiltActivityForTest>(startActivityIntent).use { scenario ->
+    scenario.onActivity { activity ->
+      val fragment: Fragment =
+        activity.supportFragmentManager.fragmentFactory.instantiate(
+          checkNotNull(T::class.java.classLoader),
+          T::class.java.name
+        )
+      fragment.arguments = fragmentArgs
+      activity
+        .supportFragmentManager
+        .beginTransaction()
+        .add(android.R.id.content, fragment, "")
+        .commitNow()
 
-    fragment.action()
+      fragment.action()
+    }
   }
 }

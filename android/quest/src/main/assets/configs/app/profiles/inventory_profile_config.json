@@ -43,6 +43,13 @@
       ]
     },
     {
+      "name": "lastUpdatedDate",
+      "condition": "true",
+      "actions": [
+        "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+      ]
+    },
+    {
       "name": "unitsOfMeasure",
       "condition": "true",
       "actions": [
@@ -62,6 +69,12 @@
               "viewType": "COMPOUND_TEXT",
               "primaryText": "@{commodityName}",
               "primaryTextColor": "#000000"
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "@{lastUpdatedDate}",
+              "fontSize": 14.0,
+              "primaryTextColor": "#5A5A5A"
             },
             {
               "viewType": "SPACER",

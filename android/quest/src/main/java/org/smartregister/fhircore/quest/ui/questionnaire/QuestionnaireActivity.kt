@@ -137,7 +137,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireViewModel.run {
         questionnaire =
           loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
-        libraryEvaluator.initialize()
       }
 
       // Only add the fragment once, when the activity is first created.

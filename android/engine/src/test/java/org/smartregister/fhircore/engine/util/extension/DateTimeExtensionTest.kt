@@ -111,55 +111,6 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `isSameMonthYear() should return true when month strings are exactly same format`() {
-    val result = isSameMonthYear("Feb-2021", "Feb-2021")
-
-    assertTrue(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return true when month strings are same with different format`() {
-    val result = isSameMonthYear("Feb-2021", "2021-Feb")
-
-    assertTrue(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return false when month strings are different with same format`() {
-    val result = isSameMonthYear("Feb-2021", "Jan-2021")
-
-    assertFalse(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return false when month strings are have different year with same format`() {
-    val result = isSameMonthYear("Jan-2022", "Jan-2021")
-
-    assertFalse(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return false when month strings are have different year with different format`() {
-    val result = isSameMonthYear("Jan-2022", "2021-Jan")
-
-    assertFalse(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return false when month strings have one with invalid format`() {
-    val result = isSameMonthYear("Jan-21", "2021-Jan")
-
-    assertFalse(result)
-  }
-
-  @Test
-  fun `isSameMonthYear() should return false when month strings have both with invalid format`() {
-    val result = isSameMonthYear("Jan-21", "2021-Ja")
-
-    assertFalse(result)
-  }
-
-  @Test
   fun testDatePlusYearsShouldAddYearsToDate() {
     val date = DateType("2010-10-12").value
 

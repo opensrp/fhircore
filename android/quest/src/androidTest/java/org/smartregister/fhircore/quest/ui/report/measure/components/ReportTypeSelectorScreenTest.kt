@@ -30,6 +30,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorPage
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICKER_FORM_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
@@ -48,6 +52,7 @@ class ReportTypeSelectorScreenTest {
 
   private val monthList =
     listOf(ReportRangeSelectionData("March", "October", "2022-02-02".getDate("dd mm yyyy")))
+    listOf(ReportRangeSelectionData("March", "October", "2022-02-02".parseDate(SDF_YYYY_MM_DD)!!))
 
   private val dateRange = HashMap<String, List<ReportRangeSelectionData>>()
   @Before
@@ -59,6 +64,8 @@ class ReportTypeSelectorScreenTest {
   fun testMonthYearListDisplayed() {
     composeTestRule.setContent {
       showFixedMonthYearListing(
+
+      FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
         onBackPress = mockBackListener,
@@ -76,6 +83,7 @@ class ReportTypeSelectorScreenTest {
   fun testProgressIndicatorIsDisplayed() {
     composeTestRule.setContent {
       showFixedMonthYearListing(
+      FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
         onBackPress = mockBackListener,
@@ -99,6 +107,7 @@ class ReportTypeSelectorScreenTest {
   fun testMonthClickListener() {
     composeTestRule.setContent {
       showFixedMonthYearListing(
+      FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
         onBackPress = mockBackListener,
@@ -138,7 +147,7 @@ class ReportTypeSelectorScreenTest {
       .assertIsDisplayed()
   }
 
-  fun defaultDateRangeState() =
+  private fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
       MaterialDatePicker.todayInUtcMilliseconds()

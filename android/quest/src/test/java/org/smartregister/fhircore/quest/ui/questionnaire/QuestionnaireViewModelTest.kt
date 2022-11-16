@@ -173,7 +173,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } answers {}
 
     coEvery { defaultRepo.create(any()) } returns emptyList()
-    coEvery { defaultRepo.addOrUpdate(any()) } just runs
+    coEvery { defaultRepo.addOrUpdate(resource = any()) } just runs
 
     // Setup sample resources
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
@@ -405,8 +405,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = questionnaireConfig
       )
 
-      coVerify { defaultRepo.addOrUpdate(patient) }
-      coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
+      coVerify { defaultRepo.addOrUpdate(resource = patient) }
+      coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
       coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any()) }
     }
     unmockkObject(ResourceMapper)
@@ -442,7 +442,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = questionnaireConfig
     )
 
-    coVerify { defaultRepo.addOrUpdate(any()) }
+    coVerify { defaultRepo.addOrUpdate(resource = any()) }
 
     unmockkObject(ResourceMapper)
   }
@@ -469,7 +469,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = questionnaireConfig
     )
 
-    coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
+    coVerify(timeout = 2000) {
+      defaultRepo.addOrUpdate(resource = capture(questionnaireResponseSlot))
+    }
+
+    Assert.assertEquals(
+      "2",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
+    Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
   }
 
   @Test
@@ -479,7 +487,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = samplePatient() }
     coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns samplePatient()
-    coEvery { defaultRepo.addOrUpdate(any()) } just runs
+    coEvery { defaultRepo.addOrUpdate(resource = any()) } just runs
 
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val patientSlot = slot<Resource>()
@@ -504,8 +512,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerifyOrder {
-      defaultRepo.addOrUpdate(capture(patientSlot))
-      defaultRepo.addOrUpdate(capture(questionnaireResponseSlot))
+      defaultRepo.addOrUpdate(resource = capture(patientSlot))
+      defaultRepo.addOrUpdate(resource = capture(questionnaireResponseSlot))
     }
 
     Assert.assertEquals("2", patientSlot.captured.id)
@@ -608,13 +616,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
-    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
+    coEvery { defaultRepo.addOrUpdate(resource = any()) } returns Unit
 
     runBlocking {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
-    coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
+    coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
   }
 
   @Test
@@ -627,7 +635,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
-    coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
+    coVerify(inverse = true) { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
   }
 
   @Test
@@ -654,9 +662,32 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerify { ResourceMapper.extract(any(), any(), any()) }
-    coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
+    coVerify(inverse = true) { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
 
     unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testExtractQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
+
+    val questionnaire = Questionnaire().apply { id = "qId" }
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
+    coEvery { defaultRepo.addOrUpdate(resource = any()) } returns Unit
+
+    Assert.assertNull(questionnaireResponse.id)
+    Assert.assertNull(questionnaireResponse.authored)
+
+    runBlocking {
+      questionnaireViewModel.extractAndSaveResources(
+        context = context,
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig
+      )
+    }
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
   }
 
   @Test
@@ -670,7 +701,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         authored = authoredDate
         subject = Reference("12345")
       }
-    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
+    coEvery { defaultRepo.addOrUpdate(resource = any()) } returns Unit
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
@@ -801,7 +832,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // call the method under test
     runBlocking { questionnaireViewModel.saveBundleResources(bundle) }
 
-    coVerify(exactly = size) { defaultRepo.addOrUpdate(any()) }
+    coVerify(exactly = size) { defaultRepo.addOrUpdate(resource = any()) }
   }
 
   @Test
@@ -827,7 +858,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // call the method under test
     runBlocking { questionnaireViewModel.saveBundleResources(bundle) }
 
-    coVerify(exactly = 1) { defaultRepo.addOrUpdate(capture(resource)) }
+    coVerify(exactly = 1) { defaultRepo.addOrUpdate(resource = capture(resource)) }
   }
 
   @Test

@@ -77,5 +77,5 @@ val MeasureReport.reportingPeriodMonthsSpan
 
 fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth: String) =
   this.stratifier.flatMap { it.stratum }.find {
-    it.hasValue() && isSameMonthYear(it.value.text, reportingMonth)
+    it.hasValue() && it.value.text.compare(reportingMonth)
   }

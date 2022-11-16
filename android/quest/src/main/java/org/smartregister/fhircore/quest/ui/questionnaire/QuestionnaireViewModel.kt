@@ -154,7 +154,7 @@ constructor(
       if (resource.resourceType == ResourceType.RelatedPerson) {
         this.managingEntity = resource.logicalId.asReference(ResourceType.RelatedPerson)
       }
-      defaultRepository.addOrUpdate(this)
+      defaultRepository.addOrUpdate(resource = this)
     }
   }
 
@@ -368,7 +368,7 @@ constructor(
       return
     }
 
-    defaultRepository.addOrUpdate(questionnaireResponse)
+    defaultRepository.addOrUpdate(resource = questionnaireResponse)
   }
 
   suspend fun performExtraction(
@@ -390,7 +390,9 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
+      bundle.entry.forEach { bundleEntry ->
+        defaultRepository.addOrUpdate(resource = bundleEntry.resource)
+      }
     }
   }
 

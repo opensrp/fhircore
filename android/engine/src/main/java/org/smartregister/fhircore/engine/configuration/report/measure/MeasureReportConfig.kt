@@ -25,4 +25,4 @@ data class MeasureReportConfig(
   val description: String = "",
   val url: String = "",
   val module: String = "",
-)
+])
