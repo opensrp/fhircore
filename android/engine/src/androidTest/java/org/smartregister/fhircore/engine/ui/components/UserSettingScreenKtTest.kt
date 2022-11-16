@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.usersetting
+package org.smartregister.fhircore.engine.ui.components
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,28 +22,29 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
-import io.mockk.spyk
-import io.mockk.verify
 import java.util.Locale
+import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.usersetting.UserSettingScreen
 
-class UserSettingScreenKtTest : RobolectricTest() {
-
-  private val mockUserSettingsEventListener: (UserSettingsEvent) -> Unit = spyk({})
+class UserSettingScreenKtTest {
 
   @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
-
   private lateinit var scenario: ActivityScenario<ComponentActivity>
   private lateinit var activity: ComponentActivity
+
   @Before
   fun setUp() {
     scenario = ActivityScenario.launch(ComponentActivity::class.java)
+  }
+
+  @After
+  fun tearDown() {
+    scenario.close()
   }
 
   @Test
@@ -68,13 +69,6 @@ class UserSettingScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Sync").performClick()
     verify { mockUserSettingsEventListener(any()) }
   }*/
-
-  @Test
-  fun testLogoutRowClickShouldInitiateLogout() {
-    initComposable()
-    composeRule.onNodeWithText("Log out").performClick()
-    verify { mockUserSettingsEventListener(any()) }
-  }
 
   @Test
   fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
@@ -122,7 +116,6 @@ class UserSettingScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText(activity.getString(R.string.clear_database_message)).assertExists()
   }
 
-  @Ignore("Fix AppIdleException")
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
     initComposable(allowMainClockAutoAdvance = true)
@@ -145,7 +138,7 @@ class UserSettingScreenKtTest : RobolectricTest() {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          onEvent = mockUserSettingsEventListener,
+          onEvent = {},
           progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
           showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
           isDebugVariant = isDebugVariant
