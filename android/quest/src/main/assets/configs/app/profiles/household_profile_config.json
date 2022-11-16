@@ -390,8 +390,7 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' && service.mapResourcesToLabeledCSV(Observation.code.coding.code == 'died' ? Observation.display == 'Died' : Observation.code.coding.code == 'moved-away' ? Observation.display == 'moved-away' : Observation.code.coding.code == 'other' ? Observation.display == 'other'))"
-                    ]
+                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"                    ]
                   },
                   {
                     "name": "statuses",
