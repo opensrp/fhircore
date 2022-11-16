@@ -48,24 +48,26 @@ const val MEASURE_ROW_TEST_TAG = "measureRowTestTag"
 @Composable
 fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier = Modifier) {
   Row(
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically,
-      modifier =
-          modifier
-              .clickable { onRowClick() }
-              .fillMaxWidth()
-              .height(IntrinsicSize.Min)
-              .testTag(MEASURE_ROW_TEST_TAG)) {
-        Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
-          Text(text = title, modifier.wrapContentWidth().testTag(MEASURE_ROW_TITLE_TEST_TAG))
-          Spacer(modifier = modifier.height(8.dp))
-        }
-        Image(
-            painter = painterResource(id = R.drawable.ic_forward_arrow),
-            contentDescription = "",
-            colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
-            modifier = Modifier.padding(end = 12.dp).testTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG))
-      }
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      modifier
+        .clickable { onRowClick() }
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min)
+        .testTag(MEASURE_ROW_TEST_TAG)
+  ) {
+    Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
+      Text(text = title, modifier.wrapContentWidth().testTag(MEASURE_ROW_TITLE_TEST_TAG))
+      Spacer(modifier = modifier.height(8.dp))
+    }
+    Image(
+      painter = painterResource(id = R.drawable.ic_forward_arrow),
+      contentDescription = "",
+      colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
+      modifier = Modifier.padding(end = 12.dp).testTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG)
+    )
+  }
 }
 
 @Composable

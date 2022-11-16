@@ -1,28 +1,38 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.quest.ui.report.measure.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.time.YearMonth.of
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.utilities.graphql.Operation
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -37,13 +47,13 @@ import timber.log.Timber
 class MeasureReportWorker
 @AssistedInject
 constructor(
-    @Assisted val appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    val defaultRepository: DefaultRepository,
-    val configurationRegistry: ConfigurationRegistry,
-    val dispatcherProvider: DefaultDispatcherProvider,
-    val fhirOperator: FhirOperator,
-    val fhirEngine: FhirEngine
+  @Assisted val appContext: Context,
+  @Assisted workerParams: WorkerParameters,
+  val defaultRepository: DefaultRepository,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val fhirOperator: FhirOperator,
+  val fhirEngine: FhirEngine
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
@@ -55,13 +65,10 @@ constructor(
       withContext(dispatcherProvider.io()) { fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url) }
       monthList.forEach { date ->
         evaluatePopulationMeasure(
-            it.url,
-            date
-                .firstDayOfMonth()
-                .formatDate(SDF_YYYY_MM_DD),
-            date
-                .lastDayOfMonth()
-              .formatDate(SDF_YYYY_MM_DD))
+          it.url,
+          date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD),
+          date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+        )
       }
     }
 
@@ -69,34 +76,36 @@ constructor(
   }
 
   private fun retrieveMeasureReportConfiguration(): MeasureReportConfiguration =
-      configurationRegistry.retrieveConfiguration(
-          configType = ConfigType.MeasureReport, configId = "defaultMeasureReport")
+    configurationRegistry.retrieveConfiguration(
+      configType = ConfigType.MeasureReport,
+      configId = "defaultMeasureReport"
+    )
 
   private suspend fun evaluatePopulationMeasure(
-      measureUrl: String,
-      startDateFormatted: String,
-      endDateFormatted: String
+    measureUrl: String,
+    startDateFormatted: String,
+    endDateFormatted: String
   ) {
 
     val measureReport: MeasureReport? =
-        withContext(dispatcherProvider.io()) {
-          try {
-            fhirOperator.evaluateMeasure(
-                measureUrl = measureUrl,
-                start = startDateFormatted,
-                end = endDateFormatted,
-                reportType = MeasureReportViewModel.POPULATION,
-                subject = null,
-                practitioner = null
-                /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-                practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-                lastReceivedOn = null // Non-null value not supported yet
-                )
-          } catch (exception: IllegalArgumentException) {
-            Timber.e(exception)
-            null
-          }
+      withContext(dispatcherProvider.io()) {
+        try {
+          fhirOperator.evaluateMeasure(
+            measureUrl = measureUrl,
+            start = startDateFormatted,
+            end = endDateFormatted,
+            reportType = MeasureReportViewModel.POPULATION,
+            subject = null,
+            practitioner = null
+            /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+            practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+            lastReceivedOn = null // Non-null value not supported yet
+          )
+        } catch (exception: IllegalArgumentException) {
+          Timber.e(exception)
+          null
         }
+      }
     if (measureReport != null) defaultRepository.addOrUpdate(measureReport)
   }
 

@@ -306,7 +306,7 @@ constructor(
     workManager.enqueueUniquePeriodicWork(
         MeasureReportWorker.WORK_ID,
         ExistingPeriodicWorkPolicy.KEEP,
-        PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.MINUTES).build())
+        PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.HOURS).build())
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {

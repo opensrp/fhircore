@@ -43,35 +43,37 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 
 @Composable
 fun MeasureReportListScreen(
-    mainNavController: NavController,
-    dataList: Flow<PagingData<MeasureReportConfig>>,
-    onReportMeasureClicked: (List<MeasureReportConfig?>?) -> Unit,
-    modifier: Modifier = Modifier
+  mainNavController: NavController,
+  dataList: Flow<PagingData<MeasureReportConfig>>,
+  onReportMeasureClicked: (List<MeasureReportConfig?>?) -> Unit,
+  modifier: Modifier = Modifier
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
 
   Scaffold(
-      topBar = {
-        TopAppBar(
-            title = { Text(text = stringResource(R.string.reports)) },
-            navigationIcon = {
-              IconButton(onClick = { mainNavController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, null)
-              }
-            },
-            contentColor = Color.White,
-            backgroundColor = MaterialTheme.colors.primary)
-      }) { innerPadding ->
-        Box(modifier = modifier.padding(innerPadding)) {
-          LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
-            lazyReportItems.keys.forEach {
-              item {
-                it?.let { it1 ->
-                  MeasureReportRow(it1, { onReportMeasureClicked(lazyReportItems[it]) })
-                }
-              }
+    topBar = {
+      TopAppBar(
+        title = { Text(text = stringResource(R.string.reports)) },
+        navigationIcon = {
+          IconButton(onClick = { mainNavController.popBackStack() }) {
+            Icon(Icons.Filled.ArrowBack, null)
+          }
+        },
+        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primary
+      )
+    }
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
+        lazyReportItems.keys.forEach {
+          item {
+            it?.let { it1 ->
+              MeasureReportRow(it1, { onReportMeasureClicked(lazyReportItems[it]) })
             }
           }
         }
       }
+    }
+  }
 }

@@ -22,11 +22,11 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 data class MeasureReportConfiguration(
-    override var appId: String,
-    override var configType: String = ConfigType.MeasureReport.name,
-    val id: String,
-    val registerId: String,
-    val registerDate: String? = null,
-    val showFixedRangeSelection: Boolean? = null,
-    val reports: List<MeasureReportConfig> = emptyList()
+  override var appId: String,
+  override var configType: String = ConfigType.MeasureReport.name,
+  val id: String,
+  val registerId: String,
+  val registerDate: String? = null,
+  val showFixedRangeSelection: Boolean? = null,
+  val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()
