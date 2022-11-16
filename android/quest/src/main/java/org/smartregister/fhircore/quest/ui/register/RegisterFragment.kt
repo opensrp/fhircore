@@ -45,6 +45,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -152,7 +153,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
                 currentPage = registerViewModel.currentPage,
                 onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
-                registerUiState = registerViewModel.registerUiState.value
+                registerUiState = registerViewModel.registerUiState.value,
+                toolBarHomeNavigation =  registerFragmentArgs.toolBarHomeNavigation
               )
             }
           }
