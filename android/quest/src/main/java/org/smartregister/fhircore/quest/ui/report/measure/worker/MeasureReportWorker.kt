@@ -109,7 +109,7 @@ constructor(
           null
         }
       }
-    if (measureReport != null) defaultRepository.addOrUpdate(measureReport)
+    if (measureReport != null) defaultRepository.addOrUpdate(resource = measureReport)
   }
 
   /** @return list of months within current date and starting date of campaign */
