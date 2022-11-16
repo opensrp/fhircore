@@ -37,6 +37,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 
@@ -46,7 +49,11 @@ const val MEASURE_ROW_FORWARD_ARROW_TEST_TAG = "measureRowForwardArrowTestTag"
 const val MEASURE_ROW_TEST_TAG = "measureRowTestTag"
 
 @Composable
-fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier = Modifier) {
+fun MeasureReportRow(
+  measureReportConfig: MeasureReportConfig,
+  onRowClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -58,8 +65,23 @@ fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier =
         .testTag(MEASURE_ROW_TEST_TAG)
   ) {
     Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
-      Text(text = title, modifier.wrapContentWidth().testTag(MEASURE_ROW_TITLE_TEST_TAG))
+      Text(
+        text = measureReportConfig.title,
+        fontSize = 18.sp,
+        modifier = modifier.wrapContentWidth().testTag(MEASURE_ROW_TITLE_TEST_TAG)
+      )
       Spacer(modifier = modifier.height(8.dp))
+      Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          color = SubtitleTextColor,
+          text = measureReportConfig.description,
+          fontSize = 14.sp,
+          modifier = modifier.wrapContentWidth().testTag(MEASURE_ROW_DESCRIPTION_TEST_TAG)
+        )
+      }
     }
     Image(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
@@ -74,5 +96,11 @@ fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier =
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun MeasureReportRowPreview() {
-  MeasureReportRow(title = "Module 1- ANC Contacts ", onRowClick = {})
+  val measureReportConfig =
+    MeasureReportConfig(
+      id = "1",
+      title = "4+ ANC Contacts ",
+      description = "Pregnant women with at least four ANC Contacts",
+    )
+  MeasureReportRow(measureReportConfig = measureReportConfig, onRowClick = {})
 }

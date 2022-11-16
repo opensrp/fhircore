@@ -27,9 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +40,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -153,11 +150,11 @@ constructor(
 
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        measureReportConfig.value = event.measureReportConfig?.get(0)
+        measureReportConfig.value = event.measureReportConfig
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig?.get(0)?.module)
+              Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig.title)
             )
         )
       }
@@ -193,23 +190,15 @@ constructor(
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected -> // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-      {
+      is MeasureReportEvent.OnPatientSelected ->
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
-      }
-      is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-        // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-      {
+      is MeasureReportEvent.OnSearchTextChanged ->
         patientsData.value =
           retrievePatients(event.reportId).map {
             pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
-      }
     }
   }
 
@@ -259,30 +248,8 @@ constructor(
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
 
-            val result =
-              fhirEngine.search<MeasureReport> {
-                filter(
-                  MeasureReport.PERIOD,
-                  {
-                    value = of(DateTimeType(startDateFormatted))
-                    prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-                  },
-                  {
-                    value = of(DateTimeType(endDateFormatted))
-                    prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-                  },
-                  operation = com.google.android.fhir.search.Operation.AND
-                )
-              }
-
-            if (result.isEmpty()) {
-              withContext(dispatcherProvider.io()) {
-                fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
-              }
-            } else {
-              formatPopulationMeasureReport(
-                result.last()
-              ) // update this method to handle list of measure reports
+            withContext(dispatcherProvider.io()) {
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
             }
 
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
@@ -453,7 +420,7 @@ constructor(
       }
   }
 
-  /** This function @returns a map of year-month for all months falling in given measure period */
+  /** This function returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
     reportId: String,
     startDate: Date? = null
@@ -493,7 +460,7 @@ constructor(
 
   companion object {
     private const val SUBJECT = "subject"
-    const val POPULATION = "population"
+    private const val POPULATION = "population"
     private const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20
   }

@@ -20,7 +20,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -30,14 +32,20 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
+import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
@@ -45,10 +53,10 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 fun MeasureReportListScreen(
   mainNavController: NavController,
   dataList: Flow<PagingData<MeasureReportConfig>>,
-  onReportMeasureClicked: (List<MeasureReportConfig?>?) -> Unit,
+  onReportMeasureClicked: (MeasureReportConfig) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
+  val lazyReportItems = dataList.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
@@ -66,11 +74,25 @@ fun MeasureReportListScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
-        lazyReportItems.keys.forEach {
-          item {
-            it?.let { it1 ->
-              MeasureReportRow(it1, { onReportMeasureClicked(lazyReportItems[it]) })
-            }
+        items(items = lazyReportItems, key = { it.id }) { item ->
+          MeasureReportRow(item!!, { onReportMeasureClicked(item) })
+          Divider(color = DividerColor, thickness = 1.dp)
+        }
+
+        lazyReportItems.apply {
+          when {
+            loadState.refresh is LoadState.Loading ->
+              item {
+                CircularProgressBar(
+                  modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                )
+              }
+            loadState.append is LoadState.Loading ->
+              item {
+                CircularProgressBar(
+                  modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                )
+              }
           }
         }
       }
