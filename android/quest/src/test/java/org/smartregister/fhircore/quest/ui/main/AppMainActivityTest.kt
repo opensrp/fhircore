@@ -25,6 +25,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.Configuration
 import androidx.work.impl.utils.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
+import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.BindValue
@@ -32,12 +33,16 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
+import java.util.Locale
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
@@ -47,11 +52,14 @@ import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -63,6 +71,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+
+  @BindValue lateinit var appMainViewModel: AppMainViewModel
+
+  val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
+  val secureSharedPreference: SecureSharedPreference = mockk()
 
   lateinit var appMainActivity: AppMainActivity
 
@@ -77,6 +91,28 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         .setExecutor(SynchronousExecutor())
         .build()
     WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "") } returns "AppId.Test"
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    } returns ""
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+    } returns ""
+    every { secureSharedPreference.retrieveSessionUsername() } returns "testUser"
+
+    appMainViewModel =
+      spyk(
+        AppMainViewModel(
+          accountAuthenticator = mockk(),
+          syncBroadcaster = mockk(),
+          secureSharedPreference = secureSharedPreference,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          registerRepository = mockk(),
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        )
+      )
 
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
@@ -242,5 +278,20 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     appMainActivity.handleTaskActivityResult("Task/12345", Intent())
 
     coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+  }
+
+  @Test
+  fun `onSync with StateFailed and auth error calls appMainViewModel with RefreshAuthToken event`() {
+    val result: Result.Error = mockk()
+    val exception: HttpException = mockk()
+    val stateFailed = State.Failed(result)
+    every { result.exceptions } returns
+      listOf(ResourceSyncException(ResourceType.Questionnaire, exception))
+    every { exception.code() } returns 401
+    every { exception.message } returns "Unauthorized"
+
+    appMainActivity.onSync(stateFailed)
+
+    verify { appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(appMainActivity)) }
   }
 }
