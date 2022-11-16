@@ -18,9 +18,12 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManager.ERROR_CODE_NETWORK_ERROR
 import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
+import android.accounts.AccountManager.KEY_ERROR_CODE
+import android.accounts.AccountManager.KEY_ERROR_MESSAGE
 import android.accounts.AccountManager.KEY_INTENT
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -38,6 +41,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -450,7 +454,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun refreshExpiredAuthTokenReturnsBundleWithNewToken() {
+  fun `refresh expired auth token returns Bundle with new token`() {
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false andThen true
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -478,7 +482,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun refreshAuthTokenReturnsBundleWithoutTokenIfNotActive() {
+  fun `refresh auth token returns Bundle without token if not active`() {
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -498,5 +502,23 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     Assert.assertNotNull(bundle)
     Assert.assertFalse(bundle.containsKey(KEY_AUTHTOKEN))
+  }
+
+  @Test
+  fun `refresh auth token returns bundle with network error if no connectivity`() {
+    every { tokenManagerService.getActiveAccount() } returns mockk()
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      mockk()
+    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
+    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.refreshToken(any()) } throws UnknownHostException("local-host")
+
+    val bundle = runBlocking { accountAuthenticator.refreshSessionAuthToken() }
+
+    Assert.assertNotNull(bundle)
+    Assert.assertFalse(bundle.containsKey(KEY_AUTHTOKEN))
+    Assert.assertTrue(bundle.containsKey(KEY_ERROR_MESSAGE))
+    Assert.assertEquals(bundle.getInt(KEY_ERROR_CODE), ERROR_CODE_NETWORK_ERROR)
   }
 }
