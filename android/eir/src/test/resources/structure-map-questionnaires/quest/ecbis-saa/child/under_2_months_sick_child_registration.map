@@ -1,0 +1,29 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/6a1748d8-6595-11ed-9022-0242ac120002" = "eCBIS Under 2 Months Sick Child Registration"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group SickChild(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src -> evaluate(src, $this.subject) as refPatient then
+        ExtractSickChildCondition(src, bundle, refPatient) "r_bundle_entries";
+}
+
+group ExtractSickChildCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+	src.item as sickCheck where(linkId ='ba8ac52f-7fc2-4ab9-9e67-ee4473c57b48' and answer.value.code = 'sick') then {
+    	sickCheck -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    		sickCheck -> cnd.id = uuid() "r_cnd_id";
+			sickCheck -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+    		sickCheck -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    		sickCheck -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    		sickCheck -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    		sickCheck -> cnd.subject = refPatient "r_cnd_sub";
+    		sickCheck -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+    		sickCheck -> cnd.code = create("CodeableConcept") as ccPreg then {
+             	sickCheck -> ccPreg.coding = c("http://snomed.info/sct", "275142008", "Sick Child") as coding, coding.display = 'Sick Child' "r_cnd_code_coding";
+             	sickCheck -> ccPreg.text = "Sick Child" "r_cnd_code_text";
+        	} "r_cnd_code";
+    	} "r_cnd";
+   } "r_sick_check";
+}

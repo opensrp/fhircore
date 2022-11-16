@@ -536,6 +536,45 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
+  fun `perform extraction from under 2 months and under 5 years sick child questionnaire response`() {
+    val patientRegistrationQuestionnaireResponse =
+      "structure-map-questionnaires/quest/ecbis-saa/child/under_2_months_sick_child_questionnaire_response.json".readFile()
+    val patientRegistrationStructureMap =
+      "structure-map-questionnaires/quest/ecbis-saa/child/under_2_months_sick_child_registration.map".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(patientRegistrationStructureMap, "under_2_months_sick_child_registration.map")
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
   fun `perform extraction from over 2 months and under 5 years sick child questionnaire response`() {
     val patientRegistrationQuestionnaireResponse =
       "structure-map-questionnaires/quest/ecbis-saa/child/over_2_months_sick_child_questionnaire_response.json".readFile()

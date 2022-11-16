@@ -1,0 +1,51 @@
+{
+	"resourceType": "QuestionnaireResponse",
+	"questionnaire": "Questionnaire/3276f55c-b25e-455b-ae4e-8846fb8fd039",
+	"subject": {
+		"reference": "Patient/12345"
+	},
+	"item": [
+		{
+			"linkId": "17cd35ef-a107-4747-84c1-b686a6f6aaea",
+			"text": "Is this an active or passive case finding?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "42a02e02-fd49-49e4-8240-b5327d27531d",
+						"system": "urn:uuid:c171913a-ae44-4bd9-a027-1b935a01b8c1",
+						"code": "passive",
+						"display": "Passive"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "ba8ac52f-7fc2-4ab9-9e67-ee4473c57b48",
+			"text": "How is the child?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "a5e734d2-f542-4d9a-8453-a8dd2d62f591",
+						"system": "urn:uuid:407a6758-24c6-420c-f41d-cc8ca4dbc4c4",
+						"code": "sick",
+						"display": "Not well, has sick symptoms"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "4d87ea34-04a8-42bd-8c5c-e1c4b90d69fb",
+			"text": "Child referred to the facility?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "a7ff92e7-8299-4371-8831-e9d2018025a6",
+						"system": "urn:uuid:036b4f8e-4fae-4c65-8185-5d26fbc67411",
+						"code": "yes",
+						"display": "Yes"
+					}
+				}
+			]
+		}
+	]
+}

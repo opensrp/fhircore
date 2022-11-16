@@ -6,28 +6,176 @@
 	},
 	"item": [
 		{
-			"linkId": "410cb6b7-c486-4559-8f2d-169efd723a08",
-			"answer": [
+			"linkId": "c39d5f0e-6410-11ed-81ce-0242ac120002",
+			"text": "Sick Child Registration",
+			"item": [
 				{
-					"valueCoding": {
-						"id": "8e5225a2-642a-4152-b5a9-8e54e4d97623",
-						"code": "yes",
-						"system": "urn:uuid:675d136b-3f39-4d41-8e02-c5199d29f39e",
-						"display": "Yes"
-					}
+					"linkId": "9af686f7-8fc7-4ef8-815b-99bd4ea5bb79",
+					"text": "Child Age"
+				},
+				{
+					"linkId": "17cd35ef-a107-4747-84c1-b686a6f6aaea",
+					"text": "Is this an active or passive case finding?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "42a02e02-fd49-49e4-8240-b5327d27531d",
+								"system": "urn:uuid:c171913a-ae44-4bd9-a027-1b935a01b8c1",
+								"code": "passive",
+								"display": "Passive"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "ba8ac52f-7fc2-4ab9-9e67-ee4473c57b48",
+					"text": "How is the child?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "a5e734d2-f542-4d9a-8453-a8dd2d62f591",
+								"system": "urn:uuid:407a6758-24c6-420c-f41d-cc8ca4dbc4c4",
+								"code": "sick",
+								"display": "Not well, has sick symptoms"
+							}
+						}
+					]
 				}
 			]
 		},
 		{
-			"linkId": "adcbe143-87a3-4c77-8cb1-74838b063219",
-			"answer": [
+			"linkId": "ac53064c-6405-11ed-81ce-0242ac120002",
+			"text": "Identify Problems",
+			"item": [
 				{
-					"valueCoding": {
-						"id": "8e5225a2-642a-4152-b5a9-8e54e4d97623",
-						"code": "yes",
-						"system": "urn:uuid:675d136b-3f39-4d41-8e02-c5199d29f39e",
-						"display": "Yes"
-					}
+					"linkId": "cf0093a9-1e38-422b-fc81-273caa0bb48a",
+					"text": "Child has a cough?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "eb976bac-c680-423b-cdd5-9740ac8268d4",
+								"system": "urn:uuid:d3051c21-8668-412e-a2dd-105cf274b260",
+								"code": "yes",
+								"display": "Yes"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "3ebb1e6d-237d-4b1e-edf3-dda25cb53891",
+					"text": "How many days child coughing?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "a778cf91-7361-4392-8493-81affbf4a753",
+								"system": "urn:uuid:7690c680-5247-457e-d68f-d65f5b40d6c7",
+								"code": "14+-days",
+								"display": "14+ days"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "94357450-e603-49f7-899c-464ecd10ddd1",
+					"text": "Child has a running stomach?"
+				},
+				{
+					"linkId": "14648d8c-c88f-40be-9f25-66d7ba621482",
+					"text": "Child has fever?"
+				}
+			]
+		},
+		{
+			"linkId": "aa1fac6a-6408-11ed-81ce-0242ac120002",
+			"text": "Danger Signs",
+			"item": [
+				{
+					"linkId": "509e25f2-fb63-4486-84a4-eff6e7cd184f",
+					"text": "Check for child danger signs",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "7636a921-4102-4a71-8b52-08e646f88aa3",
+								"system": "urn:uuid:e5b0126c-0615-4750-a239-519e172bf4d8",
+								"code": "cough-more-than-14-days",
+								"display": "Cough more than 14 days"
+							}
+						},
+						{
+							"valueCoding": {
+								"id": "27732447-730a-4e0a-8629-2eb681fecb15",
+								"system": "urn:uuid:e5b0126c-0615-4750-a239-519e172bf4d8",
+								"code": "convulsion",
+								"display": "Convulsion"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"linkId": "e4efcd20-6408-11ed-81ce-0242ac120002",
+			"text": "Pre-referral Treatment",
+			"item": [
+				{
+					"linkId": "4a035bfe-4d43-4814-88c9-476f73d729f6",
+					"text": "Give the child Amoxicillin 250mg - 1 tablet immediately. Amoxicillin 250mg available?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "a3c5e68c-a3f7-4f4e-9e4c-717adcc301f8",
+								"system": "urn:uuid:ff32ac65-4ded-4d43-83ee-b3cbff98fefe",
+								"code": "yes",
+								"display": "Yes"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "fcbb4f5c-7120-4fa8-879b-cea44481934d",
+					"text": "Amoxicillin 250mg - 1 tablet given immediately?"
+				},
+				{
+					"linkId": "1a6b70d7-9aae-4556-8730-49d0f7094c16",
+					"text": "Infancy ACT that is available."
+				}
+			]
+		},
+		{
+			"linkId": "abf5514a-6410-11ed-81ce-0242ac120002",
+			"text": "Assess, Classify & Treat",
+			"item": [
+				{
+					"linkId": "c3e43a3c-d79b-41a7-95fd-d44308c38b0a",
+					"text": "Malaria infancy ACT available.",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "f71bb545-9d0a-47fa-f73d-72ca9e6c2090",
+								"system": "urn:uuid:1cd45b42-bbad-45e7-ba3b-b9419ee38182",
+								"code": "al:-artemether-20mg-+-lumefatrine-120mg-(1x6)-tablets(2-11-months)",
+								"display": "AL: Artemether 20mg + Lumefatrine 120mg (1x6) tablets(2-11 months)"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "6d142ebd-c10e-4043-8bff-6ead88ce77f1",
+					"text": "AL: Artemether 20mg + Lumefatrine 120mg (1x6) tablets(2-11 months) given?",
+					"answer": [
+						{
+							"valueCoding": {
+								"id": "a200000e-73eb-4c82-8131-3ed5398824b6",
+								"system": "urn:uuid:acf904f3-6bfb-466b-dd85-efcde16bbf2f",
+								"code": "yes",
+								"display": "Yes"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "f3836465-adca-4cc8-8710-c392ee85f739",
+					"text": "Child urgently referred to the hospital?"
 				}
 			]
 		}
