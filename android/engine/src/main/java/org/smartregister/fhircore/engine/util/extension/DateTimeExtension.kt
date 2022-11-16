@@ -63,6 +63,13 @@ fun Date?.makeItReadable(): String {
 fun Date?.prettifyDate(): String =
   if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
+fun isSameMonthYear(monthYear: String, yearMonth: String): Boolean {
+  val firstDate = monthYear.parseDate(SDF_MMM_YYYY)?.formatDate(SDF_MMM_YYYY)
+  val secondDate = yearMonth.parseDate(SDF_YYYY_MMM)?.formatDate(SDF_MMM_YYYY)
+  if (firstDate.isNullOrEmpty() || secondDate.isNullOrEmpty()) return false
+  return firstDate == secondDate
+}
+
 fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
