@@ -175,7 +175,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "childRegister",
-                          "display": "@{practitionerName} - Children Register"
+                          "display": "@{practitionerName} - Children Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -213,7 +214,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "sickChildRegister",
-                          "display": "@{practitionerName} - Sick Child Register"
+                          "display": "@{practitionerName} - Sick Child Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -251,7 +253,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "ancRegister",
-                          "display": "@{practitionerName} - ANC Register"
+                          "display": "@{practitionerName} - ANC Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -289,7 +292,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "pncRegister",
-                          "display": "@{practitionerName} - PNC Register"
+                          "display": "@{practitionerName} - PNC Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -327,7 +331,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "fpRegister",
-                          "display": "@{practitionerName} - FP Register"
+                          "display": "@{practitionerName} - FP Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -365,7 +370,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "mentalHealthRegister",
-                          "display": "@{practitionerName} - Mental Health Register"
+                          "display": "@{practitionerName} - Mental Health Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -403,7 +409,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "hivRegister",
-                          "display": "@{practitionerName} - HIV Register"
+                          "display": "@{practitionerName} - HIV Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -441,7 +448,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "tbRegister",
-                          "display": "@{practitionerName} - TB Register"
+                          "display": "@{practitionerName} - TB Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
@@ -481,7 +489,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "cmntdRegister",
-                          "display": "@{practitionerName} - CM-NTD Register"
+                          "display": "@{practitionerName} - CM-NTD Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }
