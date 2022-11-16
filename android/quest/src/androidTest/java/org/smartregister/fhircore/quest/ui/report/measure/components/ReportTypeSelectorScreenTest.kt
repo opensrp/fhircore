@@ -28,8 +28,6 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -39,7 +37,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICK
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_INDICATOR_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.TEST_MONTH_CLICK_TAG
-import org.smartregister.fhircore.quest.ui.report.measure.screens.showFixedMonthYearListing
 
 class ReportTypeSelectorScreenTest {
 
@@ -51,7 +48,6 @@ class ReportTypeSelectorScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val monthList =
-    listOf(ReportRangeSelectionData("March", "October", "2022-02-02".getDate("dd mm yyyy")))
     listOf(ReportRangeSelectionData("March", "October", "2022-02-02".parseDate(SDF_YYYY_MM_DD)!!))
 
   private val dateRange = HashMap<String, List<ReportRangeSelectionData>>()
@@ -63,8 +59,6 @@ class ReportTypeSelectorScreenTest {
   @Test
   fun testMonthYearListDisplayed() {
     composeTestRule.setContent {
-      showFixedMonthYearListing(
-
       FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
@@ -82,7 +76,6 @@ class ReportTypeSelectorScreenTest {
   @Test
   fun testProgressIndicatorIsDisplayed() {
     composeTestRule.setContent {
-      showFixedMonthYearListing(
       FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
@@ -106,7 +99,6 @@ class ReportTypeSelectorScreenTest {
   @Test
   fun testMonthClickListener() {
     composeTestRule.setContent {
-      showFixedMonthYearListing(
       FixedMonthYearListing(
         screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,

@@ -516,6 +516,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       defaultRepo.addOrUpdate(resource = capture(questionnaireResponseSlot))
     }
 
+    Assert.assertEquals(
+      "2",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
     Assert.assertEquals("2", patientSlot.captured.id)
 
     unmockkObject(ResourceMapper)
