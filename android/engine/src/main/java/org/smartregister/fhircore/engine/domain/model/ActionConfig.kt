@@ -32,7 +32,8 @@ data class ActionConfig(
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
   val params: List<ActionParameter> = emptyList(),
-  val resourceConfig: FhirResourceConfig? = null
+  val resourceConfig: FhirResourceConfig? = null,
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {

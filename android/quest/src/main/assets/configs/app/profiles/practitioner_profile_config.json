@@ -136,7 +136,8 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "householdRegister",
-                          "display": "@{practitionerName} - Household Register"
+                          "display": "@{practitionerName} - Household Register",
+                          "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
                     }

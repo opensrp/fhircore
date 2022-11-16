@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.register
+package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
-
-data class RegisterUiState(
-  val screenTitle: String = "",
-  val isFirstTimeSync: Boolean = false,
-  val registerConfiguration: RegisterConfiguration? = null,
-  val registerId: String = "",
-  val totalRecordsCount: Long = 0,
-  val pagesCount: Int = 1
-)
+enum class ToolBarHomeNavigation {
+	OPEN_DRAWER,
+	NAVIGATE_BACK
+}

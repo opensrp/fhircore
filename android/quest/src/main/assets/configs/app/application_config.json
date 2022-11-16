@@ -10,7 +10,7 @@
   "useDarkTheme": false,
   "syncInterval": 30,
   "syncStrategy": [
-    "Location"
+    "Location", "Organization", "CareTeam"
   ],
   "loginConfig": {
     "showLogo": true,

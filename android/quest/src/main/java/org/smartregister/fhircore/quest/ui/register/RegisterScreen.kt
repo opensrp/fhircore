@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +44,7 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
@@ -68,9 +70,9 @@ fun RegisterScreen(
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
-
   Scaffold(
     topBar = {
       Column {
@@ -79,10 +81,16 @@ fun RegisterScreen(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           }
-        ) { openDrawer(true) }
+        ) {
+          when(toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+            ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+          }
+        }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
@@ -136,33 +144,44 @@ fun NoRegisterDataView(
   onClick: () -> Unit
 ) {
   Column(
-    modifier = modifier.fillMaxSize().padding(16.dp).testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
+    modifier = modifier
+      .fillMaxSize()
+      .padding(16.dp)
+      .testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center
   ) {
     Text(
       text = noResults.title,
       fontSize = 16.sp,
-      modifier = modifier.padding(vertical = 8.dp).testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
+      modifier = modifier
+        .padding(vertical = 8.dp)
+        .testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
       fontWeight = FontWeight.Bold
     )
     Text(
       text = noResults.message,
       modifier =
-        modifier.padding(start = 32.dp, end = 32.dp).testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
+      modifier
+        .padding(start = 32.dp, end = 32.dp)
+        .testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
       textAlign = TextAlign.Center,
       fontSize = 15.sp,
       color = Color.Gray
     )
     if (noResults.actionButton != null) {
       Button(
-        modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+        modifier = modifier
+          .padding(vertical = 16.dp)
+          .testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
         onClick = onClick
       ) {
         Icon(
           imageVector = Icons.Filled.Add,
           contentDescription = null,
-          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+          modifier
+            .padding(end = 8.dp)
+            .testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
         )
         Text(
           text = noResults.actionButton?.display?.uppercase().toString(),
