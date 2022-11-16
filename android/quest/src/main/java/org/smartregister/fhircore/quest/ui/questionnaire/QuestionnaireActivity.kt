@@ -33,7 +33,10 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -273,7 +276,28 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    return questionnaireFragment.getQuestionnaireResponse()
+    return questionnaireFragment.getQuestionnaireResponse().apply {
+      // TODO this is required until require condition in [QuestionnaireResponseValidator] is fixed
+      this@QuestionnaireActivity.questionnaire.let { it.url = "${it.resourceType}/${it.logicalId}" }
+
+      if (this.logicalId.isEmpty()) {
+        this.id = UUID.randomUUID().toString()
+        this.authored = Date()
+      }
+
+      this@QuestionnaireActivity.questionnaire.useContext
+        .filter { it.hasValueCodeableConcept() }
+        .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
+
+      this.questionnaire =
+        this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
+      // important to set response subject so that structure map can handle subject for all entities
+      questionnaireViewModel.handleQuestionnaireResponseSubject(
+        questionnaireConfig.resourceIdentifier,
+        this@QuestionnaireActivity.questionnaire,
+        this
+      )
+    }
   }
 
   fun dismissSaveProcessing() {
@@ -365,6 +389,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       dismissSaveProcessing()
       confirmationDialog(questionnaireConfig = questionnaireConfig)
     } else {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       questionnaireViewModel.extractAndSaveResources(
         context = this,
         questionnaire = questionnaire,
