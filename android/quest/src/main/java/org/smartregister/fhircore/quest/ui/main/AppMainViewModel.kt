@@ -74,7 +74,6 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -313,12 +312,6 @@ constructor(
       FhirTaskPlanWorker.WORK_ID,
       ExistingPeriodicWorkPolicy.REPLACE,
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
-    )
-    // Schedule job for generating measure report in the background
-    workManager.enqueueUniquePeriodicWork(
-      MeasureReportWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.KEEP,
-      PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.HOURS).build()
     )
   }
 
