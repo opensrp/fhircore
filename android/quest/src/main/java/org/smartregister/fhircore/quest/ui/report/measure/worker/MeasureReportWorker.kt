@@ -20,13 +20,16 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -57,18 +60,18 @@ constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    Timber.w("Starting measure reporting worker")
     val configuration = retrieveMeasureReportConfiguration()
     val monthList = getMonthRangeList(configuration)
 
     configuration.reports.forEach {
       withContext(dispatcherProvider.io()) { fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url) }
+
       monthList.forEach { date ->
-        evaluatePopulationMeasure(
-          it.url,
-          date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD),
-          date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-        )
+        val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+        val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+        if (!checkReportAlreadyGenerated(startDateFormatted, endDateFormatted)) {
+          evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+        }
       }
     }
 
@@ -119,6 +122,27 @@ constructor(
       lastDate = lastDate.plusMonths(-1)
     }
     return yearMonths.toList()
+  }
+  suspend fun checkReportAlreadyGenerated(
+    startDateFormatted: String,
+    endDateFormatted: String
+  ): Boolean {
+    return fhirEngine
+      .search<MeasureReport> {
+        filter(
+          MeasureReport.PERIOD,
+          {
+            value = of(DateTimeType(startDateFormatted))
+            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+          },
+          {
+            value = of(DateTimeType(endDateFormatted))
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+          },
+          operation = com.google.android.fhir.search.Operation.AND
+        )
+      }
+      .isEmpty()
   }
   companion object {
     const val WORK_ID = "fhirMeasureReportWorker"

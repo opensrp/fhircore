@@ -280,7 +280,9 @@ constructor(
                 fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
               }
             } else {
-              formatPopulationMeasureReport(result[0])
+              formatPopulationMeasureReport(
+                result.last()
+              ) // update this method to handle list of measure reports
             }
 
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
