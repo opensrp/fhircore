@@ -65,7 +65,7 @@ fun TopScreenSection(
   title: String,
   searchText: String,
   searchPlaceholder: String? = null,
-  toolBarHomeNavigation: ToolBarHomeNavigation,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
