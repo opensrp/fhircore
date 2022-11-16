@@ -215,7 +215,7 @@ constructor(
           }
           populateConfigurationsMap(
             composition = this,
-            loadFromAssets = loadFromAssets,
+            loadFromAssets = true,
             appId = parsedAppId,
             configsLoadedCallback = configsLoadedCallback,
             context = context
@@ -223,7 +223,7 @@ constructor(
         }
     } else {
       fhirEngine.searchCompositionByIdentifier(appId)?.run {
-        populateConfigurationsMap(context, this, loadFromAssets, appId, configsLoadedCallback)
+        populateConfigurationsMap(context, this, false, appId, configsLoadedCallback)
       }
     }
   }
