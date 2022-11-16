@@ -28,7 +28,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -165,27 +164,7 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig
   ) {
-    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-    if (questionnaireResponse.logicalId.isEmpty()) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-    }
-
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-        it.valueCodeableConcept.coding.forEach { coding ->
-          questionnaireResponse.meta.addTag(coding)
-        }
-      }
-
-      // important to set response subject so that structure map can handle subject for all entities
-      handleQuestionnaireResponseSubject(
-        questionnaireConfig.resourceIdentifier,
-        questionnaire,
-        questionnaireResponse
-      )
-
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 

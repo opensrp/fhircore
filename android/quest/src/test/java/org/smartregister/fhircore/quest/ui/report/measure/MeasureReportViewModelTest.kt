@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
@@ -39,6 +40,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
@@ -52,6 +54,9 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asMmmm
+import org.smartregister.fhircore.engine.util.extension.asYyyy
+import org.smartregister.fhircore.engine.util.extension.getYyyMmDd
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
@@ -188,6 +193,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     measureReportViewModel.onEvent(
       MeasureReportEvent.GenerateReport(context = application, navController = navController),
+
       "2022-10-31".parseDate(SDF_YYYY_MM_DD)
     )
 
@@ -317,6 +323,27 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun testGetReportGenerationRange() {
     val result =
       measureReportViewModel.getReportGenerationRange(
+        "2022-09-27".getYyyMmDd(MeasureReportViewModel.SDF_MEASURE_REPORT_DATE_FORMAT)
+      )
+    val currentMonth = Calendar.getInstance().time.asMmmm()
+    val currentYear = Calendar.getInstance().time.asYyyy()
+    assertEquals(currentYear, result.keys.first())
+    assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
+  }
+  @Test
+  fun testShowFixedRangeSelection() {
+    every { measureReportRepository.showFixedRangeSelection() } returns false
+    assertFalse(measureReportViewModel.showFixedRangeSelection())
+
+    every { measureReportRepository.showFixedRangeSelection() } returns true
+    assertTrue(measureReportViewModel.showFixedRangeSelection())
+  }
+
+  @Test
+  fun testGetCampaignStartDate() {
+    every { measureReportRepository.getCampaignStartDate() } returns "2020-10-27"
+    assertEquals("2020-10-27", measureReportRepository.getCampaignStartDate())
+  }
         reportId = "defaultMeasureReport",
         startDate = "2022-09-27".parseDate(SDF_YYYY_MM_DD)
       )
