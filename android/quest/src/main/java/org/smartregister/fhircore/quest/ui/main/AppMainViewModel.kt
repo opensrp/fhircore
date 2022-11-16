@@ -83,25 +83,28 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 class AppMainViewModel
 @Inject
 constructor(
-    val accountAuthenticator: AccountAuthenticator,
-    val syncBroadcaster: SyncBroadcaster,
-    val secureSharedPreference: SecureSharedPreference,
-    val sharedPreferencesHelper: SharedPreferencesHelper,
-    val configurationRegistry: ConfigurationRegistry,
-    val registerRepository: RegisterRepository,
-    val dispatcherProvider: DispatcherProvider,
-    val workManager: WorkManager,
-    val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val accountAuthenticator: AccountAuthenticator,
+  val syncBroadcaster: SyncBroadcaster,
+  val secureSharedPreference: SecureSharedPreference,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry,
+  val registerRepository: RegisterRepository,
+  val dispatcherProvider: DispatcherProvider,
+  val workManager: WorkManager,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
   val appMainUiState: MutableState<AppMainUiState> =
-      mutableStateOf(
-          appMainUiStateOf(
-              navigationConfiguration =
-                  NavigationConfiguration(
-                      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!)))
+    mutableStateOf(
+      appMainUiStateOf(
+        navigationConfiguration =
+          NavigationConfiguration(
+            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
+          )
+      )
+    )
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -115,27 +118,28 @@ constructor(
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
-        .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
-        .forEach {
-          val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
-          viewModelScope.launch(dispatcherProvider.io()) {
-            registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-              it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
-            }
+      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .forEach {
+        val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
+        viewModelScope.launch(dispatcherProvider.io()) {
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
           }
         }
+      }
   }
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =
-        appMainUiStateOf(
-            appTitle = applicationConfiguration.appTitle,
-            currentLanguage = loadCurrentLanguage(),
-            username = secureSharedPreference.retrieveSessionUsername() ?: "",
-            lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-            languages = configurationRegistry.fetchLanguages(),
-            navigationConfiguration = navigationConfiguration,
-            registerCountMap = retrieveRegisterCountMap())
+      appMainUiStateOf(
+        appTitle = applicationConfiguration.appTitle,
+        currentLanguage = loadCurrentLanguage(),
+        username = secureSharedPreference.retrieveSessionUsername() ?: "",
+        lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+        languages = configurationRegistry.fetchLanguages(),
+        navigationConfiguration = navigationConfiguration,
+        registerCountMap = retrieveRegisterCountMap()
+      )
   }
 
   fun onEvent(event: AppMainEvent) {
@@ -166,29 +170,33 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished,
-          is State.Failed -> {
+          is State.Finished, is State.Failed -> {
             if (event.state is State.Finished) {
               sharedPreferencesHelper.write(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  formatLastSyncTimestamp(event.state.result.timestamp))
+                SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+                formatLastSyncTimestamp(event.state.result.timestamp)
+              )
             }
             retrieveAppMainUiState()
           }
           else ->
-              appMainUiState.value =
-                  appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
+            appMainUiState.value =
+              appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
       is AppMainEvent.TriggerWorkflow ->
-          event.navMenu.actions?.handleClickEvent(
-              navController = event.navController, resourceData = null, navMenu = event.navMenu)
+        event.navMenu.actions?.handleClickEvent(
+          navController = event.navController,
+          resourceData = null,
+          navMenu = event.navMenu
+        )
       is AppMainEvent.OpenProfile -> {
         val args =
-            bundleOf(
-                NavigationArg.PROFILE_ID to event.profileId,
-                NavigationArg.RESOURCE_ID to event.resourceId,
-                NavigationArg.RESOURCE_CONFIG to event.resourceConfig)
+          bundleOf(
+            NavigationArg.PROFILE_ID to event.profileId,
+            NavigationArg.RESOURCE_ID to event.resourceId,
+            NavigationArg.RESOURCE_CONFIG to event.resourceConfig
+          )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
     }
@@ -197,13 +205,13 @@ constructor(
   private fun displayRegisterBottomSheet(event: AppMainEvent.OpenRegistersBottomSheet) {
     (event.navController.context.getActivity())?.let { activity ->
       RegisterBottomSheetFragment(
-              navigationMenuConfigs = event.registersList,
-              registerCountMap = appMainUiState.value.registerCountMap,
-              menuClickListener = {
-                onEvent(
-                    AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
-              })
-          .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
+          navigationMenuConfigs = event.registersList,
+          registerCountMap = appMainUiState.value.registerCountMap,
+          menuClickListener = {
+            onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
+          }
+        )
+        .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }
   }
 
@@ -219,105 +227,109 @@ constructor(
   }
 
   fun launchFamilyRegistrationWithLocationId(
-      context: Context,
-      locationId: String,
-      questionnaireConfig: QuestionnaireConfig
+    context: Context,
+    locationId: String,
+    questionnaireConfig: QuestionnaireConfig
   ) {
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
       if (context is QuestionnaireHandler)
-          context.launchQuestionnaire(
-              context = context,
-              intentBundle =
-                  bundleOf(
-                      Pair(
-                          QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-                          arrayListOf(location))),
-              questionnaireConfig = questionnaireConfig,
-              computedValuesMap = null)
+        context.launchQuestionnaire(
+          context = context,
+          intentBundle =
+            bundleOf(
+              Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
+            ),
+          questionnaireConfig = questionnaireConfig,
+          computedValuesMap = null
+        )
     }
   }
 
   private suspend fun List<NavigationMenuConfig>.setRegisterCount(
-      countsMap: SnapshotStateMap<String, Long>
+    countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }
-        .forEach { menuConfig ->
-          val countAction =
-              menuConfig.actions?.find { actionConfig ->
-                actionConfig.trigger == ActionTrigger.ON_COUNT
-              }
-          if (countAction != null) {
-            countsMap[countAction.id ?: menuConfig.id] =
-                registerRepository.countRegisterData(menuConfig.id)
-          }
-        }
+    this.filter { it.showCount }.forEach { menuConfig ->
+      val countAction =
+        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
+      if (countAction != null) {
+        countsMap[countAction.id ?: menuConfig.id] =
+          registerRepository.countRegisterData(menuConfig.id)
+      }
+    }
   }
 
   private fun loadCurrentLanguage() =
-      Locale.forLanguageTag(
-              sharedPreferencesHelper.read(
-                  SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-                  ?: Locale.ENGLISH.toLanguageTag())
-          .displayName
+    Locale.forLanguageTag(
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+          ?: Locale.ENGLISH.toLanguageTag()
+      )
+      .displayName
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
     val syncTimestampFormatter =
-        SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
-          timeZone = TimeZone.getDefault()
-        }
+      SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
+        timeZone = TimeZone.getDefault()
+      }
     val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
   fun retrieveLastSyncTimestamp(): String? =
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun launchProfileFromGeoWidget(
-      navController: NavController,
-      geoWidgetConfigId: String,
-      resourceId: String
+    navController: NavController,
+    geoWidgetConfigId: String,
+    resourceId: String
   ) {
     val geoWidgetConfiguration =
-        configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
-            ConfigType.GeoWidget, geoWidgetConfigId)
+      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
+        ConfigType.GeoWidget,
+        geoWidgetConfigId
+      )
     onEvent(
-        AppMainEvent.OpenProfile(
-            navController = navController,
-            profileId = geoWidgetConfiguration.profileId,
-            resourceId = resourceId,
-            resourceConfig = geoWidgetConfiguration.resourceConfig))
+      AppMainEvent.OpenProfile(
+        navController = navController,
+        profileId = geoWidgetConfiguration.profileId,
+        resourceId = resourceId,
+        resourceConfig = geoWidgetConfiguration.resourceConfig
+      )
+    )
   }
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
-        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, formatLastSyncTimestamp(timestamp))
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      formatLastSyncTimestamp(timestamp)
+    )
   }
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
     workManager.enqueueUniquePeriodicWork(
-        FhirTaskPlanWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.REPLACE,
-        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build())
+      FhirTaskPlanWorker.WORK_ID,
+      ExistingPeriodicWorkPolicy.REPLACE,
+      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+    )
     // Schedule job for generating measure report in the background
     workManager.enqueueUniquePeriodicWork(
-        MeasureReportWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.KEEP,
-        PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.HOURS).build())
+      MeasureReportWorker.WORK_ID,
+      ExistingPeriodicWorkPolicy.KEEP,
+      PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.HOURS).build()
+    )
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
-          when (questionnaireSubmission.questionnaireResponse.status) {
-            QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS ->
-                Task.TaskStatus.INPROGRESS
-            QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
-            else -> Task.TaskStatus.COMPLETED
-          }
+        when (questionnaireSubmission.questionnaireResponse.status) {
+          QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> Task.TaskStatus.INPROGRESS
+          QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
+          else -> Task.TaskStatus.COMPLETED
+        }
       withContext(dispatcherProvider.io()) {
         fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
       }
