@@ -103,6 +103,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
+        if (state.result.exceptions.isNotEmpty() &&
+            state.result.exceptions.first().resourceType == ResourceType.Flag
+        ) {
+          showToast(state.result.exceptions.first().exception.message!!)
+          return
+        }
         showToast(getString(R.string.sync_failed_text))
         val hasAuthError =
           state.result.exceptions.any {
