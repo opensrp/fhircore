@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 
 data class RegisterUiState(
   val screenTitle: String = "",

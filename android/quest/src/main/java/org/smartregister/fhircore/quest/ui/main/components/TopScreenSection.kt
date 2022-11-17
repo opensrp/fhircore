@@ -65,7 +65,7 @@ fun TopScreenSection(
   title: String,
   searchText: String,
   searchPlaceholder: String? = null,
-  toolBarHomeNavigation: ToolBarHomeNavigation,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
@@ -76,7 +76,7 @@ fun TopScreenSection(
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(
-          when(toolBarHomeNavigation) {
+          when (toolBarHomeNavigation) {
             ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
             ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
           },
@@ -140,5 +140,10 @@ fun TopScreenSection(
 @Preview(showBackground = true)
 @Composable
 fun TopScreenSectionPreview() {
-  TopScreenSection(title = "All Clients", searchText = "Eddy", onSearchTextChanged = {}, toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK) {}
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+  ) {}
 }
