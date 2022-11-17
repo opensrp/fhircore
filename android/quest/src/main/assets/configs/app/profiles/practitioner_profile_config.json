@@ -74,7 +74,7 @@
               "children": [
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "@{practitionerName}",
+                  "primaryText": "@{practitionerFirstName}",
                   "primaryTextColor": "#000000"
                 },
                 {
@@ -136,7 +136,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "householdRegister",
-                          "display": "@{practitionerName} - Household Register",
+                          "display": "@{practitionerFirstName} - Household",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -175,7 +175,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "childRegister",
-                          "display": "@{practitionerName} - Children Register",
+                          "display": "@{practitionerFirstName} - Children",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -214,7 +214,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "sickChildRegister",
-                          "display": "@{practitionerName} - Sick Child Register",
+                          "display": "@{practitionerFirstName} - Sick Child",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -253,7 +253,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "ancRegister",
-                          "display": "@{practitionerName} - ANC Register",
+                          "display": "@{practitionerFirstName} - ANC",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -292,7 +292,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "pncRegister",
-                          "display": "@{practitionerName} - PNC Register",
+                          "display": "@{practitionerFirstName} - PNC",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -331,7 +331,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "fpRegister",
-                          "display": "@{practitionerName} - FP Register",
+                          "display": "@{practitionerFirstName} - FP",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -370,7 +370,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "mentalHealthRegister",
-                          "display": "@{practitionerName} - Mental Health Register",
+                          "display": "@{practitionerFirstName} - Mental Health",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -409,7 +409,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "hivRegister",
-                          "display": "@{practitionerName} - HIV Register",
+                          "display": "@{practitionerFirstName} - HIV",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -448,7 +448,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "tbRegister",
-                          "display": "@{practitionerName} - TB Register",
+                          "display": "@{practitionerFirstName} - TB",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
@@ -489,7 +489,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "cmntdRegister",
-                          "display": "@{practitionerName} - CM-NTD Register",
+                          "display": "@{practitionerFirstName} - CM-NTD",
                           "toolBarHomeNavigation": "NAVIGATE_BACK"
                         }
                       ]
