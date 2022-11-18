@@ -3,10 +3,8 @@ name: Deploy FHIR Core docs folder to GH-PAGES
 on:
   push:
     branches: [ main, app-configuration-docusaurus ]
-    paths: [ fhircore/** ]
   pull_request:
     branches: [ main, app-configuration-docusaurus ]
-    paths: [ fhircore/** ]
     # Review gh actions docs if you want to further define triggers, paths, etc
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
