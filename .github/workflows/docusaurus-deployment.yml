@@ -13,9 +13,6 @@ jobs:
     name: Deploy FHIRCORE docs to GitHub Pages
     runs-on: ubuntu-latest
     steps:
-      - name: checkout to location
-        run: cd docusaurus-web
-        
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
