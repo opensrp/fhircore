@@ -2,9 +2,11 @@ name: Deploy FHIR Core docs folder to GH-PAGES
 
 on:
   push:
-    branches: [ main,app-configuration-docusaurus ]
+    branches: [ main, app-configuration-docusaurus ]
+    paths: [ fhircore/** ]
   pull_request:
-    branches: [ main,app-configuration-docusaurus ]
+    branches: [ main, app-configuration-docusaurus ]
+    paths: [ fhircore/** ]
     # Review gh actions docs if you want to further define triggers, paths, etc
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
@@ -23,7 +25,9 @@ jobs:
         run: npm install
 
       - name: Build website
-        run: npm run build
+        run: |
+         npm install  --frozen-lockfile
+         npm run build
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
@@ -31,9 +35,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          target_branch: app-configuration-docusaurus
-          build_dir: build
+          target_branch: gh-pages
           publish_dir: ./build
-
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
