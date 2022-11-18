@@ -12,19 +12,19 @@
       {
         "type": "link",
         "label": "in-app-reporting",
-        "href": "/fhircore/in-app-reporting",
+        "href": "/in-app-reporting",
         "docId": "in-app-reporting"
       },
       {
         "type": "link",
         "label": "intro",
-        "href": "/fhircore/",
+        "href": "/",
         "docId": "intro"
       },
       {
         "type": "link",
         "label": "Testing FHIR Resources",
-        "href": "/fhircore/testing-resources",
+        "href": "/testing-resources",
         "docId": "testing-resources"
       }
     ]

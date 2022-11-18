@@ -24,6 +24,8 @@ jobs:
 
       - name: Build website
         run: yarn build
+      - name: copy docs into build working-directory
+        run: cp -r docs ./build
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
