@@ -8,18 +8,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'opensrp-fhircore-documentation',
   tagline: 'fhir-core',
-  url: 'https://opensrp.github.io/',
+  url: 'https://opensrp.github.io',
+  trailingSlash: false,
   baseUrl: '/fhircore/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
   organizationName: 'opensrp', // Usually your GitHub org/user name.
   projectName: 'fhircore', // Usually your repo name.
-  trailingSlash: false,
-
-  // Even if you don't use internalization, you can use this field to set useful
-  // metadata like html lang. For example, if your site is Chinese, you may want
-  // to replace "en" with "zh-Hans".
+  deploymentBranch:'gh-pages',
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
