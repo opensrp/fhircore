@@ -1,0 +1,24 @@
+{
+  "unversionedId": "configurations/navigation-config",
+  "id": "configurations/navigation-config",
+  "title": "navigation-config",
+  "description": "",
+  "source": "@site/docs/configurations/navigation-config.md",
+  "sourceDirName": "configurations",
+  "slug": "/configurations/navigation-config",
+  "permalink": "/configurations/navigation-config",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/configurations/navigation-config.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "measure-report-config",
+    "permalink": "/configurations/measure-report-config"
+  },
+  "next": {
+    "title": "profile-config",
+    "permalink": "/configurations/profile-config"
+  }
+}

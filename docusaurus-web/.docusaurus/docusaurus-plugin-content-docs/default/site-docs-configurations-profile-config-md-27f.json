@@ -1,0 +1,24 @@
+{
+  "unversionedId": "configurations/profile-config",
+  "id": "configurations/profile-config",
+  "title": "profile-config",
+  "description": "",
+  "source": "@site/docs/configurations/profile-config.md",
+  "sourceDirName": "configurations",
+  "slug": "/configurations/profile-config",
+  "permalink": "/configurations/profile-config",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/configurations/profile-config.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "navigation-config",
+    "permalink": "/configurations/navigation-config"
+  },
+  "next": {
+    "title": "register-config",
+    "permalink": "/configurations/register-config"
+  }
+}

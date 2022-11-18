@@ -1,0 +1,24 @@
+{
+  "unversionedId": "covax-demo-app",
+  "id": "covax-demo-app",
+  "title": "Purpose of this document",
+  "description": "This document provides end-user instructions on using the OpenSRP Covax Demo app. Additionally, the goal of this document is to lay out the core workflows and related content for our Covax Demo app product for WHO as a reference app that can be piloted or rolled out for an in-country or facility rollout/use case.",
+  "source": "@site/docs/covax-demo-app.md",
+  "sourceDirName": ".",
+  "slug": "/covax-demo-app",
+  "permalink": "/covax-demo-app",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/covax-demo-app.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "How to Contribute",
+    "permalink": "/contributing"
+  },
+  "next": {
+    "title": "readme",
+    "permalink": "/cql/"
+  }
+}
