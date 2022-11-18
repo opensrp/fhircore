@@ -1,11 +1,11 @@
 .DS_Store
-/build
-/node_modules
-node_modules/
+docusaurus-web/node_modules/
+/docusaurus-web/node_modules
 
 # Gradle files
 .gradle/
-build/
+docusaurus-web/build/
+/docusaurus-web/build
 
 
 # Local configuration file (sdk path, etc)
