@@ -29,11 +29,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -66,8 +66,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var fhirEngine: FhirEngine
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
@@ -121,7 +119,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
-    configurationRegistry.fetchNonWorkflowConfigResources()
+    CoroutineScope(dispatcherProvider.io()).launch {
+      appMainViewModel.fetchNonWorkflowConfigResources()
+    }
 
     configService.scheduleFhirTaskPlanWorker(this)
   }

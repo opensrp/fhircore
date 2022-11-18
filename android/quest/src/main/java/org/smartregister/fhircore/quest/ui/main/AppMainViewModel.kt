@@ -79,7 +79,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -100,6 +100,10 @@ constructor(
 
   val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }
+
+  fun fetchNonWorkflowConfigResources() {
+    configurationRegistry.fetchNonWorkflowConfigResources()
   }
 
   fun retrieveIconsAsBitmap() {
