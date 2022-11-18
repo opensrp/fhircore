@@ -15,8 +15,8 @@
           "editUrlLocalized": "https://github.com/opensrp/fhircore/tree/main/i18n/en/docusaurus-plugin-content-docs/current",
           "isLast": true,
           "routePriority": -1,
-          "contentPath": "/home/smutuku/Documents/Github/fhircore/docusaurus-web/docs",
-          "contentPathLocalized": "/home/smutuku/Documents/Github/fhircore/docusaurus-web/i18n/en/docusaurus-plugin-content-docs/current",
+          "contentPath": "/home/smutuku/Documents/Github/fhircore/docs",
+          "contentPathLocalized": "/home/smutuku/Documents/Github/fhircore/i18n/en/docusaurus-plugin-content-docs/current",
           "docs": [
             {
               "unversionedId": "in-app-reporting",
