@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.auth.FhirOAuthService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -87,29 +86,14 @@ class NetworkModule {
       .build()
       .create(OAuthService::class.java)
 
-  @Provides
-  fun provideFhirOauthService(
-    @AuthOkHttpClientQualifier okHttpClient: OkHttpClient,
-    configService: ConfigService,
-    gson: Gson,
-    parser: IParser,
-  ): FhirOAuthService =
-    Retrofit.Builder()
-      .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)
-      .client(okHttpClient)
-      .addConverterFactory(FhirConverterFactory(parser))
-      .addConverterFactory(GsonConverterFactory.create(gson))
-      .build()
-      .create(FhirOAuthService::class.java)
-
   @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
   @Provides
   fun provideFhirResourceService(
     parser: IParser,
-    @OkHttpClientQualifier okHttpClient: OkHttpClient,
+    @AuthOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): FhirResourceService =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)

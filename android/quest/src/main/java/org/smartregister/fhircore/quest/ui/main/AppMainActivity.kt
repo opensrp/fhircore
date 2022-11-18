@@ -29,11 +29,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -42,10 +42,8 @@ import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
@@ -68,6 +66,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
@@ -121,13 +121,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
-    CoroutineScope(dispatcherProvider.main()).launch {
-      appMainViewModel.fetchResourcesFromComposition(
-        fhirEngine.searchCompositionByIdentifier(
-          sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
-        )
-      )
-    }
+    configurationRegistry.fetchNonWorkflowConfigResources()
 
     configService.scheduleFhirTaskPlanWorker(this)
   }

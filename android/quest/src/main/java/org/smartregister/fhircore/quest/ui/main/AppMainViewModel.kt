@@ -37,24 +37,18 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
-import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.data.remote.auth.FhirOAuthService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -63,19 +57,16 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
-import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
-import timber.log.Timber
 
 @HiltViewModel
 @ExperimentalMaterialApi
@@ -88,10 +79,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DispatcherProvider,
-  val oAuthService: FhirOAuthService,
-  val configService: ConfigService,
-  val defaultRepository: DefaultRepository,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -125,56 +113,6 @@ constructor(
           }
         }
       }
-  }
-
-  fun fetchResourcesFromComposition(compositionResource: Composition?) {
-    viewModelScope.launch {
-      compositionResource
-        ?.retrieveCompositionSections()
-        ?.filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-        ?.groupBy { it.focus.reference.substringBeforeLast("/") }
-        ?.filter {
-          it.key == ResourceType.Questionnaire.name ||
-            it.key == ResourceType.StructureMap.name ||
-            it.key == ResourceType.List.name ||
-            it.key == ResourceType.Library.name
-        }
-        ?.forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-          val ids = entry.value.joinToString(",") { it.focus.extractId() }
-          val resourceUrlPath =
-            entry.key +
-              "?${Composition.SP_RES_ID}=$ids" +
-              "&_count=${configService.provideConfigurationSyncPageSize()}"
-
-          Timber.d("Fetching config details $resourceUrlPath")
-
-          oAuthService.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent ->
-            when (bundleEntryComponent.resource) {
-              is ListResource -> {
-                val list = bundleEntryComponent.resource as ListResource
-                list.entry.forEach { listEntryComponent ->
-                  /*Here we extract the keys and ids for the resources listed in
-                  the List resource */
-                  val resourceKey = listEntryComponent.item.reference.substringBeforeLast("/")
-                  val resourceId = listEntryComponent.item.reference.substringAfterLast("/")
-                  /*Using the extracted keys and values we make a server call to fetch those resources */
-                  val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
-                  oAuthService.getResource(listResourceUrlPath).entry.forEach {
-                    listEntryResourceBundle ->
-                    /*Finally these resources and downloaded and saved */
-                    defaultRepository.create(false, listEntryResourceBundle.resource)
-                    Timber.d("Fetched and processed list reference $listResourceUrlPath")
-                  }
-                }
-              }
-              else -> {
-                defaultRepository.create(false, bundleEntryComponent.resource)
-                Timber.d("Fetched and processed resources $resourceUrlPath")
-              }
-            }
-          }
-        }
-    }
   }
 
   fun retrieveAppMainUiState() {
