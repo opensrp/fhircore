@@ -9,7 +9,7 @@ const config = {
   title: 'FHIRCORE Documentation',
   tagline: 'FHIRCORE Docusaurus site',
   url: 'https://opensrp.github.io',
-  baseUrl: '/fhircore/',
+  baseUrl: '/fhircore',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
