@@ -16,7 +16,6 @@ const config = {
   favicon: 'img/fhircore.png',
   organizationName: 'opensrp', // Usually your GitHub org/user name.
   projectName: 'fhircore', // Usually your repo name.
-  deploymentBranch:'gh-pages',
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
