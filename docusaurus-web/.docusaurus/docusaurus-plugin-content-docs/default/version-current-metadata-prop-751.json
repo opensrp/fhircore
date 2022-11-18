@@ -1,0 +1,52 @@
+{
+  "pluginId": "default",
+  "version": "current",
+  "label": "Next",
+  "banner": null,
+  "badge": false,
+  "noIndex": false,
+  "className": "docs-version-current",
+  "isLast": true,
+  "docsSidebars": {
+    "defaultSidebar": [
+      {
+        "type": "link",
+        "label": "in-app-reporting",
+        "href": "/fhircore/in-app-reporting",
+        "docId": "in-app-reporting"
+      },
+      {
+        "type": "link",
+        "label": "intro",
+        "href": "/fhircore/",
+        "docId": "intro"
+      },
+      {
+        "type": "link",
+        "label": "Testing FHIR Resources",
+        "href": "/fhircore/testing-resources",
+        "docId": "testing-resources"
+      }
+    ]
+  },
+  "docs": {
+    "in-app-reporting": {
+      "id": "in-app-reporting",
+      "title": "in-app-reporting",
+      "description": "In App Reporting",
+      "sidebar": "defaultSidebar"
+    },
+    "intro": {
+      "id": "intro",
+      "title": "intro",
+      "description": "This is FHIRCORE client Documentation HomePage",
+      "sidebar": "defaultSidebar"
+    },
+    "testing-resources": {
+      "id": "testing-resources",
+      "title": "Testing FHIR Resources",
+      "description": "Step 1 - Creating Patient Resources",
+      "sidebar": "defaultSidebar"
+    }
+  }
+}

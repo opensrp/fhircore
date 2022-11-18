@@ -1,0 +1,24 @@
+{
+  "unversionedId": "configurations/composition-config",
+  "id": "configurations/composition-config",
+  "title": "composition-config",
+  "description": "Composition config",
+  "source": "@site/docs/configurations/composition-config.md",
+  "sourceDirName": "configurations",
+  "slug": "/configurations/composition-config",
+  "permalink": "/configurations/composition-config",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/configurations/composition-config.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "application-config",
+    "permalink": "/configurations/application-config"
+  },
+  "next": {
+    "title": "geowidget-config",
+    "permalink": "/configurations/geowidget-config"
+  }
+}
