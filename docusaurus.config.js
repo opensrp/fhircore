@@ -8,8 +8,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'FHIRCORE Documentation',
   tagline: 'FHIRCORE Docusaurus site',
-  url: 'https://opensrp.github.io/fhircore/index.html',
-  baseUrl: '/',
+  url: 'https://opensrp.github.io',
+  baseUrl: '/fhircore/index.html',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
