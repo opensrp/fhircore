@@ -1,64 +1,21 @@
 {
-  "/fhircore/__docusaurus/debug-955": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
+  "/-cf8": {
+    "__comp": "1be78505",
     "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
-  },
-  "/fhircore/__docusaurus/debug/config-bdb": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
-  },
-  "/fhircore/__docusaurus/debug/content-aef": {
-    "__comp": "__comp---theme-debug-contentba-8-ce7",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
+      "plugin": "c3ab6d08"
     },
-    "allContent": "allContent---fhircore-docusaurus-debug-content-246-e07"
+    "versionMetadata": "935f2afb"
   },
-  "/fhircore/__docusaurus/debug/globalData-3ef": {
-    "__comp": "__comp---theme-debug-global-dataede-0fa",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
+  "/-678": {
+    "__comp": "17896441",
+    "content": "0e384e19"
   },
-  "/fhircore/__docusaurus/debug/metadata-c1c": {
-    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
+  "/in-app-reporting-516": {
+    "__comp": "17896441",
+    "content": "a5f8aaf7"
   },
-  "/fhircore/__docusaurus/debug/registry-fe9": {
-    "__comp": "__comp---theme-debug-registry-679-501",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
-  },
-  "/fhircore/__docusaurus/debug/routes-cb2": {
-    "__comp": "__comp---theme-debug-routes-946-699",
-    "__context": {
-      "plugin": "plugin---fhircore-docusaurus-debug-683-2f2"
-    }
-  },
-  "/fhircore/-8e8": {
-    "__comp": "__comp---theme-doc-page-1-be-9be",
-    "__context": {
-      "plugin": "plugin---fhircore-c-3-a-4ab"
-    },
-    "versionMetadata": "versionMetadata---fhircore-935-721"
-  },
-  "/fhircore/-c9c": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---fhircore-0-e-3-bfe"
-  },
-  "/fhircore/in-app-reporting-09e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---fhircore-in-app-reportinga-5-f-ae0"
-  },
-  "/fhircore/testing-resources-d49": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---fhircore-testing-resourcesd-7-e-e9b"
+  "/testing-resources-13e": {
+    "__comp": "17896441",
+    "content": "d7e086c9"
   }
 }
