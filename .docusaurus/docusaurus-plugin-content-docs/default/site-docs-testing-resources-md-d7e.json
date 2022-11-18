@@ -6,15 +6,15 @@
   "source": "@site/docs/testing-resources.md",
   "sourceDirName": ".",
   "slug": "/testing-resources",
-  "permalink": "/testing-resources",
+  "permalink": "/fhircore/testing-resources",
   "draft": false,
-  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/testing-resources.md",
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/testing-resources.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "defaultSidebar",
   "previous": {
     "title": "intro",
-    "permalink": "/"
+    "permalink": "/fhircore/"
   }
 }

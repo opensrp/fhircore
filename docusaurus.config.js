@@ -6,52 +6,60 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'opensrp-fhircore-documentation',
-  tagline: 'fhir-core',
+  title: 'FHIRCORE Documentation',
+  tagline: 'FHIRCORE Docusaurus site',
   url: 'https://opensrp.github.io',
   baseUrl: '/fhircore/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
+
+  // GitHub pages deployment config.
+  // If you aren't using GitHub pages, you don't need these.
   organizationName: 'opensrp', // Usually your GitHub org/user name.
   projectName: 'fhircore', // Usually your repo name.
+
+  // Even if you don't use internalization, you can use this field to set useful
+  // metadata like html lang. For example, if your site is Chinese, you may want
+  // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
   },
 
   presets: [
-     [
-       'classic',
-       ({
-         docs: {
+    [
+      'classic',
+      /** @type {import('@docusaurus/preset-classic').Options} */
+      ({
+        docs: {
           routeBasePath:'/',
-           editUrl:'https://github.com/opensrp/fhircore/tree/main/',
-         },
-         blog: false
-       }),
-     ],
-   ],
+          editUrl:
+            'https://github.com/opensrp/fhircore/tree/main/docs',
+        },
+        blog: false
+      }),
+    ],
+  ],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Opensrp FHIRCORE',
+        title: 'FHIR CORE',
         logo: {
-          alt: 'FHIR Core documentation',
+          alt: 'FHIR CORE Documentation',
           src: 'img/fhircore.png',
-
         },
         items: [
-//          {
-//            type: 'doc',
-//            docId: 'in-app-reporting',
-//            position: 'left',
-//            label: 'Documentation',
-//          },
           {
-            href: 'https://github.com/opensrp/fhircore/tree/main',
+            type: 'doc',
+            docId: 'intro',
+            position: 'left',
+            label: 'Documentation',
+          },
+          {
+            href: 'https://github.com/opensrp/fhircore',
             label: 'GitHub',
             position: 'right',
           },
@@ -59,7 +67,18 @@ const config = {
       },
       footer: {
         style: 'dark',
-        copyright: `Copyright © ${new Date().getFullYear()} OPENSRP FHIRCORE, Inc. Built by Ona.`,
+        links: [
+          {
+            title: 'More',
+            items: [
+              {
+                label: 'GitHub',
+                href: 'https://github.com/facebook/docusaurus',
+              },
+            ],
+          },
+        ],
+        copyright: `Copyright © ${new Date().getFullYear()} Opensrp FHIRCore documentation`,
       },
       prism: {
         theme: lightCodeTheme,

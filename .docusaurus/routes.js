@@ -3,24 +3,24 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/',
-    component: ComponentCreator('/', 'cf8'),
+    path: '/fhircore/',
+    component: ComponentCreator('/fhircore/', '8e8'),
     routes: [
       {
-        path: '/',
-        component: ComponentCreator('/', '678'),
+        path: '/fhircore/',
+        component: ComponentCreator('/fhircore/', 'c9c'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/in-app-reporting',
-        component: ComponentCreator('/in-app-reporting', '516'),
+        path: '/fhircore/in-app-reporting',
+        component: ComponentCreator('/fhircore/in-app-reporting', '09e'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/testing-resources',
-        component: ComponentCreator('/testing-resources', '13e'),
+        path: '/fhircore/testing-resources',
+        component: ComponentCreator('/fhircore/testing-resources', 'd49'),
         exact: true,
         sidebar: "defaultSidebar"
       }
