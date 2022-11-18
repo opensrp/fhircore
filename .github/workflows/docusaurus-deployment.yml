@@ -25,6 +25,7 @@ jobs:
       - name: Build website
         working-directory: docusaurus-web
         run: |
+         cd docusaurus-web
          yarn install  --frozen-lockfile
          yarn build
 
