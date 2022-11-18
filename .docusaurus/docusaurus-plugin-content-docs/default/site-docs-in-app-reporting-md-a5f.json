@@ -6,7 +6,7 @@
   "source": "@site/docs/in-app-reporting.md",
   "sourceDirName": ".",
   "slug": "/in-app-reporting",
-  "permalink": "/fhircore/in-app-reporting",
+  "permalink": "/in-app-reporting",
   "draft": false,
   "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/in-app-reporting.md",
   "tags": [],
@@ -15,6 +15,6 @@
   "sidebar": "defaultSidebar",
   "next": {
     "title": "intro",
-    "permalink": "/fhircore/"
+    "permalink": "/"
   }
 }

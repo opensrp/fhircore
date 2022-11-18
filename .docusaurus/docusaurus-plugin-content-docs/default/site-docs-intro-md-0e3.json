@@ -6,7 +6,7 @@
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
   "slug": "/",
-  "permalink": "/fhircore/",
+  "permalink": "/",
   "draft": false,
   "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/intro.md",
   "tags": [],
@@ -18,10 +18,10 @@
   "sidebar": "defaultSidebar",
   "previous": {
     "title": "in-app-reporting",
-    "permalink": "/fhircore/in-app-reporting"
+    "permalink": "/in-app-reporting"
   },
   "next": {
     "title": "Testing FHIR Resources",
-    "permalink": "/fhircore/testing-resources"
+    "permalink": "/testing-resources"
   }
 }

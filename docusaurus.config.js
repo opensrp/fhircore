@@ -9,7 +9,7 @@ const config = {
   title: 'opensrp-fhircore-documentation',
   tagline: 'fhir-core',
   url: 'https://opensrp.github.io',
-  baseUrl: '/',
+  baseUrl: '/fhircore/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
