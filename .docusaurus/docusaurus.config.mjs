@@ -4,10 +4,10 @@
  * Modify the docusaurus.config.js file at your site's root instead.
  */
 export default {
-  "title": "opensrp-fhircore-documentation",
-  "tagline": "fhir-core",
+  "title": "FHIRCORE Documentation",
+  "tagline": "Dinosaurs are cool",
   "url": "https://opensrp.github.io",
-  "baseUrl": "/",
+  "baseUrl": "/fhircore/",
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",
   "favicon": "img/fhircore.png",
@@ -27,7 +27,7 @@ export default {
       {
         "docs": {
           "routeBasePath": "/",
-          "editUrl": "https://github.com/opensrp/fhircore/tree/main/"
+          "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs"
         },
         "blog": false
       }
@@ -35,14 +35,20 @@ export default {
   ],
   "themeConfig": {
     "navbar": {
-      "title": "Opensrp FHIRCORE",
+      "title": "FHIR CORE",
       "logo": {
-        "alt": "FHIR Core documentation",
+        "alt": "FHIR CORE Documentation",
         "src": "img/fhircore.png"
       },
       "items": [
         {
-          "href": "https://github.com/opensrp/fhircore/tree/main",
+          "type": "doc",
+          "docId": "intro",
+          "position": "left",
+          "label": "Documentation"
+        },
+        {
+          "href": "https://github.com/opensrp/fhircore",
           "label": "GitHub",
           "position": "right"
         }
@@ -51,8 +57,18 @@ export default {
     },
     "footer": {
       "style": "dark",
-      "copyright": "Copyright © 2022 OPENSRP FHIRCORE, Inc. Built by Ona.",
-      "links": []
+      "links": [
+        {
+          "title": "More",
+          "items": [
+            {
+              "label": "GitHub",
+              "href": "https://github.com/facebook/docusaurus"
+            }
+          ]
+        }
+      ],
+      "copyright": "Copyright © 2022 Opensrp FHIRCore documentation"
     },
     "prism": {
       "theme": {

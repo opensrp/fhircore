@@ -1,28 +1,28 @@
 {
   "docusaurus-plugin-content-docs": {
     "default": {
-      "path": "/",
+      "path": "/fhircore/",
       "versions": [
         {
           "name": "current",
           "label": "Next",
           "isLast": true,
-          "path": "/",
+          "path": "/fhircore/",
           "mainDocId": "intro",
           "docs": [
             {
               "id": "in-app-reporting",
-              "path": "/in-app-reporting",
+              "path": "/fhircore/in-app-reporting",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "intro",
-              "path": "/",
+              "path": "/fhircore/",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "testing-resources",
-              "path": "/testing-resources",
+              "path": "/fhircore/testing-resources",
               "sidebar": "defaultSidebar"
             }
           ],
@@ -30,7 +30,7 @@
           "sidebars": {
             "defaultSidebar": {
               "link": {
-                "path": "/in-app-reporting",
+                "path": "/fhircore/in-app-reporting",
                 "label": "in-app-reporting"
               }
             }

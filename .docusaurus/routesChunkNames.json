@@ -1,20 +1,20 @@
 {
-  "/-cf8": {
+  "/fhircore/-8e8": {
     "__comp": "1be78505",
     "__context": {
       "plugin": "c3ab6d08"
     },
     "versionMetadata": "935f2afb"
   },
-  "/-678": {
+  "/fhircore/-c9c": {
     "__comp": "17896441",
     "content": "0e384e19"
   },
-  "/in-app-reporting-516": {
+  "/fhircore/in-app-reporting-09e": {
     "__comp": "17896441",
     "content": "a5f8aaf7"
   },
-  "/testing-resources-13e": {
+  "/fhircore/testing-resources-d49": {
     "__comp": "17896441",
     "content": "d7e086c9"
   }
