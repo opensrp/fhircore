@@ -20,7 +20,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import ca.uhn.fhir.util.DateUtils.formatDate
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
@@ -29,20 +29,22 @@ import dagger.assisted.AssistedInject
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.alreadyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
+import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -59,18 +61,23 @@ constructor(
   val fhirEngine: FhirEngine
 ) : CoroutineWorker(appContext, workerParams) {
 
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+
   override suspend fun doWork(): Result {
-    val configuration = retrieveMeasureReportConfiguration()
-    val monthList = getMonthRangeList(configuration)
-
-    configuration.reports.forEach {
-      withContext(dispatcherProvider.io()) { fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url) }
-
-      monthList.forEach { date ->
+    val monthList = getMonthRangeList()
+    fhirEngine.search<Measure> {}.forEach {
+      monthList.forEachIndexed { index, date ->
         val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
         val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-        if (!checkReportAlreadyGenerated(startDateFormatted, endDateFormatted)) {
+        if (alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, it.url)
+            .isEmpty()
+        ) {
           evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+        } else {
+          if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
+            evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
         }
       }
     }
@@ -78,18 +85,16 @@ constructor(
     return Result.success()
   }
 
-  private fun retrieveMeasureReportConfiguration(): MeasureReportConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      configType = ConfigType.MeasureReport,
-      configId = "defaultMeasureReport"
-    )
+  private fun lastDayOfMonth(date: Date?): Boolean = date?.before(today().lastDayOfMonth()) == true
 
   private suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String
   ) {
-
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
+    }
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
         try {
@@ -109,40 +114,25 @@ constructor(
           null
         }
       }
-    if (measureReport != null) defaultRepository.addOrUpdate(resource = measureReport)
+    if (measureReport != null) {
+      val result =
+        alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, measureUrl)
+      if (result.isNotEmpty()) defaultRepository.delete(result.last())
+      defaultRepository.addOrUpdate(resource = measureReport)
+    }
   }
 
   /** @return list of months within current date and starting date of campaign */
-  fun getMonthRangeList(configuration: MeasureReportConfiguration): List<Date> {
+  fun getMonthRangeList(): List<Date> {
     val yearMonths = mutableListOf<Date>()
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
-    while (lastDate!!.after(configuration.registerDate?.parseDate(SDF_YYYY_MM_DD))) {
+    while (lastDate?.after(applicationConfiguration.registerDate.parseDate(SDF_YYYY_MM_DD)) ==
+      true) {
       yearMonths.add(lastDate)
       lastDate = lastDate.plusMonths(-1)
     }
     return yearMonths.toList()
-  }
-  suspend fun checkReportAlreadyGenerated(
-    startDateFormatted: String,
-    endDateFormatted: String
-  ): Boolean {
-    return fhirEngine
-      .search<MeasureReport> {
-        filter(
-          MeasureReport.PERIOD,
-          {
-            value = of(DateTimeType(startDateFormatted))
-            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-          },
-          {
-            value = of(DateTimeType(endDateFormatted))
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-          },
-          operation = com.google.android.fhir.search.Operation.AND
-        )
-      }
-      .isEmpty()
   }
   companion object {
     const val WORK_ID = "fhirMeasureReportWorker"

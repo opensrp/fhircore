@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -60,7 +60,7 @@ const val POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG =
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
-  LazyColumn { items(dataList, key = { it.title }) { item -> PopulationResultCard(item) } }
+  LazyColumn { itemsIndexed(dataList) { _, item -> PopulationResultCard(item) } }
 }
 
 @Composable

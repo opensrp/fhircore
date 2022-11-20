@@ -61,17 +61,16 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 @Composable
 fun MeasureReportResultScreen(
-  reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
-  val measureReportRowData = measureReportViewModel.measureReportConfig.value
+  val measureReportRowData = measureReportViewModel.measureReportConfigList
 
   MeasureReportResultPage(
-    screenTitle = measureReportRowData?.title ?: "",
+    screenTitle = measureReportRowData.first().module,
     navController = navController,
     measureReportConfig = measureReportRowData,
     endDate = uiState.endDate,
@@ -86,7 +85,7 @@ fun MeasureReportResultScreen(
 fun MeasureReportResultPage(
   screenTitle: String,
   navController: NavController,
-  measureReportConfig: MeasureReportConfig?,
+  measureReportConfig: MutableList<MeasureReportConfig>,
   startDate: String,
   endDate: String,
   patientViewData: MeasureReportPatientViewData?,
@@ -127,7 +126,7 @@ fun MeasureReportResultPage(
         ) {
           if (measureReportConfig != null)
             Text(
-              text = measureReportConfig.description,
+              text = measureReportConfig.first().description,
               textAlign = TextAlign.Start,
               fontSize = 16.sp
             )
@@ -155,13 +154,13 @@ fun MeasureReportResultPage(
           )
         }
         if (measureReportPopulationResult != null) {
-          MeasureReportPopulationResultView(measureReportPopulationResult)
+          MeasureReportPopulationResultView(measureReportPopulationResult.distinct())
         }
       }
     }
   }
 }
-
+//
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
@@ -170,9 +169,11 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     screenTitle = "First ANC",
     navController = rememberNavController(),
     measureReportConfig =
-      MeasureReportConfig(
-        title = "First ANC",
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+      mutableListOf(
+        MeasureReportConfig(
+          title = "First ANC",
+          description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+        )
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
@@ -201,8 +202,10 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     screenTitle = "First ANC",
     navController = rememberNavController(),
     measureReportConfig =
-      MeasureReportConfig(
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+      mutableListOf(
+        MeasureReportConfig(
+          description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+        )
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",

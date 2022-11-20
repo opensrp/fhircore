@@ -106,7 +106,7 @@ constructor(
             locale = Locale.getDefault(),
             template = configsJsonMap.getValue(it)
           )
-          .decodeJson<T>()
+          .decodeJson<T>(jsonInstance = json)
       }
       .filter { it.configType.equals(configType.name, ignoreCase = true) }
 

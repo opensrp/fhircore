@@ -18,20 +18,24 @@ package org.smartregister.fhircore.engine.data.local
 
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -148,6 +152,40 @@ constructor(
         create(addMandatoryTags, resource)
       }
     }
+  }
+  suspend fun <R : Resource> deleteAndCreateResourceIfExists(
+    addMandatoryTags: Boolean = true,
+    resource: R
+  ) {
+    return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
+      try {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        create(addMandatoryTags, resource)
+      }
+    }
+  }
+
+  suspend fun checkIfResourceAvailable(startDate: Date, endDate: Date): Boolean {
+    return fhirEngine
+      .search<MeasureReport> {
+        filter(
+          MeasureReport.PERIOD,
+          {
+            value = of(DateTimeType(startDate))
+            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+          },
+          {
+            value = of(DateTimeType(endDate))
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+          },
+          operation = com.google.android.fhir.search.Operation.AND
+        )
+      }
+      .isNotEmpty()
   }
 
   suspend fun loadManagingEntity(group: Group) =

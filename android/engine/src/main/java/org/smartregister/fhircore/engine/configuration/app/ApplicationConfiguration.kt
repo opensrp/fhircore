@@ -26,6 +26,7 @@ data class ApplicationConfiguration(
   override var configType: String = ConfigType.Application.name,
   val theme: String = "",
   val appTitle: String = "",
+  val registerDate: String = "",
   val remoteSyncPageSize: Int = 100,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
@@ -33,5 +34,5 @@ data class ApplicationConfiguration(
   val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig()
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
 ) : Configuration()

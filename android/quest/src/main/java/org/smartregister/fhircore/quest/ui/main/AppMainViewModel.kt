@@ -317,8 +317,8 @@ constructor(
     // Schedule job for generating measure report in the background
     workManager.enqueueUniquePeriodicWork(
       MeasureReportWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.KEEP,
-      PeriodicWorkRequestBuilder<MeasureReportWorker>(24, TimeUnit.HOURS).build()
+      ExistingPeriodicWorkPolicy.REPLACE,
+      PeriodicWorkRequestBuilder<MeasureReportWorker>(2, TimeUnit.MINUTES).build()
     )
   }
 

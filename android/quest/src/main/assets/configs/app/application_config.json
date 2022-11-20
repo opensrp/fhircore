@@ -4,12 +4,18 @@
   "theme": "DEFAULT",
   "appTitle": "eCBIS",
   "remoteSyncPageSize": 100,
+  "registerDate": "2020-10-27",
   "languages": [
     "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": ["Organization", "Location", "CareTeam", "Practitioner"],
+  "syncStrategies": [
+    "Organization",
+    "Location",
+    "CareTeam",
+    "Practitioner"
+  ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true

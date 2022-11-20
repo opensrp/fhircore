@@ -27,9 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +40,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -59,6 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.alreadyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.displayText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -100,13 +98,16 @@ constructor(
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 ) : ViewModel() {
 
-  val measureReportConfig: MutableState<MeasureReportConfig?> = mutableStateOf(null)
+  val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
     mutableStateOf(null)
 
   val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
     mutableStateOf(null)
+
+  private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
+    mutableListOf()
 
   val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
     mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
@@ -153,11 +154,14 @@ constructor(
 
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        measureReportConfig.value = event.measureReportConfig?.get(0)
+        event.measureReportConfig?.let {
+          measureReportConfigList.clear()
+          measureReportConfigList.addAll(it)
+        }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig?.get(0)?.module)
+              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.first().module)
             )
         )
       }
@@ -170,6 +174,7 @@ constructor(
               endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
             )
         }
+        _measureReportPopulationResultList.clear()
         evaluateMeasure(event.navController)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -201,8 +206,6 @@ constructor(
       }
       is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-        // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
       {
         patientsData.value =
           retrievePatients(event.reportId).map {
@@ -233,8 +236,7 @@ constructor(
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
-    if (measureReportConfig.value != null) {
-      val measureUrl = measureReportConfig.value!!.url
+    if (measureReportConfigList.isNotEmpty()) {
 
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
 
@@ -258,68 +260,61 @@ constructor(
           .runCatching {
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
+            measureReportConfigList.forEach {
+              val result =
+                alreadyGeneratedMeasureReports(
+                  fhirEngine,
+                  startDateFormatted,
+                  endDateFormatted,
+                  it.url
+                )
+              if (result.isEmpty()) {
+                withContext(dispatcherProvider.io()) {
+                  fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
+                }
+                if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation
+                ) {
+                  val measureReport: MeasureReport? =
+                    try {
+                      withContext(dispatcherProvider.io()) {
+                        fhirOperator.evaluateMeasure(
+                          measureUrl = it.url,
+                          start = startDateFormatted,
+                          end = endDateFormatted,
+                          reportType = SUBJECT,
+                          subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
+                          practitioner =
+                            practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+                          lastReceivedOn = null // Non-null value not supported yet
+                        )
+                      }
+                    } catch (exception: IllegalArgumentException) {
+                      Timber.e(exception)
+                      null
+                    }
 
-            val result =
-              fhirEngine.search<MeasureReport> {
-                filter(
-                  MeasureReport.PERIOD,
-                  {
-                    value = of(DateTimeType(startDateFormatted))
-                    prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-                  },
-                  {
-                    value = of(DateTimeType(endDateFormatted))
-                    prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-                  },
-                  operation = com.google.android.fhir.search.Operation.AND
+                  if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+                    val population: MeasureReport.MeasureReportGroupPopulationComponent? =
+                      measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
+                    measureReportIndividualResult.value =
+                      MeasureReportIndividualResult(
+                        status = if (population != null && population.count > 0) "True" else "False"
+                      )
+                  }
+                } else if (reportTypeSelectorUiState.value.patientViewData == null &&
+                    !individualEvaluation
+                ) {
+                  evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+                }
+              } else {
+                _measureReportPopulationResultList.addAll(
+                  formatPopulationMeasureReport(result.last())
                 )
               }
-
-            if (result.isEmpty()) {
-              withContext(dispatcherProvider.io()) {
-                fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
-              }
-            } else {
-              formatPopulationMeasureReport(
-                result.last()
-              ) // update this method to handle list of measure reports
-            }
-
-            if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
-              val measureReport: MeasureReport? =
-                try {
-                  withContext(dispatcherProvider.io()) {
-                    fhirOperator.evaluateMeasure(
-                      measureUrl = measureUrl,
-                      start = startDateFormatted,
-                      end = endDateFormatted,
-                      reportType = SUBJECT,
-                      subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                      practitioner =
-                        practitionerId?.asReference(ResourceType.Practitioner)?.reference,
-                      lastReceivedOn = null // Non-null value not supported yet
-                    )
-                  }
-                } catch (exception: IllegalArgumentException) {
-                  Timber.e(exception)
-                  null
-                }
-
-              if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
-                val population: MeasureReport.MeasureReportGroupPopulationComponent? =
-                  measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
-                measureReportIndividualResult.value =
-                  MeasureReportIndividualResult(
-                    status = if (population != null && population.count > 0) "True" else "False"
-                  )
-              }
-            } else if (reportTypeSelectorUiState.value.patientViewData == null &&
-                !individualEvaluation
-            ) {
-              evaluatePopulationMeasure(measureUrl, startDateFormatted, endDateFormatted)
             }
           }
           .onSuccess {
+            measureReportPopulationResults.value = _measureReportPopulationResultList
             toggleProgressIndicatorVisibility(false)
             // Show results of measure report for individual/population
             navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
@@ -359,8 +354,9 @@ constructor(
         }
       }
 
-    if (measureReport != null)
-      measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
+    if (measureReport != null) {
+      _measureReportPopulationResultList.addAll(formatPopulationMeasureReport(measureReport))
+    }
   }
 
   fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
@@ -474,7 +470,6 @@ constructor(
           lastDate
         )
       )
-
       lastDate = lastDate.plusMonths(-1)
     }
     return yearMonths.toList().groupBy { it.year }

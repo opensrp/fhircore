@@ -45,7 +45,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 fun MeasureReportListScreen(
   mainNavController: NavController,
   dataList: Flow<PagingData<MeasureReportConfig>>,
-  onReportMeasureClicked: (List<MeasureReportConfig?>?) -> Unit,
+  onReportMeasureClicked: (List<MeasureReportConfig>) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
@@ -66,10 +66,13 @@ fun MeasureReportListScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
-        lazyReportItems.keys.forEach {
+        lazyReportItems.keys.forEach { key ->
           item {
-            it?.let { it1 ->
-              MeasureReportRow(it1, { onReportMeasureClicked(lazyReportItems[it]) })
+            key?.let { it1 ->
+              MeasureReportRow(
+                it1,
+                { onReportMeasureClicked(lazyReportItems[key] as List<MeasureReportConfig>) }
+              )
             }
           }
         }

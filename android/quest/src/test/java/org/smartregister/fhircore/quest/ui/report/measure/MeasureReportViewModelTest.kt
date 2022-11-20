@@ -38,7 +38,6 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
@@ -153,7 +152,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfig.value
+    val viewModelConfig = measureReportViewModel.measureReportConfigList.value
     Assert.assertEquals(viewModelConfig?.id, measureReportConfig.id)
     Assert.assertEquals(viewModelConfig?.title, measureReportConfig.title)
 
@@ -182,7 +181,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         family = "Orion"
       )
 
-    measureReportViewModel.measureReportConfig.value = measureReportConfig
+    measureReportViewModel.measureReportConfigList.value = measureReportConfig
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
