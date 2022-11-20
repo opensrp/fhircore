@@ -2,17 +2,16 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "eCBIS",
+  "appTitle": "eCBIS (CHA & CHSS)",
   "remoteSyncPageSize": 100,
-  "registerDate": "2020-10-27",
   "languages": [
     "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": [
-    "Organization",
+  "syncStrategy": [
     "Location",
+    "Organization",
     "CareTeam",
     "Practitioner"
   ],

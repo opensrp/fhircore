@@ -152,7 +152,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
                 currentPage = registerViewModel.currentPage,
                 onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
-                registerUiState = registerViewModel.registerUiState.value
+                registerUiState = registerViewModel.registerUiState.value,
+                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation
               )
             }
           }
