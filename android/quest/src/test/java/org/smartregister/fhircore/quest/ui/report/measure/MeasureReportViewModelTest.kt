@@ -152,9 +152,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
     val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfigList.value
-    Assert.assertEquals(viewModelConfig?.id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig?.title, measureReportConfig.title)
+    val viewModelConfig = measureReportViewModel.measureReportConfigList
+    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
+    Assert.assertEquals(viewModelConfig.first().title, measureReportConfig.title)
 
     verify { navController.navigate(capture(routeSlot)) }
 
@@ -181,7 +181,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         family = "Orion"
       )
 
-    measureReportViewModel.measureReportConfigList.value = measureReportConfig
+    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
