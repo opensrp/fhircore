@@ -3,6 +3,7 @@
   "configType": "application",
   "theme": "DEFAULT",
   "appTitle": "eCBIS (CHA & CHSS)",
+  "registerDate": "2020-10-27",
   "remoteSyncPageSize": 100,
   "languages": [
     "en"
