@@ -36,8 +36,8 @@ import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -57,7 +57,8 @@ fun CardView(
         CompoundText(
           modifier = modifier.wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!,
-          computedValuesMap = resourceData.computedValuesMap
+          resourceData = resourceData,
+          navController = navController
         )
         // TODO Display viewAll action text
       }
@@ -123,7 +124,7 @@ private fun CardViewWithPaddingPreview() {
           padding = 16,
           content =
             listOf(
-              ViewGroupProperties(
+              ColumnProperties(
                 viewType = ViewType.COLUMN,
                 children =
                   listOf(

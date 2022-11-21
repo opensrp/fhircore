@@ -22,10 +22,17 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class CardViewProperties(
   override val viewType: ViewType,
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = null,
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "true",
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
-  val padding: Int = 0,
   val header: CompoundTextProperties? = null,
   val headerBackgroundColor: String = "#F2F4F7",
   val viewAllAction: Boolean = false

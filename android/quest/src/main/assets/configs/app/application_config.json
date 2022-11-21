@@ -2,14 +2,19 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "eCBIS",
+  "appTitle": "eCBIS (CHA & CHSS)",
   "remoteSyncPageSize": 100,
   "languages": [
     "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": ["Organization", "Location", "CareTeam", "Practitioner"],
+  "syncStrategy": [
+    "Location",
+    "Organization",
+    "CareTeam",
+    "Practitioner"
+  ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true

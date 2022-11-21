@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -155,7 +154,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
-    assertEquals(
+    Assert.assertEquals(
       listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
       slot.captured
     )
@@ -185,7 +184,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { fhirResourceDataSource.loadData(any()) }
 
-    assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
+    Assert.assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }
 
   @Test

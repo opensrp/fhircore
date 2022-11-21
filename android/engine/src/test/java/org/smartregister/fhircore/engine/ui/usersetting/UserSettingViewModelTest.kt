@@ -38,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -131,11 +132,11 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
     val userSettingsEvent = UserSettingsEvent.Logout
-    every { accountAuthenticator.logout() } returns Unit
+    every { accountAuthenticator.logout(any()) } returns Unit
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
-    verify(exactly = 1) { accountAuthenticator.logout() }
+    verify(exactly = 1) { accountAuthenticator.logout(any()) }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
@@ -229,14 +230,15 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testShowLoaderViewShouldUpdateShowProgressFlagCorrectly() {
-    Assert.assertEquals(false, userSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(false, userSettingViewModel.progressBarState.value?.first)
 
-    val userSettingsEvent = UserSettingsEvent.ShowLoaderView
+    val userSettingsEvent = UserSettingsEvent.ShowLoaderView(true, R.string.resetting_app)
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     ShadowLooper.idleMainLooper()
-    Assert.assertEquals(true, userSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(true, userSettingViewModel.progressBarState.value?.first)
+    Assert.assertEquals(R.string.resetting_app, userSettingViewModel.progressBarState.value?.second)
   }
 
   @Test
@@ -302,18 +304,5 @@ class UserSettingViewModelTest : RobolectricTest() {
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.launchScreen(any()) }
-  }
-
-  @Test
-  fun testLogoutUserShouldCallAuthLogoutServiceX() {
-
-    Assert.assertNull(userSettingViewModel.onLogout.value)
-    every { accountAuthenticator.logout() } returns Unit
-
-    userSettingViewModel.logoutUser()
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-    Assert.assertEquals(true, userSettingViewModel.onLogout.value)
-    verify(exactly = 1) { accountAuthenticator.logout() }
   }
 }
