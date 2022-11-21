@@ -47,7 +47,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Opensrp Fhircore Documentation',
+        title: 'Fhircore Documentation',
         logo: {
           alt: 'FhirCore Documentation',
           src: 'img/fhircore.png',
