@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Opensrp FhirCore Documentation',
   tagline: 'Opensrp FhirCore Documentation',
-  url: 'https://fhircore.smartregister.org',
+  url: 'https://opensrp.github.io',
   baseUrl: '/fhircore/',
   trailingSlash:false,
   onBrokenLinks: 'ignore',
@@ -17,7 +17,7 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'fhircore.smartregister.org', // Usually your GitHub org/user name.
+  organizationName: 'opensrp', // Usually your GitHub org/user name.
   projectName: 'fhircore', // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
