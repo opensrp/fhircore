@@ -18,24 +18,17 @@ package org.smartregister.fhircore.engine.app
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.impl.WorkManagerImpl
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers.setStaticField
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -55,23 +48,6 @@ class ConfigServiceTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
-  }
-
-  @Test
-  fun testSchedulePlanShouldEnqueueUniquePeriodicWork() {
-    val workManager = mockk<WorkManagerImpl>()
-    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
-
-    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
-    configService.scheduleFhirTaskPlanWorker(mockk())
-
-    verify {
-      workManager.enqueueUniquePeriodicWork(
-        eq(FhirTaskPlanWorker.WORK_ID),
-        eq(ExistingPeriodicWorkPolicy.REPLACE),
-        any()
-      )
-    }
   }
 
   @Test

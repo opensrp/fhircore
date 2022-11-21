@@ -17,28 +17,35 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.hasStarted
-import org.smartregister.fhircore.engine.util.extension.isLastTask
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
-class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters) :
-  CoroutineWorker(appContext, workerParams) {
+@HiltWorker
+class FhirTaskPlanWorker
+@AssistedInject
+constructor(
+  @Assisted val appContext: Context,
+  @Assisted workerParams: WorkerParameters,
+  val fhirEngine: FhirEngine
+) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
     Timber.i("Starting task scheduler")
-
-    val fhirEngine = FhirEngineProvider.getInstance(appContext)
 
     // TODO also filter by date range for better performance
     fhirEngine
@@ -78,7 +85,10 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
     return Result.success()
   }
 
+  private fun CarePlan.isLastTask(task: Task) =
+    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
+
   companion object {
-    const val WORK_ID = "PlanWorker"
+    const val WORK_ID = "fhirTaskPlanWorker"
   }
 }

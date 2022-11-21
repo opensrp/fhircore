@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,6 +47,11 @@ class MeasureReportIndividualResultViewTest {
   @Before
   fun setup() {
     scenario = ActivityScenario.launch(ComponentActivity::class.java)
+  }
+
+  @After
+  fun tearDown() {
+    scenario.close()
   }
 
   @Test
