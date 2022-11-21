@@ -31,11 +31,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okio.ByteString.Companion.decodeBase64
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -92,7 +94,7 @@ constructor(
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template = configsJsonMap.getValue(configKey)
+          template = getConfigurationTemplate(configKey)
         )
         .decodeJson(jsonInstance = json)
   }
@@ -117,6 +119,25 @@ constructor(
   inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
     require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
     return configsJsonMap.getValue(configType.name).decodeResourceFromString()
+  }
+
+  /**
+   * Retrieve the configuration template for the provided [ConfigType]. If the HAPI server has
+   * validation enabled the Binary resoruce endpoint returns the Resource, otherwise it returns the
+   * raw JSON. We convert the resource `data` attribute value form `base64` to a [String]
+   */
+  fun getConfigurationTemplate(configKey: String): String {
+    return if (BuildConfig.FHIR_SERVER_VALIDATION_ENABLED)
+      configsJsonMap
+          .getValue(configKey)
+          .decodeResourceFromString<Binary>()
+          .dataElement
+          .valueAsString
+          .decodeBase64()!!
+        .utf8()
+    else {
+      configsJsonMap.getValue(configKey)
+    }
   }
 
   /**

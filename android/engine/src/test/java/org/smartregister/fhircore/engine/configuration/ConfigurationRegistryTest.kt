@@ -23,7 +23,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
@@ -70,5 +72,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertNotNull(resource)
     Assert.assertEquals("Bwana.", resource?.getString("name.title"))
     Assert.assertEquals("Kijana", resource?.getString("gender.male"))
+  }
+
+  @Test
+  fun `test the configuration retrival with the Binary Resource response`() {
+    configRegistry.configsJsonMap["application"] =
+      "{\n" +
+        "    \"resourceType\": \"Binary\",\n" +
+        "    \"id\": \"ee550614-5a60-4528-babf-b496c3224743\",\n" +
+        "    \"contentType\": \"application/json\",\n" +
+        "    \"data\": \"ew0KCSJhcHBJZCI6ICJjaHNzIiwNCgkiY29uZmlnVHlwZSI6ICJhcHBsaWNhdGlvbiIsDQoJInRoZW1lIjogIkRFRkFVTFQiLA0KCSJhcHBUaXRsZSI6ICJlQ0JJUyBDSFNTIiwNCgkicmVtb3RlU3luY1BhZ2VTaXplIjogMTAwLA0KCSJsYW5ndWFnZXMiOiBbDQoJCSJlbiINCgldLA0KCSJ1c2VEYXJrVGhlbWUiOiBmYWxzZSwNCgkic3luY0ludGVydmFsIjogMzAsDQoJInN5bmNTdHJhdGVneSI6IFsNCgkJIkxvY2F0aW9uIg0KCV0sDQoJImxvZ2luQ29uZmlnIjogew0KCQkic2hvd0xvZ28iOiB0cnVlLA0KCQkiZW5hYmxlUGluIjogdHJ1ZQ0KCX0sDQoJImRldmljZVRvRGV2aWNlU3luYyI6IHsNCgkJInJlc291cmNlc1RvU3luYyI6IFsNCgkJCSJHcm91cCIsDQoJCQkiUGF0aWVudCIsDQoJCQkiQ2FyZVBsYW4iLA0KCQkJIlRhc2siLA0KCQkJIkVuY291bnRlciIsDQoJCQkiT2JzZXJ2YXRpb24iLA0KCQkJIkNvbmRpdGlvbiIsDQoJCQkiUXVlc3Rpb25uYWlyZSIsDQoJCQkiUXVlc3Rpb25uYWlyZVJlc3BvbnNlIg0KCQldDQoJfQ0KfQ==\"\n" +
+        "}"
+    val template = configRegistry.getConfigurationTemplate("application")
+    Assert.assertNotNull(template)
+    val applicationConfig = template?.decodeJson<ApplicationConfiguration>()
+    Assert.assertTrue(applicationConfig?.appId == "chss")
   }
 }

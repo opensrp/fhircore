@@ -36,6 +36,7 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
+        buildConfigField("boolean", 'FHIR_SERVER_VALIDATION_ENABLED', "$fhirServerValidationEnabled")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
@@ -138,7 +139,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.6-rc1"
+            versionName "0.1.7-rc1"
         }
 
         g6pd {

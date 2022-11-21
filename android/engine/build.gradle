@@ -26,6 +26,7 @@ android {
         targetSdkVersion sdk_versions.target_sdk
         testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
         consumerProguardFiles "consumer-rules.pro"
+        buildConfigField("boolean", 'FHIR_SERVER_VALIDATION_ENABLED', "$fhirServerValidationEnabled")
     }
 
     buildTypes {
