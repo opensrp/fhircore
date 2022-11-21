@@ -16,20 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.Calendar
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -66,50 +58,5 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     Assert.assertNull(patient)
-  }
-
-  @Test
-  fun `Context#loadResourceTemplate()`() {
-    val context = ApplicationProvider.getApplicationContext<Application>()
-    val dateOnset = DateType(Calendar.getInstance().time).format()
-    val conditionData =
-      mapOf(
-        "#Id" to UUID.randomUUID().toString(),
-        "#RefPatient" to "Patient/88a98d-234",
-        "#RefCondition" to "Condition/ref-condition-id",
-        "#RefEpisodeOfCare" to "EpisodeOfCare/ref-episode-of-case",
-        "#RefEncounter" to "Encounter/ref-encounter-id",
-        "#RefGoal" to "Goal/ref-goal-id",
-        "#RefCareTeam" to "CareTeam/325",
-        "#RefPractitioner" to "Practitioner/399",
-        "#RefDateOnset" to dateOnset
-      )
-
-    val condition =
-      context.loadResourceTemplate(
-        "pregnancy_condition_template.json",
-        Condition::class.java,
-        conditionData
-      )
-
-    Assert.assertEquals(conditionData["#Id"], condition.logicalId)
-    Assert.assertEquals(conditionData["#RefPatient"], condition.subject.reference)
-    Assert.assertEquals(
-      conditionData["#RefDateOnset"],
-      condition.onsetDateTimeType.toHumanDisplay()
-    )
-  }
-
-  @Test
-  fun `FhirEngine#dateTimeTypeFormat()`() {
-    val dateTimeTypeObject = Calendar.getInstance()
-    dateTimeTypeObject.set(Calendar.YEAR, 2010)
-    dateTimeTypeObject.set(Calendar.MONTH, 1)
-    dateTimeTypeObject.set(Calendar.DAY_OF_YEAR, 1)
-    val expectedDateTimeFormat = "2010-01-01"
-    Assert.assertEquals(
-      expectedDateTimeFormat,
-      DateTimeType(dateTimeTypeObject).format().split("T")[0]
-    )
   }
 }

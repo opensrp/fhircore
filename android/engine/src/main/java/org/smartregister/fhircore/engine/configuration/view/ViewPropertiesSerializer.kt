@@ -39,7 +39,8 @@ object ViewPropertiesSerializer :
           """.trimMargin()
     }
     return when (ViewType.valueOf(viewType)) {
-      ViewType.COLUMN, ViewType.ROW -> ViewGroupProperties.serializer()
+      ViewType.ROW -> RowProperties.serializer()
+      ViewType.COLUMN -> ColumnProperties.serializer()
       ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
       ViewType.SERVICE_CARD -> ServiceCardProperties.serializer()
       ViewType.CARD -> CardViewProperties.serializer()

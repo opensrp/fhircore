@@ -20,11 +20,11 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import androidx.work.WorkManager
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import com.google.gson.Gson
@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -69,7 +70,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-@OptIn(ExperimentalMaterialApi::class)
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -78,6 +78,10 @@ class AppMainViewModelTest : RobolectricTest() {
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var gson: Gson
+
+  @Inject lateinit var workManager: WorkManager
+
+  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
@@ -97,6 +101,8 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -114,7 +120,9 @@ class AppMainViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          workManager = workManager,
+          fhirCarePlanGenerator = fhirCarePlanGenerator
         )
       )
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
@@ -205,7 +213,7 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_REPORT
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS
           )
         )
       )
@@ -216,7 +224,7 @@ class AppMainViewModelTest : RobolectricTest() {
     // We have triggered workflow for launching report
     val intSlot = slot<Int>()
     verify { navController.navigate(capture(intSlot)) }
-    Assert.assertEquals(MainNavigationScreen.Reports.route, intSlot.captured)
+    Assert.assertEquals(MainNavigationScreen.Settings.route, intSlot.captured)
   }
 
   @Test

@@ -91,12 +91,25 @@ constructor(
     else
       localizationHelper
         .parseTemplate(
-          LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-          Locale.getDefault(),
-          configsJsonMap.getValue(configKey)
+          bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+          locale = Locale.getDefault(),
+          template = configsJsonMap.getValue(configKey)
         )
         .decodeJson(jsonInstance = json)
   }
+
+  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
+    configsJsonMap.values
+      .map {
+        localizationHelper
+          .parseTemplate(
+            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+            locale = Locale.getDefault(),
+            template = configsJsonMap.getValue(it)
+          )
+          .decodeJson<T>()
+      }
+      .filter { it.configType.equals(configType.name, ignoreCase = true) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -203,7 +216,7 @@ constructor(
           }
           populateConfigurationsMap(
             composition = this,
-            loadFromAssets = loadFromAssets,
+            loadFromAssets = true,
             appId = parsedAppId,
             configsLoadedCallback = configsLoadedCallback,
             context = context
@@ -211,7 +224,7 @@ constructor(
         }
     } else {
       fhirEngine.searchCompositionByIdentifier(appId)?.run {
-        populateConfigurationsMap(context, this, loadFromAssets, appId, configsLoadedCallback)
+        populateConfigurationsMap(context, this, false, appId, configsLoadedCallback)
       }
     }
   }
