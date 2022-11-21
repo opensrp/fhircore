@@ -11,25 +11,43 @@
     "defaultSidebar": [
       {
         "type": "link",
+        "label": "fhir-core-documetation",
+        "href": "/fhircore/fhir-core-documetation",
+        "docId": "fhir-core-documetation"
+      },
+      {
+        "type": "link",
         "label": "in-app-reporting",
-        "href": "/in-app-reporting",
+        "href": "/fhircore/in-app-reporting",
         "docId": "in-app-reporting"
       },
       {
         "type": "link",
         "label": "intro",
-        "href": "/",
+        "href": "/fhircore/",
         "docId": "intro"
       },
       {
         "type": "link",
+        "label": "keycloak-auth-token-configuration",
+        "href": "/fhircore/keycloak-auth-token-configuration",
+        "docId": "keycloak-auth-token-configuration"
+      },
+      {
+        "type": "link",
         "label": "Testing FHIR Resources",
-        "href": "/testing-resources",
+        "href": "/fhircore/testing-resources",
         "docId": "testing-resources"
       }
     ]
   },
   "docs": {
+    "fhir-core-documetation": {
+      "id": "fhir-core-documetation",
+      "title": "fhir-core-documetation",
+      "description": "Android CI with Gradle",
+      "sidebar": "defaultSidebar"
+    },
     "in-app-reporting": {
       "id": "in-app-reporting",
       "title": "in-app-reporting",
@@ -40,6 +58,12 @@
       "id": "intro",
       "title": "intro",
       "description": "This is FHIRCORE client Documentation HomePage",
+      "sidebar": "defaultSidebar"
+    },
+    "keycloak-auth-token-configuration": {
+      "id": "keycloak-auth-token-configuration",
+      "title": "keycloak-auth-token-configuration",
+      "description": "Keycloak Auth Token Configuration",
       "sidebar": "defaultSidebar"
     },
     "testing-resources": {
