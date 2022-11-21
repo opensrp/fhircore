@@ -25,11 +25,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -174,11 +172,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
-          QuestionnaireResponse?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+          as QuestionnaireResponse?
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
-          QuestionnaireConfig?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
+          as QuestionnaireConfig?
 
       if (questionnaireConfig != null && questionnaireResponse != null) {
         appMainViewModel.questionnaireSubmissionLiveData.postValue(

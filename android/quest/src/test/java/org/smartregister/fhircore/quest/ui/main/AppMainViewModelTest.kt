@@ -101,8 +101,6 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Before
   fun setUp() {
     hiltRule.inject()
