@@ -1,4 +1,2 @@
 def geowidgetEnabled = true
-def fhirServerValidationEnabled = true
 ext.geowidgetEnabled = geowidgetEnabled
-ext.fhirServerValidationEnabled = fhirServerValidationEnabled
