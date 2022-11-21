@@ -11,7 +11,7 @@ const config = {
   url: 'https://opensrp.github.io',
   baseUrl: '/fhircore/',
   trailingSlash:false,
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/fhircore.png',
 
