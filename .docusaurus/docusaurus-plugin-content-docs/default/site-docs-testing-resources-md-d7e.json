@@ -6,7 +6,7 @@
   "source": "@site/docs/testing-resources.md",
   "sourceDirName": ".",
   "slug": "/testing-resources",
-  "permalink": "/testing-resources",
+  "permalink": "/fhircore/testing-resources",
   "draft": false,
   "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/testing-resources.md",
   "tags": [],
@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "defaultSidebar",
   "previous": {
-    "title": "intro",
-    "permalink": "/"
+    "title": "keycloak-auth-token-configuration",
+    "permalink": "/fhircore/keycloak-auth-token-configuration"
   }
 }

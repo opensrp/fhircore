@@ -5,9 +5,9 @@
  */
 export default {
   "title": "FHIRCORE Documentation",
-  "tagline": "FHIRCORE Docusaurus site",
+  "tagline": "FHIRCORE Documentation",
   "url": "https://opensrp.github.io",
-  "baseUrl": "/",
+  "baseUrl": "/fhircore/",
   "trailingSlash": false,
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",

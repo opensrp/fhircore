@@ -19,6 +19,26 @@
           "contentPathLocalized": "/home/smutuku/Documents/Github/fhircore/i18n/en/docusaurus-plugin-content-docs/current",
           "docs": [
             {
+              "unversionedId": "fhir-core-documetation",
+              "id": "fhir-core-documetation",
+              "title": "fhir-core-documetation",
+              "description": "Android CI with Gradle",
+              "source": "@site/docs/fhir-core-documetation.md",
+              "sourceDirName": ".",
+              "slug": "/fhir-core-documetation",
+              "permalink": "/fhircore/fhir-core-documetation",
+              "draft": false,
+              "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/fhir-core-documetation.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {},
+              "sidebar": "defaultSidebar",
+              "next": {
+                "title": "in-app-reporting",
+                "permalink": "/fhircore/in-app-reporting"
+              }
+            },
+            {
               "unversionedId": "in-app-reporting",
               "id": "in-app-reporting",
               "title": "in-app-reporting",
@@ -33,6 +53,10 @@
               "version": "current",
               "frontMatter": {},
               "sidebar": "defaultSidebar",
+              "previous": {
+                "title": "fhir-core-documetation",
+                "permalink": "/fhircore/fhir-core-documetation"
+              },
               "next": {
                 "title": "intro",
                 "permalink": "/fhircore/"
@@ -61,6 +85,30 @@
                 "permalink": "/fhircore/in-app-reporting"
               },
               "next": {
+                "title": "keycloak-auth-token-configuration",
+                "permalink": "/fhircore/keycloak-auth-token-configuration"
+              }
+            },
+            {
+              "unversionedId": "keycloak-auth-token-configuration",
+              "id": "keycloak-auth-token-configuration",
+              "title": "keycloak-auth-token-configuration",
+              "description": "Keycloak Auth Token Configuration",
+              "source": "@site/docs/keycloak-auth-token-configuration.md",
+              "sourceDirName": ".",
+              "slug": "/keycloak-auth-token-configuration",
+              "permalink": "/fhircore/keycloak-auth-token-configuration",
+              "draft": false,
+              "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/keycloak-auth-token-configuration.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {},
+              "sidebar": "defaultSidebar",
+              "previous": {
+                "title": "intro",
+                "permalink": "/fhircore/"
+              },
+              "next": {
                 "title": "Testing FHIR Resources",
                 "permalink": "/fhircore/testing-resources"
               }
@@ -81,8 +129,8 @@
               "frontMatter": {},
               "sidebar": "defaultSidebar",
               "previous": {
-                "title": "intro",
-                "permalink": "/fhircore/"
+                "title": "keycloak-auth-token-configuration",
+                "permalink": "/fhircore/keycloak-auth-token-configuration"
               }
             }
           ],
@@ -91,11 +139,19 @@
             "defaultSidebar": [
               {
                 "type": "doc",
+                "id": "fhir-core-documetation"
+              },
+              {
+                "type": "doc",
                 "id": "in-app-reporting"
               },
               {
                 "type": "doc",
                 "id": "intro"
+              },
+              {
+                "type": "doc",
+                "id": "keycloak-auth-token-configuration"
               },
               {
                 "type": "doc",

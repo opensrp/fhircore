@@ -1,0 +1,24 @@
+{
+  "unversionedId": "keycloak-auth-token-configuration",
+  "id": "keycloak-auth-token-configuration",
+  "title": "keycloak-auth-token-configuration",
+  "description": "Keycloak Auth Token Configuration",
+  "source": "@site/docs/keycloak-auth-token-configuration.md",
+  "sourceDirName": ".",
+  "slug": "/keycloak-auth-token-configuration",
+  "permalink": "/fhircore/keycloak-auth-token-configuration",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/keycloak-auth-token-configuration.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "intro",
+    "permalink": "/fhircore/"
+  },
+  "next": {
+    "title": "Testing FHIR Resources",
+    "permalink": "/fhircore/testing-resources"
+  }
+}
