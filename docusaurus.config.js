@@ -47,18 +47,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'FHIR CORE',
+        title: 'OPENSRP FHIRCORE Documentation',
         logo: {
-          alt: 'FHIR CORE Documentation',
+          alt: 'FHIRCORE Documentation',
           src: 'img/fhircore.png',
         },
         items: [
-          {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'Documentation',
-          },
           {
             href: 'https://github.com/opensrp/fhircore',
             label: 'GitHub',
