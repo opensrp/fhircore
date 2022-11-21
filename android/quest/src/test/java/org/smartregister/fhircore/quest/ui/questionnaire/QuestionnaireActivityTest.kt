@@ -132,7 +132,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
-    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply { id = "12345" }
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
       QuestionnaireResponse()
 
@@ -272,7 +273,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnBackPressedShouldShowAlert() {
+  fun testGetQuestionnaireResponseShouldHaveSubjectAndDate() {
+    var questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertNull(questionnaireResponse.id)
+    Assert.assertNull(questionnaireResponse.authored)
+
+    questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+    Assert.assertEquals(
+      "Patient/${questionnaireConfig.resourceIdentifier}",
+      questionnaireResponse.subject.reference
+    )
+    Assert.assertEquals("Questionnaire/12345", questionnaireResponse.questionnaire)
+  }
+
+  @Test
+  fun testOnBackPressedShouldShowConfirmAlert() {
     questionnaireActivity.onBackPressed()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -287,6 +306,54 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
   }
+
+  @Test
+  fun testOnBackPressedWithSaveDraftEnabledShouldShowCancelAlert() {
+    questionnaireConfig = questionnaireConfig.copy(saveDraft = true)
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+    questionnaireActivity.onBackPressed()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_in_progress_alert_back_pressed_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_back_pressed_save_draft_button_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
+  }
+
+  @Test
+  fun testHandleSaveDraftQuestionnaireShowsProgressAlertAndCallsHandlePartialResponse() {
+    questionnaireConfig = questionnaireConfig.copy(saveDraft = true)
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireViewModel.partialQuestionnaireResponseHasValues(any()) } returns true
+    questionnaireActivity.handleSaveDraftQuestionnaire()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.form_progress_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+
+    verify(timeout = 2000) { questionnaireActivity.handlePartialQuestionnaireResponse(any()) }
+  }
+
+  @Test
+  fun testHandlePartialQuestionnaireResponseCallsSavePartialResponse() {
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    questionnaireActivity.handlePartialQuestionnaireResponse(QuestionnaireResponse())
+    verify { questionnaireViewModel.savePartialQuestionnaireResponse(any(), any()) }
+  }
+
   @Test
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
     val qActivity = spyk(questionnaireActivity)

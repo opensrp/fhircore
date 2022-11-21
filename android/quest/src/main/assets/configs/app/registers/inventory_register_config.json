@@ -1,0 +1,140 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "inventoryRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "commoditiesQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "386452003"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Observation",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterLatestObservation",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "code": "latest"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search by name",
+    "computedRules": [
+      "commodityName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "commodityName",
+        "condition": "true",
+        "actions": [
+          "data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
+      },
+      {
+        "name": "commodityId",
+        "condition": "true",
+        "actions": [
+          "data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
+      {
+        "name": "quantity",
+        "condition": "true",
+        "actions": [
+          "data.put('quantity', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value'))"
+        ]
+      },
+      {
+        "name": "lastUpdated",
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{commodityName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{lastUpdated}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{quantity}",
+              "status": "DUE",
+              "fontSize": 14.0,
+              "smallSized": false,
+              "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_QUESTIONNAIRE",
+                    "questionnaire": {
+                      "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+                      "title": "@{commodityName}",
+                      "saveButtonText": "ADJUST STOCK LEVELS",
+                      "setPractitionerDetails": true,
+                      "setOrganizationDetails": true,
+                      "resourceIdentifier": "@{commodityId}"
+                    }
+                  }
+                ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "inventoryProfile",
+                "params": [
+                  {
+                    "key": "commodityId",
+                    "value": "@{commodityId}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "noResults": {
+    "title": "No Commodities",
+    "message": "Sorry, stock commodities have not been setup yet"
+  }
+}

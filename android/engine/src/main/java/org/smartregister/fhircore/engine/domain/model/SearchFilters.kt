@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
 import androidx.compose.runtime.Stable
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 
 @Serializable
+@Parcelize
 /** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
 data class DataQuery(
   val id: String = "",
@@ -29,9 +33,13 @@ data class DataQuery(
   val valueType: Enumerations.DataType,
   val valueBoolean: Boolean? = null,
   val valueCoding: Code? = null,
-  val valueString: String? = null
-)
+  val valueString: String? = null,
+  val valueDate: String? = null,
+  val paramPrefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+) : Parcelable
 
 @Stable
 @Serializable
-data class Code(var system: String? = null, var code: String? = null, var display: String? = null)
+@Parcelize
+data class Code(var system: String? = null, var code: String? = null, var display: String? = null) :
+  Parcelable

@@ -19,12 +19,12 @@ package org.smartregister.fhircore.engine.data.local.register
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -33,10 +33,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 class RegisterRepository
 @Inject
@@ -89,14 +91,16 @@ constructor(
 
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
-    return baseResources.map { baseResource: Resource ->
-      retrieveRelatedResources(
-        relatedResourcesConfig = relatedResourcesConfig,
-        baseResourceType = baseResourceType,
-        baseResource = baseResource,
-        rules = registerConfiguration.registerCard.rules
-      )
-    }
+    val resourceData =
+      baseResources.map { baseResource: Resource ->
+        retrieveRelatedResources(
+          relatedResourcesConfig = relatedResourcesConfig,
+          baseResourceType = baseResourceType,
+          baseResource = baseResource,
+          rules = registerConfiguration.registerCard.rules
+        )
+      }
+    return resourceData
   }
 
   private suspend fun retrieveRelatedResources(
@@ -110,21 +114,24 @@ constructor(
     // Retrieve related resources recursively
     relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
       val relatedResources =
-        withContext(dispatcherProvider.io()) {
-          searchRelatedResources(
-            resourceConfig = resourceConfig,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            fhirPathExpression = resourceConfig.fhirPathExpression
-          )
-        }
+        searchRelatedResources(
+          resourceConfig = resourceConfig,
+          baseResourceType = baseResourceType,
+          baseResource = baseResource,
+          fhirPathExpression = resourceConfig.fhirPathExpression
+        )
       currentRelatedResources.addAll(relatedResources)
     }
 
     val relatedResourcesMap = currentRelatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
-    val computedValuesMap = rulesFactory.fireRule(rules, baseResource, relatedResourcesMap)
+    val computedValuesMap =
+      rulesFactory.fireRule(
+        ruleConfigs = rules,
+        baseResource = baseResource,
+        relatedResourcesMap = relatedResourcesMap
+      )
 
     return ResourceData(baseResource, relatedResourcesMap, computedValuesMap)
   }
@@ -169,7 +176,7 @@ constructor(
   ): LinkedList<RelatedResourceData> {
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
-    val relatedResourceData = LinkedList<RelatedResourceData>()
+    val relatedResourcesData = LinkedList<RelatedResourceData>()
     if (fhirPathExpression.isNullOrEmpty()) {
       val relatedResourceSearch =
         Search(type = relatedResourceType).apply {
@@ -180,25 +187,30 @@ constructor(
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach {
-        relatedResourceData.addLast(RelatedResourceData(it))
+      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+        relatedResourcesData.addLast(RelatedResourceData(resource = resource))
       }
     } else {
       fhirPathDataExtractor
         .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
         .map { it as Reference }
-        .map {
-          fhirEngine.get(
-            resourceConfig.resource.resourceClassType().newInstance().resourceType,
-            it.extractId()
-          )
+        .mapNotNull {
+          try {
+            fhirEngine.get(
+              resourceConfig.resource.resourceClassType().newInstance().resourceType,
+              it.extractId()
+            )
+          } catch (exception: ResourceNotFoundException) {
+            Timber.e(exception)
+            null
+          }
         }
         .forEach { resource ->
-          relatedResourceData.addLast(RelatedResourceData(resource = resource))
+          relatedResourcesData.addLast(RelatedResourceData(resource = resource))
         }
     }
-    relatedResourceData.forEach { resourceData: RelatedResourceData ->
+    relatedResourcesData.forEach { resourceData: RelatedResourceData ->
       resourceConfig.relatedResources.forEach {
         val searchRelatedResources =
           searchRelatedResources(
@@ -210,7 +222,7 @@ constructor(
         resourceData.relatedResources.addAll(searchRelatedResources)
       }
     }
-    return relatedResourceData
+    return relatedResourcesData
   }
 
   private suspend fun searchResource(
@@ -230,15 +242,7 @@ constructor(
         count = pageSize
         from = currentPage * pageSize
       }
-    return when (resourceType) {
-      ResourceType.Group -> filterActiveGroups(search)
-      else -> fhirEngine.search(search)
-    }
-  }
-
-  suspend fun filterActiveGroups(search: Search): List<Resource> {
-    val groups = fhirEngine.search<Group>(search)
-    return groups.filter { it.active && !it.name.isNullOrEmpty() }
+    return fhirEngine.search(search)
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -246,7 +250,6 @@ constructor(
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-
     val resourceType = baseResourceClass.newInstance().resourceType
 
     val search =
@@ -258,20 +261,22 @@ constructor(
         }
       }
 
-    return when (resourceType) {
-      ResourceType.Group -> filterActiveGroups(search).size.toLong()
-      else -> fhirEngine.count(search)
-    }
+    return fhirEngine.count(search)
   }
 
-  override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData {
+  override suspend fun loadProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?
+  ): ResourceData {
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
         profileId
       )
-    val baseResourceConfig = profileConfiguration.fhirResource.baseResource
-    val relatedResourcesConfig = profileConfiguration.fhirResource.relatedResources
+    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val baseResourceConfig = resourceConfig.baseResource
+    val relatedResourcesConfig = resourceConfig.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 

@@ -29,7 +29,9 @@ import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -38,6 +40,7 @@ import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
@@ -108,8 +111,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
     }
 
-    appMainViewModel.retrieveAppMainUiState()
-
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
@@ -122,14 +123,34 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     super.onActivityResult(requestCode, resultCode, data)
 
     if (resultCode == Activity.RESULT_OK)
-      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let {
-        lifecycleScope.launch(dispatcherProvider.io()) {
-          when {
-            it.startsWith(ResourceType.Task.name) ->
-              fhirCarePlanGenerator.completeTask(it.extractLogicalIdUuid())
+      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let { taskId ->
+        lifecycleScope.launch(dispatcherProvider.io()) { handleTaskActivityResult(taskId, data) }
+      }
+  }
+
+  suspend fun handleTaskActivityResult(taskId: String, data: Intent) {
+    taskId.takeIf { it.startsWith(ResourceType.Task.name) }?.let {
+      data
+        .getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+        ?.decodeResourceFromString<QuestionnaireResponse>()
+        ?.let {
+          when (it.status) {
+            QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> {
+              fhirCarePlanGenerator.transitionTaskTo(
+                taskId.extractLogicalIdUuid(),
+                Task.TaskStatus.INPROGRESS
+              )
+            }
+            QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED, null -> {
+              fhirCarePlanGenerator.transitionTaskTo(
+                taskId.extractLogicalIdUuid(),
+                Task.TaskStatus.COMPLETED
+              )
+            }
+            else -> {}
           }
         }
-      }
+    }
   }
 
   override fun onSync(state: State) {

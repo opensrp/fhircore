@@ -46,6 +46,18 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "patient.organization",
+        "base": [
+          "RelatedPerson"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
@@ -118,7 +130,10 @@
           "StructureMap",
           "Task",
           "Group",
-          "Location"
+          "Practitioner",
+          "PlanDefinition",
+          "Library",
+          "Measure"
         ],
         "type": "token",
         "expression": "#count"

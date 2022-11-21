@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -178,9 +179,9 @@ constructor(
       carePlan.contained.clear()
 
       // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) defaultRepository.create(carePlan)
+      if (output.hasActivity()) defaultRepository.create(true, carePlan)
 
-      dependents.forEach { defaultRepository.create(it) }
+      dependents.forEach { defaultRepository.create(true, it) }
 
       if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
         carePlan
@@ -201,10 +202,11 @@ constructor(
     }
   }
 
-  suspend fun completeTask(id: String) {
+  suspend fun transitionTaskTo(id: String, status: TaskStatus) {
     defaultRepository.create(
+      true,
       getTask(id).apply {
-        this.status = Task.TaskStatus.COMPLETED
+        this.status = status
         this.lastModified = Date()
       }
     )
@@ -212,6 +214,7 @@ constructor(
 
   suspend fun cancelTask(id: String, reason: String) {
     defaultRepository.create(
+      true,
       getTask(id).apply {
         this.status = Task.TaskStatus.CANCELLED
         this.lastModified = Date()

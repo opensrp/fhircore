@@ -103,7 +103,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
   fun saveLocation(location: Location): LiveData<Boolean> {
     val liveData = MutableLiveData<Boolean>()
     viewModelScope.launch(dispatcherProvider.io()) {
-      defaultRepository.create(location)
+      defaultRepository.create(true, location)
       liveData.postValue(true)
     }
 

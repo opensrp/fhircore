@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -119,13 +118,13 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun create(vararg resource: Resource): List<String> {
-    val mandatoryTags =
-      appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        it.addTags(mandatoryTags)
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+        }
       }
 
       fhirEngine.create(*resource)
@@ -133,10 +132,12 @@ constructor(
   }
 
   suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.delete(resource.resourceType, resource.logicalId)
+    }
   }
 
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdate(resource: R, addMandatoryTags: Boolean = true) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -144,7 +145,7 @@ constructor(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(resource)
+        create(addMandatoryTags, resource)
       }
     }
   }
@@ -181,11 +182,13 @@ constructor(
         this.gender = patient.gender
         this.relationshipFirstRep.codingFirstRep.system =
           "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.relationshipFirstRep.codingFirstRep.code = "99990006"
+        this.relationshipFirstRep.codingFirstRep.display = "Family Head"
         this.patient = patient.asReference()
         this.id = UUID.randomUUID().toString()
       }
 
-    create(relatedPerson)
+    create(true, relatedPerson)
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
