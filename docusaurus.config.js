@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Opensrp FhirCore Documentation',
   tagline: 'Opensrp FhirCore Documentation',
-  url: 'https://smartregister.org',
+  url: 'https://opensrp.github.io',
   baseUrl: '/fhircore/',
   trailingSlash:false,
   onBrokenLinks: 'ignore',
