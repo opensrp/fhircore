@@ -1,5 +1,5 @@
 {
-  "appId": "app",
+  "appId": "app/debug",
   "configType": "application",
   "theme": "DEFAULT",
   "appTitle": "eCBIS (CHA & CHSS)",

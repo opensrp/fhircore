@@ -35,4 +35,5 @@ data class ApplicationConfiguration(
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
+  val reportRepeatInterval: RepeatIntervalConfig = RepeatIntervalConfig(1, 6)
 ) : Configuration()

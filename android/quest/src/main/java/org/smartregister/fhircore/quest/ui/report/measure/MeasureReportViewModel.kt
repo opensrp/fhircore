@@ -315,6 +315,7 @@ constructor(
           }
           .onSuccess {
             measureReportPopulationResults.value = _measureReportPopulationResultList
+            Timber.w("measureReportPopulationResults${measureReportPopulationResults.value}")
             toggleProgressIndicatorVisibility(false)
             // Show results of measure report for individual/population
             navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
@@ -355,6 +356,7 @@ constructor(
       }
 
     if (measureReport != null) {
+      Timber.w("MeasureReport$measureReport")
       _measureReportPopulationResultList.addAll(formatPopulationMeasureReport(measureReport))
     }
   }
@@ -470,6 +472,7 @@ constructor(
           lastDate
         )
       )
+
       lastDate = lastDate.plusMonths(-1)
     }
     return yearMonths.toList().groupBy { it.year }

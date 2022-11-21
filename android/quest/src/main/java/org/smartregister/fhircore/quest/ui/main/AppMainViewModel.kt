@@ -315,11 +315,16 @@ constructor(
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
     // Schedule job for generating measure report in the background
-    workManager.enqueueUniquePeriodicWork(
-      MeasureReportWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<MeasureReportWorker>(2, TimeUnit.MINUTES).build()
+    MeasureReportWorker.scheduleMeasureReportWorker(
+      workManager,
+      applicationConfiguration.reportRepeatInterval.hours,
+      applicationConfiguration.reportRepeatInterval.minutes
     )
+    //    workManager.enqueueUniquePeriodicWork(
+    //      MeasureReportWorker.WORK_ID,
+    //      ExistingPeriodicWorkPolicy.REPLACE,
+    //      PeriodicWorkRequestBuilder<MeasureReportWorker>(2, TimeUnit.MINUTES).build()
+    //    )
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
