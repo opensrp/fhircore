@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.DataQuery
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
  * which can be accompanied by [relatedResources].
  */
 @Serializable
+@Parcelize
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
   val relatedResources: List<ResourceConfig> = emptyList()
-)
+) : Parcelable
 
 /**
  * This is the data class used to hold configurations for FHIR resources used on the register. The
@@ -44,6 +46,7 @@ data class FhirResourceConfig(
  * Nested [ResourceConfig] are proved via the [relatedResources] property.
  */
 @Serializable
+@Parcelize
 data class ResourceConfig(
   val name: String? = null,
   val resource: String,
@@ -51,4 +54,4 @@ data class ResourceConfig(
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList()
-)
+) : Parcelable

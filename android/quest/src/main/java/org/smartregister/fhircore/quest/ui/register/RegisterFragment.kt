@@ -86,6 +86,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val lifecycleEvent = rememberLifecycleEvent()
           LaunchedEffect(lifecycleEvent) {
             if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+              appMainViewModel.retrieveAppMainUiState()
               with(registerFragmentArgs) {
                 registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
               }
@@ -139,7 +140,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onSync(state: State) {
     if (state is State.Finished || state is State.Failed) {
       with(registerFragmentArgs) {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.run {
+          // Clear pages cache to load new data
+          pagesDataCache.clear()
+          retrieveRegisterUiState(registerId, screenTitle)
+        }
       }
     }
   }

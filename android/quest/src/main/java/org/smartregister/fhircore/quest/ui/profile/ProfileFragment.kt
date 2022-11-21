@@ -53,7 +53,7 @@ class ProfileFragment : Fragment() {
           LaunchedEffect(lifecycleEvent) {
             if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
               with(profileFragmentArgs) {
-                profileViewModel.retrieveProfileUiState(profileId, resourceId)
+                profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
               }
             }
           }

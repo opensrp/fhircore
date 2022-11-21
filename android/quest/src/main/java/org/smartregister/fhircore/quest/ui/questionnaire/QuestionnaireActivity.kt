@@ -33,7 +33,10 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showCancelAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
@@ -246,12 +250,42 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    return questionnaireFragment.getQuestionnaireResponse()
+    return questionnaireFragment.getQuestionnaireResponse().apply {
+      // TODO this is required until require condition in [QuestionnaireResponseValidator] is fixed
+      this@QuestionnaireActivity.questionnaire.let { it.url = "${it.resourceType}/${it.logicalId}" }
+
+      if (this.logicalId.isEmpty()) {
+        this.id = UUID.randomUUID().toString()
+        this.authored = Date()
+      }
+
+      this@QuestionnaireActivity.questionnaire.useContext
+        .filter { it.hasValueCodeableConcept() }
+        .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
+
+      this.questionnaire =
+        this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
+      // important to set response subject so that structure map can handle subject for all entities
+      questionnaireViewModel.handleQuestionnaireResponseSubject(
+        questionnaireConfig.resourceIdentifier,
+        this@QuestionnaireActivity.questionnaire,
+        this
+      )
+    }
   }
 
   fun dismissSaveProcessing() {
     if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
       saveProcessingAlertDialog.dismiss()
+  }
+
+  open fun handleSaveDraftQuestionnaire() {
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
+    val questionnaireResponse = getQuestionnaireResponse()
+    if (questionnaireViewModel.partialQuestionnaireResponseHasValues(questionnaireResponse)) {
+      handlePartialQuestionnaireResponse(questionnaireResponse)
+    }
+    finish()
   }
 
   open fun handleQuestionnaireSubmit() {
@@ -329,6 +363,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       dismissSaveProcessing()
       confirmationDialog(questionnaireConfig = questionnaireConfig)
     } else {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       questionnaireViewModel.extractAndSaveResources(
         context = this,
         questionnaire = questionnaire,
@@ -336,6 +371,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaireConfig = questionnaireConfig
       )
     }
+  }
+
+  open fun handlePartialQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    dismissSaveProcessing()
+    questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
   private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
@@ -384,15 +424,33 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onBackPressed() {
     if (questionnaireConfig.type.isReadOnly()) {
       finish()
+    } else if (questionnaireConfig.saveDraft) {
+      showCancelQuestionnaireAlertDialog()
     } else {
-      showConfirmAlert(
-        this,
-        getDismissDialogMessage(),
-        R.string.questionnaire_alert_back_pressed_title,
-        { finish() },
-        R.string.questionnaire_alert_back_pressed_button_title
-      )
+      showConfirmAlertDialog()
     }
+  }
+
+  private fun showConfirmAlertDialog() {
+    showConfirmAlert(
+      this,
+      getDismissDialogMessage(),
+      R.string.questionnaire_alert_back_pressed_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title,
+    )
+  }
+
+  private fun showCancelQuestionnaireAlertDialog() {
+    showCancelAlert(
+      this,
+      R.string.questionnaire_in_progress_alert_back_pressed_message,
+      R.string.questionnaire_alert_back_pressed_title,
+      { handleSaveDraftQuestionnaire() },
+      R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title
+    )
   }
 
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message

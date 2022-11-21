@@ -39,11 +39,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -54,8 +55,16 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+  private val configService = mockk<ConfigService>()
   private val appSettingViewModel =
-    spyk(AppSettingViewModel(fhirResourceDataSource, defaultRepository, sharedPreferencesHelper))
+    spyk(
+      AppSettingViewModel(
+        fhirResourceDataSource,
+        defaultRepository,
+        sharedPreferencesHelper,
+        configService
+      )
+    )
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -133,8 +142,9 @@ class AppSettingViewModelTest : RobolectricTest() {
                 )
           }
       }
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+    coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
     appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
 
@@ -142,7 +152,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
     coVerify { fhirResourceDataSource.loadData(any()) }
-    coVerify { defaultRepository.create(any()) }
+    coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
     assertEquals(

@@ -4,7 +4,7 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "{{ add.new.household }}",
+    "display": "Add Household",
     "actions": [
       {
         "trigger": "ON_CLICK",
@@ -12,7 +12,7 @@
         "id": "householdRegister",
         "questionnaire": {
           "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
-          "title": "{{add.family}}",
+          "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,
           "setOrganizationDetails": true
@@ -20,11 +20,219 @@
       }
     ]
   },
+  "clientRegisters": [
+    {
+      "id": "householdRegister",
+      "display": "All households",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_households"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "householdRegister"
+        }
+      ]
+    },
+    {
+      "id": "childRegister",
+      "display": "Children",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_baby_mother"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "childRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "childRegister"
+        }
+      ]
+    },
+    {
+      "id": "sickChildRegister",
+      "display": "Sick child",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_needle"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "sickChildRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "sickChildRegister"
+        }
+      ]
+    }
+  ],
+  "bottomSheetRegisters": {
+    "display": "Other patients",
+    "visible": true,
+    "menuIconConfig": {
+      "type": "local",
+      "reference": "ic_user"
+    },
+    "registers": [
+      {
+        "id": "ancRegister",
+        "display": "ANC",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "ancRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "ancRegister"
+          }
+        ]
+      },
+      {
+        "id": "pncRegister",
+        "display": "PNC",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "pncRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "pncRegister"
+          }
+        ]
+      },
+      {
+        "id": "fpRegister",
+        "display": "FP",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "fpRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "fpRegister"
+          }
+        ]
+      },
+      {
+        "id": "mentalHealthRegister",
+        "display": "Mental health",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "mentalHealthRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "mentalHealthRegister"
+          }
+        ]
+      },
+      {
+        "id": "hivRegister",
+        "display": "HIV",
+        "icon": "",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "hivRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "hivRegister"
+          }
+        ]
+      },
+      {
+        "id": "tbRegister",
+        "display": "TB",
+        "icon": "",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "tbRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "tbRegister"
+          }
+        ]
+      },
+      {
+        "id": "cmntdRegister",
+        "display": "CM-NTD",
+        "icon": "",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "cmntdRegister"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "cmntdRegister"
+          }
+        ]
+      }
+    ]
+  },
   "staticMenu": [
+    {
+      "id": "inventoryRegister",
+      "display": "Stock Inventory",
+      "icon": "",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_inventory"
+      },
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "inventoryRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "inventoryRegister"
+        }
+      ]
+    },
     {
       "id": "reports",
       "visible": true,
-      "display": "{{reports}}",
+      "display": "Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -40,7 +248,7 @@
     {
       "id": "p2p_sync",
       "visible": true,
-      "display": "{{transfer.data}}",
+      "display": "Transfer Data",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_p2p"
@@ -54,9 +262,9 @@
       ]
     },
     {
-      "id": "profile",
+      "id": "settings",
       "visible": true,
-      "display": "{{profile }}",
+      "display": "Settings",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_settings"
@@ -66,68 +274,6 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_SETTINGS",
           "id": "navigateToSettingsScreen"
-        }
-      ]
-    }
-  ],
-  "clientRegisters": [
-    {
-      "id": "householdRegister",
-      "display": "{{ all.households }}",
-      "menuIconConfig": {
-        "type": "remote",
-        "reference": "Binary/144177"
-      },
-      "showCount": true,
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "householdRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "householdRegister"
-        }
-      ]
-    },
-    {
-      "id": "ancRegister",
-      "display": "ANC",
-      "menuIconConfig": {
-        "type": "remote",
-        "reference": "Binary/145193"
-      },
-      "showCount": true,
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "ancRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "ancRegister"
-        }
-      ]
-    },
-    {
-      "id": "taskRegister",
-      "display": "Tasks",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_tasks_priority"
-      },
-      "showCount": true,
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "taskRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "taskRegister"
         }
       ]
     }

@@ -21,17 +21,22 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
-import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
 interface ConfigService {
 
-  /** Provide [AuthConfiguration] for the application */
+  /** Provide [AuthConfiguration] for the application. */
   fun provideAuthConfiguration(): AuthConfiguration
 
-  /** Provide [SyncStrategy] for the application */
-  fun provideSyncStrategy(): SyncStrategy
+  /** Define a list of [ResourceTag] for the application. */
+  fun defineResourceTags(): List<ResourceTag>
 
   fun scheduleFhirTaskPlanWorker(context: Context) {
     WorkManager.getInstance(context)
@@ -41,4 +46,39 @@ interface ConfigService {
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
   }
+
+  /**
+   * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
+   * a FHIR resource.
+   */
+  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+    val tags = mutableListOf<Coding>()
+    defineResourceTags().forEach { strategy ->
+      if (strategy.type == ResourceType.Practitioner.name) {
+        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+        if (id.isNullOrBlank()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          strategy.tag.let { tag ->
+            tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+          }
+        }
+      } else {
+        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        if (ids.isNullOrEmpty()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          ids.forEach { id ->
+            strategy.tag.let { tag ->
+              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+      }
+    }
+
+    return tags
+  }
+
+  fun provideConfigurationSyncPageSize(): String
 }

@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.accounts.AccountManager
 import android.content.Context
-import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -144,10 +143,9 @@ constructor(
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {
-        accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
-          val bundle = accountBundleFuture.result
-          bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
-            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+        viewModelScope.launch {
+          accountAuthenticator.refreshSessionAuthToken().let { bundle ->
+            if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
               syncBroadcaster.runSync()
               return@let
             }
@@ -182,7 +180,8 @@ constructor(
         val args =
           bundleOf(
             NavigationArg.PROFILE_ID to event.profileId,
-            NavigationArg.RESOURCE_ID to event.resourceId
+            NavigationArg.RESOURCE_ID to event.resourceId,
+            NavigationArg.RESOURCE_CONFIG to event.resourceConfig
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
@@ -274,7 +273,14 @@ constructor(
         ConfigType.GeoWidget,
         geoWidgetConfigId
       )
-    onEvent(AppMainEvent.OpenProfile(navController, geoWidgetConfiguration.profileId, resourceId))
+    onEvent(
+      AppMainEvent.OpenProfile(
+        navController = navController,
+        profileId = geoWidgetConfiguration.profileId,
+        resourceId = resourceId,
+        resourceConfig = geoWidgetConfiguration.resourceConfig
+      )
+    )
   }
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {

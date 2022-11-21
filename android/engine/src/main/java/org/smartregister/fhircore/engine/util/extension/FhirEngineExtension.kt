@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.UrlUtil
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -34,6 +35,7 @@ import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.opencds.cqf.cql.engine.serializing.jackson.JsonCqlMapper
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
@@ -90,6 +92,19 @@ suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: Strin
     else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
 
   library?.let {
+    JsonCqlMapper.getMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    it.content.find { it.contentType.contains(Regex(".*elm.*json.*")) }?.let {
+      val data =
+        it.data
+          .decodeToString()
+          .replace("\"translatorOptions\"", "\"type\" : \"CqlToElmInfo\",\"translatorOptions\"")
+          .replace("\"t\" :", "\"type\" : \"Annotation\",\"t\" :")
+          .replace("\"s\" : {", "\"type\" : \"Annotation\",\"s\" : {")
+          .replace("\"r\" : {", "\"type\" : \"Annotation\",\"r\" : {")
+          .replace("\"errorSeverity\" : ", "\"type\" : \"Locator\",\"errorSeverity\" : ")
+
+      it.data = data.encodeToByteArray()
+    }
     fhirOperator.loadLib(it)
 
     it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }

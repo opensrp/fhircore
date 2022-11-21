@@ -28,7 +28,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +54,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -156,27 +154,7 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig
   ) {
-    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-    if (questionnaireResponse.logicalId.isEmpty()) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-    }
-
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-        it.valueCodeableConcept.coding.forEach { coding ->
-          questionnaireResponse.meta.addTag(coding)
-        }
-      }
-
-      // important to set response subject so that structure map can handle subject for all entities
-      handleQuestionnaireResponseSubject(
-        questionnaireConfig.resourceIdentifier,
-        questionnaire,
-        questionnaireResponse
-      )
-
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
@@ -204,9 +182,6 @@ constructor(
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
-
-          // response MUST have subject by far otherwise flow has issues
-          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -241,15 +216,40 @@ constructor(
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-        extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        extractCqlOutput(questionnaire, questionnaireResponse, null)
-        extractCarePlan(questionnaireResponse, null, questionnaireConfig)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
 
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+    }
+  }
+
+  /* We can remove this after we review why a subject is needed for every questionnaire response in fhir core.
+  The subject is not required in the questionnaire response
+   https://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.subject */
+  private suspend fun performExtraction(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaire: Questionnaire,
+    bundle: Bundle?
+  ) {
+    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
+        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
+    ) {
+      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    }
+  }
+
+  fun savePartialQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+      saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
   }
 
@@ -358,8 +358,6 @@ constructor(
       return
     }
 
-    questionnaireResponse.assertSubject() // should not allow further flow without subject
-
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
 
@@ -410,7 +408,7 @@ constructor(
   }
 
   fun saveResource(resource: Resource) {
-    viewModelScope.launch { defaultRepository.create(resource) }
+    viewModelScope.launch { defaultRepository.create(true, resource) }
   }
 
   open suspend fun getPopulationResources(
@@ -455,6 +453,15 @@ constructor(
       questionnaire,
       *getPopulationResources(intent, questionnaireConfig = questionnaireConfig)
     )
+  }
+
+  fun partialQuestionnaireResponseHasValues(questionnaireResponse: QuestionnaireResponse): Boolean {
+    val questionnaireResponseItemListIterator = questionnaireResponse.item.iterator()
+    while (questionnaireResponseItemListIterator.hasNext()) {
+      val questionnaireResponseItem = questionnaireResponseItemListIterator.next()
+      questionnaireResponseItem.answer?.forEach { if (it.hasValue()) return true }
+    }
+    return false
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {

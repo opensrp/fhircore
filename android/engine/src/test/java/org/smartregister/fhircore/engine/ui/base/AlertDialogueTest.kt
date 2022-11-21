@@ -141,6 +141,28 @@ class AlertDialogueTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testShowCancelAlertShowsWithCorrectData() {
+    AlertDialogue.showCancelAlert(
+      context = context,
+      message = R.string.questionnaire_in_progress_alert_back_pressed_message,
+      title = R.string.questionnaire_alert_back_pressed_title,
+      confirmButtonListener = {},
+      confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+      neutralButtonListener = {},
+      neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title
+    )
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    assertSimpleMessageDialog(
+      dialog,
+      getString(R.string.questionnaire_in_progress_alert_back_pressed_message),
+      getString(R.string.questionnaire_alert_back_pressed_title),
+      getString(R.string.questionnaire_alert_back_pressed_save_draft_button_title)
+    )
+    Assert.assertTrue(dialog.isCancelable)
+  }
+
+  @Test
   fun testShowErrorAlertShouldShowAlertWithCorrectData() {
     AlertDialogue.showErrorAlert(
       context = context,

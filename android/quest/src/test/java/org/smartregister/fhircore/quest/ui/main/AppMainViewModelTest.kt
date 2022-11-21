@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Result
@@ -27,6 +29,8 @@ import com.google.android.fhir.sync.State
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -49,7 +53,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -164,11 +170,13 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOpenProfile() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
     appMainViewModel.onEvent(
       AppMainEvent.OpenProfile(
         navController = navController,
         profileId = "profileId",
-        resourceId = "resourceId"
+        resourceId = "resourceId",
+        resourceConfig = resourceConfig
       )
     )
 
@@ -177,9 +185,13 @@ class AppMainViewModelTest : RobolectricTest() {
     verify { navController.navigate(capture(intSlot), capture(bundleSlot)) }
 
     Assert.assertEquals(MainNavigationScreen.Profile.route, intSlot.captured)
-    Assert.assertEquals(2, bundleSlot.captured.size())
+    Assert.assertEquals(3, bundleSlot.captured.size())
     Assert.assertEquals("profileId", bundleSlot.captured.getString(NavigationArg.PROFILE_ID))
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
+    Assert.assertEquals(
+      resourceConfig,
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+    )
   }
 
   @Test
@@ -225,9 +237,23 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun onRefreshAuthToken() {
+  fun onRefreshAuthTokenRunsSyncWhenTokenRefreshed() {
+    val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+
     appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
 
-    verify { accountAuthenticator.loadRefreshedSessionAccount(any()) }
+    coVerify { accountAuthenticator.refreshSessionAuthToken() }
+    verify { syncBroadcaster.runSync() }
+  }
+
+  @Test
+  fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
+
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+
+    coVerify { accountAuthenticator.refreshSessionAuthToken() }
+    verify { accountAuthenticator.logout() }
   }
 }

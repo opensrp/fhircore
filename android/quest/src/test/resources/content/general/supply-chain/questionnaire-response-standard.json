@@ -1,0 +1,130 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "in-progress",
+  "subject": {
+    "reference": "Group/test_group"
+  },
+  "item": [
+    {
+      "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
+      "text": "Current Stock Balance:",
+      "answer": [
+        {
+          "valueInteger": 34
+        }
+      ]
+    },
+    {
+      "linkId": "4571fa5f-8448-4e69-8395-c1962154e39c",
+      "text": "Damaged Stock",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "cc3a573f-8faf-49bd-8649-c74fcd31ab7e",
+      "text": "Expired Stock",
+      "answer": [
+        {
+          "valueInteger": 4
+        }
+      ]
+    },
+    {
+      "linkId": "a71d3a65-9f08-4316-8ebf-41c376a4932e",
+      "text": "Stock on hand (no damaged/expired)",
+      "answer": [
+        {
+          "valueInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "634264d1-2ffd-4aac-cc13-87466f6702b3",
+      "text": "Adjust stock by",
+      "answer": [
+        {
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "34b5c839-baec-4f44-dfd3-77518b9411a9",
+      "text": "Reason for stock level difference"
+    },
+    {
+      "linkId": "33b60f38-d578-4ac6-ae1b-a3919165fb31",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "donation",
+            "display": "Donation",
+            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "be137683-fda1-4fe3-86e7-39bbd3c87299",
+      "text": "Quantity for Donation",
+      "answer": [
+        {
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "b04daeab-23fa-4bd7-dbb8-893d0774931d",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "over-reporting",
+            "display": "Over-reporting",
+            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "66e1ca2e-a46a-42e2-c397-a12c30b8525e",
+      "text": "Quantity for Over reporting",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "41c68d00-8cca-4bb9-8324-30f83cac3e9e",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "under-reporting",
+            "display": "Under-reporting",
+            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "605f0de5-3d7e-4e3d-977b-b05932602d9e",
+      "text": "Quantity for Under reporting",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "35f0cdc3-7c3f-4a7a-8299-62fd801b9510",
+      "text": "Quantity Restocked",
+      "answer": [
+        {
+          "valueInteger": 78
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 // Entries in each section of this file should be sorted alphabetically.
 def sdk_versions = [:]
 sdk_versions.compile_sdk = 32
-sdk_versions.min_sdk = 24
+sdk_versions.min_sdk = 26
 sdk_versions.target_sdk = 32
 ext.sdk_versions = sdk_versions
 
@@ -13,7 +13,7 @@ ext.build_tool_version = build_tool_version
 
 def versions = [:]
 versions.activity = '1.2.1'
-versions.android_gradle_plugin = '7.1.2'
+versions.android_gradle_plugin = '7.1.3'
 versions.appcompat = '1.4.1'
 versions.atsl_core = '1.4.1-alpha04'
 versions.atsl_expresso = '3.4.0'
@@ -52,7 +52,6 @@ versions.ktlint = '0.41.0'
 versions.joda_time = '2.10.5'
 versions.timber = '4.7.1'
 versions.mockk = '1.12.3'
-versions.dokka = '1.5.0'
 versions.androidx_test = '2.1.0'
 ext.versions = versions
 
@@ -95,7 +94,6 @@ deps.kujaku_library = "io.ona.kujaku:library:$versions.kujaku_library"
 deps.mapbox_sdk_turf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:$versions.mapbox_sdk_turf"
 deps.mockk = "io.mockk:mockk:$versions.mockk"
 deps.mockk_android = "io.mockk:mockk-android:$versions.mockk"
-deps.dokka_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:$versions.dokka"
 
 def kotlin = [:]
 kotlin.plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"

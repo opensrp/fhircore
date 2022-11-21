@@ -47,7 +47,13 @@ class NetworkModule {
   fun provideAuthOkHttpClient(oAuthInterceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(oAuthInterceptor)
-      .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BASIC })
+      .addInterceptor(
+        HttpLoggingInterceptor().apply {
+          level = HttpLoggingInterceptor.Level.BASIC
+          redactHeader(AUTHORIZATION)
+          redactHeader(COOKIE)
+        }
+      )
       .build()
 
   @Provides
@@ -55,7 +61,13 @@ class NetworkModule {
   fun provideOkHttpClient(interceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
-      .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BODY })
+      .addInterceptor(
+        HttpLoggingInterceptor().apply {
+          level = HttpLoggingInterceptor.Level.BASIC
+          redactHeader(AUTHORIZATION)
+          redactHeader(COOKIE)
+        }
+      )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -93,5 +105,7 @@ class NetworkModule {
 
   companion object {
     const val TIMEOUT_DURATION = 120L
+    const val AUTHORIZATION = "Authorization"
+    const val COOKIE = "Cookie"
   }
 }

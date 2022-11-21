@@ -190,46 +190,52 @@ class PatientExtensionTest : RobolectricTest() {
     Assert.assertNotNull(conditions.pregnancyCondition())
   }
 
+  private fun getDateFromDaysAgo(daysAgo: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.DAY_OF_YEAR, -daysAgo)
+    return calendar.time
+  }
+
   @Test
   fun testGetAgeString() {
     val expectedAge = "1y"
-    Assert.assertEquals(expectedAge, getAgeStringFromDays(365))
+    Assert.assertEquals(expectedAge, getAgeStringFromDays(getDateFromDaysAgo(365)))
 
     val expectedAge2 = "1y 1m"
     // passing days value for 1y 1m 4d
-    Assert.assertEquals(expectedAge2, getAgeStringFromDays(399))
+    Assert.assertEquals(expectedAge2, getAgeStringFromDays(getDateFromDaysAgo(399)))
 
-    val expectedAge3 = "1y"
+    val expectedAge3 = "1y 1w"
     // passing days value for 1y 1w
-    Assert.assertEquals(expectedAge3, getAgeStringFromDays(372))
+    Assert.assertEquals(expectedAge3, getAgeStringFromDays(getDateFromDaysAgo(372)))
 
     val expectedAge4 = "1m"
-    Assert.assertEquals(expectedAge4, getAgeStringFromDays(35))
+    Assert.assertEquals(expectedAge4, getAgeStringFromDays(getDateFromDaysAgo(35)))
 
     val expectedAge5 = "1m 2w"
-    Assert.assertEquals(expectedAge5, getAgeStringFromDays(49))
+    Assert.assertEquals(expectedAge5, getAgeStringFromDays(getDateFromDaysAgo(49)))
 
     val expectedAge6 = "1w"
-    Assert.assertEquals(expectedAge6, getAgeStringFromDays(7))
+    Assert.assertEquals(expectedAge6, getAgeStringFromDays(getDateFromDaysAgo(7)))
 
     val expectedAge7 = "1w 2d"
-    Assert.assertEquals(expectedAge7, getAgeStringFromDays(9))
+    Assert.assertEquals(expectedAge7, getAgeStringFromDays(getDateFromDaysAgo(9)))
 
     val expectedAge8 = "3d"
-    Assert.assertEquals(expectedAge8, getAgeStringFromDays(3))
+    Assert.assertEquals(expectedAge8, getAgeStringFromDays(getDateFromDaysAgo(3)))
 
     val expectedAge9 = "1y 2m"
-    Assert.assertEquals(expectedAge9, getAgeStringFromDays(450))
+    Assert.assertEquals(expectedAge9, getAgeStringFromDays(getDateFromDaysAgo(450)))
 
     val expectedAge10 = "40y 3m"
-    Assert.assertNotEquals(expectedAge10, getAgeStringFromDays(14700))
+    Assert.assertNotEquals(expectedAge10, getAgeStringFromDays(getDateFromDaysAgo(14700)))
 
     val expectedAge11 = "40y"
-    Assert.assertEquals(expectedAge11, getAgeStringFromDays(14700))
+    Assert.assertEquals(expectedAge11, getAgeStringFromDays(getDateFromDaysAgo(14700)))
 
     val expectedAge12 = "0d"
     // if difference b/w current date and DOB is O from extractAge extension
-    Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
+    Assert.assertEquals(expectedAge12, getAgeStringFromDays(getDateFromDaysAgo(0)))
   }
 
   @Test
