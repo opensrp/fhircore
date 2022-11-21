@@ -23,8 +23,8 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import androidx.work.WorkManager
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import com.google.gson.Gson

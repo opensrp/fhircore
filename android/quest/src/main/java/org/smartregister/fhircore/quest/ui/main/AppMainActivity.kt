@@ -172,11 +172,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
-          as QuestionnaireResponse?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
+          QuestionnaireResponse?
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
-          as QuestionnaireConfig?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
+          QuestionnaireConfig?
 
       if (questionnaireConfig != null && questionnaireResponse != null) {
         appMainViewModel.questionnaireSubmissionLiveData.postValue(
