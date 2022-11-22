@@ -176,6 +176,14 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
+
+        sid {
+            dimension "apps"
+            applicationIdSuffix ".sid"
+            versionNameSuffix "-sid"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
     sourceSets {
         main {
