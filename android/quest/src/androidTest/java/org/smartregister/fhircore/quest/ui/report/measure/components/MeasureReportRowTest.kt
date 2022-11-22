@@ -39,12 +39,13 @@ class MeasureReportRowTest {
       id = "101",
       title = "2+ ANC Contacts",
       description = "Pregnant women with at least two ANC Contacts",
+      module = "Module1",
     )
 
   @Before
   fun setup() {
     composeTestRule.setContent {
-      MeasureReportRow(measureReportConfig = measureReportConfig, onRowClick = mockListener)
+      MeasureReportRow(title = measureReportConfig.module, onRowClick = mockListener)
     }
   }
 

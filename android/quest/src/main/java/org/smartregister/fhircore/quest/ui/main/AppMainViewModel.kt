@@ -320,11 +320,6 @@ constructor(
       applicationConfiguration.reportRepeatInterval.hours,
       applicationConfiguration.reportRepeatInterval.minutes
     )
-    //    workManager.enqueueUniquePeriodicWork(
-    //      MeasureReportWorker.WORK_ID,
-    //      ExistingPeriodicWorkPolicy.REPLACE,
-    //      PeriodicWorkRequestBuilder<MeasureReportWorker>(2, TimeUnit.MINUTES).build()
-    //    )
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
