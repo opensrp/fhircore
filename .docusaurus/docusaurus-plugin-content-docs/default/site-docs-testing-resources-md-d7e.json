@@ -1,0 +1,20 @@
+{
+  "unversionedId": "testing-resources",
+  "id": "testing-resources",
+  "title": "Testing FHIR Resources",
+  "description": "Step 1 - Creating Patient Resources",
+  "source": "@site/docs/testing-resources.md",
+  "sourceDirName": ".",
+  "slug": "/testing-resources",
+  "permalink": "/fhircore/testing-resources",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/testing-resources.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "keycloak-auth-token-configuration",
+    "permalink": "/fhircore/keycloak-auth-token-configuration"
+  }
+}

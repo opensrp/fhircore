@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Opensrp FhirCore Documentation',
-  tagline: 'Opensrp FhirCore Documentation',
+  title: 'FhirCore Documentation',
+  tagline: 'FhirCore Documentation',
   url: 'https://opensrp.github.io',
   baseUrl: '/fhircore/',
   trailingSlash:false,

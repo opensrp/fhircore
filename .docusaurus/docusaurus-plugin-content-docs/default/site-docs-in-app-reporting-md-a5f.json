@@ -1,0 +1,24 @@
+{
+  "unversionedId": "in-app-reporting",
+  "id": "in-app-reporting",
+  "title": "in-app-reporting",
+  "description": "In App Reporting",
+  "source": "@site/docs/in-app-reporting.md",
+  "sourceDirName": ".",
+  "slug": "/in-app-reporting",
+  "permalink": "/fhircore/in-app-reporting",
+  "draft": false,
+  "editUrl": "https://github.com/opensrp/fhircore/tree/main/docs/docs/in-app-reporting.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "defaultSidebar",
+  "previous": {
+    "title": "fhir-core-documetation",
+    "permalink": "/fhircore/fhir-core-documetation"
+  },
+  "next": {
+    "title": "intro",
+    "permalink": "/fhircore/"
+  }
+}
