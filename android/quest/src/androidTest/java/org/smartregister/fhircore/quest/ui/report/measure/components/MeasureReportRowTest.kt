@@ -56,17 +56,6 @@ class MeasureReportRowTest {
   }
 
   @Test
-  fun testMeasureRowRendersDescriptionCorrectly() {
-    composeTestRule
-      .onNodeWithTag(MEASURE_ROW_DESCRIPTION_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-    composeTestRule
-      .onNodeWithText(measureReportConfig.description)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
   fun testMeasureRowRendersForwardIconCorrectly() {
     composeTestRule
       .onNodeWithTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG, useUnmergedTree = true)

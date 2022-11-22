@@ -141,7 +141,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
@@ -168,7 +169,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     val dateRange =
       Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
