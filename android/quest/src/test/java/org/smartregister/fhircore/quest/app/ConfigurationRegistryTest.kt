@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.app
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -81,19 +82,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
           }
       }
     }
-  val bundle =
-    org.hl7.fhir.r4.model.Bundle().apply {
-      addEntry().apply { this.resource = StructureMap().apply { StructureMap@ this.id = "123456" } }
-    }
 
   @Before
   fun setUp() {
     hiltRule.inject()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk()
-
-    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
 
     configurationRegistry =
       ConfigurationRegistry(
@@ -103,14 +97,28 @@ class ConfigurationRegistryTest : RobolectricTest() {
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
         configService = configService
       )
-    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
   @Test
   fun testFetchConfigurations() = runBlocking {
+    val bundle =
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply {
+          this.resource = StructureMap().apply { StructureMap@ this.id = "123456" }
+        }
+      }
+
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
+    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+
+    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns bundle
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+    coVerify { configurationRegistry.create(any()) }
   }
 }
