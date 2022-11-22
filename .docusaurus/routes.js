@@ -3,36 +3,36 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/fhircore/',
-    component: ComponentCreator('/fhircore/', 'c2c'),
+    path: '/',
+    component: ComponentCreator('/', '4f9'),
     routes: [
       {
-        path: '/fhircore/',
-        component: ComponentCreator('/fhircore/', 'c9c'),
+        path: '/',
+        component: ComponentCreator('/', '678'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/fhircore/fhir-core-documetation',
-        component: ComponentCreator('/fhircore/fhir-core-documetation', '1e3'),
+        path: '/fhir-core-documetation',
+        component: ComponentCreator('/fhir-core-documetation', '6f4'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/fhircore/in-app-reporting',
-        component: ComponentCreator('/fhircore/in-app-reporting', '09e'),
+        path: '/in-app-reporting',
+        component: ComponentCreator('/in-app-reporting', '516'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/fhircore/keycloak-auth-token-configuration',
-        component: ComponentCreator('/fhircore/keycloak-auth-token-configuration', 'e3b'),
+        path: '/keycloak-auth-token-configuration',
+        component: ComponentCreator('/keycloak-auth-token-configuration', 'b65'),
         exact: true,
         sidebar: "defaultSidebar"
       },
       {
-        path: '/fhircore/testing-resources',
-        component: ComponentCreator('/fhircore/testing-resources', 'd49'),
+        path: '/testing-resources',
+        component: ComponentCreator('/testing-resources', '13e'),
         exact: true,
         sidebar: "defaultSidebar"
       }
