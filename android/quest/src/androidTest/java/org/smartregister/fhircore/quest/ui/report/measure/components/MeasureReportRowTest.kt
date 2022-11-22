@@ -39,7 +39,7 @@ class MeasureReportRowTest {
       id = "101",
       title = "2+ ANC Contacts",
       description = "Pregnant women with at least two ANC Contacts",
-      module = "Module1",
+      module = "Module 1- ANC Contacts",
     )
 
   @Before
@@ -52,7 +52,7 @@ class MeasureReportRowTest {
   @Test
   fun testMeasureRowRendersTitleCorrectly() {
     composeTestRule.onNodeWithTag(MEASURE_ROW_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText(measureReportConfig.title).assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText(measureReportConfig.module).assertExists().assertIsDisplayed()
   }
 
   @Test

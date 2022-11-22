@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 import org.smartregister.fhircore.quest.R
 
 const val MEASURE_ROW_TITLE_TEST_TAG = "measureRowTitleTestTag"
-const val MEASURE_ROW_DESCRIPTION_TEST_TAG = "measureRowDescriptionTestTag"
 const val MEASURE_ROW_FORWARD_ARROW_TEST_TAG = "measureRowForwardArrowTestTag"
 const val MEASURE_ROW_TEST_TAG = "measureRowTestTag"
 
