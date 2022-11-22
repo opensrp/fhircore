@@ -83,7 +83,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `perform disease extraction`() {
     val immunizationQuestionnaireResponseString: String =
       "content/general/disease-registration-resources/questionnaire_response.json".readFile()
-    val immunizationStructureMap = "content/general/disease-registration-resources/structure-map.txt".readFile()
+    val immunizationStructureMap =
+      "content/general/disease-registration-resources/structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions

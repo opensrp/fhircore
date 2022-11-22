@@ -834,15 +834,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
     val patient =
-      "plans/disease-followup/patient.json"
-        .readFile()
-        .decodeResourceFromString<Patient>()
+      "plans/disease-followup/patient.json".readFile().decodeResourceFromString<Patient>()
     val diseaseFollowUpQuestionnaireResponseString =
       "plans/disease-followup/questionnaire-response.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    val structureMapScript =
-      "plans/disease-followup/structure-map.txt".readFile()
+    val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
         println(it.encodeResourceToString())
@@ -850,15 +847,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
-            emptyList()
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
-            structureMap
+      structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient }).addEntry(Bundle.BundleEntryComponent().apply { resource = diseaseFollowUpQuestionnaireResponseString })
-    )!!
+        plandefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = diseaseFollowUpQuestionnaireResponseString
+            }
+          )
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
@@ -888,13 +891,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { println(it.last().encodeResourceToString()) }
           .all { task ->
             task.status == TaskStatus.INPROGRESS &&
-                    LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-                      localDate.dayOfMonth == localDate.lengthOfMonth()
-                    }
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
           }
       }
   }
-
 
   @Test
   fun `transitionTaskTo should update task status`() = runTest {
