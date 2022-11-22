@@ -34,7 +34,7 @@ const val SDF_DD_MMM_YYYY = "dd-MMM-yyyy"
 const val SDF_YYYY_MM_DD = "yyyy-MM-dd"
 const val SDF_MMM_YYYY = "MMM-yyyy"
 const val SDF_YYYY_MMM = "yyyy-MMM"
-const val SDF_MMMM = "MMM"
+const val SDF_MMMM = "MMMM"
 const val SDF_YYYY = "yyyy"
 const val SDF_D_MMM_YYYY_WITH_COMA = "d MMM, yyyy"
 

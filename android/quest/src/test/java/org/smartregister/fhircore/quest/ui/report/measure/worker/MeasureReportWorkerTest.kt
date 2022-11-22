@@ -25,7 +25,6 @@ import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.RepeatIntervalConfig
@@ -50,17 +49,16 @@ class MeasureReportWorkerTest {
   fun setUp() {
     hiltRule.inject()
     appConfig =
-      ApplicationConfiguration(
-        appId = "ancApp",
-        configType = "classification",
-        theme = "dark theme",
-        languages = listOf("en"),
-        syncInterval = 15,
-        appTitle = "Test App",
-        remoteSyncPageSize = 100,
-        reportRepeatInterval = RepeatIntervalConfig(10, 25)
-      )
+        ApplicationConfiguration(
+            appId = "ancApp",
+            configType = "classification",
+            theme = "dark theme",
+            languages = listOf("en"),
+            syncInterval = 15,
+            appTitle = "Test App",
+            remoteSyncPageSize = 100,
+            reportRepeatInterval = RepeatIntervalConfig(10, 25))//mentioned future time
   }
+  /* TODO research on how we can mock doWork()  */
 
-  @Test fun checkIfWorkerStartedAtMentionedTime() {}
 }
