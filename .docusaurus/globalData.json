@@ -1,38 +1,38 @@
 {
   "docusaurus-plugin-content-docs": {
     "default": {
-      "path": "/fhircore/",
+      "path": "/",
       "versions": [
         {
           "name": "current",
           "label": "Next",
           "isLast": true,
-          "path": "/fhircore/",
+          "path": "/",
           "mainDocId": "intro",
           "docs": [
             {
               "id": "fhir-core-documetation",
-              "path": "/fhircore/fhir-core-documetation",
+              "path": "/fhir-core-documetation",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "in-app-reporting",
-              "path": "/fhircore/in-app-reporting",
+              "path": "/in-app-reporting",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "intro",
-              "path": "/fhircore/",
+              "path": "/",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "keycloak-auth-token-configuration",
-              "path": "/fhircore/keycloak-auth-token-configuration",
+              "path": "/keycloak-auth-token-configuration",
               "sidebar": "defaultSidebar"
             },
             {
               "id": "testing-resources",
-              "path": "/fhircore/testing-resources",
+              "path": "/testing-resources",
               "sidebar": "defaultSidebar"
             }
           ],
@@ -40,7 +40,7 @@
           "sidebars": {
             "defaultSidebar": {
               "link": {
-                "path": "/fhircore/fhir-core-documetation",
+                "path": "/fhir-core-documetation",
                 "label": "fhir-core-documetation"
               }
             }

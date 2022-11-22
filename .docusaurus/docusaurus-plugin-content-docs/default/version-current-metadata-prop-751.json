@@ -12,31 +12,31 @@
       {
         "type": "link",
         "label": "fhir-core-documetation",
-        "href": "/fhircore/fhir-core-documetation",
+        "href": "/fhir-core-documetation",
         "docId": "fhir-core-documetation"
       },
       {
         "type": "link",
         "label": "in-app-reporting",
-        "href": "/fhircore/in-app-reporting",
+        "href": "/in-app-reporting",
         "docId": "in-app-reporting"
       },
       {
         "type": "link",
         "label": "intro",
-        "href": "/fhircore/",
+        "href": "/",
         "docId": "intro"
       },
       {
         "type": "link",
         "label": "keycloak-auth-token-configuration",
-        "href": "/fhircore/keycloak-auth-token-configuration",
+        "href": "/keycloak-auth-token-configuration",
         "docId": "keycloak-auth-token-configuration"
       },
       {
         "type": "link",
         "label": "Testing FHIR Resources",
-        "href": "/fhircore/testing-resources",
+        "href": "/testing-resources",
         "docId": "testing-resources"
       }
     ]
