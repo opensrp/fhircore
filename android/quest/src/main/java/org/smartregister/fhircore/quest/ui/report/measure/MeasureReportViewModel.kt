@@ -268,7 +268,7 @@ constructor(
                   endDateFormatted,
                   it.url
                 )
-              if (result.isEmpty()) {
+              if (result?.isEmpty() == true) {
                 withContext(dispatcherProvider.io()) {
                   fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
                 }
@@ -307,9 +307,9 @@ constructor(
                   evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
                 }
               } else {
-                _measureReportPopulationResultList.addAll(
-                  formatPopulationMeasureReport(result.last())
-                )
+                result?.last()?.let { it1 -> formatPopulationMeasureReport(it1) }?.let { it2 ->
+                  _measureReportPopulationResultList.addAll(it2)
+                }
               }
             }
           }

@@ -97,7 +97,7 @@ suspend fun alreadyGeneratedMeasureReports(
   startDateFormatted: String,
   endDateFormatted: String,
   measureUrl: String
-): List<MeasureReport> {
+): List<MeasureReport>? {
   return fhirEngine
     .search<MeasureReport> {
       filter(
@@ -114,5 +114,5 @@ suspend fun alreadyGeneratedMeasureReports(
       filter(MeasureReport.MEASURE, { value = measureUrl })
       operation = Operation.AND
     }
-    .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+    ?.filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
 }

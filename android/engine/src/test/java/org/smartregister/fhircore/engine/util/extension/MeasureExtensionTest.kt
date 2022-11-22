@@ -16,6 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.spyk
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -23,11 +27,20 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
 
   @Test
   fun `findPopulation should return correct population component for group with given type`() {
@@ -206,4 +219,18 @@ class MeasureExtensionTest : RobolectricTest() {
         }
       }
     }
+
+  @Test
+  fun testAlreadyGeneratedMeasureReports() {
+    runBlocking {
+      val result =
+        alreadyGeneratedMeasureReports(
+          fhirEngine = spyk(),
+          "2022-02-02",
+          "2022-04-04",
+          "http://nourl.com"
+        )
+      assertTrue(result.isNullOrEmpty())
+    }
+  }
 }

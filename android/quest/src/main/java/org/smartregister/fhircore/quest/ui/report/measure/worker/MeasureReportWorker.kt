@@ -80,7 +80,7 @@ constructor(
         val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
         val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
         if (alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, it.url)
-            .isEmpty()
+            ?.isEmpty() == true
         ) {
           evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
         } else {
@@ -125,7 +125,9 @@ constructor(
     if (measureReport != null) {
       val result =
         alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, measureUrl)
-      if (result.isNotEmpty()) defaultRepository.delete(result.last())
+      if (result != null) {
+        if (result.isNotEmpty()) defaultRepository.delete(result.last())
+      }
       defaultRepository.addOrUpdate(resource = measureReport)
     }
   }
