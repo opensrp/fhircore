@@ -1,0 +1,171 @@
+{
+  "entrypoints": [
+    "main"
+  ],
+  "origins": {
+    "972": [
+      972
+    ],
+    "17896441": [
+      532,
+      918
+    ],
+    "main": [
+      303,
+      532,
+      179
+    ],
+    "runtime~main": [
+      179,
+      532,
+      303
+    ],
+    "062d2070": [
+      338
+    ],
+    "0e384e19": [
+      671
+    ],
+    "1be78505": [
+      532,
+      972
+    ],
+    "935f2afb": [
+      53
+    ],
+    "a5f8aaf7": [
+      358
+    ],
+    "c3ab6d08": [
+      701
+    ],
+    "d7e086c9": [
+      960
+    ],
+    "ec1ff972": [
+      323
+    ],
+    "styles": [
+      179,
+      303,
+      514,
+      918,
+      532
+    ]
+  },
+  "assets": {
+    "53": {
+      "js": [
+        {
+          "file": "assets/js/935f2afb.688c9252.js",
+          "hash": "b4ab9d44204671fd",
+          "publicPath": "/fhircore/assets/js/935f2afb.688c9252.js"
+        }
+      ]
+    },
+    "179": {
+      "js": [
+        {
+          "file": "assets/js/main.a671d641.js",
+          "hash": "758c8e12a51653dc",
+          "publicPath": "/fhircore/assets/js/main.a671d641.js"
+        }
+      ]
+    },
+    "303": {
+      "js": [
+        {
+          "file": "assets/js/runtime~main.fc8cf795.js",
+          "hash": "2a3bac3c5b926865",
+          "publicPath": "/fhircore/assets/js/runtime~main.fc8cf795.js"
+        }
+      ]
+    },
+    "323": {
+      "js": [
+        {
+          "file": "assets/js/ec1ff972.41b73c0d.js",
+          "hash": "c75d9cfceea1d290",
+          "publicPath": "/fhircore/assets/js/ec1ff972.41b73c0d.js"
+        }
+      ]
+    },
+    "338": {
+      "js": [
+        {
+          "file": "assets/js/062d2070.b284f2fa.js",
+          "hash": "f579854474c3dab3",
+          "publicPath": "/fhircore/assets/js/062d2070.b284f2fa.js"
+        }
+      ]
+    },
+    "358": {
+      "js": [
+        {
+          "file": "assets/js/a5f8aaf7.00aa05f5.js",
+          "hash": "b6e7a652066c5782",
+          "publicPath": "/fhircore/assets/js/a5f8aaf7.00aa05f5.js"
+        }
+      ]
+    },
+    "532": {
+      "css": [
+        {
+          "file": "assets/css/styles.212da267.css",
+          "hash": "4a4f7dfab8add8b6",
+          "publicPath": "/fhircore/assets/css/styles.212da267.css"
+        }
+      ]
+    },
+    "671": {
+      "js": [
+        {
+          "file": "assets/js/0e384e19.3e8c5f2a.js",
+          "hash": "0e125eb02d662f79",
+          "publicPath": "/fhircore/assets/js/0e384e19.3e8c5f2a.js"
+        }
+      ]
+    },
+    "701": {
+      "js": [
+        {
+          "file": "assets/js/c3ab6d08.040b2c0b.js",
+          "hash": "5c188c28ae8e062e",
+          "publicPath": "/fhircore/assets/js/c3ab6d08.040b2c0b.js"
+        }
+      ]
+    },
+    "918": {
+      "js": [
+        {
+          "file": "assets/js/17896441.2bbfd38c.js",
+          "hash": "885d8b8b175f11f4",
+          "publicPath": "/fhircore/assets/js/17896441.2bbfd38c.js"
+        }
+      ]
+    },
+    "960": {
+      "js": [
+        {
+          "file": "assets/js/d7e086c9.e032ae78.js",
+          "hash": "c9393a5ab82cbdf3",
+          "publicPath": "/fhircore/assets/js/d7e086c9.e032ae78.js"
+        }
+      ]
+    },
+    "972": {
+      "js": [
+        {
+          "file": "assets/js/972.a69b10ec.js",
+          "hash": "dd72afc951a647fc",
+          "publicPath": "/fhircore/assets/js/972.a69b10ec.js"
+        },
+        {
+          "file": "assets/js/1be78505.5fccd91f.js",
+          "hash": "eee86756c19dae81",
+          "publicPath": "/fhircore/assets/js/1be78505.5fccd91f.js"
+        }
+      ]
+    }
+  }
+}
