@@ -833,24 +833,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/disease-followup/plan-definition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-
     val patient =
       "plans/disease-followup/patient.json"
         .readFile()
         .decodeResourceFromString<Patient>()
-
     val diseaseFollowUpQuestionnaireResponseString =
       "plans/disease-followup/questionnaire-response.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-
     val structureMapScript =
       "plans/disease-followup/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
         println(it.encodeResourceToString())
       }
-
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
@@ -858,7 +854,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
             structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
       plandefinition,
       patient,
@@ -870,69 +865,36 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertNotNull(UUID.fromString(carePlan.id))
         Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
         Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
-//        Assert.assertEquals("Child Immunization", carePlan.title)
-//        Assert.assertEquals(
-//          "This scheduled will be used to track the child's immunization.",
-//          carePlan.description
-//        )
-//        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
-//        Assert.assertEquals(
-//          DateTimeType.now().value.makeItReadable(),
-//          carePlan.created.makeItReadable()
-//        )
-//        Assert.assertEquals(
-//          patient.generalPractitionerFirstRep.extractId(),
-//          carePlan.author.extractId()
-//        )
-//
-//        Assert.assertEquals(
-//          patient.birthDate.makeItReadable(),
-//          carePlan.period.start.makeItReadable()
-//        )
-//
-//        Assert.assertEquals(
-//          patient.birthDate.plusDays(1825).makeItReadable(),
-//          carePlan.period.end.makeItReadable()
-//        )
-//
-//        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-//
-//        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
-//
-//        resourcesSlot
-//          .filter { res -> res.resourceType == ResourceType.Task }
-//          .map { it as Task }
-//          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
-//          .also { println(it.last().encodeResourceToString()) }
-//          .also {
-//            it.last().let { task ->
-//              Assert.assertTrue(
-//                task.reasonReference.reference ==
-//                        "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
-//              )
-//              Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
-//              Assert.assertTrue(
-//                task.reasonCode.text ==
-//                        "Administration of vaccine to produce active immunity (procedure)"
-//              )
-//              Assert.assertTrue(task.reasonCode.hasCoding())
-//              Assert.assertTrue(task.reasonCode.coding.get(0).code == "33879002")
-//            }
-//          }
-//          .all { task ->
-//            task.status == Task.TaskStatus.REQUESTED &&
-//                    LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-//                      localDate.dayOfMonth == localDate.lengthOfMonth()
-//                    }
-//          }
-//
-//        val task1 = resourcesSlot[1] as Task
-//        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
-//        Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
-//        Assert.assertTrue(task1.description.isNotEmpty())
-//        Assert.assertTrue(task1.description == "OPV at Birth Vaccine")
+        Assert.assertEquals("Disease Follow Up", carePlan.title)
+        Assert.assertEquals(
+          "This is a follow up for patient's marked with the following diseases HIV, TB, Mental Health & CM-NTD",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .also { println(it.last().encodeResourceToString()) }
+          .all { task ->
+            task.status == TaskStatus.INPROGRESS &&
+                    LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                      localDate.dayOfMonth == localDate.lengthOfMonth()
+                    }
+          }
       }
   }
+
 
   @Test
   fun `transitionTaskTo should update task status`() = runTest {
