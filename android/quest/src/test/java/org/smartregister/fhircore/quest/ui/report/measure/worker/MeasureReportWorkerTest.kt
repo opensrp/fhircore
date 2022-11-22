@@ -49,16 +49,16 @@ class MeasureReportWorkerTest {
   fun setUp() {
     hiltRule.inject()
     appConfig =
-        ApplicationConfiguration(
-            appId = "ancApp",
-            configType = "classification",
-            theme = "dark theme",
-            languages = listOf("en"),
-            syncInterval = 15,
-            appTitle = "Test App",
-            remoteSyncPageSize = 100,
-            reportRepeatInterval = RepeatIntervalConfig(10, 25))//mentioned future time
+      ApplicationConfiguration(
+        appId = "ancApp",
+        configType = "classification",
+        theme = "dark theme",
+        languages = listOf("en"),
+        syncInterval = 15,
+        appTitle = "Test App",
+        remoteSyncPageSize = 100,
+        reportRepeatInterval = RepeatIntervalConfig(10, 25)
+      ) // mentioned future time
   }
   /* TODO research on how we can mock doWork()  */
-
 }
