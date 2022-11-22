@@ -35,23 +35,28 @@ class ChangeManagingEntityViewTest {
   @Before
   fun setUp() {
     val eligibleManagingEntities =
-        listOf(
-            EligibleManagingEntity(
-                groupId = "group-1", logicalId = "patient-1", memberInfo = "Jane Doe"))
+      listOf(
+        EligibleManagingEntity(
+          groupId = "group-1",
+          logicalId = "patient-1",
+          memberInfo = "Jane Doe"
+        )
+      )
     composeTestRule.setContent {
       ChangeManagingEntityView(
-          onSaveClick = {},
-          eligibleManagingEntities = eligibleManagingEntities,
-          onDismiss = {},
-          managingEntity =
-              ManagingEntityConfig(
-                  infoFhirPathExpression = "Patient.name",
-                  fhirPathResource =
-                      ExtractedResource(
-                          resourceType = "Patient", fhirPathExpression = "Patient.active"),
-                  dialogTitle = "Assign new family head",
-                  dialogWarningMessage = "Are you sure you want to abort this operation?",
-                  dialogContentMessage = "Select a new family head"))
+        onSaveClick = {},
+        eligibleManagingEntities = eligibleManagingEntities,
+        onDismiss = {},
+        managingEntity =
+          ManagingEntityConfig(
+            infoFhirPathExpression = "Patient.name",
+            fhirPathResource =
+              ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+            dialogTitle = "Assign new family head",
+            dialogWarningMessage = "Are you sure you want to abort this operation?",
+            dialogContentMessage = "Select a new family head"
+          )
+      )
     }
   }
 
@@ -63,9 +68,9 @@ class ChangeManagingEntityViewTest {
   @Test
   fun testChangeManagingEntityViewDisplaysAbortOperationMessage() {
     composeTestRule
-        .onNodeWithText("Are you sure you want to abort this operation?")
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithText("Are you sure you want to abort this operation?")
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
