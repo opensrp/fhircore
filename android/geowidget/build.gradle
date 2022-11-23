@@ -124,6 +124,9 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
+    // P2P dependency
+    implementation('org.smartregister:p2p-lib:0.6.0-UI-REVAMP-SNAPSHOT')
+
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
     testRuntimeOnly deps.junit5_engine_vintage

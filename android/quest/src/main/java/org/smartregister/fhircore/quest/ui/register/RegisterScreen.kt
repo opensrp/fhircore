@@ -43,6 +43,7 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
@@ -68,9 +69,9 @@ fun RegisterScreen(
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
-
   Scaffold(
     topBar = {
       Column {
@@ -79,10 +80,16 @@ fun RegisterScreen(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           }
-        ) { openDrawer(true) }
+        ) {
+          when (toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+            ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+          }
+        }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }

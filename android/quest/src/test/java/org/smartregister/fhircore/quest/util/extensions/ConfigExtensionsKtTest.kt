@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -97,21 +98,27 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ActionConfig(
         id = "registerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        display = "menu",
+        toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
       )
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
         resourceData = resourceData,
-        navMenu = navigationMenuConfig
+        navMenu = navigationMenuConfig,
       )
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
-    Assert.assertEquals(2, slotBundle.captured.size())
+    Assert.assertEquals(3, slotBundle.captured.size())
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
+    Assert.assertEquals(
+      ToolBarHomeNavigation.OPEN_DRAWER,
+      slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
+    )
   }
 
   @Test
