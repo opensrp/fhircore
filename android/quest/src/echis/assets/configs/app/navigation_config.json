@@ -1,0 +1,83 @@
+{
+  "appId": "echis",
+  "configType": "navigation",
+  "staticMenu": [
+    {
+      "id": "p2p_sync",
+      "visible": true,
+      "display": "{{transfer.data}}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "DEVICE_TO_DEVICE_SYNC",
+          "id": "navigateToP2PScreen"
+        }
+      ]
+    },
+    {
+      "id": "profile",
+      "visible": true,
+      "display": "{{profile }}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ],
+  "clientRegisters": [
+    {
+      "id": "householdRegister",
+      "display": "{{ all.households }}",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "householdRegister"
+        }
+      ]
+    },
+    {
+      "id": "ancRegister",
+      "display": "ANC",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "ancRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "ancRegister"
+        }
+      ]
+    },
+    {
+      "id": "pncRegister",
+      "display": "PNC",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "ancRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "ancRegister"
+        }
+      ]
+    }
+  ]
+}

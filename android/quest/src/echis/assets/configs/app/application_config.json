@@ -1,0 +1,29 @@
+{
+  "appId": "echis",
+  "configType": "application",
+  "theme": "DEFAULT",
+  "appTitle": "MoH eCHIS",
+  "remoteSyncPageSize": 100,
+  "languages": [
+    "en"
+  ],
+  "useDarkTheme": false,
+  "syncInterval": 30,
+  "loginConfig": {
+    "showLogo": true,
+    "enablePin": true
+  },
+  "deviceToDeviceSync": {
+    "resourcesToSync": [
+      "Group",
+      "Patient",
+      "CarePlan",
+      "Task",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "Questionnaire",
+      "QuestionnaireResponse"
+    ]
+  }
+}

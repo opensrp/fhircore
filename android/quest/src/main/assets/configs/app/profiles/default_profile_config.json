@@ -477,7 +477,7 @@
       ]
     },
     {
-      "title": "Remove this person",
+      "title": "Remove this person dp",
       "titleColor": "#FF0000",
       "visible": "@{patientActive}",
       "enabled": "@{patientActive}",
@@ -487,10 +487,10 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+            "id": "0abd7a07-d2ea-405f-9413-a6fd52c23ef1",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Soft delete registration"
           }
         }
       ]

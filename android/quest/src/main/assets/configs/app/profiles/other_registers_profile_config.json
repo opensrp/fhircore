@@ -434,7 +434,7 @@
       ]
     },
     {
-      "title": "Remove this person",
+      "title": "Remove this person orp",
       "titleColor": "#FF0000",
       "visible": "@{patientActive}",
       "enabled": "@{patientActive}",
