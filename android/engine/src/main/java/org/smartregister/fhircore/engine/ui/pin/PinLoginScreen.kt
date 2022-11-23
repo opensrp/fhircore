@@ -88,7 +88,6 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
     enterUserPinMessage = pinUiState.enterUserLoginMessage,
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
     forgotPin = viewModel::forgotPin,
     appName = pinUiState.appName,
   )
@@ -100,7 +99,6 @@ fun PinLoginPage(
   modifier: Modifier = Modifier,
   onPinChanged: (String) -> Unit,
   showError: Boolean = false,
-  onMenuLoginClicked: () -> Unit,
   enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
   appName: String = "",
@@ -240,7 +238,6 @@ fun PinLoginPreview() {
   PinLoginPage(
     onPinChanged = {},
     showError = false,
-    onMenuLoginClicked = {},
     forgotPin = {},
     appName = "anc"
   )
@@ -253,7 +250,6 @@ fun PinLoginErrorPreview() {
   PinLoginPage(
     onPinChanged = {},
     showError = true,
-    onMenuLoginClicked = {},
     forgotPin = {},
     appName = "ecbis"
   )
