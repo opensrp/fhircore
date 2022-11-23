@@ -28,10 +28,12 @@ data class ActionConfig(
   val trigger: ActionTrigger,
   val workflow: ApplicationWorkflow? = null,
   val id: String? = null,
+  val display: String? = null,
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
   val params: List<ActionParameter> = emptyList(),
-  val resourceConfig: FhirResourceConfig? = null
+  val resourceConfig: FhirResourceConfig? = null,
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
@@ -39,6 +41,16 @@ data class ActionConfig(
         putString(it.first, it.second)
       }
     }
+
+  fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
+    display?.interpolate(computedValuesMap) ?: ""
 }
 
-@Serializable data class ActionParameter(val key: String, val value: String)
+@Serializable
+data class ActionParameter(
+  val key: String,
+  val paramType: ActionParameterType? = null,
+  val dataType: DataType? = null,
+  val value: String,
+  val linkId: String? = null
+) : java.io.Serializable

@@ -127,4 +127,9 @@
         <string name="error_logging_out">Ujumbe wa hitilafu katika kuondoka: %1$s</string>
         <string name="cannot_logout_user">Imeshindwa kuondoka. Angalia ikiwa kifaa hakiko mtandaoni.</string>
         <string name="please_wait">Tafadhali subiri...</string>
+    <string name="initializing">Inaanzisha mipangilio &#8230;</string>
+        <string name="year">Mwaka</string>
+        <string name="month">Mwezi</string>
+        <string name="weeks">Wiki</string>
+        <string name="days">Siku</string>
 </resources>

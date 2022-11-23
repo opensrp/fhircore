@@ -426,11 +426,11 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     System.out.println(iParser.encodeResourceToString(targetResource))
 
-    // for some weird reason, the `entry` has 9 resources instead of 8. The 1st resource is blank.
-    Assert.assertTrue(targetResource.entry.size == 9)
+    // for some weird reason, the `entry` has 8 resources instead of 7. The 1st resource is blank.
+    Assert.assertTrue(targetResource.entry.size == 8)
     Assert.assertTrue(targetResource.entry[2].resource is Observation)
 
-    val observation = targetResource.entry[8].resource as Observation
+    val observation = targetResource.entry[7].resource as Observation
     Assert.assertTrue(observation.code.text == "under-reporting")
   }
 }

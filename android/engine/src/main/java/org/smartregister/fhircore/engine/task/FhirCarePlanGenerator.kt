@@ -174,7 +174,7 @@ constructor(
   private suspend fun saveCarePlan(output: CarePlan) {
     output.also { Timber.d(it.encodeResourceToString()) }.also { carePlan ->
       // Save embedded resources inside as independent entries, clear embedded and save carePlan
-      val dependents = carePlan.contained.map { it.copy() }
+      val dependents = carePlan.contained.map { it }
 
       carePlan.contained.clear()
 
@@ -188,14 +188,9 @@ constructor(
           .activity
           .flatMap { it.outcomeReference }
           .filter { it.reference.startsWith(ResourceType.Task.name) }
-          .map { getTask(it.extractId()) }
+          .mapNotNull { getTask(it.extractId()) }
           .forEach {
-            if (it.status.isIn(
-                Task.TaskStatus.REQUESTED,
-                Task.TaskStatus.READY,
-                Task.TaskStatus.INPROGRESS
-              )
-            ) {
+            if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
               cancelTask(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
             }
           }
@@ -203,26 +198,24 @@ constructor(
   }
 
   suspend fun transitionTaskTo(id: String, status: TaskStatus) {
-    defaultRepository.create(
-      true,
-      getTask(id).apply {
+    getTask(id)
+      ?.apply {
         this.status = status
         this.lastModified = Date()
       }
-    )
+      ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    defaultRepository.create(
-      true,
-      getTask(id).apply {
-        this.status = Task.TaskStatus.CANCELLED
+    getTask(id)
+      ?.apply {
+        this.status = TaskStatus.CANCELLED
         this.lastModified = Date()
         this.statusReason = CodeableConcept().apply { text = reason }
       }
-    )
+      ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
   suspend fun getTask(id: String) =
-    kotlin.runCatching { fhirEngine.get<Task>(id) }.getOrNull() ?: fhirEngine.get("#$id")
+    kotlin.runCatching { fhirEngine.get<Task>(id) }.onFailure { Timber.e(it) }.getOrNull()
 }

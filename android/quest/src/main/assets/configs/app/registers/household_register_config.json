@@ -91,7 +91,7 @@
         "name": "serviceStatus",
         "condition": "true",
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' :'UPCOMING')"
         ]
       },
       {
@@ -178,7 +178,12 @@
             "title": "Add household",
             "saveButtonText": "Add Household",
             "setPractitionerDetails": true,
-            "setOrganizationDetails": true
+            "setOrganizationDetails": true,
+            "snackBarMessage": {
+              "message": "Household has been created",
+              "actionLabel": "UNDO",
+              "duration": "Short"
+            }
           }
         }
       ]
