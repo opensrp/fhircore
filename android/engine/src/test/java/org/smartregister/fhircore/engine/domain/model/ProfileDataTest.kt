@@ -53,6 +53,7 @@ class ProfileDataTest : RobolectricTest() {
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
       Assert.assertTrue(services.size == 2)
       Assert.assertTrue(conditions.isEmpty())
+      Assert.assertTrue(practitioners.isEmpty())
       Assert.assertEquals("referenceKey", chwAssigned.reference)
     }
   }
@@ -122,7 +123,8 @@ class ProfileDataTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey"),
           healthStatus = HealthStatus.EXPOSED_INFANT,
           services = buildCarePlanServices(),
-          conditions = emptyList()
+          conditions = emptyList(),
+          practitioners = emptyList()
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.DefaultProfileData(
