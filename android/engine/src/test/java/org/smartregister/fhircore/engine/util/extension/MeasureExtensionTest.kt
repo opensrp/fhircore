@@ -53,8 +53,9 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `findPopulation should return correct population component for stratum with given type`() {
     val result =
-        measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPopulation(
-            MeasurePopulationType.DENOMINATOR)!!
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPopulation(
+        MeasurePopulationType.DENOMINATOR
+      )!!
 
     assertEquals(4, result.count)
     assertEquals(MeasurePopulationType.DENOMINATOR.toCode(), result.code.codingFirstRep.code)
@@ -91,7 +92,7 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `displayText should return capitalized display for stratum when value has text`() {
     measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.value =
-        CodeableConcept().apply { text = "stratum 1" }
+      CodeableConcept().apply { text = "stratum 1" }
 
     val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.displayText
 
@@ -101,9 +102,9 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `displayText should return capitalized display for stratum when value has coding`() {
     measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.value =
-        CodeableConcept().apply {
-          addCoding(Coding("http://code.org", "stratum-c1", "Stratum Code 1"))
-        }
+      CodeableConcept().apply {
+        addCoding(Coding("http://code.org", "stratum-c1", "Stratum Code 1"))
+      }
 
     val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.displayText
 
@@ -155,13 +156,13 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `reportingPeriodMonthsSpan should return correct stratum for given year and month`() {
     val group =
-        MeasureReport.MeasureReportGroupComponent().apply {
-          this.addStratifier().apply {
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Nov" } }
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Dec" } }
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2022-Jan" } }
-          }
+      MeasureReport.MeasureReportGroupComponent().apply {
+        this.addStratifier().apply {
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Nov" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Dec" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2022-Jan" } }
         }
+      }
 
     val result = group.findStratumForMonth("Dec-2021")
 
@@ -171,13 +172,13 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `reportingPeriodMonthsSpan should return correct stratum for given month and year`() {
     val group =
-        MeasureReport.MeasureReportGroupComponent().apply {
-          this.addStratifier().apply {
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Nov" } }
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Dec" } }
-            addStratum().apply { this.value = CodeableConcept().apply { text = "2022-Jan" } }
-          }
+      MeasureReport.MeasureReportGroupComponent().apply {
+        this.addStratifier().apply {
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Nov" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Dec" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2022-Jan" } }
         }
+      }
 
     val result = group.findStratumForMonth("2021-Dec")
 
@@ -185,48 +186,50 @@ class MeasureExtensionTest : RobolectricTest() {
   }
 
   private val measureReport =
-      MeasureReport().apply {
-        addGroup().apply {
+    MeasureReport().apply {
+      addGroup().apply {
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 1
+        }
+
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 2
+        }
+
+        this.addStratifier().addStratum().apply {
           this.addPopulation().apply {
             this.code.addCoding(
-                MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) })
-            this.count = 1
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 3
           }
 
           this.addPopulation().apply {
             this.code.addCoding(
-                MeasurePopulationType.DENOMINATOR.let {
-                  Coding(it.system, it.toCode(), it.display)
-                })
-            this.count = 2
-          }
-
-          this.addStratifier().addStratum().apply {
-            this.addPopulation().apply {
-              this.code.addCoding(
-                  MeasurePopulationType.NUMERATOR.let {
-                    Coding(it.system, it.toCode(), it.display)
-                  })
-              this.count = 3
-            }
-
-            this.addPopulation().apply {
-              this.code.addCoding(
-                  MeasurePopulationType.DENOMINATOR.let {
-                    Coding(it.system, it.toCode(), it.display)
-                  })
-              this.count = 4
-            }
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 4
           }
         }
       }
+    }
 
   @Test
   fun testAlreadyGeneratedMeasureReports() {
     runBlocking {
       val result =
-          retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-              fhirEngine = spyk(), "2022-02-02", "2022-04-04", "http://nourl.com")
+        retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+          fhirEngine = spyk(),
+          "2022-02-02",
+          "2022-04-04",
+          "http://nourl.com"
+        )
       assertTrue(result.isNullOrEmpty())
     }
   }
