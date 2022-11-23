@@ -50,7 +50,8 @@ import org.junit.runner.RunWith
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -59,8 +60,8 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
 
+  @get:Rule(order = 1) val workManagerRule = WorkManagerRule()
   @get:Rule(order = 10) val coroutineTestRule = CoroutineTestRule()
-
   @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
@@ -96,7 +97,7 @@ abstract class RobolectricTest {
 
   fun sanitizeSampleResourceContent(content: String): IBaseResource =
     content
-      .replace("#TODAY", Date().asYyyyMmDd())
+      .replace("#TODAY", Date().formatDate(SDF_YYYY_MM_DD))
       .replace("#NOW", DateTimeType.now().valueAsString)
       .let { FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().parseResource(it) }
 

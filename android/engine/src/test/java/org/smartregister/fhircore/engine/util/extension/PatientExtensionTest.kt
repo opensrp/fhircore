@@ -18,18 +18,11 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import java.text.SimpleDateFormat
+import androidx.test.platform.app.InstrumentationRegistry
 import java.util.Calendar
 import java.util.Date
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Extension
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
@@ -37,199 +30,62 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class PatientExtensionTest : RobolectricTest() {
 
-  @Test
-  fun testExtractAddressShouldReturnFullAddress() {
-    val patient =
-      Patient().apply {
-        addAddress().apply {
-          this.addLine("12 B")
-          this.addLine("Gulshan")
-          this.district = "Karimabad"
-          this.state = "Sindh"
-        }
-      }
+  private val context = InstrumentationRegistry.getInstrumentation().context
 
-    Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
-  }
-
-  @Test
-  fun testExtractAddressAttributes() {
-    val patient =
-      Patient().apply {
-        addAddress().apply {
-          this.addLine("12 B")
-          this.addLine("Gulshan")
-          this.district = "Karimabad"
-          this.state = "Sindh"
-          this.text = "home location Karachi"
-        }
-      }
-
-    Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
-    Assert.assertEquals("Karimabad", patient.extractAddressDistrict())
-    Assert.assertEquals("Sindh", patient.extractAddressState())
-    Assert.assertEquals("home location Karachi", patient.extractAddressText())
-  }
-
-  @Test
-  fun testExtractTelecomShouldReturnTelecom() {
-    val patient =
-      Patient().apply {
-        addTelecom().apply { this.value = "+1234" }
-        addTelecom().apply { this.value = "+5678" }
-      }
-    val expectedList: List<String> = listOf("+1234", "+5678")
-    Assert.assertEquals(expectedList, patient.extractTelecom())
-    if (!patient.hasManagingOrganization()) {
-      Assert.assertEquals("", patient.extractManagingOrganizationReference())
-    }
-    if (!patient.hasGeneralPractitioner()) {
-      Assert.assertEquals("", patient.extractGeneralPractitionerReference())
-    }
-  }
-
-  @Test
-  fun testExtractGeneralPractitionerShouldReturnReference() {
-    val patient =
-      Patient().apply { addGeneralPractitioner().apply { this.reference = "practitioner/1234" } }
-    Assert.assertEquals("practitioner/1234", patient.extractGeneralPractitionerReference())
-    if (!patient.hasTelecom()) {
-      Assert.assertEquals(null, patient.extractTelecom())
-    }
-  }
-
-  @Test
-  fun testExtractManagingOrganizationShouldReturnReference() {
-    val patient =
-      Patient().apply { managingOrganization.apply { this.reference = "reference/1234" } }
-    Assert.assertEquals("reference/1234", patient.extractManagingOrganizationReference())
-  }
-
-  @Test
-  fun testIsFamilyHeadShouldReturnTrueWithTagFamily() {
-    val patient = Patient().apply { meta.addTag().display = "FamiLy" }
-
-    Assert.assertTrue(patient.isFamilyHead())
-  }
-
-  @Test
-  fun testIsFamilyHeadShouldReturnTrueWithNoTagAsFamily() {
-    val patient = Patient().apply { meta.addTag().display = "Pregnant" }
-
-    Assert.assertFalse(patient.isFamilyHead())
-  }
-
-  @Test
-  fun testHasActivePregnancyShouldReturnTrueWithActivePregnancyCondition() {
-    val conditions =
-      listOf(
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "OCD"
-        },
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "preGnant"
-        }
-      )
-
-    Assert.assertTrue(conditions.hasActivePregnancy())
-  }
-
-  @Test
-  fun testHasActivePregnancyShouldReturnFalseWithNoActivePregnancyCondition() {
-    val conditions =
-      listOf(
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "OCD"
-        },
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "inactive"
-          this.code.addCoding().display = "preGnant"
-        }
-      )
-
-    Assert.assertFalse(conditions.hasActivePregnancy())
-  }
-
-  @Test
-  fun testPregnancyConditionShouldReturnPregnancyCondition() {
-    val conditions =
-      listOf(
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "OCD"
-        },
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "pregnant"
-        }
-      )
-
-    Assert.assertNotNull(conditions.pregnancyCondition())
-  }
-
-  @Test
-  fun testPregnancyConditionShouldReturnCondition() {
-    val conditions =
-      listOf(
-        Condition().apply {
-          this.clinicalStatus.addCoding().code = "L123"
-          this.clinicalStatus.addCoding().code = "active"
-          this.code.addCoding().display = "OCD"
-        }
-      )
-
-    Assert.assertNotNull(conditions.pregnancyCondition())
+  private fun getDateFromDaysAgo(daysAgo: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.DAY_OF_YEAR, -daysAgo)
+    return calendar.time
   }
 
   @Test
   fun testGetAgeString() {
     val expectedAge = "1y"
-    Assert.assertEquals(expectedAge, getAgeStringFromDays(365))
+    Assert.assertEquals(expectedAge, calculateAge(getDateFromDaysAgo(365), context))
 
     val expectedAge2 = "1y 1m"
-    // passing days value for 1y 1m 4d
-    Assert.assertEquals(expectedAge2, getAgeStringFromDays(399))
+    // passing days value for 1y 1m
+    Assert.assertEquals(expectedAge2, calculateAge(getDateFromDaysAgo(399), context))
 
-    val expectedAge3 = "1y 1w"
+    val expectedAge3 = "1y"
     // passing days value for 1y 1w
-    Assert.assertEquals(expectedAge3, getAgeStringFromDays(372))
+    Assert.assertEquals(expectedAge3, calculateAge(getDateFromDaysAgo(372), context))
 
     val expectedAge4 = "1m"
-    Assert.assertEquals(expectedAge4, getAgeStringFromDays(35))
+    Assert.assertEquals(expectedAge4, calculateAge(getDateFromDaysAgo(35), context))
 
     val expectedAge5 = "1m 2w"
-    Assert.assertEquals(expectedAge5, getAgeStringFromDays(49))
+    Assert.assertEquals(expectedAge5, calculateAge(getDateFromDaysAgo(49), context))
 
     val expectedAge6 = "1w"
-    Assert.assertEquals(expectedAge6, getAgeStringFromDays(7))
+    Assert.assertEquals(expectedAge6, calculateAge(getDateFromDaysAgo(7), context))
 
     val expectedAge7 = "1w 2d"
-    Assert.assertEquals(expectedAge7, getAgeStringFromDays(9))
+    Assert.assertEquals(expectedAge7, calculateAge(getDateFromDaysAgo(9), context))
 
     val expectedAge8 = "3d"
-    Assert.assertEquals(expectedAge8, getAgeStringFromDays(3))
+    Assert.assertEquals(expectedAge8, calculateAge(getDateFromDaysAgo(3), context))
 
     val expectedAge9 = "1y 2m"
-    Assert.assertEquals(expectedAge9, getAgeStringFromDays(450))
+    Assert.assertEquals(expectedAge9, calculateAge(getDateFromDaysAgo(450), context))
 
     val expectedAge10 = "40y 3m"
-    Assert.assertNotEquals(expectedAge10, getAgeStringFromDays(14700))
+    Assert.assertNotEquals(expectedAge10, calculateAge(getDateFromDaysAgo(14700), context))
 
     val expectedAge11 = "40y"
-    Assert.assertEquals(expectedAge11, getAgeStringFromDays(14700))
+    Assert.assertEquals(expectedAge11, calculateAge(getDateFromDaysAgo(14700), context))
 
     val expectedAge12 = "0d"
     // if difference b/w current date and DOB is O from extractAge extension
-    Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
+    Assert.assertEquals(expectedAge12, calculateAge(getDateFromDaysAgo(0), context))
+
+    val expectedAge13 = "1y 6m"
+    // passing days value for 1y 6m
+    Assert.assertEquals(expectedAge13, calculateAge(getDateFromDaysAgo(550), context))
+
+    val expectedAge14 = "5y"
+    // passing days value for 5y
+    Assert.assertEquals(expectedAge14, calculateAge(getDateFromDaysAgo(1826), context))
   }
 
   @Test
@@ -237,103 +93,7 @@ class PatientExtensionTest : RobolectricTest() {
     val patient =
       Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
 
-    Assert.assertEquals("19y", patient.extractAge())
-  }
-
-  @Test
-  fun testExtractFamilyName() {
-    val patient =
-      Patient().apply {
-        addName().apply {
-          addGiven("Given Name")
-          family = "genealogy"
-        }
-      }
-
-    Assert.assertEquals("Genealogy Family", patient.extractFamilyName())
-  }
-
-  @Test
-  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameIsEmptyAndGivenNameIsProvided() {
-    val patient = Patient().apply { addName().apply { addGiven("Given Name") } }
-
-    Assert.assertEquals("", patient.extractFamilyName())
-  }
-
-  @Test
-  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameAndGivenNameAreEmpty() {
-    val patient = Patient()
-
-    Assert.assertEquals("", patient.extractFamilyName())
-  }
-
-  @Test
-  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameAndGivenNameAreEmpty2() {
-    val patient = Patient().apply { name = listOf() }
-
-    Assert.assertEquals("", patient.extractFamilyName())
-  }
-
-  @Test
-  fun testExtractNameShouldReturnNameWithFamilyNameOnly() {
-    val patient = Patient().apply { name = listOf(HumanName().apply { family = "Doe" }) }
-
-    Assert.assertEquals("Doe", patient.extractName())
-  }
-
-  @Test
-  fun testExtractNameShouldReturnNameWithGivenNameOnly() {
-    val patient =
-      Patient().apply { name = listOf(HumanName().apply { given = listOf(StringType("John")) }) }
-
-    Assert.assertEquals("John", patient.extractName())
-  }
-
-  @Test
-  fun testExtractNameShouldReturnNameWhenGivenSingleGivenName() {
-    val patient =
-      Patient().apply {
-        name =
-          listOf(
-            HumanName().apply {
-              family = "Doe"
-              given = listOf(StringType("John"))
-            }
-          )
-      }
-
-    Assert.assertEquals("John Doe", patient.extractName())
-  }
-
-  @Test
-  fun testExtractNameShouldReturnNameWhenGivenMultipleGivenNames() {
-    val patient =
-      Patient().apply {
-        name =
-          listOf(
-            HumanName().apply {
-              family = "Doe"
-              given = listOf(StringType("John"), StringType("Tom"))
-            }
-          )
-      }
-
-    Assert.assertEquals("John Tom Doe", patient.extractName())
-  }
-
-  @Test
-  fun testExtractNameShouldReturnEmptyNameWhenPatientNameIsNull() {
-    val patient = Patient()
-
-    Assert.assertEquals("", patient.extractName())
-  }
-
-  @Test
-  fun testTitleCaseShouldConvertStringInLowerCase() {
-    val patient =
-      Patient().apply { name = listOf(HumanName().apply { given = listOf(StringType("john")) }) }
-
-    Assert.assertEquals("John", patient.extractName())
+    Assert.assertEquals("19y", patient.extractAge(context))
   }
 
   @Test
@@ -389,7 +149,7 @@ class PatientExtensionTest : RobolectricTest() {
   fun testExtractAgeShouldReturnAnEmptyStringWhenPatientDoesNotHaveBirthDate() {
     val patient = Patient()
 
-    Assert.assertEquals("", patient.extractAge())
+    Assert.assertEquals("", patient.extractAge(context))
   }
 
   @Test
@@ -399,84 +159,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     val patient = Patient().apply { birthDate = calendar.time }
 
-    Assert.assertEquals("1y", patient.extractAge())
-  }
-
-  @Test
-  fun testAtRiskShouldReturnEmptyStringWhenRiskExtensionDoesNotExist() {
-    Assert.assertEquals("", Patient().atRisk())
-  }
-
-  @Test
-  fun testAtRiskShouldReturnRiskValueWhenPatientHasRiskExtension() {
-    val patient =
-      Patient().apply { addExtension(Extension("covid-risk", StringType("covid-risk"))) }
-    Assert.assertEquals("covid-risk", patient.atRisk())
-  }
-
-  @Test
-  fun testGetLastSeen() {
-    val calendar1YearAgo =
-      Calendar.getInstance().apply { timeInMillis = (timeInMillis - (1L * 365 * 24 * 3600 * 1000)) }
-    val timeNow = Calendar.getInstance().time
-    val immunizations =
-      listOf(
-        Immunization().apply {
-          occurrence = DateTimeType(timeNow)
-          protocolAppliedFirstRep.doseNumberPositiveIntType.value = 2
-        },
-        Immunization().apply {
-          occurrence = DateTimeType(calendar1YearAgo.time)
-          protocolAppliedFirstRep.doseNumberPositiveIntType.value = 1
-        }
-      )
-
-    Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
-  }
-
-  @Test
-  fun testFormatLastSeen() {
-    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
-
-    Assert.assertEquals("12-31-2021", date.lastSeenFormat())
-  }
-
-  @Test
-  fun testExtractDeathDate() {
-    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
-    val patient = Patient().apply { deceased = DateTimeType(date) }
-
-    Assert.assertEquals(date, patient.extractDeathDate())
-  }
-
-  @Test
-  fun testExtractOfficialIdentifierReturnsValuewhenUseIsOfficial() {
-    val patient =
-      Patient().apply {
-        identifier =
-          mutableListOf(
-            Identifier().apply {
-              use = Identifier.IdentifierUse.OFFICIAL
-              value = "immunization"
-            }
-          )
-      }
-    Assert.assertEquals("immunization", patient.extractOfficialIdentifier())
-  }
-
-  @Test
-  fun testExtractOfficialIdentifierReturnsNullwhenUseIsNotOfficial() {
-    val patient =
-      Patient().apply {
-        identifier =
-          mutableListOf(
-            Identifier().apply {
-              use = Identifier.IdentifierUse.USUAL
-              value = "immunization"
-            }
-          )
-      }
-    Assert.assertNull(patient.extractOfficialIdentifier())
+    Assert.assertEquals("1y", patient.extractAge(context))
   }
 
   @Test

@@ -102,10 +102,10 @@ constructor(
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    val organizationSyncStrategy =
-      configService.provideSyncStrategyTags().find { it.type == ResourceType.Organization.name }
-
-    val mandatoryTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    val organizationIds: List<String>? =
+      if (appConfig.syncStrategies.contains(ResourceType.Organization.name)) {
+        sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
+      } else null
 
     val relatedResourceTypes: List<String>? =
       sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
@@ -120,12 +120,7 @@ constructor(
         when (paramName) {
           // TODO: Does not support multi organization yet,
           // https://github.com/opensrp/fhircore/issues/1550
-          ConfigurationRegistry.ORGANIZATION ->
-            mandatoryTags
-              .firstOrNull {
-                it.display.contentEquals(organizationSyncStrategy?.tag?.display, ignoreCase = true)
-              }
-              ?.code
+          ConfigurationRegistry.ORGANIZATION -> organizationIds?.firstOrNull()
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null

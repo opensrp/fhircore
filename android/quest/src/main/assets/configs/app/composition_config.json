@@ -50,14 +50,30 @@
       "mode": "working"
     },
     {
-      "title": "Measure reports configuration",
-      "focus": {
-        "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
-        "identifier": {
-          "value": "measureReport"
+      "title": "Measure reports configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Household Measure Report",
+          "focus": {
+            "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
+            "identifier": {
+              "value": "householdMeasureReport"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "Default Measure Report",
+          "focus": {
+            "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
+            "identifier": {
+              "value": "defaultMeasureReport"
+            }
+          },
+          "mode": "working"
         }
-      },
-      "mode": "working"
+      ]
     },
     {
       "title": "Register configurations",
@@ -159,6 +175,15 @@
             "reference": "Binary/2ac6ec4f-1a29-4d85-a015-06db9c1b82d9",
             "identifier": {
               "value": "tbRegister"
+            }
+          }
+        },
+        {
+          "title": "Patient register configuration",
+          "focus": {
+            "reference": "Binary/9aa6bbb6-df76-42a4-bdbe-72dc197378ca",
+            "identifier": {
+              "value": "patientRegister"
             }
           }
         }
@@ -570,7 +595,7 @@
         {
           "title": "New Pregnancy Registration",
           "focus": {
-            "reference": "StructureMap/8f7828f5-3910-4bfc-94a9-a0da749fb37c"
+            "reference": "StructureMap/ff7b22df-7645-43fe-9731-d90c3a21130b"
           },
           "mode": "working"
         },

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 class RegisterRepository
 @Inject
@@ -112,12 +114,14 @@ constructor(
     // Retrieve related resources recursively
     relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
       val relatedResources =
-        searchRelatedResources(
-          resourceConfig = resourceConfig,
-          baseResourceType = baseResourceType,
-          baseResource = baseResource,
-          fhirPathExpression = resourceConfig.fhirPathExpression
-        )
+        withContext(dispatcherProvider.io()) {
+          searchRelatedResources(
+            resourceConfig = resourceConfig,
+            baseResourceType = baseResourceType,
+            baseResource = baseResource,
+            fhirPathExpression = resourceConfig.fhirPathExpression
+          )
+        }
       currentRelatedResources.addAll(relatedResources)
     }
 
@@ -193,11 +197,16 @@ constructor(
         .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
         .map { it as Reference }
-        .map {
-          fhirEngine.get(
-            resourceConfig.resource.resourceClassType().newInstance().resourceType,
-            it.extractId()
-          )
+        .mapNotNull {
+          try {
+            fhirEngine.get(
+              resourceConfig.resource.resourceClassType().newInstance().resourceType,
+              it.extractId()
+            )
+          } catch (exception: ResourceNotFoundException) {
+            Timber.e(exception)
+            null
+          }
         }
         .forEach { resource ->
           relatedResourcesData.addLast(RelatedResourceData(resource = resource))

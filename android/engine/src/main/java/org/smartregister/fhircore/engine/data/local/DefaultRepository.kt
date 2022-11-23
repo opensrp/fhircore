@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -119,12 +118,12 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun create(addMandatoryTags: Boolean = true, vararg resource: Resource): List<String> {
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        if (addMandatoryTags) {
-          it.addTags(configService.provideMandatorySyncTags(sharedPreferencesHelper))
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
         }
       }
 
@@ -138,7 +137,7 @@ constructor(
     }
   }
 
-  suspend fun <R : Resource> addOrUpdate(resource: R, addMandatoryTags: Boolean = true) {
+  suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -220,7 +219,7 @@ constructor(
             member.map { thisMember ->
               loadResource<Patient>(thisMember.entity.extractId())?.let { patient ->
                 patient.active = false
-                addOrUpdate(patient)
+                addOrUpdate(resource = patient)
               }
             }
           }
@@ -228,7 +227,7 @@ constructor(
         member.clear()
         active = false
       }
-      addOrUpdate(group)
+      addOrUpdate(resource = group)
     }
   }
 
@@ -257,11 +256,6 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group.member.run {
-            remove(
-              this.find { it.entity.reference == "${resource.resourceType}/${resource.logicalId}" }
-            )
-          }
           group
             .managingEntity
             ?.let { reference ->
@@ -280,10 +274,10 @@ constructor(
             }
 
           // Update this group resource
-          addOrUpdate(group)
+          addOrUpdate(resource = group)
         }
       }
-      addOrUpdate(resource)
+      addOrUpdate(resource = resource)
     }
   }
 

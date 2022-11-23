@@ -18,12 +18,14 @@
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.main.AppMainActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity android:name=".HiltActivityForTest" />
 
