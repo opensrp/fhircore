@@ -202,7 +202,7 @@ constructor(
             .setInputData(data)
             .build()
 
-        workManager.enqueueUniqueWork(WORK_ID + now, ExistingWorkPolicy.REPLACE, workRequest)
+        workManager.enqueueUniqueWork(WORK_ID + now, ExistingWorkPolicy.KEEP, workRequest)
       } catch (e: Exception) {
         Timber.w(e.localizedMessage)
       }

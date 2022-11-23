@@ -25,9 +25,6 @@ import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 
 @HiltAndroidTest
@@ -38,8 +35,6 @@ class MeasureReportWorkerTest {
 
   @Inject lateinit var workManager: WorkManager
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  lateinit var appConfig: ApplicationConfiguration
   var fhirEngine: FhirEngine = mockk()
 
   var fhirOperator: FhirOperator = mockk()
@@ -47,17 +42,6 @@ class MeasureReportWorkerTest {
   @Before
   fun setUp() {
     hiltRule.inject()
-    appConfig =
-      ApplicationConfiguration(
-        appId = "ancApp",
-        configType = "classification",
-        theme = "dark theme",
-        languages = listOf("en"),
-        syncInterval = 15,
-        appTitle = "Test App",
-        remoteSyncPageSize = 100,
-        reportRepeatTime = "2:11"
-      ) // mentioned future time
   }
   /* TODO research on how we can mock doWork()  */
 }
