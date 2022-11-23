@@ -29,6 +29,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -43,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 
 const val DRAWER_MENU = "Drawer Menu"
@@ -63,6 +65,7 @@ fun TopScreenSection(
   title: String,
   searchText: String,
   searchPlaceholder: String? = null,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
@@ -73,7 +76,10 @@ fun TopScreenSection(
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(
-          Icons.Filled.Menu,
+          when (toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
+            ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
+          },
           contentDescription = DRAWER_MENU,
           tint = Color.White,
           modifier = modifier.testTag(TOP_ROW_ICON_TEST_TAG)
@@ -134,5 +140,10 @@ fun TopScreenSection(
 @Preview(showBackground = true)
 @Composable
 fun TopScreenSectionPreview() {
-  TopScreenSection(title = "All Clients", searchText = "Eddy", onSearchTextChanged = {}) {}
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+  ) {}
 }

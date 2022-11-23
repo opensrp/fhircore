@@ -33,7 +33,7 @@ sealed class ConfigType(
   object Sync : ConfigType("sync", true)
   object Navigation : ConfigType("navigation")
   object Register : ConfigType("register", multiConfig = true)
-  object MeasureReport : ConfigType("measureReport")
+  object MeasureReport : ConfigType("measureReport", multiConfig = true)
   object Profile : ConfigType("profile", multiConfig = true)
   object GeoWidget : ConfigType("geoWidget", multiConfig = true)
 }
