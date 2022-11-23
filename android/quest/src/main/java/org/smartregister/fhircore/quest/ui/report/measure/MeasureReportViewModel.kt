@@ -264,7 +264,7 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             measureReportConfigList.forEach {
               val result =
-                retrievePreviouslyGeneratedMeasureReports(
+                retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
                   fhirEngine,
                   startDateFormatted,
                   endDateFormatted,
