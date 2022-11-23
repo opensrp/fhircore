@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
-        with:
-          fetch-depth: 2
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
@@ -33,9 +31,9 @@ jobs:
          FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
          FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
-        with:
+#      - name: Deploy 🚀
+#        uses: JamesIves/github-pages-deploy-action@4.1.4
+#        with:
 #          branch: gh-pages # The branch the action should deploy to.
 #          folder: android/docs # The folder the action should deploy.
 
