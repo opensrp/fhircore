@@ -119,6 +119,12 @@ constructor(
   }
 
   fun onMenuLoginClicked() {
+    //reset user credentials...
+    secureSharedPreference.run {
+      deleteSessionTokens()
+      deleteSessionPin()
+      deleteCredentials()
+    }
     _navigateToLogin.value = true
   }
 

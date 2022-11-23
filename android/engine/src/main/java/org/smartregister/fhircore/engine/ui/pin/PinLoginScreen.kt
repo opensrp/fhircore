@@ -120,25 +120,6 @@ fun PinLoginPage(
             modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
           )
         }
-      },
-      actions = {
-        IconButton(
-          onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
-        DropdownMenu(
-          expanded = showMenu,
-          onDismissRequest = { showMenu = false },
-          Modifier.testTag(PIN_TOOLBAR_MENU)
-        ) {
-          DropdownMenuItem(
-            onClick = {
-              showMenu = false
-              onMenuLoginClicked()
-            },
-            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
-        }
       }
     )
 
