@@ -2,4 +2,4 @@
 id: intro
 slug: /
 ---
-<p>This is FHIRCORE client Documentation HomePage</p>
+<p>OpenSRP FHIR CORE client Documentation</p>
