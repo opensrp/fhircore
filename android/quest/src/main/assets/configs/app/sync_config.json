@@ -5,32 +5,8 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "organization",
-        "base": [
-          "Patient"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "managing-entity.patient.organization",
-        "base": [
-          "Group"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "subject.organization",
+        "name": "_id",
+        "code": "_id",
         "base": [
           "Encounter",
           "Observation",
@@ -38,10 +14,9 @@
           "CarePlan",
           "QuestionnaireResponse",
           "Task",
-          "RelatedPerson"
-        ],
-        "type": "token",
-        "expression": "#organization"
+          "RelatedPerson",
+          "Patient"
+        ]
       }
     },
     {
@@ -75,7 +50,11 @@
         "code": "_id",
         "base": [
           "StructureMap",
-          "PlanDefinition"
+          "PlanDefinition",
+          "PractitionerRole",
+          "OrganizationAffiliation",
+          "Organization",
+          "Location"
         ]
       }
     },

@@ -1,0 +1,141 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/8f7828f5-3910-4bfc-94a9-a0da749fb37c" = "Physical Inventory Count and Stock Supply"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group physicalInventoryCountStock(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {
+    questionnaireResponse -> bundle.id = uuid() "rule_bundle_id";
+    questionnaireResponse -> bundle.type = 'collection' "rule_bundle_type";
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as commodityGroupReference then extractEncounter(questionnaireResponse, commodityGroupReference, bundle) "rule_bundle_entries";
+}
+
+group extractEncounter(source questionnaireResponse : QuestionnaireResponse, source commodityGroupReference : Reference, target bundle : Bundle) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        questionnaireResponse -> encounter.id = uuid() "rule_encounter_id";
+        questionnaireResponse -> encounter.status = 'finished' "rule_encounter_st";
+        questionnaireResponse -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "restock", "Physical Inventory Count and Stock Supply") "rule_encounter_cls";
+
+        questionnaireResponse -> encounter.type = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("http://snomed.info/sct", "184048005") as coding then {
+                questionnaireResponse -> coding.display = 'Physical Inventory Count and Stock Supply' "rule_encounter_cod_disp";
+            } "rule_encounter_cc_cod";
+            questionnaireResponse -> concept.text = 'Physical Inventory Count and Stock Supply' "rule_encounter_typ_text";
+        } "rule_encounter_typ";
+
+        questionnaireResponse -> encounter.priority = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                questionnaireResponse -> coding.display = 'elective' "rule_encounter_cod_disp";
+            } "rule_encounter_cc_cod";
+            questionnaireResponse -> concept.text = 'elective' "rule_encounter_prio_text";
+        } "rule_encounter_prio";
+
+        questionnaireResponse.subject as subject -> encounter.subject = subject "rule_encounter_sub";
+        questionnaireResponse -> encounter.period = create('Period') as enPeriod then {
+            questionnaireResponse -> enPeriod.start = evaluate(questionnaireResponse, now()) "rule_encounter_per_start";
+            questionnaireResponse -> enPeriod.end = evaluate(questionnaireResponse, now()) "rule_encounter_perule_encounterd";
+        } "rule_encounter_per";
+
+        questionnaireResponse -> encounter.reasonCode = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.text = 'Physical Inventory Count and Stock Supply' "rule_encounter_text";
+        } "rule_encounter_reason";
+
+        // Adding the current stock quantity
+        questionnaireResponse -> cc('http://hl7.org/fhir/inventoryreport-counttype', 'snapshot', 'Snapshot') as restockedValueObservation then {
+            questionnaireResponse.item as  stockOnHandCategory where(linkId ='a71d3a65-9f08-4316-8ebf-41c376a4932e' and answer.value.count() > 0) then {
+                questionnaireResponse.item as restockQuantity where(linkId ='35f0cdc3-7c3f-4a7a-8299-62fd801b9510' and answer.value.count() > 0) then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = 'a71d3a65-9f08-4316-8ebf-41c376a4932e').answer.value) as stockOnHand,
+                        evaluate(questionnaireResponse, $this.item.where(linkId = '35f0cdc3-7c3f-4a7a-8299-62fd801b9510').answer.value) as quantityRestocked then {
+                            questionnaireResponse -> evaluate(questionnaireResponse, 'physical-count') as codeText, evaluate(questionnaireResponse, (stockOnHand + quantityRestocked)) as totalCurrentValueQuantity then extractObservation(questionnaireResponse, commodityGroupReference, encounter, totalCurrentValueQuantity, restockedValueObservation, codeText, bundle) "rule_observation_extraction";
+                    } "rule_restocked_quantity";
+                } "rule_check_restocked_category";
+            } "rule_check_stock_on_hand_category";
+        } "rule_value_category";
+
+        // Adding the restocked quantity
+        questionnaireResponse -> cc('http://hl7.org/fhir/inventoryreport-counttype', 'addition', 'Addition') as restockedValueObservation then {
+            questionnaireResponse.item as  valueCategory where(linkId ='35f0cdc3-7c3f-4a7a-8299-62fd801b9510' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '35f0cdc3-7c3f-4a7a-8299-62fd801b9510').answer.value) as quantityRestocked then {
+                        questionnaireResponse -> evaluate(questionnaireResponse, 'physical-count') as codeText, evaluate(questionnaireResponse, quantityRestocked) as quantityRestockedQuantity then extractObservation(questionnaireResponse, commodityGroupReference, encounter, quantityRestockedQuantity, restockedValueObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_restocked_quantity";
+            } "rule_check_restocked_category";
+        } "rule_restocked_observation_component";
+
+        // Adding the expired stock quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','subtraction', 'Subtraction') as expiredStockObservation then {
+            questionnaireResponse.item as  expiredStock  where(linkId ='cc3a573f-8faf-49bd-8649-c74fcd31ab7e' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = 'cc3a573f-8faf-49bd-8649-c74fcd31ab7e').answer.value) as expiredStockQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'expiry') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, expiredStockQuantity, expiredStockObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_expired_stock_component";
+            } "rule_check_expired_stock_component";
+        } "rule_expired_stock_observation_component";
+
+        // Adding the damaged stock quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','subtraction', 'Subtraction') as damagedStockObservation then {
+            questionnaireResponse.item as damagedStock where(linkId ='4571fa5f-8448-4e69-8395-c1962154e39c' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '4571fa5f-8448-4e69-8395-c1962154e39c').answer.value) as damagedStockQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'damage') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, damagedStockQuantity, damagedStockObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_damaged_stock_component";
+            } "rule_check_damaged_stock_component";
+        } "rule_damaged_stock_observation_component";
+
+        // Adding the current stock balance quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','snapshot', 'Snapshot')  as currentStockObservation then {
+            questionnaireResponse.item as currentStockBalance where(linkId ='d2cda03f-dc14-4f15-85ab-d5c33027aa31' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = 'd2cda03f-dc14-4f15-85ab-d5c33027aa31').answer.value) as currentStockBalanceQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'current-stock') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, currentStockBalanceQuantity, currentStockObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_current_stock_balance_component";
+            } "rule_check_current_stock_balance_component";
+        } "rule_current_stock_balance_observation_component";
+
+        // Adding the Donation quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','addition', 'Addition') as donationStockObservation then {
+            questionnaireResponse.item as donation where(linkId ='be137683-fda1-4fe3-86e7-39bbd3c87299' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = 'be137683-fda1-4fe3-86e7-39bbd3c87299').answer.value) as donationQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'donation') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, donationQuantity, donationStockObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_donation_component";
+            } "rule_check_donation_component";
+        } "rule_donation_observation_component";
+
+        // Adding the Over Reporting quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','subtraction', 'Subtraction') as overReportingObservation then {
+            questionnaireResponse.item as overReporting where(linkId ='66e1ca2e-a46a-42e2-c397-a12c30b8525e' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '66e1ca2e-a46a-42e2-c397-a12c30b8525e').answer.value) as overReportingQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'over-reporting') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, overReportingQuantity, overReportingObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_over_reporting_component";
+            } "rule_check_over_reporting_component";
+        } "rule_over_reporting_observation_component";
+
+        // Adding the Under Reporting quantity component.
+        questionnaireResponse -> cc('http://snomed.info/sct','addition', 'Addition') as underReportingObservation then {
+            questionnaireResponse.item as underReporting where(linkId ='605f0de5-3d7e-4e3d-977b-b05932602d9e' and answer.value.count() > 0) then {
+                questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '605f0de5-3d7e-4e3d-977b-b05932602d9e').answer.value) as underReportingQuantity then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, 'under-reporting') as codeText then extractObservation(questionnaireResponse, commodityGroupReference, encounter, underReportingQuantity, underReportingObservation, codeText, bundle) "rule_observation_extraction";
+                } "rule_under_reporting_component";
+            } "rule_check_under_reporting_component";
+        } "rule_under_reporting_observation_component";
+
+    } "rule_encounter";
+}
+
+group extractObservation(source questionnaireResponse : QuestionnaireResponse, source commodityGroupReference : Reference, source encounter : Encounter, source valueQuantity : Integer, source categoryCodeableConcept  : CodeableConcept, source codeString: String, target bundle : Bundle) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        questionnaireResponse -> observation.id = uuid() "rule_observation_id";
+        questionnaireResponse -> observation.status = 'final' "rule_observation_status";
+        questionnaireResponse -> observation.category = cc('http://snomed.info/sct','386452003', 'Supply management') "rule_observation_supply_chain";
+        questionnaireResponse -> observation.category = categoryCodeableConcept "rule_observation_type";
+        questionnaireResponse -> observation.code = create('CodeableConcept') as code then {
+            questionnaireResponse -> code.text = codeString "rule_observation_c_text";
+        } "rule_observation_code";
+		questionnaireResponse -> observation.subject = commodityGroupReference "r_reference_questionnaireResponse";
+        questionnaireResponse -> observation.effective = evaluate(questionnaireResponse, now()) "r_effective_current_date_time";
+        questionnaireResponse -> observation.performer = evaluate(questionnaireResponse, $this.generalPractitioner.first()) "rule_observation_performer";
+
+        questionnaireResponse -> observation.value = create('Quantity') as quantity then {
+			questionnaireResponse -> quantity.value = valueQuantity "rule_observation_quantity";
+		} "rule_observation_value";
+
+        questionnaireResponse -> observation.encounter = create('Reference') as encounterReference then {
+          questionnaireResponse -> encounterReference.reference = evaluate(questionnaireResponse, 'Encounter/' + encounter.id) "rule_encounter_ref";
+        } "rule_encounter";
+    } "rule_observation";
+}

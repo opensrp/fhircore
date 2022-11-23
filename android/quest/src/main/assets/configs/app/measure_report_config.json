@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "measureReport",
-  "registerId": "ancRegister",
+  "registerId": "measureReport",
   "reports": [
     {
       "id": "1",

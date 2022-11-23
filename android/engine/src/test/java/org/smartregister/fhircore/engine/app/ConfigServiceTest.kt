@@ -18,25 +18,17 @@ package org.smartregister.fhircore.engine.app
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.impl.WorkManagerImpl
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers.setStaticField
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.sync.SyncStrategyTag
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -59,51 +51,56 @@ class ConfigServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun testSchedulePlanShouldEnqueueUniquePeriodicWork() {
-    val workManager = mockk<WorkManagerImpl>()
-    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
-
-    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
-    configService.scheduleFhirTaskPlanWorker(mockk())
-
-    verify {
-      workManager.enqueueUniquePeriodicWork(
-        eq(FhirTaskPlanWorker.WORK_ID),
-        eq(ExistingPeriodicWorkPolicy.REPLACE),
-        any()
-      )
-    }
-  }
-
-  @Test
-  fun testProvideMandatorySyncTags() {
-
+  fun testProvideSyncTagsShouldHaveOrganizationId() {
     val practitionerId = "practitioner-id"
     sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
-    every { configService.provideSyncStrategies() } returns
-      listOf(SharedPreferenceKey.PRACTITIONER_ID.name)
-    every { configService.provideSyncStrategyTags() } returns
-      listOf(
-        SyncStrategyTag(
-          type = SharedPreferenceKey.PRACTITIONER_ID.name,
-          tag =
-            Coding().apply {
-              system = "http://fake.tag.com/Practitioner#system"
-              display = "Practitioner "
-            }
-        )
-      )
 
-    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
-    Assert.assertEquals(practitionerId, mandatorySyncTags[0].code)
+    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val practitionerTag =
+      resourceTags.firstOrNull { it.system == AppConfigService.PRACTITIONER_SYSTEM }
+
+    Assert.assertEquals(practitionerId, practitionerTag?.code)
   }
 
   @Test
-  fun testProvideMandatorySyncTagsForLocationSyncStrategy() {
-    val locationId = "location-id1"
-    sharedPreferencesHelper.write("Location", listOf(locationId))
+  fun testProvideSyncTagsShouldHaveLocationIds() {
+    val locationId1 = "location-id1"
+    val locationId2 = "location-id2"
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId1, locationId2))
 
-    val mandatorySyncTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
-    Assert.assertEquals(locationId, mandatorySyncTags[0].code)
+    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val locationTags = resourceTags.filter { it.system == AppConfigService.LOCATION_SYSTEM }
+
+    Assert.assertTrue(locationTags.any { it.code == locationId1 })
+    Assert.assertTrue(locationTags.any { it.code == locationId2 })
+  }
+
+  @Test
+  fun testProvideSyncTagsShouldHaveOrganizationIds() {
+    val organizationId1 = "organization-id1"
+    val organizationId2 = "organization-id2"
+    sharedPreferencesHelper.write(
+      ResourceType.Organization.name,
+      listOf(organizationId1, organizationId2)
+    )
+
+    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val organizationTags = resourceTags.filter { it.system == AppConfigService.ORGANIZATION_SYSTEM }
+
+    Assert.assertTrue(organizationTags.any { it.code == organizationId1 })
+    Assert.assertTrue(organizationTags.any { it.code == organizationId2 })
+  }
+
+  @Test
+  fun testProvideSyncTagsShouldHaveCareTeamIds() {
+    val careTeamId1 = "careteam-id1"
+    val careTeamId2 = "careteam-id2"
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId1, careTeamId2))
+
+    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val organizationTags = resourceTags.filter { it.system == AppConfigService.CARETEAM_SYSTEM }
+
+    Assert.assertTrue(organizationTags.any { it.code == careTeamId1 })
+    Assert.assertTrue(organizationTags.any { it.code == careTeamId2 })
   }
 }

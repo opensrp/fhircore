@@ -90,75 +90,70 @@ constructor(
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    val organizationSyncStrategy =
-      configService.provideSyncStrategyTags().find { it.type == ResourceType.Organization.name }
+    val organizationResourceTag =
+      configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
+    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
     val relatedResourceTypes: List<String>? =
       sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.parameter
-      .map { it.resource as SearchParameter }
-      .forEach { sp ->
-        val paramName = sp.name // e.g. organization
-        val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-        val paramExpression = sp.expression
-        val expressionValue =
-          when (paramName) {
-            // TODO: Does not support multi organization yet,
-            // https://github.com/opensrp/fhircore/issues/1550
-            ConfigurationRegistry.ORGANIZATION ->
-              mandatoryTags
-                .firstOrNull {
-                  it.display.contentEquals(
-                    organizationSyncStrategy?.tag?.display,
-                    ignoreCase = true
-                  )
-                }
-                ?.code
-            ConfigurationRegistry.ID -> paramExpression
-            ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
-            else -> null
-          }?.let {
-            // replace the evaluated value into expression for complex expressions
-            // e.g. #organization -> 123
-            // e.g. patient.organization eq #organization -> patient.organization eq 123
-            paramExpression.replace(paramLiteral, it)
-          }
-
-        // for each entity in base create and add param map
-        // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
-        // ],..]
-        if (relatedResourceTypes.isNullOrEmpty()) {
-            sp.base.mapNotNull { it.code }
-          } else {
-            relatedResourceTypes
-          }
-          .forEach { clinicalResource ->
-            val resourceType = ResourceType.fromCode(clinicalResource)
-            val pair = pairs.find { it.first == resourceType }
-            if (pair == null) {
-              pairs.add(
-                Pair(
-                  resourceType,
-                  expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
-                )
-              )
-            } else {
-              expressionValue?.let {
-                // add another parameter if there is a matching resource type
-                // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
-                // _count=100})]
-                val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-                val index = pairs.indexOfFirst { it.first == resourceType }
-                pairs.set(index, Pair(resourceType, updatedPair))
+    syncConfig.parameter.map { it.resource as SearchParameter }.forEach { sp ->
+      val paramName = sp.name // e.g. organization
+      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
+      val paramExpression = sp.expression
+      val expressionValue =
+        when (paramName) {
+          // TODO: Does not support multi organization yet,
+          // https://github.com/opensrp/fhircore/issues/1550
+          ConfigurationRegistry.ORGANIZATION ->
+            mandatoryTags
+              .firstOrNull {
+                it.display.contentEquals(organizationResourceTag?.tag?.display, ignoreCase = true)
               }
+              ?.code
+          ConfigurationRegistry.ID -> paramExpression
+          ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
+          else -> null
+        }?.let {
+          // replace the evaluated value into expression for complex expressions
+          // e.g. #organization -> 123
+          // e.g. patient.organization eq #organization -> patient.organization eq 123
+          paramExpression.replace(paramLiteral, it)
+        }
+
+      // for each entity in base create and add param map
+      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
+      // ],..]
+      if (relatedResourceTypes.isNullOrEmpty()) {
+          sp.base.mapNotNull { it.code }
+        } else {
+          relatedResourceTypes
+        }
+        .forEach { clinicalResource ->
+          val resourceType = ResourceType.fromCode(clinicalResource)
+          val pair = pairs.find { it.first == resourceType }
+          if (pair == null) {
+            pairs.add(
+              Pair(
+                resourceType,
+                expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
+              )
+            )
+          } else {
+            expressionValue?.let {
+              // add another parameter if there is a matching resource type
+              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
+              // _count=100})]
+              val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+              val index = pairs.indexOfFirst { it.first == resourceType }
+              pairs.set(index, Pair(resourceType, updatedPair))
             }
           }
-      }
+        }
+    }
 
     Timber.i("SYNC CONFIG $pairs")
 

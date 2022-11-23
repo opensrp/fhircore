@@ -146,7 +146,7 @@ constructor(
       .onFailure {
         Timber.w(it)
         showProgressBar.postValue(false)
-        _error.postValue("${it.message}")
+        _error.postValue(it.localizedMessage)
       }
   }
 

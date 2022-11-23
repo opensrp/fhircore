@@ -98,7 +98,7 @@ constructor(
           PeriodicSyncConfiguration(
             repeat = RepeatInterval(appConfig.syncInterval, TimeUnit.MINUTES)
           ),
-        clazz = QuestSyncWorker::class.java // TODO requires a concrete class of FhirSyncWorker
+        clazz = AppSyncWorker::class.java
       )
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     coroutineScope.launch {
