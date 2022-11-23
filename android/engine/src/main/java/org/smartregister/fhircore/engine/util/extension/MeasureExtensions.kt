@@ -92,7 +92,7 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  * @param measureUrl
  * @param fhirEngine
  */
-suspend fun alreadyGeneratedMeasureReports(
+suspend fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
   startDateFormatted: String,
   endDateFormatted: String,

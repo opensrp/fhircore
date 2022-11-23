@@ -70,7 +70,7 @@ fun MeasureReportResultScreen(
   val measureReportRowData = measureReportViewModel.measureReportConfigList
 
   MeasureReportResultPage(
-    screenTitle = measureReportRowData.first().module,
+    screenTitle = measureReportRowData.firstOrNull()?.module ?: "",
     navController = navController,
     measureReportConfig = measureReportRowData,
     endDate = uiState.endDate,

@@ -23,6 +23,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
@@ -31,6 +32,7 @@ import dagger.assisted.AssistedInject
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Date
@@ -38,19 +40,18 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDFHH_MM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.alreadyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
+import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
@@ -65,31 +66,47 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DefaultDispatcherProvider,
   val fhirOperator: FhirOperator,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
+  val workManager: WorkManager,
 ) : CoroutineWorker(appContext, workerParams) {
 
-  val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application, configId = "app/debug")
-  }
-
   override suspend fun doWork(): Result {
-    val monthList = getMonthRangeList()
-    Timber.w("started  / . . . worker . . ./")
-    fhirEngine.search<Measure> {}.forEach {
-      monthList.forEachIndexed { index, date ->
-        val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-        val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-        if (alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, it.url)
-            ?.isEmpty() == true
-        ) {
-          evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
-        } else {
-          if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
+    val time = inputData.getString(TIME)
+    val campaignDate = inputData.getString(APP_CONFIG)
+    try {
+      val monthList = campaignDate?.let { getMonthRangeList(it) }
+      Timber.w("started  / . . . MeasureReportWorker . . ./")
+
+      fhirEngine.search<Measure> {}.forEach {
+        monthList?.forEachIndexed { index, date ->
+          val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+          val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+          if (retrievePreviouslyGeneratedMeasureReports(
+                fhirEngine,
+                startDateFormatted,
+                endDateFormatted,
+                it.url
+              )
+              ?.isEmpty() == true
+          ) {
             evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+          } else {
+            if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
+              evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+          }
+        }
+      }
+      Timber.w("Result.success  / . . . MeasureReportWorker . . ./")
+    } catch (e: Exception) {
+      Timber.w(e.localizedMessage)
+      Result.failure()
+    } finally {
+      time?.let {
+        if (campaignDate != null) {
+          scheduleMeasureReportWorker(workManager = workManager, it, campaignDate)
         }
       }
     }
-
     return Result.success()
   }
 
@@ -100,6 +117,8 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String
   ) {
+    Timber.w("evaluatePopulationMeasure  / . . . MeasureReportWorker . . ./")
+
     withContext(dispatcherProvider.io()) {
       fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
     }
@@ -123,8 +142,15 @@ constructor(
         }
       }
     if (measureReport != null) {
+      Timber.w("measureReport  / . . . MeasureReportWorker . . ./${measureReport.period.end}")
+
       val result =
-        alreadyGeneratedMeasureReports(fhirEngine, startDateFormatted, endDateFormatted, measureUrl)
+        retrievePreviouslyGeneratedMeasureReports(
+          fhirEngine,
+          startDateFormatted,
+          endDateFormatted,
+          measureUrl
+        )
       if (result != null) {
         if (result.isNotEmpty()) defaultRepository.delete(result.last())
       }
@@ -133,13 +159,11 @@ constructor(
   }
 
   /** @return list of months within current date and starting date of campaign */
-  fun getMonthRangeList(): List<Date> {
-    Timber.w("appConfig$applicationConfiguration")
+  fun getMonthRangeList(campaignRegisterDate: String): List<Date> {
     val yearMonths = mutableListOf<Date>()
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
-    while (lastDate?.after(applicationConfiguration.registerDate.parseDate(SDF_YYYY_MM_DD)) ==
-      true) {
+    while (lastDate?.after(campaignRegisterDate.parseDate(SDF_YYYY_MM_DD)) == true) {
       yearMonths.add(lastDate)
       lastDate = lastDate.plusMonths(-1)
     }
@@ -147,30 +171,41 @@ constructor(
   }
   companion object {
     private const val WORK_ID = "fhirMeasureReportWorker"
+    private const val APP_CONFIG = "appConfig"
+    private const val TIME = "time"
 
-    fun scheduleMeasureReportWorker(workManager: WorkManager, hours: Int, minutes: Int) {
-      // trigger at 8:30am
-      val alarmTime = LocalTime.of(hours, minutes)
-      var now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
-      val nowTime = now.toLocalTime()
-      // if same time, schedule for next day as well
-      // if today's time had passed, schedule for next day
-      if (nowTime == alarmTime || nowTime.isAfter(alarmTime)) {
-        now = now.plusDays(1)
+    fun scheduleMeasureReportWorker(
+      workManager: WorkManager,
+      scheduleTime: String,
+      campaignRegisterDate: String
+    ) {
+      try {
+        val alarmTime =
+          LocalTime.parse(scheduleTime, DateTimeFormatter.ofPattern(SDFHH_MM)) // 24h format
+        var now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
+        val nowTime = now.toLocalTime()
+        // if same time, schedule for next day as well
+        // if today's time had passed, schedule for next day
+        if (nowTime == alarmTime || nowTime.isAfter(alarmTime)) {
+          now = now.plusDays(1)
+        }
+        now =
+          now
+            .withHour(alarmTime.hour)
+            .withMinute(alarmTime.minute) // .withSecond(alarmTime.second).withNano(alarmTime.nano)
+        val duration = Duration.between(LocalDateTime.now(), now)
+        val data = workDataOf(APP_CONFIG to campaignRegisterDate, TIME to scheduleTime)
+
+        val workRequest =
+          OneTimeWorkRequestBuilder<MeasureReportWorker>()
+            .setInitialDelay(duration.seconds, TimeUnit.SECONDS)
+            .setInputData(data)
+            .build()
+
+        workManager.enqueueUniqueWork(WORK_ID + now, ExistingWorkPolicy.REPLACE, workRequest)
+      } catch (e: Exception) {
+        Timber.w(e.localizedMessage)
       }
-      now =
-        now
-          .withHour(alarmTime.hour)
-          .withMinute(alarmTime.minute) // .withSecond(alarmTime.second).withNano(alarmTime.nano)
-      val duration = Duration.between(LocalDateTime.now(), now)
-
-      Timber.d("runAt=${duration.seconds}s")
-      val workRequest =
-        OneTimeWorkRequestBuilder<MeasureReportWorker>()
-          .setInitialDelay(duration.seconds, TimeUnit.SECONDS)
-          .build()
-
-      workManager.enqueueUniqueWork(WORK_ID, ExistingWorkPolicy.REPLACE, workRequest)
     }
   }
 }

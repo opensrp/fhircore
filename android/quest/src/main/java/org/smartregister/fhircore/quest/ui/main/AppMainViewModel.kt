@@ -317,8 +317,8 @@ constructor(
     // Schedule job for generating measure report in the background
     MeasureReportWorker.scheduleMeasureReportWorker(
       workManager,
-      applicationConfiguration.reportRepeatInterval.hours,
-      applicationConfiguration.reportRepeatInterval.minutes
+      applicationConfiguration.reportRepeatTime,
+      applicationConfiguration.registerDate
     )
   }
 

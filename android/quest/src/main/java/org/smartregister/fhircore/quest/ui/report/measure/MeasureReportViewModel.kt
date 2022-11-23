@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -56,7 +57,6 @@ import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.alreadyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.displayText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.reportingPeriodMonthsSpan
+import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -95,7 +96,8 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
+  val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
@@ -161,7 +163,7 @@ constructor(
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.first().module)
+              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
             )
         )
       }
@@ -262,7 +264,7 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             measureReportConfigList.forEach {
               val result =
-                alreadyGeneratedMeasureReports(
+                retrievePreviouslyGeneratedMeasureReports(
                   fhirEngine,
                   startDateFormatted,
                   endDateFormatted,
@@ -356,7 +358,7 @@ constructor(
       }
 
     if (measureReport != null) {
-      Timber.w("MeasureReport$measureReport")
+      defaultRepository.addOrUpdate(resource = measureReport)
       _measureReportPopulationResultList.addAll(formatPopulationMeasureReport(measureReport))
     }
   }

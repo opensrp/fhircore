@@ -4,6 +4,7 @@
   "theme": "DEFAULT",
   "appTitle": "eCBIS (CHA & CHSS)",
   "registerDate": "2020-10-27",
+  "reportRepeatTime": "17:25",
   "remoteSyncPageSize": 100,
   "languages": [
     "en"

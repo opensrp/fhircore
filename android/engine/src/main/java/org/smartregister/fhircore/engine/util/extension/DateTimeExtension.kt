@@ -37,6 +37,7 @@ const val SDF_YYYY_MMM = "yyyy-MMM"
 const val SDF_MMMM = "MMMM"
 const val SDF_YYYY = "yyyy"
 const val SDF_D_MMM_YYYY_WITH_COMA = "d MMM, yyyy"
+const val SDFHH_MM = "HH:mm"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
