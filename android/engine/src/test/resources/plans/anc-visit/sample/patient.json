@@ -1,6 +1,6 @@
 {
   "resourceType": "Patient",
-  "id": "Patient/TEST_PATIENT/_history/1",
+  "id": "TEST_PATIENT",
   "active": true,
   "name": [
     {

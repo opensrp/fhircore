@@ -8,104 +8,93 @@
   "contained": [
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-init-activity",
-      "title": "Sick Child Register Handler Activity",
-      "status": "active",
-      "description": "This action will assess careplan on registration to init careplan",
-      "kind": "CarePlan",
-      "dynamicValue": [
-        {
-          "path": "CarePlan.status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'active'"
-          }
-        },
-        {
-          "path": "CarePlan.intent",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'plan'"
-          }
-        },
-        {
-          "path": "CarePlan.created",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "now()"
-          }
-        },
-        {
-          "path": "CarePlan.subject",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
-          }
-        },
-        {
-          "path": "CarePlan.author",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
-          }
-        },
-        {
-          "path": "CarePlan.period.start",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value"
-          }
-        },
-        {
-          "path": "CarePlan.period.end",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 9 months"
-          }
-        },
-        {
-          "path": "CarePlan.activity.detail.kind",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'Task'"
-          }
-        },
-        {
-          "path": "CarePlan.activity.detail.status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'in-progress'"
-          }
-        },
-        {
-          "path": "CarePlan.activity.detail.description",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'This action will assess careplan on registration to init careplan'"
-          }
-        },
-        {
-          "path": "CarePlan.activity.detail.performer",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
       "id": "careplan-activity",
+      "url": "ActivityDefinition/careplan-activity",
       "title": "ANC Follow Up Plan",
       "status": "active",
+      "code": {
+        "coding": [ {
+          "system": "http://example.org/CodeSystem/encounter-type",
+          "code": "pregnant_monthly_visit",
+          "display": "Pregnant (ANC) Monthly Routine visit"
+        } ],
+        "text": "Pregnant (ANC) Monthly Routine visit"
+      },
+      "extension": [{
+        "url": "http://hl7.org/fhir/us/ecr/StructureDefinition/targetStatus",
+        "valueString": "ready"
+      }],
       "description": "This action will performed every month for a pregnant woman",
       "kind": "Task",
+      "library": ["/Library/ANCVISIT"],
+      "dynamicValue": [
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskIntent"
+          }
+        },
+        {
+          "path": "executionPeriod",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskExecutionPeriod"
+          }
+        },
+        {
+          "path": "priority",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskPriority"
+          }
+        },
+        {
+          "path": "for",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskFor"
+          }
+        },
+        {
+          "path": "authoredOn",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskAuthoredOn"
+          }
+        },
+        {
+          "path": "requester",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskRequester"
+          }
+        },
+        {
+          "path": "owner",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskOwner"
+          }
+        },
+        {
+          "path": "reasonReference",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "TaskReasonReference"
+          }
+        }
+      ],
       "timingTiming": {
         "repeat": {
-          "count": 8,
           "countMax": 8,
+          "duration": 2,
+          "durationMax": 4,
+          "durationUnit": "h",
           "frequency": 1,
+          "frequencyMax": 1,
           "period": 1,
+          "periodMax": 1,
           "periodUnit": "mo"
         }
       }
@@ -171,6 +160,13 @@
       }
     }
   ],
+  "library": ["/Library/ANCVISIT"],
+  "type": {
+    "coding": [{
+      "code":"clinical-protocol",
+      "system": "http://hl7.org/fhir/ValueSet/plan-definition-type"
+    }]
+  },
   "action": [
     {
       "prefix": "1",
@@ -179,8 +175,8 @@
         {
           "kind": "applicability",
           "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132152').exists()"
+            "language": "text/cql-identifier",
+            "expression": "QR132152"
           }
         }
       ],
@@ -216,8 +212,8 @@
         {
           "kind": "applicability",
           "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
+            "language": "text/cql-identifier",
+            "expression": "QR132170"
           }
         }
       ],
@@ -230,8 +226,8 @@
         {
           "kind": "applicability",
           "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and $this.birthDate < today() - 5 'years' and %resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
+            "language": "text/cql-identifier",
+            "expression": "QRChildReferred"
           }
         }
       ],

@@ -140,7 +140,7 @@ dependencies {
     def cqlEvaluatorVersion = '2.1.0'
     implementation "org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"
     implementation "org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"
-    implementation "org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"
+    implementation("org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion-hotfix")
     implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion")
 
     // Hilt - Dependency Injection
@@ -195,6 +195,7 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
+        exclude group: 'org.opencds.cqf.cql'
     }
 
     api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {

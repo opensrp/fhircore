@@ -20,6 +20,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import com.google.android.fhir.workflow.FhirEngineDal
+import com.google.android.fhir.workflow.FhirOperator
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,26 +30,35 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
+import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.opencds.cqf.cql.evaluator.plandefinition.r4.PlanDefinitionProcessor
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.findContained
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 @Singleton
 class FhirCarePlanGenerator
@@ -56,7 +67,8 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val fhirOperator: FhirOperator
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -67,10 +79,46 @@ constructor(
     subject: Resource,
     data: Bundle? = null
   ): CarePlan? {
-    return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
+    val planDefinition = fhirEngine.get<PlanDefinition>(IdType(planDefinitionId).idPart)
+    return if (planDefinition.hasLibrary())
+      generateOrUpdateCarePlanWithLibrary(planDefinition, subject, data)
+    else generateOrUpdateCarePlanWithStructureMap(planDefinition, subject, data)
   }
 
-  suspend fun generateOrUpdateCarePlan(
+  private fun generateOrUpdateCarePlanWithLibrary(planDefinition: PlanDefinition, subject: Resource, data: Bundle?): CarePlan? {
+    val planDefinitionProcessor = FhirOperator::class.memberProperties.find { it.name == "planDefinitionProcessor" }!!.also { it.isAccessible = true }.get(fhirOperator) as PlanDefinitionProcessor
+    val prefetchData = data?.let { data ->
+      Parameters().apply {
+        addParameter().apply {
+          name = PlanDefinition.DEPENDS_ON.paramName
+          resource = data
+        }
+      }
+    }
+
+    return planDefinitionProcessor.apply(
+      IdType("PlanDefinition", planDefinition.idElement.idPart),
+      subject.id,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      /* parameters= */ prefetchData,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    )
+  }
+
+  suspend fun generateOrUpdateCarePlanWithStructureMap(
     planDefinition: PlanDefinition,
     subject: Resource,
     data: Bundle? = null
@@ -108,10 +156,7 @@ constructor(
         }
       ) {
         val definition =
-          planDefinition.contained.first {
-            it.id.substringBefore("/_history") == action.definitionCanonicalType.value
-          } as
-            ActivityDefinition
+          planDefinition.findContained(action.definitionCanonicalType.value) as ActivityDefinition
 
         val source =
           Parameters().apply {
@@ -139,13 +184,29 @@ constructor(
           }
 
         if (action.hasTransform()) {
-          val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
-          structureMapUtilities.transform(
-            transformSupportServices.simpleWorkerContext,
-            source,
-            structureMap,
-            output
-          )
+          var i = 0
+          do {
+            val period = i*definition.timingTiming.repeat.period.toInt()
+            source.addParameter().apply {
+              this.name = Task.SP_PERIOD
+              this.value = Period().apply {
+                start = fhirPathEngine.evaluate(output.period, "\$this.start + $period ${definition.timingTiming.repeat.periodUnit.definition}").firstOrNull()?.dateTimeValue()?.value
+              }
+            }
+
+            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+            structureMapUtilities.transform(
+              transformSupportServices.simpleWorkerContext,
+              source,
+              structureMap,
+              output
+            )
+            i++
+          }
+            // number of times to repeat the definition; count should be 1 if only one task should be generated per iteration
+          while (definition.hasTimingTiming() && definition.timingTiming.repeat.let {
+              it.count > i
+            })
         }
 
         if (definition.hasDynamicValue()) {

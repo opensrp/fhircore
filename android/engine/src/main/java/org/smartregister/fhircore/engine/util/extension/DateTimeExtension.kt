@@ -25,6 +25,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Timing
 import org.ocpsoft.prettytime.PrettyTime
 
 val SDF_DD_MMM_YYYY = simpleDateFormatFor("dd-MMM-yyyy")

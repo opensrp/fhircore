@@ -26,14 +26,17 @@ import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DomainResource
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
@@ -51,6 +54,11 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
+
+fun DomainResource.findContained(id: String) = this.contained.first {
+  val searchableId = IdType(id)
+  it.idElement.idPart == searchableId.idPart
+}
 
 fun Base?.valueToString(): String {
   return when {
