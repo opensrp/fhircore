@@ -112,6 +112,12 @@ fun PinView(
           Modifier.size(40.dp).clickable {
             focusRequester.requestFocus()
             keyboard?.show()
+            // if error is being shown and user clicks on pin cell
+            // it should clear the the pin view and reset the color
+            if (showError) {
+              setEditValue("")
+              onPinChanged("")
+            }
           },
         indexValue = editValue.getOrNull(index)?.toString() ?: "",
         fullEditValue = editValue,
