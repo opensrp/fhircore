@@ -57,7 +57,7 @@ class MeasureReportWorkerTest {
         syncInterval = 15,
         appTitle = "Test App",
         remoteSyncPageSize = 100,
-        reportRepeatInterval = RepeatIntervalConfig(10, 25)
+        reportRepeatTime = "2:11"
       ) // mentioned future time
   }
   /* TODO research on how we can mock doWork()  */
