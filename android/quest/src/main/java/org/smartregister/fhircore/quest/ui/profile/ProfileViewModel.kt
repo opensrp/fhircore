@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -107,30 +106,30 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
-                viewModelScope.launch(dispatcherProvider.io()) {
-                  var questionnaireResponse: String? = null
+                if (event.navController.context is QuestionnaireHandler) {
+                  viewModelScope.launch {
+                    var questionnaireResponse: String? = null
 
-                  if (event.resourceData != null) {
-                    questionnaireResponse =
-                      searchQuestionnaireResponses(
-                        subjectId = event.resourceData.baseResource.id.extractLogicalIdUuid(),
-                        subjectType = event.resourceData.baseResource.resourceType,
-                        questionnaireId = questionnaireConfig.id
-                      )
-                        .maxByOrNull { it.authored } // Get latest version
-                        ?.let { parser.encodeResourceToString(it) }
-                  }
-
-                  val intentBundle =
-                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
-                      .apply {
-                        putString(
-                          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                          questionnaireResponse
+                    if (event.resourceData != null) {
+                      questionnaireResponse =
+                        searchQuestionnaireResponses(
+                          subjectId = event.resourceData.baseResource.id.extractLogicalIdUuid(),
+                          subjectType = event.resourceData.baseResource.resourceType,
+                          questionnaireId = questionnaireConfig.id
                         )
-                      }
+                          .maxByOrNull { it.authored } // Get latest version
+                          ?.let { parser.encodeResourceToString(it) }
+                    }
 
-                  if (event.navController.context is QuestionnaireHandler) {
+                    val intentBundle =
+                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                        .apply {
+                          putString(
+                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                            questionnaireResponse
+                          )
+                        }
+
                     (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
                       context = event.navController.context,
                       intentBundle = intentBundle,
