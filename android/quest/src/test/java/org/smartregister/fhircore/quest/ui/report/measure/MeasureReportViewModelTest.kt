@@ -48,6 +48,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -85,6 +86,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   val measureReportRepository = mockk<MeasureReportRepository>()
 
+  val defaultRepository = mockk<DefaultRepository>()
+
   private lateinit var measureReportViewModel: MeasureReportViewModel
 
   private val navController: NavController = mockk(relaxUnitFun = true)
@@ -109,7 +112,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           dispatcherProvider = mockk(),
           measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
           configurationRegistry = configurationRegistry,
-          registerRepository = registerRepository
+          registerRepository = registerRepository,
+          defaultRepository = defaultRepository
         )
       )
   }
