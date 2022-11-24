@@ -95,6 +95,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
       Assert.assertEquals("5y", age)
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), upcomingServices)
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), practitioners)
     }
   }
 
@@ -112,6 +113,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
       Assert.assertEquals(true, tasks.isEmpty())
       Assert.assertEquals(true, upcomingServices.isEmpty())
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), practitioners)
     }
   }
 

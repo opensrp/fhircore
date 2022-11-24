@@ -102,7 +102,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonText = it.description,
                 subtitleStatus = it.status.name
               )
-            }
+            },
+          practitioners = inputModel.practitioners
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
