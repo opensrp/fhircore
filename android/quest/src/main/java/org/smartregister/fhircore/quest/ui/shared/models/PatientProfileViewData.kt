@@ -70,8 +70,7 @@ sealed class ProfileViewData(
     val populationResources: ArrayList<Resource> by lazy {
       val resources = conditions + guardiansRelatedPersonResource + observations
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
-      arrayListOf(*carePlans.toTypedArray(), resourcesAsBundle)
-      arrayListOf(*practitioners.toTypedArray(), resourcesAsBundle)
+      arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
   }
 
