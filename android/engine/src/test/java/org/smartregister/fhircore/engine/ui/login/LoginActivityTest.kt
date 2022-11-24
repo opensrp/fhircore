@@ -110,7 +110,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
     initLoginActivity()
     coEvery { accountAuthenticator.hasActivePin() } returns true
-    coEvery { accountAuthenticator.hasActiveSession() } returns true
     loginViewModel.navigateToHome()
     verify { loginService.navigateToPinLogin(false) }
   }
