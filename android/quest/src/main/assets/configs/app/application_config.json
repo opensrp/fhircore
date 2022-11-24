@@ -31,5 +31,6 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "periodicTaskUpdateInterval": 1
 }

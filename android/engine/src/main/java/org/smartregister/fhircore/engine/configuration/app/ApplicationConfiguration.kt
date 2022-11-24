@@ -33,5 +33,6 @@ data class ApplicationConfiguration(
   val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig()
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
+  val periodicTaskUpdateInterval: Long = 1
 ) : Configuration()

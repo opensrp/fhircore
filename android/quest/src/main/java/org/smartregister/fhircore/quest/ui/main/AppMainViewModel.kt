@@ -311,7 +311,11 @@ constructor(
     workManager.enqueueUniquePeriodicWork(
       FhirTaskPlanWorker.WORK_ID,
       ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(
+          applicationConfiguration.periodicTaskUpdateInterval,
+          TimeUnit.HOURS
+        )
+        .build()
     )
   }
 
