@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -39,7 +37,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -235,22 +232,12 @@ fun ForgotPinDialog(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
-  PinLoginPage(
-    onPinChanged = {},
-    showError = false,
-    forgotPin = {},
-    appName = "anc"
-  )
+  PinLoginPage(onPinChanged = {}, showError = false, forgotPin = {}, appName = "anc")
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
-  PinLoginPage(
-    onPinChanged = {},
-    showError = true,
-    forgotPin = {},
-    appName = "ecbis"
-  )
+  PinLoginPage(onPinChanged = {}, showError = true, forgotPin = {}, appName = "ecbis")
 }

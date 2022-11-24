@@ -119,7 +119,7 @@ constructor(
   }
 
   fun onMenuLoginClicked() {
-    //reset user credentials...
+    // reset user credentials...
     secureSharedPreference.run {
       deleteSessionTokens()
       deleteSessionPin()

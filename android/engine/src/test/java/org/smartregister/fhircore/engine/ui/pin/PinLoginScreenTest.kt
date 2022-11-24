@@ -31,7 +31,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Ignore
@@ -103,7 +102,6 @@ class PinLoginScreensTest : RobolectricTest() {
       .assertTextEquals(application.getString(R.string.pin_menu_login))
       .assertHasClickAction()
       .performClick()
-
   }
 
   @Test
