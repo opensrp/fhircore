@@ -28,15 +28,10 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -85,6 +80,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
     enterUserPinMessage = pinUiState.enterUserLoginMessage,
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked(false) },
     forgotPin = viewModel::forgotPin,
     appName = pinUiState.appName,
   )
@@ -96,6 +92,7 @@ fun PinLoginPage(
   modifier: Modifier = Modifier,
   onPinChanged: (String) -> Unit,
   showError: Boolean = false,
+  onMenuLoginClicked: (Boolean) -> Unit,
   enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
   appName: String = "",
@@ -114,6 +111,25 @@ fun PinLoginPage(
             contentDescription = "Back arrow",
             modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
           )
+        }
+      },
+      actions = {
+        IconButton(
+          onClick = { showMenu = !showMenu },
+          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
+        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+        DropdownMenu(
+          expanded = showMenu,
+          onDismissRequest = { showMenu = false },
+          Modifier.testTag(PIN_TOOLBAR_MENU)
+        ) {
+          DropdownMenuItem(
+            onClick = {
+              showMenu = false
+              onMenuLoginClicked(false)
+            },
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
+          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
         }
       }
     )
@@ -232,12 +248,24 @@ fun ForgotPinDialog(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
-  PinLoginPage(onPinChanged = {}, showError = false, forgotPin = {}, appName = "anc")
+  PinLoginPage(
+    onPinChanged = {},
+    showError = false,
+    onMenuLoginClicked = {},
+    forgotPin = {},
+    appName = "anc"
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
-  PinLoginPage(onPinChanged = {}, showError = true, forgotPin = {}, appName = "ecbis")
+  PinLoginPage(
+    onPinChanged = {},
+    showError = true,
+    onMenuLoginClicked = {},
+    forgotPin = {},
+    appName = "ecbis"
+  )
 }

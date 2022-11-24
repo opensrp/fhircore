@@ -99,7 +99,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToLoginShouldVerifyExpectedIntent() {
-    pinLoginActivity.pinViewModel.onMenuLoginClicked()
+    pinLoginActivity.pinViewModel.onMenuLoginClicked(false)
     val expectedIntent = Intent(pinLoginActivity, LoginActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)

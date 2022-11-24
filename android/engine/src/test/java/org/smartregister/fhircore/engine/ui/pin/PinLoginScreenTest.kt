@@ -31,6 +31,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Ignore
@@ -51,6 +52,7 @@ class PinLoginScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
+        fun onMenuLoginClicked() {}
         fun forgotPin() {}
         fun onDismissForgotDialog() {}
       }
@@ -83,6 +85,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "anc"
@@ -102,6 +105,8 @@ class PinLoginScreensTest : RobolectricTest() {
       .assertTextEquals(application.getString(R.string.pin_menu_login))
       .assertHasClickAction()
       .performClick()
+
+    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test
@@ -110,6 +115,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "g6pd"
