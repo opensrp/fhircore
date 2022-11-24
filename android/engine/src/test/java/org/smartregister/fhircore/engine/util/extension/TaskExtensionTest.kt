@@ -41,7 +41,10 @@ class TaskExtensionTest {
     Assert.assertTrue(task.hasStarted())
 
     val anotherTask =
-      Task().apply { executionPeriod.end = Date(LocalDate.now().plusDays(8).toEpochDay()) }
+      Task().apply {
+        executionPeriod.end =
+          Date.from(LocalDate.now().plusDays(8).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
     Assert.assertFalse(anotherTask.hasStarted())
   }
 
