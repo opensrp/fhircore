@@ -100,6 +100,6 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val otherPatients: List<Resource> = listOf(),
     val guardians: List<Guardian> = emptyList(),
     val observations: List<Observation> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)
 }
