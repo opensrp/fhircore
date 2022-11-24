@@ -108,6 +108,7 @@ configurations {
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.work:work-testing:2.7.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.8.0'
