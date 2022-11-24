@@ -29,4 +29,17 @@ fun Task.hasStarted() =
     this.executionPeriod.hasStart() &&
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
+fun Task.isReady() =
+  this.hasExecutionPeriod() &&
+    ((executionStartIsBeforeOrToday() && executionEndIsBeforeOrToday()) ||
+      (executionStartIsBeforeOrToday() && !this.executionPeriod.hasEnd()))
+
+fun Task.executionStartIsBeforeOrToday() =
+  this.executionPeriod.hasStart() &&
+    with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
+
+fun Task.executionEndIsBeforeOrToday() =
+  this.executionPeriod.hasEnd() &&
+    with(this.executionPeriod.end) { this.before(today()) || this.isToday() }
+
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
