@@ -109,7 +109,7 @@
     <string name="set_pin_message">CHA will use this pin to login</string>
     <string name="enter_login_pin">Enter the user\'s pin</string>
     <string name="enter_pin_for_user">Enter pin for %1$s</string>
-    <string name="incorrect_pin_please_retry">Incorrect pin, lease try again</string>
+    <string name="incorrect_pin_please_retry">Incorrect pin, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
