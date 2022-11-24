@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -42,6 +43,27 @@ class TaskExtensionTest {
     val anotherTask =
       Task().apply { executionPeriod.end = Date(LocalDate.now().plusDays(8).toEpochDay()) }
     Assert.assertFalse(anotherTask.hasStarted())
+  }
+
+  @Test
+  fun `task is ready if start & end dates are before today`() {
+    val task1 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    task1.apply {
+      executionPeriod.end =
+        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+    }
+    Assert.assertTrue(task1.isReady())
+
+    val task2 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    Assert.assertFalse(task2.isReady())
   }
 
   @Test
