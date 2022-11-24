@@ -175,6 +175,9 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
+    every { secureSharedPreference.deleteSessionTokens() } just runs
+    every { secureSharedPreference.deleteSessionPin() } just runs
+    every { secureSharedPreference.deleteCredentials() } just runs
     pinViewModel.onMenuLoginClicked()
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }

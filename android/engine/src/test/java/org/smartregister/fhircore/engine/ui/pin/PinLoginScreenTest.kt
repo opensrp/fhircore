@@ -52,7 +52,6 @@ class PinLoginScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
-        fun onMenuLoginClicked() {}
         fun forgotPin() {}
         fun onDismissForgotDialog() {}
       }
@@ -85,7 +84,6 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "anc"
@@ -106,7 +104,6 @@ class PinLoginScreensTest : RobolectricTest() {
       .assertHasClickAction()
       .performClick()
 
-    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test
@@ -115,7 +112,6 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "g6pd"
