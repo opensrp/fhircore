@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -97,7 +96,6 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
-  val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
@@ -200,21 +198,17 @@ constructor(
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected -> // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-      {
+      is MeasureReportEvent.OnPatientSelected ->
+        // Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
-      }
-      is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
-        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
-      {
+      is MeasureReportEvent.OnSearchTextChanged ->
+        // Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
         patientsData.value =
           retrievePatients(event.reportId).map {
             pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
-      }
     }
   }
 
@@ -264,7 +258,7 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             measureReportConfigList.forEach {
               val result =
-                retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+                retrievePreviouslyGeneratedMeasureReports(
                   fhirEngine,
                   startDateFormatted,
                   endDateFormatted,
@@ -358,7 +352,7 @@ constructor(
       }
 
     if (measureReport != null) {
-      defaultRepository.addOrUpdate(resource = measureReport)
+      registerRepository.addOrUpdate(resource = measureReport)
       _measureReportPopulationResultList.addAll(formatPopulationMeasureReport(measureReport))
     }
   }

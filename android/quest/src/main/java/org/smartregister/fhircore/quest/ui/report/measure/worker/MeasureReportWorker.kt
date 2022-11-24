@@ -81,11 +81,11 @@ constructor(
         monthList?.forEachIndexed { index, date ->
           val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
           val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-          if (retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-                fhirEngine,
-                startDateFormatted,
-                endDateFormatted,
-                it.url
+          if (retrievePreviouslyGeneratedMeasureReports(
+                fhirEngine = fhirEngine,
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                measureUrl = it.url
               )
               ?.isEmpty() == true
           ) {
@@ -145,7 +145,7 @@ constructor(
       Timber.w("measureReport  / . . . MeasureReportWorker . . ./${measureReport.period.end}")
 
       val result =
-        retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+        retrievePreviouslyGeneratedMeasureReports(
           fhirEngine,
           startDateFormatted,
           endDateFormatted,

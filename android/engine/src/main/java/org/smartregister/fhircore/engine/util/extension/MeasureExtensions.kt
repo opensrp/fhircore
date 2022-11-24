@@ -23,7 +23,6 @@ import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Resource
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -94,7 +93,7 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  * @param fhirEngine suspend inline fun<reified R: Resource> resourceExists(startDate: Date,
  * endDate: Date, operation: Operation = Operation.AND)
  */
-suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureReports(
+suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
   startDateFormatted: String,
   endDateFormatted: String,
@@ -117,5 +116,5 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
       filter(MeasureReport.MEASURE, { value = measureUrl })
       operation = queryOperation
     }
-    ?.filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+    .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
 }

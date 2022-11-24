@@ -224,7 +224,7 @@ class MeasureExtensionTest : RobolectricTest() {
   fun testAlreadyGeneratedMeasureReports() {
     runBlocking {
       val result =
-        retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+        retrievePreviouslyGeneratedMeasureReports(
           fhirEngine = spyk(),
           "2022-02-02",
           "2022-04-04",
