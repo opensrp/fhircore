@@ -137,9 +137,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         else -> {
           val error = QuestionnaireExtractionStatus.Error(Exception())
           if (error.exception is StructureMapMissingException) {
-            this.showToast(this.getString(org.smartregister.fhircore.quest.R.string.structure_map_missing_message))
+            this.showToast(
+              this.getString(
+                org.smartregister.fhircore.quest.R.string.structure_map_missing_message
+              )
+            )
           } else {
-            this.showToast(this.getString(org.smartregister.fhircore.quest.R.string.structure_error_message))
+            this.showToast(
+              this.getString(org.smartregister.fhircore.quest.R.string.structure_error_message)
+            )
           }
         }
       }

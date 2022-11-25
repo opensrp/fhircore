@@ -55,9 +55,21 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.*
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.findSubject
+import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
+import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.exceptions.StructureMapMissingException
 import timber.log.Timber
 
@@ -193,10 +205,10 @@ constructor(
             }
 
             if (questionnaireConfig.type != QuestionnaireType.EDIT &&
-              bundleEntry.resource.resourceType.isIn(
-                ResourceType.Patient,
-                ResourceType.RelatedPerson
-              )
+                bundleEntry.resource.resourceType.isIn(
+                  ResourceType.Patient,
+                  ResourceType.RelatedPerson
+                )
             ) {
               questionnaireConfig.groupResource?.groupIdentifier?.let {
                 addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
@@ -251,9 +263,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         if (exception.message!!.contains("StructureMap")) {
           questionExtractionStatus.postValue(
-            QuestionnaireExtractionStatus.Error(
-              StructureMapMissingException()
-            )
+            QuestionnaireExtractionStatus.Error(StructureMapMissingException())
           )
         } else {
           questionExtractionStatus.postValue(QuestionnaireExtractionStatus.Error(exception))
