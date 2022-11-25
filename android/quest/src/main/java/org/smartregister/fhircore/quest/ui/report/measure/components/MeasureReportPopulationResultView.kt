@@ -49,6 +49,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 
 const val POPULATION_TITLE_TEST_TAG = "populationTitleTestTag"
 const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
+const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
 const val POPULATION_RESULT_CARD_DIVIDER_TEST_TAG = "populationResultCardDividerTestTag"
 const val POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG = "populationResultItemProgressBarTestTag"
 const val POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG =
@@ -83,7 +84,7 @@ private fun PopulationResultCard(
             text = resultItem.indicatorTitle.uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
-            modifier = modifier.weight(1.0f).testTag(POPULATION_TITLE_TEST_TAG),
+            modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
             textAlign = TextAlign.Start
           )
           Text(
