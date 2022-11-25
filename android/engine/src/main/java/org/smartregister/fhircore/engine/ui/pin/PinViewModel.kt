@@ -118,7 +118,7 @@ constructor(
     }
   }
 
-  fun onMenuLoginClicked(setupPin : Boolean) {
+  fun onMenuLoginClicked(setupPin: Boolean) {
     // reset user credentials...
     if (setupPin) {
       secureSharedPreference.run {
