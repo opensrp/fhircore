@@ -94,4 +94,8 @@
 
     <string name="geo_widget_fragment_destination" translatable="false">GeoWidget Fragment Destination</string>
 
+    <string name="structure_error_message">Failed to extract resources</string>
+    <string name="structure_map_missing_message" >Missing structureMap resource</string>
+    <string name="structure_success">Success</string>
+
 </resources>

@@ -261,6 +261,7 @@ constructor(
         questionExtractionStatus.postValue(QuestionnaireExtractionStatus.Success)
       } catch (exception: Exception) {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        Timber.e(exception)
         if (exception.message!!.contains("StructureMap")) {
           questionExtractionStatus.postValue(
             QuestionnaireExtractionStatus.Error(StructureMapMissingException())

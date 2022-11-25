@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -64,6 +63,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.exceptions.StructureMapMissingException
 import timber.log.Timber
 
@@ -133,18 +133,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
     questionnaireViewModel.questionExtractionStatus.observe(this) { result ->
       when (result) {
-        is QuestionnaireExtractionStatus.Success -> this.showToast("Success")
+        is QuestionnaireExtractionStatus.Success -> this.showToast(this.getString(R.string.structure_success))
         else -> {
-          val error = QuestionnaireExtractionStatus.Error(Exception())
+          val error = result as QuestionnaireExtractionStatus.Error
           if (error.exception is StructureMapMissingException) {
             this.showToast(
               this.getString(
-                org.smartregister.fhircore.quest.R.string.structure_map_missing_message
+                R.string.structure_map_missing_message
               )
             )
           } else {
             this.showToast(
-              this.getString(org.smartregister.fhircore.quest.R.string.structure_error_message)
+              this.getString(R.string.structure_error_message)
             )
           }
         }

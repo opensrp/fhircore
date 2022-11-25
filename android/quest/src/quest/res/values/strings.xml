@@ -1,6 +1,4 @@
 <resources>
     <string name="app_name" translatable="false">Quest</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.quest</string>
-    <string name="structure_error_message" translatable="false">Failed to extract resources</string>
-    <string name="structure_map_missing_message" translatable="false">Missing structureMap resource</string>
 </resources>
