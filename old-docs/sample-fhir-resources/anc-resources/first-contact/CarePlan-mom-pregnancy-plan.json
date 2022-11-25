@@ -1,0 +1,307 @@
+{
+  "resourceType": "CarePlan",
+  "id": "mom-pregnancy-plan",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative</b></p><p><b>instantiatesCanonical</b>: <a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule</a></p><p><b>status</b>: active</p><p><b>intent</b>: plan</p><p><b>subject</b>: <a href=\"Patient-mom.html\">Eve Everywoman. Generated Summary: id: 1000 (OFFICIAL); active; Eve Everywoman (OFFICIAL); Phone: 555-555-2003; gender: female; birthDate: 1993-05-31</a></p><p><b>period</b>: 2019-05-24 --&gt; 2020-02-24</p><p><b>careTeam</b>: <a href=\"CareTeam-anc-team.html\">Generated Summary: </a></p><p><b>addresses</b>: <a href=\"Condition-mom-pregnancy.html\">pregnancy. Generated Summary: <span title=\"Codes: {http://terminology.hl7.org/CodeSystem/condition-clinical active}\">Active</span>; <span title=\"Codes: {http://terminology.hl7.org/CodeSystem/condition-ver-status confirmed}\">Confirmed</span>; <span title=\"Codes: {http://terminology.hl7.org/CodeSystem/condition-category problem-list-item}\">Problem List Item</span>; <span title=\"Codes: {http://example.org/tbd TBD}\">Pregnancy</span>; onset: 2019-05-22</a></p><p><b>goal</b>: <a href=\"Goal-mom-pregnancy-goal.html\">Generated Summary: lifecycleStatus: active</a></p><blockquote><p><b>activity</b></p><p><b>outcomeReference</b>: <a href=\"Encounter-mom-first-contact.html\">Generated Summary: status: in-progress; <span title=\"{http://terminology.hl7.org/CodeSystem/v3-ActCode AMB}\">ambulatory</span>; <span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span>; period: 2019-05-24 --&gt; (ongoing)</a></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>in-progress</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>First antenatal care contact</td></tr></table></blockquote><blockquote><p><b>activity</b></p><p><b>reference</b>: <span></span></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>scheduled</td><td>2019-07-26 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Second contact to occur at 20 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-09-06 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Third contact to occur at 26 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-10-04 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Fourth contact to occur at 30 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-11-01 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Fifth contact to occur at 34 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-11-15 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Sixth contact to occur at 36 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-11-29 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Seventh contact to occur at 38 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>InstantiatesCanonical</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><a href=\"http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact\">http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact</a></td><td><span title=\"Codes: {http://example.org/CodeSystem/encounter-type anc-contact}\">Antenatal care contact</span></td><td>not-started</td><td>2019-12-13 --&gt; (ongoing)</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Eighth contact to occur at 40 weeks of gestational age</td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table class=\"grid\"><tr><td>-</td><td><b>Kind</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Scheduled[x]</b></td><td><b>Performer</b></td><td><b>Description</b></td></tr><tr><td>*</td><td>ServiceRequest</td><td><span title=\"Codes: {http://example.org/mySystem del}\">Delivery</span></td><td>not-started</td><td>2019-12-13 --&gt; 2019-12-27</td><td><a href=\"Practitioner-midwife.html\">Mabel Midwife. Generated Summary: active; Mabel Midwife ; gender: female</a></td><td>Delivery</td></tr></table></blockquote></div>"
+  },
+  "extension": [
+    {
+      "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/careplan-episodeOfCare",
+      "valueReference": {
+        "reference": "EpisodeOfCare/mom-pregnancy-episode"
+      }
+    }
+  ],
+  "instantiatesCanonical": [
+    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule"
+  ],
+  "status": "active",
+  "intent": "plan",
+  "subject": {
+    "reference": "Patient/mom",
+    "display": "Eve Everywoman"
+  },
+  "period": {
+    "start": "2019-05-24",
+    "end": "2020-02-24"
+  },
+  "careTeam": [
+    {
+      "reference": "CareTeam/anc-team"
+    }
+  ],
+  "addresses": [
+    {
+      "reference": "Condition/mom-pregnancy",
+      "display": "pregnancy"
+    }
+  ],
+  "goal": [
+    {
+      "reference": "Goal/mom-pregnancy-goal"
+    }
+  ],
+  "activity": [
+    {
+      "outcomeReference": [
+        {
+          "reference": "Encounter/mom-first-contact"
+        }
+      ],
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "in-progress",
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "First antenatal care contact"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "scheduled",
+        "scheduledPeriod": {
+          "start": "2019-07-26"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Second contact to occur at 20 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-09-06"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Third contact to occur at 26 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-10-04"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Fourth contact to occur at 30 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-11-01"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Fifth contact to occur at 34 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-11-15"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Sixth contact to occur at 36 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-11-29"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Seventh contact to occur at 38 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "instantiatesCanonical": [
+          "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/CodeSystem/encounter-type",
+              "code": "anc-contact",
+              "display": "Antenatal care contact"
+            }
+          ],
+          "text": "Antenatal care contact"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-12-13"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Eighth contact to occur at 40 weeks of gestational age"
+      }
+    },
+    {
+      "detail": {
+        "kind": "ServiceRequest",
+        "code": {
+          "coding": [
+            {
+              "system": "http://example.org/mySystem",
+              "code": "del"
+            }
+          ],
+          "text": "Delivery"
+        },
+        "status": "not-started",
+        "scheduledPeriod": {
+          "start": "2019-12-13",
+          "end": "2019-12-27"
+        },
+        "performer": [
+          {
+            "reference": "Practitioner/midwife",
+            "display": "Mabel Midwife"
+          }
+        ],
+        "description": "Delivery"
+      }
+    }
+  ]
+}
