@@ -28,8 +28,6 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorPage
@@ -47,8 +45,7 @@ class ReportTypeSelectorScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val monthList =
-    listOf(ReportRangeSelectionData("March", "October", "2022-02-02".parseDate(SDF_YYYY_MM_DD)!!))
+  private val monthList = listOf(ReportRangeSelectionData("March", "October", Date()))
 
   private val dateRange = HashMap<String, List<ReportRangeSelectionData>>()
   @Before

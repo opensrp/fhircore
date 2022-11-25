@@ -50,6 +50,7 @@ class MeasureReportPopulationResultViewTest {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
+        indicatorTitle = "Indicator1",
         dataList = measureReportIndividualResultList
       )
     )
@@ -67,6 +68,15 @@ class MeasureReportPopulationResultViewTest {
     composeTestRule.onNodeWithTag(POPULATION_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
       .onNodeWithText(measureReportPopulationResultList.first().title.uppercase())
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testPopulationResultCardRendersPopulationIndicatorCorrectly() {
+    composeTestRule.onNodeWithTag(POPULATION_INDICATOR_TITLE, useUnmergedTree = true).assertExists()
+    composeTestRule
+      .onNodeWithText(measureReportPopulationResultList.first().indicatorTitle.uppercase())
       .assertExists()
       .assertIsDisplayed()
   }

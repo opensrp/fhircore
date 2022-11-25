@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -49,6 +49,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 
 const val POPULATION_TITLE_TEST_TAG = "populationTitleTestTag"
 const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
+const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
 const val POPULATION_RESULT_CARD_DIVIDER_TEST_TAG = "populationResultCardDividerTestTag"
 const val POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG = "populationResultItemProgressBarTestTag"
 const val POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG =
@@ -60,7 +61,7 @@ const val POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG =
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
-  LazyColumn { items(dataList, key = { it.title }) { item -> PopulationResultCard(item) } }
+  LazyColumn { itemsIndexed(dataList) { _, item -> PopulationResultCard(item) } }
 }
 
 @Composable
@@ -79,6 +80,13 @@ private fun PopulationResultCard(
     ) {
       Column {
         Row(modifier = modifier.fillMaxWidth()) {
+          Text(
+            text = resultItem.indicatorTitle.uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
+            textAlign = TextAlign.Start
+          )
           Text(
             text = resultItem.title.uppercase(),
             color = colorResource(id = R.color.black),
@@ -172,6 +180,7 @@ fun MeasureReportPopulationResultPreview() {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
+        indicatorTitle = "Still birth",
         dataList =
           listOf(
             MeasureReportIndividualResult(
@@ -180,7 +189,7 @@ fun MeasureReportPopulationResultPreview() {
               description = "This is sample description",
               title = "Title Individual Result",
               percentage = "50.0",
-              count = "1"
+              count = "1",
             )
           )
       )

@@ -24,7 +24,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 sealed class MeasureReportEvent {
   data class OnSelectMeasure(
-    val measureReportConfig: MeasureReportConfig,
+    val measureReportConfig: List<MeasureReportConfig>? = emptyList(),
     val navController: NavController
   ) : MeasureReportEvent()
   data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long, Long>) :
