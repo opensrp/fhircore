@@ -176,7 +176,7 @@ constructor(
               endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
             )
         }
-        _measureReportPopulationResultList.clear()
+        refereshData()
         evaluateMeasure(event.navController)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -216,6 +216,11 @@ constructor(
           }
       }
     }
+  }
+
+  private fun refereshData() {
+    _measureReportPopulationResultList.clear()
+    measureReportPopulationResults.value = _measureReportPopulationResultList
   }
 
   fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
@@ -306,10 +311,11 @@ constructor(
                 } else if (reportTypeSelectorUiState.value.patientViewData == null &&
                     !individualEvaluation
                 ) {
-                  evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+                  evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted, it.title)
                 }
               } else {
-                result?.last()?.let { it1 -> formatPopulationMeasureReport(it1) }?.let { it2 ->
+                result?.last()?.let { it1 -> formatPopulationMeasureReport(it1, it.title) }?.let {
+                  it2 ->
                   _measureReportPopulationResultList.addAll(it2)
                 }
               }
@@ -335,7 +341,8 @@ constructor(
   private suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
-    endDateFormatted: String
+    endDateFormatted: String,
+    indicatorTitle: String
   ) {
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
@@ -359,7 +366,9 @@ constructor(
 
     if (measureReport != null) {
       defaultRepository.addOrUpdate(resource = measureReport)
-      _measureReportPopulationResultList.addAll(formatPopulationMeasureReport(measureReport))
+      _measureReportPopulationResultList.addAll(
+        formatPopulationMeasureReport(measureReport, indicatorTitle)
+      )
     }
   }
 
@@ -369,7 +378,8 @@ constructor(
   }
 
   fun formatPopulationMeasureReport(
-    measureReport: MeasureReport
+    measureReport: MeasureReport,
+    indicatorTitle: String = ""
   ): List<MeasureReportPopulationResult> {
     return measureReport
       .also { Timber.w(it.encodeResourceToString()) }
@@ -418,7 +428,8 @@ constructor(
           MeasureReportPopulationResult(
             title = reportGroup.id.replace("-", " "),
             count = reportGroup.findRatio(),
-            dataList = it
+            dataList = it,
+            indicatorTitle = indicatorTitle
           )
         }
       }
@@ -447,7 +458,11 @@ constructor(
           .forEach {
             this.add(
               0,
-              MeasureReportPopulationResult(title = it.first ?: "", count = it.second.toString())
+              MeasureReportPopulationResult(
+                title = it.first ?: "",
+                count = it.second.toString(),
+                indicatorTitle = indicatorTitle
+              )
             )
           }
       }

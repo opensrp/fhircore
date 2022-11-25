@@ -80,6 +80,13 @@ private fun PopulationResultCard(
       Column {
         Row(modifier = modifier.fillMaxWidth()) {
           Text(
+            text = resultItem.indicatorTitle.uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f).testTag(POPULATION_TITLE_TEST_TAG),
+            textAlign = TextAlign.Start
+          )
+          Text(
             text = resultItem.title.uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
@@ -172,6 +179,7 @@ fun MeasureReportPopulationResultPreview() {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
+        indicatorTitle = "Still birth",
         dataList =
           listOf(
             MeasureReportIndividualResult(
@@ -180,7 +188,7 @@ fun MeasureReportPopulationResultPreview() {
               description = "This is sample description",
               title = "Title Individual Result",
               percentage = "50.0",
-              count = "1"
+              count = "1",
             )
           )
       )
