@@ -88,7 +88,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
     enterUserPinMessage = pinUiState.enterUserLoginMessage,
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked(false) },
     forgotPin = viewModel::forgotPin,
     appName = pinUiState.appName,
   )
@@ -100,7 +100,7 @@ fun PinLoginPage(
   modifier: Modifier = Modifier,
   onPinChanged: (String) -> Unit,
   showError: Boolean = false,
-  onMenuLoginClicked: () -> Unit,
+  onMenuLoginClicked: (Boolean) -> Unit,
   enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
   appName: String = "",
@@ -134,7 +134,7 @@ fun PinLoginPage(
           DropdownMenuItem(
             onClick = {
               showMenu = false
-              onMenuLoginClicked()
+              onMenuLoginClicked(false)
             },
             modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
           ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
