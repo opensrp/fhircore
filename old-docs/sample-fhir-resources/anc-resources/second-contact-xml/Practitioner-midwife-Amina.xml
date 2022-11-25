@@ -1,0 +1,19 @@
+<Practitioner xmlns='http://hl7.org/fhir'>
+  <id value='amina'/>
+  <meta>
+    <profile value='http://fhir.org/guides/who/anc-cds/StructureDefinition/ancpractitioner'/>
+  </meta>
+  <active value='true'/>
+  <name>
+    <family value='Midwife'/>
+    <given value='Amina'/>
+  </name>
+  <address>
+    <use value='home'/>
+    <line value='534 Erewhon St'/>
+    <city value='PleasantVille'/>
+    <state value='Vic'/>
+    <postalCode value='3999'/>
+  </address>
+  <gender value='female'/>
+</Practitioner>
