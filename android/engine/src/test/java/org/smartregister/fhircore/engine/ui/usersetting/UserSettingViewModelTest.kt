@@ -87,8 +87,6 @@ class UserSettingViewModelTest : RobolectricTest() {
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
-        sharedPreferencesHelper,
-        configService,
         syncJob = mockk(),
         fhirEngine = mockk(),
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
