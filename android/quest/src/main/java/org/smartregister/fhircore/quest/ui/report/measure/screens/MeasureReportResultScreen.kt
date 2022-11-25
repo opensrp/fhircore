@@ -61,6 +61,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 @Composable
 fun MeasureReportResultScreen(
+  reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
@@ -106,10 +107,13 @@ fun MeasureReportResultPage(
         backgroundColor = MaterialTheme.colors.primary
       )
     }
-  ) {
+  ) { innerPadding ->
     Column(
       modifier =
-        modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxSize()
+        modifier
+          .padding(innerPadding)
+          .background(color = colorResource(id = R.color.backgroundGray))
+          .fillMaxSize()
     ) {
       Column(modifier = modifier.padding(16.dp)) {
         Box(
