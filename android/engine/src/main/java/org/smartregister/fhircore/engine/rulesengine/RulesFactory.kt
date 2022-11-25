@@ -27,6 +27,7 @@ import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -336,6 +337,13 @@ constructor(
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
       return date.formatDate(expectedFormat)
     }
+
+    fun getReadyTask(list: List<Task>): Task? =
+      if (list.isNotEmpty()) {
+        list.find { it.status == Task.TaskStatus.READY }
+      } else {
+        null
+      }
   }
 
   companion object {

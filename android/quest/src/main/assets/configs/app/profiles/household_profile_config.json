@@ -275,10 +275,17 @@
                     ]
                   },
                   {
+                    "name": "getReadyTask",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('getReadyTask', service.getReadyTask(Task))"
+                    ]
+                  },
+                  {
                     "name": "taskId",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+                      "data.put('taskId', data.get('getReadyTask').id)"
                     ]
                   },
                   {
@@ -292,7 +299,7 @@
                     "name": "taskQuestionnaireId",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
+                      "data.put('taskQuestionnaireId',  data.get('getReadyTask').reasonReference.reference)"
                     ]
                   },
                   {
