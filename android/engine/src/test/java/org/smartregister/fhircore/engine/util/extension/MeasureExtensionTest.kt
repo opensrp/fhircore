@@ -16,9 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -36,6 +37,8 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
@@ -225,7 +228,7 @@ class MeasureExtensionTest : RobolectricTest() {
     runBlocking {
       val result =
         retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-          fhirEngine = spyk(),
+          fhirEngine = fhirEngine,
           "2022-02-02",
           "2022-04-04",
           "http://nourl.com"

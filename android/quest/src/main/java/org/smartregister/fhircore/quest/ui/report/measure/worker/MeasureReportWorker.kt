@@ -82,10 +82,10 @@ constructor(
           val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
           val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
           if (retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-                fhirEngine,
-                startDateFormatted,
-                endDateFormatted,
-                it.url
+                fhirEngine = fhirEngine,
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                measureUrl = it.url
               )
               ?.isEmpty() == true
           ) {
