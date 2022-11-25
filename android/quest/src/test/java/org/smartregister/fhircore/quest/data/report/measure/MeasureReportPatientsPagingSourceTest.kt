@@ -23,6 +23,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before

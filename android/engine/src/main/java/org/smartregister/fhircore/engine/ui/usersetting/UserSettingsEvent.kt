@@ -25,5 +25,5 @@ sealed class UserSettingsEvent {
   data class ResetDatabaseFlag(val isReset: Boolean) : UserSettingsEvent()
   object SyncData : UserSettingsEvent()
   object Logout : UserSettingsEvent()
-  object ShowLoaderView : UserSettingsEvent()
+  data class ShowLoaderView(val show: Boolean, val messageResourceId: Int) : UserSettingsEvent()
 }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -35,7 +36,8 @@ data class QuestionnaireConfig(
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
-  val saveDraft: Boolean = false
+  val saveDraft: Boolean = false,
+  val snackBarMessage: SnackBarMessageConfig? = null
 ) : java.io.Serializable
 
 @Serializable

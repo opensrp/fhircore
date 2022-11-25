@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -33,9 +34,11 @@ import io.mockk.verify
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
@@ -46,8 +49,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -71,6 +78,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 
+  @Inject lateinit var registerRepository: RegisterRepository
+
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   val measureReportRepository = mockk<MeasureReportRepository>()
@@ -78,6 +87,10 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private lateinit var measureReportViewModel: MeasureReportViewModel
 
   private val navController: NavController = mockk(relaxUnitFun = true)
+
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val reportId = "defaultMeasureReport"
 
   @Before
   fun setUp() {
@@ -93,8 +106,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = mockk(),
-          measureReportRepository = measureReportRepository,
-          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
+          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
+          configurationRegistry = configurationRegistry,
+          registerRepository = registerRepository
         )
       )
   }
@@ -173,7 +187,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController)
+      MeasureReportEvent.GenerateReport(context = application, navController = navController),
+      "2022-10-31".parseDate(SDF_YYYY_MM_DD)
     )
 
     verify { measureReportViewModel.evaluateMeasure(navController) }
@@ -240,7 +255,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOnSearchTextChanged() {
-    measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged("Mandela"))
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = "Mandela")
+    )
     Assert.assertNotNull(measureReportViewModel.patientsData.value)
   }
 
@@ -295,4 +312,17 @@ class MeasureReportViewModelTest : RobolectricTest() {
         }
       }
     }
+
+  @Test
+  fun testGetReportGenerationRange() {
+    val result =
+      measureReportViewModel.getReportGenerationRange(
+        reportId = "defaultMeasureReport",
+        startDate = "2022-09-27".parseDate(SDF_YYYY_MM_DD)
+      )
+    val currentMonth = Calendar.getInstance().time.formatDate("MMM")
+    val currentYear = Calendar.getInstance().time.formatDate("yyyy")
+    assertEquals(currentYear, result.keys.first())
+    assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
+  }
 }
