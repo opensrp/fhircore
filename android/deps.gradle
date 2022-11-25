@@ -138,4 +138,5 @@ def androidx = [:]
 androidx.core_test = "androidx.arch.core:core-testing:$versions.androidx_test"
 deps.androidx = androidx
 
+ext.androidxHiltVersion = "1.0.0"
 ext.hiltVersion = "2.42"

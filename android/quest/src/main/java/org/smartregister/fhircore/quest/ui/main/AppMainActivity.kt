@@ -25,6 +25,8 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -38,6 +40,7 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirTaskExpireJob
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -115,7 +118,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()
 
+    schedulePeriodicJobs()
+    // Schedule periodic jobs
+
+    val oneTimeWorkRequest = OneTimeWorkRequest.Builder(FhirTaskExpireJob::class.java).build()
+    WorkManager.getInstance(this).enqueue(oneTimeWorkRequest)
+  }
+
+  private fun schedulePeriodicJobs() {
     configService.scheduleFhirTaskPlanWorker(this)
+    FhirTaskExpireJob.schedule(this, sharedPreferencesHelper, 60)
   }
 
   @Suppress("DEPRECATION")

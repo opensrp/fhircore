@@ -44,5 +44,10 @@
             android:exported="false"
             android:theme="@style/AppTheme" />
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup">
+        </provider>
+
     </application>
 </manifest>

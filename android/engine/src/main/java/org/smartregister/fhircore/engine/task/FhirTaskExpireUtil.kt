@@ -31,8 +31,7 @@ import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 class FhirTaskExpireUtil
-@Inject
-constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEngine) {
+constructor(val appContext: Context, val fhirEngine: FhirEngine) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
