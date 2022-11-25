@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -81,7 +82,9 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -917,6 +920,49 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 1, timeout = 2000) {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
+  }
+  @Test
+  fun testPerformExtractionOnSuccessShowsSuccessToast() {
+    val successMessage = context.getString(R.string.structure_success)
+    val context = mockk<Context>(relaxed = true)
+    questionnaireViewModel.performExtraction(
+      context,
+      questionnaire = Questionnaire(),
+      questionnaireResponse = QuestionnaireResponse()
+    )
+    coVerify { context.getString(R.string.structure_success) }
+    coVerify { context.showToast(successMessage) }
+  }
+
+  @Test
+  fun testPerformExtractionOnFailureShowsMissingStructureMapToast() {
+    val missingStructureMapExceptionMessage =
+      context.getString(R.string.structure_map_missing_message)
+    val context = mockk<Context>(relaxed = true)
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
+
+    coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
+      NullPointerException("StructureMap on Null Object")
+
+    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+
+    coVerify { context.getString(R.string.structure_map_missing_message) }
+    coVerify { context.showToast(missingStructureMapExceptionMessage) }
+  }
+  fun testPerformExtractionOnFailureShowsErrorToast() {
+    val missingStructureMapExceptionMessage = context.getString(R.string.structure_error_message)
+    val context = mockk<Context>(relaxed = true)
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
+
+    coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
+      Exception("Failed to process resources")
+
+    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+
+    coVerify { context.getString(R.string.structure_error_message) }
+    coVerify { context.showToast(missingStructureMapExceptionMessage) }
   }
 
   @Test

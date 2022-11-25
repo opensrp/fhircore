@@ -64,7 +64,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.util.exceptions.StructureMapMissingException
 import timber.log.Timber
 
 /**
@@ -131,25 +130,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     prePopulationParams = actionParams.filter { it.paramType == ActionParameterType.PREPOPULATE }
 
     questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
-    questionnaireViewModel.questionExtractionStatus.observe(this) { result ->
-      when (result) {
-        is QuestionnaireExtractionStatus.Success -> this.showToast(this.getString(R.string.structure_success))
-        else -> {
-          val error = result as QuestionnaireExtractionStatus.Error
-          if (error.exception is StructureMapMissingException) {
-            this.showToast(
-              this.getString(
-                R.string.structure_map_missing_message
-              )
-            )
-          } else {
-            this.showToast(
-              this.getString(R.string.structure_error_message)
-            )
-          }
-        }
-      }
-    }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 

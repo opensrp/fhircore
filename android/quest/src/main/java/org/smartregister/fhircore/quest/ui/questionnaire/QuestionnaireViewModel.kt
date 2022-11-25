@@ -69,8 +69,9 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.fhircore.quest.util.exceptions.StructureMapMissingException
+import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
 @HiltViewModel
@@ -96,7 +97,6 @@ constructor(
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
-  val questionExtractionStatus = MutableLiveData<QuestionnaireExtractionStatus>()
 
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
@@ -187,88 +187,70 @@ constructor(
         questionnaire,
         questionnaireResponse
       )
-      try {
-        if (questionnaire.isExtractionCandidate()) {
-          val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-          bundle.entry.forEach { bundleEntry ->
-            // add organization to entities representing individuals in registration questionnaire
-            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-              // if it is new registration set response subject
-              if (questionnaireConfig.resourceIdentifier == null)
-                questionnaireResponse.subject = bundleEntry.resource.asReference()
-            }
-            if (questionnaireConfig.setPractitionerDetails) {
-              appendPractitionerInfo(bundleEntry.resource)
-            }
-            if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bundleEntry.resource)
-            }
-
-            if (questionnaireConfig.type != QuestionnaireType.EDIT &&
-                bundleEntry.resource.resourceType.isIn(
-                  ResourceType.Patient,
-                  ResourceType.RelatedPerson
-                )
-            ) {
-              questionnaireConfig.groupResource?.groupIdentifier?.let {
-                addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
-              }
-            }
-
-            // TODO https://github.com/opensrp/fhircore/issues/900
-            // for edit mode replace client and resource subject ids.
-            // Ideally ResourceMapper should allow this internally via structure-map
-            if (questionnaireConfig.type.isEditMode()) {
-              if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
-                bundleEntry.resource.id = questionnaireResponse.subject.extractId()
-              else {
-                bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
-                bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
-              }
-            }
-            questionnaireResponse.contained.add(bundleEntry.resource)
+      if (questionnaire.isExtractionCandidate()) {
+        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
+        bundle.entry.forEach { bundleEntry ->
+          // add organization to entities representing individuals in registration questionnaire
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+            // if it is new registration set response subject
+            if (questionnaireConfig.resourceIdentifier == null)
+              questionnaireResponse.subject = bundleEntry.resource.asReference()
+          }
+          if (questionnaireConfig.setPractitionerDetails) {
+            appendPractitionerInfo(bundleEntry.resource)
+          }
+          if (questionnaireConfig.setOrganizationDetails) {
+            appendOrganizationInfo(bundleEntry.resource)
           }
 
-          if (questionnaire.experimental) {
-            Timber.w(
-              "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
-            )
-          } else saveBundleResources(bundle)
-
-          if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
-            questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
+          if (questionnaireConfig.type != QuestionnaireType.EDIT &&
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
+          ) {
+            questionnaireConfig.groupResource?.groupIdentifier?.let {
+              addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
+            }
           }
-
-          saveQuestionnaireResponse(questionnaire, questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
-          // reassess following i.e. deleting/updating older resources because one resource
-          // might have generated other flow in subsequent followups
-          if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
-            editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
+          // for edit mode replace client and resource subject ids.
+          // Ideally ResourceMapper should allow this internally via structure-map
+          if (questionnaireConfig.type.isEditMode()) {
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
+            else {
+              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
+            }
           }
+          questionnaireResponse.contained.add(bundleEntry.resource)
+        }
 
-          performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
-        } else {
-          saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-          performExtraction(
-            questionnaireResponse,
-            questionnaireConfig,
-            questionnaire,
-            bundle = null
+        if (questionnaire.experimental) {
+          Timber.w(
+            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
           )
+        } else saveBundleResources(bundle)
+
+        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
-        questionExtractionStatus.postValue(QuestionnaireExtractionStatus.Success)
-      } catch (exception: Exception) {
+
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        Timber.e(exception)
-        if (exception.message!!.contains("StructureMap")) {
-          questionExtractionStatus.postValue(
-            QuestionnaireExtractionStatus.Error(StructureMapMissingException())
-          )
-        } else {
-          questionExtractionStatus.postValue(QuestionnaireExtractionStatus.Error(exception))
+
+        // TODO https://github.com/opensrp/fhircore/issues/900
+        // reassess following i.e. deleting/updating older resources because one resource
+        // might have generated other flow in subsequent followups
+        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
+        if (bundle.hasEntry())
+          performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
+      } else {
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
     }
@@ -409,21 +391,41 @@ constructor(
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
   }
 
-  suspend fun performExtraction(
+  fun performExtraction(
     context: Context,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): Bundle {
-
-    return ResourceMapper.extract(
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
-      StructureMapExtractionContext(
-        context = context,
-        transformSupportServices = transformSupportServices,
-        structureMapProvider = retrieveStructureMapProvider()
-      )
-    )
+    var bundle = Bundle()
+    viewModelScope.launch(dispatcherProvider.main()) {
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) {
+            ResourceMapper.extract(
+              questionnaire = questionnaire,
+              questionnaireResponse = questionnaireResponse,
+              StructureMapExtractionContext(
+                context = context,
+                transformSupportServices = transformSupportServices,
+                structureMapProvider = retrieveStructureMapProvider()
+              )
+            )
+          }
+        }
+        .onSuccess {
+          bundle = it
+          context.showToast(context.getString(R.string.structure_success))
+        }
+        .onFailure { exception ->
+          Timber.e(exception)
+          if (exception.message!!.contains("StructureMap")) {
+            context.showToast(context.getString(R.string.structure_map_missing_message))
+          } else {
+            context.showToast(context.getString(R.string.structure_error_message))
+          }
+        }
+    }
+    return bundle
   }
 
   suspend fun saveBundleResources(bundle: Bundle) {
