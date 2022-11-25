@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -72,6 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.reportingPeriodMonthsSpan
+import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -94,16 +96,20 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
+  val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
-  val measureReportConfig: MutableState<MeasureReportConfig?> = mutableStateOf(null)
+  val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
     mutableStateOf(null)
 
   val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
     mutableStateOf(null)
+
+  private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
+    mutableListOf()
 
   val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
     mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
@@ -150,11 +156,14 @@ constructor(
 
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        measureReportConfig.value = event.measureReportConfig
+        event.measureReportConfig?.let {
+          measureReportConfigList.clear()
+          measureReportConfigList.addAll(it)
+        }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig.title)
+              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
             )
         )
       }
@@ -167,6 +176,7 @@ constructor(
               endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
             )
         }
+        refereshData()
         evaluateMeasure(event.navController)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -190,16 +200,27 @@ constructor(
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected ->
+      is MeasureReportEvent.OnPatientSelected -> // Reset previously selected patient
+        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
+      {
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
-      is MeasureReportEvent.OnSearchTextChanged ->
+      }
+      is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
+        //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
+      {
         patientsData.value =
           retrievePatients(event.reportId).map {
             pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
+      }
     }
+  }
+
+  private fun refereshData() {
+    _measureReportPopulationResultList.clear()
+    measureReportPopulationResults.value = _measureReportPopulationResultList
   }
 
   fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
@@ -222,8 +243,7 @@ constructor(
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
-    if (measureReportConfig.value != null) {
-      val measureUrl = measureReportConfig.value!!.url
+    if (measureReportConfigList.isNotEmpty()) {
 
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
 
@@ -247,46 +267,63 @@ constructor(
           .runCatching {
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
-
-            withContext(dispatcherProvider.io()) {
-              fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
-            }
-
-            if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
-              val measureReport: MeasureReport? =
-                try {
-                  withContext(dispatcherProvider.io()) {
-                    fhirOperator.evaluateMeasure(
-                      measureUrl = measureUrl,
-                      start = startDateFormatted,
-                      end = endDateFormatted,
-                      reportType = SUBJECT,
-                      subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                      practitioner =
-                        practitionerId?.asReference(ResourceType.Practitioner)?.reference,
-                      lastReceivedOn = null // Non-null value not supported yet
-                    )
-                  }
-                } catch (exception: IllegalArgumentException) {
-                  Timber.e(exception)
-                  null
+            measureReportConfigList.forEach {
+              val result =
+                retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+                  fhirEngine,
+                  startDateFormatted,
+                  endDateFormatted,
+                  it.url
+                )
+              if (result?.isEmpty() == true) {
+                withContext(dispatcherProvider.io()) {
+                  fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
                 }
+                if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation
+                ) {
+                  val measureReport: MeasureReport? =
+                    try {
+                      withContext(dispatcherProvider.io()) {
+                        fhirOperator.evaluateMeasure(
+                          measureUrl = it.url,
+                          start = startDateFormatted,
+                          end = endDateFormatted,
+                          reportType = SUBJECT,
+                          subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
+                          practitioner =
+                            practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+                          lastReceivedOn = null // Non-null value not supported yet
+                        )
+                      }
+                    } catch (exception: IllegalArgumentException) {
+                      Timber.e(exception)
+                      null
+                    }
 
-              if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
-                val population: MeasureReport.MeasureReportGroupPopulationComponent? =
-                  measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
-                measureReportIndividualResult.value =
-                  MeasureReportIndividualResult(
-                    status = if (population != null && population.count > 0) "True" else "False"
-                  )
+                  if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+                    val population: MeasureReport.MeasureReportGroupPopulationComponent? =
+                      measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
+                    measureReportIndividualResult.value =
+                      MeasureReportIndividualResult(
+                        status = if (population != null && population.count > 0) "True" else "False"
+                      )
+                  }
+                } else if (reportTypeSelectorUiState.value.patientViewData == null &&
+                    !individualEvaluation
+                ) {
+                  evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted, it.title)
+                }
+              } else {
+                result?.last()?.let { it1 -> formatPopulationMeasureReport(it1, it.title) }?.let {
+                  it2 ->
+                  _measureReportPopulationResultList.addAll(it2)
+                }
               }
-            } else if (reportTypeSelectorUiState.value.patientViewData == null &&
-                !individualEvaluation
-            ) {
-              evaluatePopulationMeasure(measureUrl, startDateFormatted, endDateFormatted)
             }
           }
           .onSuccess {
+            measureReportPopulationResults.value = _measureReportPopulationResultList
+            Timber.w("measureReportPopulationResults${measureReportPopulationResults.value}")
             toggleProgressIndicatorVisibility(false)
             // Show results of measure report for individual/population
             navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
@@ -304,7 +341,8 @@ constructor(
   private suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
-    endDateFormatted: String
+    endDateFormatted: String,
+    indicatorTitle: String
   ) {
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
@@ -326,8 +364,12 @@ constructor(
         }
       }
 
-    if (measureReport != null)
-      measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
+    if (measureReport != null) {
+      defaultRepository.addOrUpdate(resource = measureReport)
+      _measureReportPopulationResultList.addAll(
+        formatPopulationMeasureReport(measureReport, indicatorTitle)
+      )
+    }
   }
 
   fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
@@ -336,7 +378,8 @@ constructor(
   }
 
   fun formatPopulationMeasureReport(
-    measureReport: MeasureReport
+    measureReport: MeasureReport,
+    indicatorTitle: String = ""
   ): List<MeasureReportPopulationResult> {
     return measureReport
       .also { Timber.w(it.encodeResourceToString()) }
@@ -385,7 +428,8 @@ constructor(
           MeasureReportPopulationResult(
             title = reportGroup.id.replace("-", " "),
             count = reportGroup.findRatio(),
-            dataList = it
+            dataList = it,
+            indicatorTitle = indicatorTitle
           )
         }
       }
@@ -414,13 +458,17 @@ constructor(
           .forEach {
             this.add(
               0,
-              MeasureReportPopulationResult(title = it.first ?: "", count = it.second.toString())
+              MeasureReportPopulationResult(
+                title = it.first ?: "",
+                count = it.second.toString(),
+                indicatorTitle = indicatorTitle
+              )
             )
           }
       }
   }
 
-  /** This function returns a map of year-month for all months falling in given measure period */
+  /** This function @returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
     reportId: String,
     startDate: Date? = null
@@ -460,7 +508,7 @@ constructor(
 
   companion object {
     private const val SUBJECT = "subject"
-    private const val POPULATION = "population"
+    const val POPULATION = "population"
     private const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20
   }
