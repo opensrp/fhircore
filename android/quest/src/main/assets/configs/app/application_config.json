@@ -8,7 +8,7 @@
     "en"
   ],
   "useDarkTheme": false,
-  "syncInterval": 30,
+  "syncInterval": 15,
   "syncStrategy": [
     "Location",
     "Organization",
