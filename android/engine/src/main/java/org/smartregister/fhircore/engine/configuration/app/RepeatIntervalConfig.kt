@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = "",
+data class RepeatIntervalConfig(
+  val hours: Int = 0, // 24 hours format starts from 0-24 (0=>12am)
+  val minutes: Int = 0,
 )
