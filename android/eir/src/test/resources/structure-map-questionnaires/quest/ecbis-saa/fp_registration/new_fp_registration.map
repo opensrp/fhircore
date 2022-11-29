@@ -37,7 +37,7 @@ group extractFPCondition(source src : QuestionnaireResponse, target bundle : Bun
 group extractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
 
     // if selected method is male condom
-    src.item as male_condom where(linkId ='e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51' and answer.value.exists() and answer.value.code = 'yes') then {
+    src.item as male_condom where((linkId ='e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51' or linkId='13c0c688-3d05-44e6-8d34-16f5ed9b2eb7') and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as male_condom_count where(linkId ='d67e3038-fb94-411b-8f34-046401319877' and answer.value.exists() and answer.value.toInteger() > 0) then {
             src -> create('Quantity') as qty then {
                 src -> qty.value = evaluate(male_condom_count, $this.answer.value),
@@ -50,7 +50,7 @@ group extractObservation(source src : QuestionnaireResponse, target bundle : Bun
     } "r_male_condom";
 
     // if selected method is female condom
-    src.item as female_condom where(linkId ='ae2b3afe-68bc-46d9-fdb9-9c3322efd277' and answer.value.exists() and answer.value.code = 'yes') then {
+    src.item as female_condom where((linkId ='ae2b3afe-68bc-46d9-fdb9-9c3322efd277' or linkId='41c5dbca-27d3-4716-8377-05f983ac96f9') and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as female_condom_count where(linkId ='cb942faa-5f6a-4426-878e-930596fd752e' and answer.value.exists() and answer.value.toInteger() > 0) then {
             src -> create('Quantity') as qty then {
                 src -> qty.value = evaluate(female_condom_count, $this.answer.value),
@@ -63,7 +63,7 @@ group extractObservation(source src : QuestionnaireResponse, target bundle : Bun
     } "r_female_condom";
 
     // if selected method is microlut
-    src.item as microlut where(linkId ='07039905-2e06-49da-fd28-0d0a31f8c306' and answer.value.exists() and answer.value.code = 'yes') then {
+    src.item as microlut where((linkId ='07039905-2e06-49da-fd28-0d0a31f8c306' or linkId='e3789419-6aea-4469-fa93-d0ea6436d425') and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as microlut_count where(linkId ='deebaa95-b9b4-41e5-883c-24023ed3693c' and answer.value.exists() and answer.value.toInteger() > 0) then {
             src -> create('Quantity') as qty then {
                 src -> qty.value = evaluate(microlut_count, $this.answer.value),
@@ -76,7 +76,7 @@ group extractObservation(source src : QuestionnaireResponse, target bundle : Bun
     } "r_microlut";
 
     // if selected method is microgynon
-    src.item as microgynon where(linkId ='0a53e4a5-79b6-431d-d33f-56b05fbf3f46' and answer.value.exists() and answer.value.code = 'yes') then {
+    src.item as microgynon where((linkId ='0a53e4a5-79b6-431d-d33f-56b05fbf3f46' or linkId = '85b9d270-c097-4f5b-8302-6bf01f5fb5af') and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as microgynon_count where(linkId ='c0b1c27b-d7e1-41ef-80f9-3e2e9774ed7a' and answer.value.exists() and answer.value.toInteger() > 0) then {
             src -> create('Quantity') as qty then {
                 src -> qty.value = evaluate(microgynon_count, $this.answer.value),
@@ -89,7 +89,7 @@ group extractObservation(source src : QuestionnaireResponse, target bundle : Bun
     } "r_microgynon";
 
     // if selected method is depo
-    src.item as depo where(linkId ='bda820d4-15dd-471b-b7a7-9aed02bb0558' and answer.value.exists() and answer.value.code = 'yes') then {
+    src.item as depo where((linkId ='bda820d4-15dd-471b-b7a7-9aed02bb0558' or linkId='d71c3870-9d07-4fc8-840d-7f35e22ad3e5') and answer.value.exists() and answer.value.code = 'yes') then {
         src.item as depo_count where(linkId ='451a7edc-348b-4859-c384-15da059adc47' and answer.value.exists() and answer.value = true) then {
             src -> create('Quantity') as qty then {
                 src -> qty.value = 1,
@@ -129,7 +129,7 @@ group ExtractReference(source src: QuestionnaireResponse, target ref: Reference)
 
     // female condom
     src.item where(linkId = 'ae2b3afe-68bc-46d9-fdb9-9c3322efd277' and answer.value.code = 'yes') then {
-        src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
+        src -> ref.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc' "r_female_condom_ref";
     } "r_female_condom_type_check";
 
     // microlut
@@ -139,7 +139,7 @@ group ExtractReference(source src: QuestionnaireResponse, target ref: Reference)
 
     // microgynon
     src.item where(linkId = '0a53e4a5-79b6-431d-d33f-56b05fbf3f46' and answer.value.code = 'yes') then {
-        src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5' "r_microgynon_ref";
+        src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c' "r_microgynon_ref";
     } "r_microgynon_type_check";
 
     // depo

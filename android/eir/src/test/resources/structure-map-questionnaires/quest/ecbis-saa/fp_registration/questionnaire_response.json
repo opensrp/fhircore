@@ -6,55 +6,193 @@
 	},
 	"item": [
 		{
-			"linkId": "ae2b3afe-68bc-46d9-fdb9-9c3322efd277",
+			"linkId": "3781fe54-d06e-4edc-a6f6-11929db203af",
+			"text": "Client finding active or passive case finding?",
 			"answer": [
 				{
 					"valueCoding": {
-						"id": "bda820d4-15dd-471b-b7a7-9aed02bb0558",
+						"id": "1bc51f91-ca4c-459b-8024-70466f1fdb93",
+						"system": "urn:uuid:7e55ce7c-c31f-42d3-8031-e9dd31d78331",
+						"code": "passive",
+						"display": "Passive"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "b8b28702-0739-497c-8689-2bc8100dff25",
+			"text": "Already using a FP method? ",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "860e404b-0b92-418e-86f5-a709aaed6af5",
+						"system": "urn:uuid:77c9767d-52ab-40e3-a249-4f04239dc2d9",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "3e44010d-699c-4def-8985-18741b1b208a",
+			"text": "Interested in starting family planning?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "fffcf57e-4eb7-4364-8073-3a8a5eab8548",
+						"system": "urn:uuid:9b6d22c6-b22e-44ea-d21f-1ca8ea6790d9",
 						"code": "yes",
-						"system": "urn:uuid:e94d6a17-6239-405d-8bf5-804392bbf8c0",
 						"display": "Yes"
 					}
 				}
 			]
 		},
 		{
-			"linkId": "d67e3038-fb94-411b-8f34-046401319877",
+			"linkId": "c765c021-4a9a-4791-a922-772beafd7999",
+			"text": "Is woman pregnant?",
 			"answer": [
 				{
-					"valueInteger": 30
+					"valueCoding": {
+						"id": "208a4fe8-a22d-4ac2-8a5e-d1acb75dc9c4",
+						"system": "urn:uuid:9e4758ec-1893-46c7-82f1-62c90eb8f053",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "1dd8fc5d-67c4-4034-8fa7-d871900b57d7",
+			"text": "Has woman had period within the last 7 days? ",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "5e742615-ee8b-4f64-882b-fbf97a76e9e3",
+						"system": "urn:uuid:54710614-f0bd-413e-e30c-976eb2cf60a1",
+						"code": "yes",
+						"display": "Yes"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "bb81b858-12a6-43b5-d963-4549a1e917ee",
+			"text": "Has woman had a baby for the last 6 weeks?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "687b1280-585c-46d9-810d-4bef9eda424c",
+						"system": "urn:uuid:4f713762-0f41-47f6-8c27-37bf327949fe",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "8124caa6-3d16-4801-85d4-7121715e709a",
+			"text": "Has woman abstained from sex since her last period or delivery?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "32e72494-85bf-4d9d-8525-6d8ea57d10db",
+						"system": "urn:uuid:7ac0ee7d-27e8-4015-91a8-b4a8a176e005",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "ec623a65-1d67-47c3-e5ae-497097054e87",
+			"text": "If birthed in 6 months, has woman been breastfeeding with no period? ",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "82c3a5ea-fb48-4f2a-9f4d-19deb4edca77",
+						"system": "urn:uuid:7d3680c3-a06d-42ca-d025-63f5ab5bec13",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "a9646dd4-1b59-43da-8e14-3dabb514e433",
+			"text": "Did woman have a miscarriage or abortion in the past 7 days? ",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "f886019a-577a-495e-822c-32245baee7f8",
+						"system": "urn:uuid:6cc0ddc6-cee0-49c2-8377-9328a357d5cd",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "55b1164d-7492-4635-9b83-0806fbed77d3",
+			"text": "Which method is the client interested in?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "63fae169-38f4-40d6-8290-2848405c2ba4",
+						"system": "urn:uuid:e94d6a17-6239-405d-8bf5-804392bbf8c0",
+						"code": "male-condoms",
+						"display": "Male condoms"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "d67585d7-ae6b-4ede-83c1-80980bc9481f",
+			"text": "Any risk factors for method selected?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "30618366-8188-4951-9029-5f4f62b75c4d",
+						"system": "urn:uuid:8c1e52f8-b570-4f26-cd3c-6107a60e7340",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "535e4be5-045c-4b0c-8381-75df7fefb5f6",
+			"text": "FP education for selected method done?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "6094b11d-b052-4b22-8a8b-8c275cde1afc",
+						"system": "urn:uuid:9f5d26e9-0954-4dfc-82fb-5e93494ef192",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "41c5dbca-27d3-4716-8377-05f983ac96f9",
+			"text": "Female condoms available",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "9e5c6a28-360e-4546-8003-e1210e9654ca",
+						"code": "yes",
+						"system": "urn:uuid:498e5e0d-2b75-4a25-942d-eec210b9a8fe",
+						"display": "Yes"
+					}
 				}
 			]
 		},
 		{
 			"linkId": "cb942faa-5f6a-4426-878e-930596fd752e",
+			"text": "Number of female condoms given",
 			"answer": [
 				{
-					"valueInteger": 20
-				}
-			]
-		},
-		{
-			"linkId": "deebaa95-b9b4-41e5-883c-24023ed3693c",
-			"answer": [
-				{
-					"valueInteger": 5
-				}
-			]
-		},
-		{
-			"linkId": "c0b1c27b-d7e1-41ef-80f9-3e2e9774ed7a",
-			"answer": [
-				{
-					"valueInteger": 3
-				}
-			]
-		},
-		{
-			"linkId": "451a7edc-348b-4859-c384-15da059adc47",
-			"answer": [
-				{
-					"valueBoolean": true
+					"valueInteger": 13
 				}
 			]
 		}
