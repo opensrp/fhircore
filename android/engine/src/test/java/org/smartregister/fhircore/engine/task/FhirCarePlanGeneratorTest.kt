@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -244,7 +245,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskNoEncounter() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-
+    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
 
     runBlocking {
@@ -258,7 +259,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskWithEncounter() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-
+    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
 
     runBlocking {
@@ -272,7 +273,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskWithEncounter_TaskStatusFromCode() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-
+    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
 
     runBlocking {
@@ -280,6 +281,36 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
       val task = fhirEngine.get<Task>("12345")
       Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
+    }
+  }
+
+  @Test
+  fun testCompleteTaskCompleteCarePlan() = runTest {
+    val carePlan =
+      CarePlan().apply {
+        activity =
+          listOf(
+            CarePlan.CarePlanActivityComponent().let { activity ->
+              activity.outcomeReference = listOf(Reference("12345"))
+              activity
+            }
+          )
+      }
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
+    coEvery { fhirEngine.update(any()) } answers {}
+    coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(carePlan)
+    coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
+
+    runBlocking {
+      fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.FINISHED)
+
+      val updatedCarePlan = fhirEngine.get<CarePlan>("12345")
+      Assert.assertNotNull(
+        updatedCarePlan.activity.find { x ->
+          x.outcomeReference.find { y -> y.reference == "12345" } != null
+        }
+      )
     }
   }
 }
