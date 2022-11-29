@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.search.search
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -125,12 +126,35 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
 
   suspend fun completeTask(id: String, encounterStatus: EncounterStatus?) {
     fhirEngine.run {
+      val task = get<Task>(id).apply {
+        this.status = encounterStatusToTaskStatus(encounterStatus)
+        this.lastModified = Date()
+      }
       create(
-        get<Task>(id).apply {
-          this.status = encounterStatusToTaskStatus(encounterStatus)
-          this.lastModified = Date()
-        }
+        task
       )
+      if (task.status == Task.TaskStatus.COMPLETED) {
+        val carePlans = search<CarePlan> {
+          filter(CarePlan.SUBJECT, { value = task.`for`.reference })
+        }
+        var carePlanToUpdate: CarePlan? = null
+        carePlans.forEach { carePlan ->
+          for((index, value) in carePlan.activity.withIndex()) {
+            val taskId = task.identifier.first()?.value
+            if (taskId != null) {
+              val outcome = value.outcomeReference.find { x -> x.reference.contains(taskId)}
+              if (outcome != null) {
+                carePlanToUpdate = carePlan.copy()
+                carePlanToUpdate?.activity?.set(index, value.apply {
+                  detail.status = CarePlan.CarePlanActivityStatus.COMPLETED
+                })
+                break
+              }
+            }
+          }
+        }
+        carePlanToUpdate?.let { update(it) }
+      }
     }
   }
 
