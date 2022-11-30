@@ -197,6 +197,24 @@ group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bun
             } "r_given";
         } "r_zinc";
 
+        page.item as zinc where(linkId ='f32ffc48-806f-4220-818b-c6191a363aad' and answer.value.exists() and answer.value.code = '10mg-zinc') then {
+            page.item as given where(linkId ='0729d96a-e2fa-492c-8187-1041eac2d9a4' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> evaluate(src, 20) as qtyValue,
+                    evaluate(src, "Tablets") as qtyUnit,
+                    evaluate(src, "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002") as refSubject
+                        then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
+            } "r_given";
+        } "r_zinc";
+
+        page.item as zinc where(linkId ='6af9e739-e4b4-4b5a-a35d-093a1cef4cbe' and answer.value.exists() and answer.value.code = 'yes') then {
+            page.item as given where(linkId ='e68bf830-c6f4-4196-85f3-58afa4dd8fa2' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> evaluate(src, 10) as qtyValue,
+                    evaluate(src, "Tablets") as qtyUnit,
+                    evaluate(src, "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002") as refSubject
+                        then ExtractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit) "r_obs";
+            } "r_given";
+        } "r_zinc";
+
         page.item as paracetamol where(linkId ='c3e60e46-38eb-4244-860f-a0822cb0b6a7' and answer.value.exists() and answer.value.code = 'yes') then {
             page.item as given where(linkId ='bef088be-4384-4cdc-cc5a-6469cf8f775f' and answer.value.exists() and answer.value.code = 'yes') then {
                 src -> evaluate(src, 9) as qtyValue,
