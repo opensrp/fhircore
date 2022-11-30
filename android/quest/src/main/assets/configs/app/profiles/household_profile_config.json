@@ -46,6 +46,10 @@
             "searchParameter": "subject"
           },
           {
+            "resource": "Observation",
+            "searchParameter": "subject"
+          },
+          {
             "resource": "RelatedPerson",
             "fhirPathExpression": "patient"
           }
