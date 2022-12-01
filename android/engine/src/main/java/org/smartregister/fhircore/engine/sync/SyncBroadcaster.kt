@@ -20,8 +20,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -49,13 +47,12 @@ class SyncBroadcaster
 @Inject
 constructor(
   val configurationRegistry: ConfigurationRegistry,
-  val syncJob: SyncJob,
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider
 ) {
 
-  fun runSync() {
+  /*fun runSync() {
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
     val syncStateFlow = MutableSharedFlow<State>()
@@ -83,10 +80,10 @@ constructor(
 
   private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
 
-  /**
+  *//**
    * Schedule periodic sync periodically as defined in the application config interval. The sync
    * [State] will be broadcast to the listeners
-   */
+   *//*
   @OptIn(ExperimentalCoroutinesApi::class)
   fun schedulePeriodicSync() {
     Timber.i("Scheduling periodic sync...")
@@ -108,5 +105,5 @@ constructor(
         }
       }
     }
-  }
+  }*/
 }

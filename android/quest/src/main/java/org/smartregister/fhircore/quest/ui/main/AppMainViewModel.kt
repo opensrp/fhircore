@@ -27,11 +27,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.RepeatInterval
+import com.google.android.fhir.sync.Sync
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.util.Date
@@ -39,6 +44,8 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -56,6 +63,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
@@ -91,8 +99,13 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
-) : ViewModel() {
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  @ApplicationContext val context: Context,
+  ) : ViewModel() {
+
+  private val _pollState = MutableSharedFlow<SyncJobStatus>()
+  val pollState: Flow<SyncJobStatus>
+    get() = _pollState
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -114,6 +127,25 @@ constructor(
 
   val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }
+
+  /*init {
+    viewModelScope.launch {
+      Sync.periodicSync<AppSyncWorker>(
+        context,
+        PeriodicSyncConfiguration(
+          syncConstraints = Constraints.Builder().build(),
+          repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+        )
+      )
+        .collect { _pollState.emit(it) }
+    }
+  }*/
+
+  fun triggerOneTimeSync() {
+    viewModelScope.launch {
+      Sync.oneTimeSync<AppSyncWorker>(context).collect { _pollState.emit(it) }
+    }
   }
 
   fun retrieveIconsAsBitmap() {
@@ -153,14 +185,14 @@ constructor(
         }
       }
       AppMainEvent.SyncData -> {
-        syncBroadcaster.runSync()
+        triggerOneTimeSync()
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
+              //syncBroadcaster.runSync()
               return@let
             }
             accountAuthenticator.logout()
@@ -170,11 +202,11 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished, is State.Failed -> {
-            if (event.state is State.Finished) {
+          is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            if (event.state is SyncJobStatus.Finished) {
               sharedPreferencesHelper.write(
                 SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                formatLastSyncTimestamp(event.state.result.timestamp)
+                formatLastSyncTimestamp(event.state.timestamp)
               )
             }
             retrieveAppMainUiState()
