@@ -38,6 +38,11 @@ fun Patient.extractAge(context: Context): String {
   return calculateAge(birthDate, context)
 }
 
+fun Patient.extractPhone(context: Context): String {
+  if (!hasTelecom()) return "Contact not available"
+  return telecomFirstRep.value
+}
+
 fun String?.join(other: String?, separator: String) =
   this.orEmpty().plus(other?.plus(separator).orEmpty())
 

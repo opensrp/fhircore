@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractPhone
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -287,6 +288,9 @@ constructor(
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)
+
+    /** This function extracts the patient's phone from the patient resource */
+    fun extractPhone(patient: Patient): String = patient.extractPhone(context)
 
     /**
      * This function extracts and returns a translated string for the gender in Patient resource.
