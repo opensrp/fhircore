@@ -46,6 +46,8 @@ import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractResourceId
+import org.smartregister.fhircore.engine.util.extension.extractResourceKey
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
@@ -343,8 +345,8 @@ constructor(
                       list.entry.forEach { listEntryComponent ->
                         /*Here we extract the keys and ids for the resources listed in
                         the List resource */
-                        val resourceKey = listEntryComponent.item.reference.substringBeforeLast("/")
-                        val resourceId = listEntryComponent.item.reference.substringAfterLast("/")
+                        val resourceKey = listEntryComponent.extractResourceKey()
+                        val resourceId = listEntryComponent.extractResourceId()
                         /*Using the extracted keys and values we make a server call to fetch those resources */
                         val listResourceUrlPath =
                           resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
