@@ -3,12 +3,14 @@
   "configType": "application",
   "theme": "DEFAULT",
   "appTitle": "eCBIS (CHA & CHSS)",
+  "registerDate": "2020-10-27",
+  "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
   "languages": [
     "en"
   ],
   "useDarkTheme": false,
-  "syncInterval": 30,
+  "syncInterval": 15,
   "syncStrategy": [
     "Location",
     "Organization",
