@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -50,6 +51,8 @@ import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportIndividualResultView
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPopulationResultView
+import org.smartregister.fhircore.quest.ui.report.measure.components.PieChart
+import org.smartregister.fhircore.quest.ui.report.measure.components.PieChartInput
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
@@ -59,6 +62,7 @@ fun MeasureReportResultScreen(
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel
 ) {
+
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
@@ -210,4 +214,24 @@ private fun MeasureReportResultScreenForPopulationPreview() {
         )
       )
   )
+}
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+private fun previewPieChart(){
+  PieChart(modifier = Modifier.size(500.dp), input = listOf(
+    PieChartInput(
+      color = Color.Green, value = 29, description = "Python"
+    ),
+    PieChartInput(
+      color = Color.Yellow, value = 21, description = "Swift"
+    ),
+    PieChartInput(
+      color = Color.Blue, value = 32, description = "JavaScript"
+    ),
+    PieChartInput(
+      color = Color.Cyan, value = 18, description = "Java"
+    )
+  ), onReportMeasureClicked = {},
+  titleColor = Color.Red)
 }

@@ -272,4 +272,8 @@ dependencies {
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
     testImplementation 'info.cqframework:cql-to-elm:2.2.0'
+
+    //barchart
+    implementation 'com.github.MahmoudIbrahim3:android-compose-charts:1.2.2'
+
 }
