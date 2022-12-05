@@ -32,6 +32,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Before
@@ -72,17 +73,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
-  val composition =
-    Composition().apply {
-      addSection().apply {
-        this.focus =
-          Reference().apply {
-            reference = "StructureMap/123456"
-            identifier = Identifier().apply { value = "012345" }
-          }
-      }
-    }
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -102,11 +92,54 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchConfigurations() = runBlocking {
+  fun testFetchNonWorkflowConfigurations() = runBlocking {
+    val composition =
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "StructureMap/123456"
+              identifier = Identifier().apply { value = "012345" }
+            }
+        }
+      }
+
     val bundle =
       org.hl7.fhir.r4.model.Bundle().apply {
         addEntry().apply {
           this.resource = StructureMap().apply { StructureMap@ this.id = "123456" }
+        }
+      }
+
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
+    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+
+    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns bundle
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+
+    configurationRegistry.fetchNonWorkflowConfigResources()
+    coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+    coVerify { configurationRegistry.create(any()) }
+  }
+
+  @Test
+  fun testFetchListResource() = runBlocking {
+    val composition =
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "List/123456"
+              identifier = Identifier().apply { value = "012345" }
+            }
+        }
+      }
+
+    val bundle =
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply {
+          this.resource = ListResource().apply { ListResource@ this.id = "123456" }
         }
       }
 
