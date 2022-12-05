@@ -90,7 +90,6 @@ fun MeasureReportMainScreen(
     // Page for displaying measure report results
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
-        reportId = reportId,
         navController = navController,
         measureReportViewModel = measureReportViewModel
       )

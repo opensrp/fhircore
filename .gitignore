@@ -1,9 +1,12 @@
 .DS_Store
-/build
+node_modules/
+/node_modules
 
 # Gradle files
 .gradle/
 build/
+/build
+
 
 # Local configuration file (sdk path, etc)
 local.properties

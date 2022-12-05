@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -316,6 +317,12 @@ constructor(
           TimeUnit.HOURS
         )
         .build()
+    )
+    // Schedule job for generating measure report in the background
+    MeasureReportWorker.scheduleMeasureReportWorker(
+      workManager,
+      applicationConfiguration.reportRepeatTime,
+      applicationConfiguration.registerDate
     )
   }
 
