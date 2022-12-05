@@ -17,11 +17,11 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import javax.inject.Singleton
 
-@HiltWorker
-class FhirTaskExpireJob @AssistedInject constructor(@Assisted val context: Context, @Assisted val workerParams: WorkerParameters, val fhirEngine: FhirEngine) :
-  CoroutineWorker(context, workerParams) {
+//@HiltWorker
+class FhirTaskExpireJob (val context: Context, workerParams: WorkerParameters) //@AssistedInject constructor(@Assisted val context: Context, @Assisted val workerParams: WorkerParameters, val fhirEngine: FhirEngine) :
+  : CoroutineWorker(context, workerParams) {
 
-  //@Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirEngine: FhirEngine
 
   override suspend fun doWork(): Result {
     val fhirTaskExpireUtil = FhirTaskExpireUtil(context, fhirEngine)
