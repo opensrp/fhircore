@@ -17,109 +17,59 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.content.Context
+import android.content.Intent
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.rules.activityScenarioRule
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.UninstallModules
 import javax.inject.Inject
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-@UninstallModules(NetworkModule::class)
 @HiltAndroidTest
 class AppSettingActivityTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val activityScenarioRule = activityScenarioRule<AppSettingActivity>()
-
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  val context: Context =
-    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+  private var activityScenario: ActivityScenario<AppSettingActivity>? = null
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
   }
 
-  @Test
-  fun testAppSettingActivity_withAppId_hasNotBeenSubmitted() {
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(
-        null,
-        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
-      )
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
+  @After
+  fun tearDown() {
+    activityScenario?.close()
   }
 
-  @Test
-  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasNotLoggedIn() {
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(
-        "app",
-        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
-      )
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
-  }
+  private fun appSettingActivityIntent() =
+    Intent(ApplicationProvider.getApplicationContext(), AppSettingActivity::class.java)
 
   @Test
-  @Ignore("Find a way to fake an access token to make hasActiveSession return true")
-  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(
-        "app",
-        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
-      )
-      Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
-    }
-  }
-
-  @Test
-  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(
-        "app",
-        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
-      )
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
-  }
-
-  @Test
-  fun testAppSettingActivity_withConfig_hasBeenLoaded() {
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app/debug")
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      activity.configurationRegistry = configurationRegistry
-      activity.configurationRegistry.configsJsonMap.let { workflows ->
-        Assert.assertTrue(workflows.isNotEmpty())
+  fun testThatConfigsAreLoadedWhenAppSettingsIsLaunched() {
+    // ConfigurationRegistry loads app configs when it is initialized
+    activityScenario =
+      ActivityScenario.launch<AppSettingActivity?>(appSettingActivityIntent()).use {
+        it.onActivity { activity ->
+          Assert.assertTrue(activity != null)
+          Assert.assertTrue(activity.configurationRegistry.configsJsonMap.isNotEmpty())
+        }
       }
-    }
   }
 }

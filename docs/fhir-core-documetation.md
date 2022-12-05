@@ -1,3 +1,4 @@
+
 [![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee9b6f38b7294fa3aa668e42e52fdf21)](https://www.codacy.com/gh/opensrp/fhircore/dashboard)
@@ -24,7 +25,7 @@ For remote data storage and login, the mobile application requires:
 FHIR Core also interoperates well with:
 - [OpenSRP Web](https://github.com/OpenSRP/web) to access healthcare data from the same HAPI FHIR server.
 
-<center><img width=400 src="assets/fhircore.png"></center>
+[//]: # (<center><img width=400 src="assets/fhircore.png"/></center>)
 
 ### About this repository
 

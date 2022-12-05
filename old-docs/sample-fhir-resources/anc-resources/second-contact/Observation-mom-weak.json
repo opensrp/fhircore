@@ -1,0 +1,44 @@
+{
+  "resourceType": "Observation",
+  "id": "mom-weak",
+  "status": "final",
+  "subject": {
+    "reference": "Patient/exmaple",
+    "display": "Charity ANC"
+  },
+  "encounter": {
+    "reference": "Encounter/mom-second-contact"
+  },
+  "effectivePeriod": {
+    "start": "2021-02-09T15:30:00Z",
+    "end": "2021-02-09T15:30:00Z"
+  },
+  "issued": "2021-02-09T15:30:00Z",
+  "performer": [
+    {
+      "reference": "Practitioner/midwife",
+      "display": "Midwife Amina"
+    }
+  ],
+    "category": [
+      {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/observation-category",
+            "code": "exam"
+          }
+        ]
+      }
+    ],
+    "code": {
+      "coding": [
+        {
+          "system": "https://fhir.loinc.org/CodeSystem/$lookup?system=http://loinc.org&code=71336-2",
+          "code": "71336-2",
+          "display": "Feeling weak and tired"
+        }
+      ]
+    }
+ 
+   
+  }

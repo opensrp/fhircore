@@ -25,6 +25,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
+  val enabled: String = "true",
   val menuIconConfig: MenuIconConfig? = null,
   val display: String,
   val showCount: Boolean = false,

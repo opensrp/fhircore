@@ -17,15 +17,15 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,9 +54,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
@@ -65,6 +66,8 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.clickable
+import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
@@ -75,6 +78,7 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
+  val serviceCardClickable = serviceCardProperties.clickable(resourceData)
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -87,14 +91,24 @@ fun ServiceCard(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
         modifier
-          .clickable {
-            serviceCardProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
-          .padding(top = 16.dp, bottom = 16.dp)
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
+          .padding(top = 12.dp, bottom = 12.dp)
+          .conditional(
+            serviceCardProperties.serviceButton == null &&
+              serviceCardProperties.services.isNullOrEmpty(),
+            { fillMaxWidth() },
+            { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) }
+          )
+          .conditional(
+            serviceCardClickable,
+            {
+              clickable {
+                serviceCardProperties.actions.handleClickEvent(
+                  navController = navController,
+                  resourceData = resourceData
+                )
+              }
+            }
+          )
     ) {
       // When show div
       Column(
@@ -106,7 +120,8 @@ fun ServiceCard(
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
-            computedValuesMap = resourceData.computedValuesMap
+            resourceData = resourceData,
+            navController = navController
           )
         }
       }
@@ -123,7 +138,7 @@ fun ServiceCard(
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
         modifier = modifier.fillMaxHeight().width(1.dp),
-        thickness = 1.dp,
+        thickness = 0.5.dp,
         color = DividerColor
       )
     } else {
@@ -141,7 +156,7 @@ fun ServiceCard(
       modifier =
         modifier
           .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-          .padding(top = 16.dp, bottom = 16.dp),
+          .padding(top = 12.dp, bottom = 12.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -153,12 +168,13 @@ fun ServiceCard(
               .toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
-            ActionableButton(
-              modifier = modifier,
-              buttonProperties = serviceCardProperties.serviceButton!!,
-              navController = navController,
-              resourceData = resourceData
-            )
+            Column {
+              ActionableButton(
+                buttonProperties = serviceCardProperties.serviceButton!!,
+                navController = navController,
+                resourceData = resourceData
+              )
+            }
           } else {
             BigServiceButton(
               modifier = modifier,
@@ -168,14 +184,13 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column {
+          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
                 navController = navController,
                 resourceData = resourceData
               )
-              Spacer(modifier = modifier.height(8.dp))
             }
           }
         }
@@ -220,48 +235,54 @@ private fun BigServiceButton(
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+  val buttonEnabled =
+    buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+  val buttonClickable = buttonProperties.clickable(resourceData)
 
   Column(
     modifier =
       modifier
-        .fillMaxSize(0.9f)
-        .padding(4.dp)
+        .width(140.dp)
+        .height(80.dp)
+        .padding(8.dp)
         .clip(RoundedCornerShape(4.dp))
+        .border(
+          width = if (extractedStatus == ServiceStatus.DUE) 1.dp else 0.dp,
+          color = if (extractedStatus == ServiceStatus.DUE) contentColor else Color.Unspecified,
+          shape = RoundedCornerShape(4.dp)
+        )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         )
         .clickable {
-          buttonProperties.actions.handleClickEvent(
-            navController = navController,
-            resourceData = resourceData
-          )
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
         },
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Column(
-      verticalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxSize().padding(4.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      if (extractedStatus == ServiceStatus.COMPLETED)
-        Icon(
-          modifier = modifier.size(16.dp),
-          imageVector = Icons.Filled.Check,
-          contentDescription = null,
-          tint =
-            when (extractedStatus) {
-              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else -> statusColor.copy(alpha = 0.9f)
-            }
-        )
-      Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
-        color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
-        textAlign = TextAlign.Center,
-        fontSize = buttonProperties.fontSize.sp
+    if (extractedStatus == ServiceStatus.COMPLETED)
+      Icon(
+        modifier = modifier.size(16.dp),
+        imageVector = Icons.Filled.Check,
+        contentDescription = null,
+        tint =
+          when (extractedStatus) {
+            ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+            else -> statusColor.copy(alpha = 0.9f)
+          }
       )
-    }
+    Text(
+      text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
+      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
+      textAlign = TextAlign.Center,
+      fontSize = buttonProperties.fontSize.sp,
+      overflow = TextOverflow.Ellipsis
+    )
   }
 }
 
@@ -270,7 +291,7 @@ private fun BigServiceButton(
 private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -324,7 +345,7 @@ private fun ServiceCardServiceOverduePreview() {
 private fun ServiceCardServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -378,7 +399,7 @@ private fun ServiceCardServiceDuePreview() {
 private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -432,7 +453,7 @@ private fun ServiceCardServiceUpcomingPreview() {
 private fun ServiceCardServiceFamilyMemberPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -467,7 +488,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
 private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -520,7 +541,7 @@ private fun ServiceCardServiceCompletedPreview() {
 private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
@@ -545,10 +566,9 @@ private fun ServiceCardANCServiceDuePreview() {
               showVerticalDivider = false,
               serviceButton =
                 ButtonProperties(
-                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
-                  smallSized = true
+                  smallSized = true,
                 )
             )
           )
@@ -569,7 +589,7 @@ private fun ServiceCardANCServiceDuePreview() {
 private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
-      ViewGroupProperties(
+      ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(

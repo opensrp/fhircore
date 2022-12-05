@@ -49,9 +49,10 @@ class UserSettingFragment : Fragment() {
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
             languages = userSettingViewModel.languages,
             onEvent = userSettingViewModel::onEvent,
-            isShowDatabaseResetConfirmation =
+            showDatabaseResetConfirmation =
               userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            isShowProgressBar = userSettingViewModel.showProgressBar.observeAsState(false).value,
+            progressBarState =
+              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
             isDebugVariant = BuildConfig.DEBUG
           )
         }

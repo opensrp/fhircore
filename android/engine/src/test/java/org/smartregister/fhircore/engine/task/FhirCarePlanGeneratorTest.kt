@@ -23,6 +23,7 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -72,12 +73,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -359,14 +361,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .map { it as Task }
           .also { Assert.assertEquals(4, it.size) } // 4 tasks generated, 3 followup 1 referral
           .also {
-            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.status == TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
             tasks.take(3).run {
               Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/131898" })
               Assert.assertTrue(
-                this.all { it.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd() }
+                this.all { task ->
+                  task.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd()
+                }
               )
               Assert.assertTrue(
                 this.all { it.basedOn.first().reference == careplan.asReference().reference }
@@ -445,7 +449,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
-          Assert.assertTrue(it.status == Task.TaskStatus.READY)
+          Assert.assertTrue(it.status == TaskStatus.READY)
           Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
           Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
           Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
@@ -471,10 +475,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    val resourcesSlot = mutableListOf<Resource>()
+    val createdTasksSlot = mutableListOf<Resource>()
+    val updatedTasksSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(createdTasksSlot)) } returns
       emptyList()
+    coEvery { defaultRepository.addOrUpdate(any(), capture(updatedTasksSlot)) } just Runs
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -488,7 +494,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<Task>(any()) } returns
       Task().apply {
         id = "1111"
-        status = Task.TaskStatus.READY
+        status = TaskStatus.READY
       }
 
     fhirCarePlanGenerator.generateOrUpdateCarePlanWithStructureMap(
@@ -496,31 +502,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )!!
-      .also { println(it.encodeResourceToString()) }
-      .also {
-        val carePlan = it
+      .also { carePlan: CarePlan ->
+        val carePlan = carePlan
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
-        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+        createdTasksSlot.forEach { resource -> println(resource.encodeResourceToString()) }
 
-        resourcesSlot
-          .filter { it.resourceType == ResourceType.Task }
-          .map { it as Task }
+        createdTasksSlot
           .also { list -> Assert.assertTrue(list.size == 2) }
-          .also {
-            it.first().let {
-              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+          .filter { resource -> resource.resourceType == ResourceType.Task }
+          .map { resource -> resource as Task }
+          .also { tasks ->
+            tasks.first().let { task ->
+              Assert.assertTrue(task.status == TaskStatus.READY)
               Assert.assertTrue(
-                it.basedOn.first().reference == plandefinition.asReference().reference
+                task.basedOn.first().reference == plandefinition.asReference().reference
               )
-              Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
-              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
-            }
-          }
-          .also {
-            it.elementAt(1).let {
-              Assert.assertTrue(it.status == Task.TaskStatus.CANCELLED)
-              Assert.assertTrue(it.lastModified.asYyyyMmDd() == Date().asYyyyMmDd())
+              Assert.assertTrue(task.`for`.reference == patient.asReference().reference)
+              Assert.assertTrue(task.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
             }
           }
       }
@@ -572,7 +571,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { list -> Assert.assertTrue(list.size == 1) }
           .also {
             it.first().let {
-              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+              Assert.assertTrue(it.status == TaskStatus.READY)
               Assert.assertTrue(
                 it.basedOn.first().reference == plandefinition.asReference().reference
               )
@@ -677,7 +676,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .map { it as Task }
           .also { Assert.assertEquals(7, it.size) } // 6 for visit, 1 for referral
           .also {
-            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.status == TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
@@ -1035,12 +1034,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `transitionTaskTo should update task status`() = runTest {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
-    coEvery { defaultRepository.create(true, *anyVararg()) } returns emptyList()
+    coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
 
-    fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED)
+    fhirCarePlanGenerator.transitionTaskTo("12345", TaskStatus.COMPLETED)
 
     val task = slot<Task>()
-    coVerify { defaultRepository.create(true, capture(task)) }
+    coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
 
     Assert.assertEquals(TaskStatus.COMPLETED, task.captured.status)
   }
@@ -1074,3 +1073,5 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     return translator
   }
 }
+
+private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)
