@@ -111,7 +111,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
-    syncBroadcaster.runSync()
+    syncBroadcaster.run {
+      runSync()
+      schedulePeriodicSync()
+    }
 
     CoroutineScope(dispatcherProvider.io()).launch {
       appMainViewModel.fetchNonWorkflowConfigResources()
