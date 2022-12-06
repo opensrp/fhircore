@@ -37,8 +37,8 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -313,8 +314,7 @@ constructor(
       FhirTaskPlanWorker.WORK_ID,
       ExistingPeriodicWorkPolicy.REPLACE,
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(
-          applicationConfiguration.periodicTaskUpdateInterval,
-          TimeUnit.HOURS
+          Duration.tryParse(applicationConfiguration.taskUpdateInterval)
         )
         .build()
     )
