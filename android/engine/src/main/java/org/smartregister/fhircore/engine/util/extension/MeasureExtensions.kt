@@ -47,8 +47,11 @@ fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
   return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/${this.findPopulation(MeasurePopulationType.DENOMINATOR)?.count}"
 }
 
-fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String {
-  return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
+fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): Int {
+  if (denominator == 0) {
+    return 0
+  }
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)?.count?.div(denominator!!) ?: 0
 }
 
 fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {

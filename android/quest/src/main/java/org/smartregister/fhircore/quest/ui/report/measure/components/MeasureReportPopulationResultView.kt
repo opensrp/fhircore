@@ -17,31 +17,30 @@
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
-import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import com.mahmoud.composecharts.barchart.BarChart
+import com.mahmoud.composecharts.barchart.BarChartEntity
+import com.mahmoud.composecharts.linechart.LineChart
+import com.mahmoud.composecharts.linechart.LineChartEntity
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
@@ -53,11 +52,11 @@ const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
 const val POPULATION_RESULT_CARD_DIVIDER_TEST_TAG = "populationResultCardDividerTestTag"
 const val POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG = "populationResultItemProgressBarTestTag"
 const val POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG =
-    "populationReportIndividualResultTitleTestTag"
+  "populationReportIndividualResultTitleTestTag"
 const val POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG =
-    "populationReportIndividualResultPercentageTestTag"
+  "populationReportIndividualResultPercentageTestTag"
 const val POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG =
-    "populationReportIndividualResultCountTestTag"
+  "populationReportIndividualResultCountTestTag"
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
@@ -66,104 +65,96 @@ fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResu
 
 @Composable
 private fun PopulationResultCard(
-    resultItem: MeasureReportPopulationResult,
-    modifier: Modifier = Modifier,
+  resultItem: MeasureReportPopulationResult,
+  modifier: Modifier = Modifier,
 ) {
   Column(modifier = modifier.padding(top = 12.dp)) {
     Box(
-        modifier =
-            modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(color = colorResource(id = R.color.white))
-                .padding(16.dp)
-                .fillMaxWidth()) {
-          Column {
-            Row(modifier = modifier.fillMaxWidth()) {
-              Text(
-                  text = resultItem.indicatorTitle.uppercase(),
-                  color = colorResource(id = R.color.black),
-                  fontSize = 16.sp,
-                  modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
-                  textAlign = TextAlign.Start)
-              Text(
-                  text = resultItem.title.uppercase(),
-                  color = colorResource(id = R.color.black),
-                  fontSize = 16.sp,
-                  modifier = modifier.weight(1.0f).testTag(POPULATION_TITLE_TEST_TAG),
-                  textAlign = TextAlign.Start)
-              Text(
-                  text = resultItem.count.toString().uppercase(),
-                  color = colorResource(id = R.color.black),
-                  fontSize = 16.sp,
-                  modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
-                  textAlign = TextAlign.End)
-            }
-
-            if (resultItem.dataList.isNotEmpty()) {
-              Divider(
-                  color = DividerColor,
-                  modifier =
-                      modifier
-                          .padding(vertical = 20.dp)
-                          .testTag(POPULATION_RESULT_CARD_DIVIDER_TEST_TAG))
-              resultItem.dataList.forEach { item -> PopulationResultItem(item) }
-            }
-          }
+      modifier =
+        modifier
+          .clip(RoundedCornerShape(8.dp))
+          .background(color = colorResource(id = R.color.white))
+          .padding(16.dp)
+          .fillMaxWidth()
+    ) {
+      Column {
+        Row(modifier = modifier.fillMaxWidth()) {
+          Text(
+            text = resultItem.indicatorTitle.uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
+            textAlign = TextAlign.Start
+          )
+          Text(
+            text = resultItem.title.uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f).testTag(POPULATION_TITLE_TEST_TAG),
+            textAlign = TextAlign.Start
+          )
+          Text(
+            text = resultItem.measureReportDenominator.toString().uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
+            textAlign = TextAlign.End
+          )
         }
+        if (resultItem.measureReportDenominator > 0) {
+          displayChart(resultItem)
+        }
+      }
+    }
   }
 }
 
 @Composable
-private fun PopulationResultItem(
-    measureReportIndividualResult: MeasureReportIndividualResult,
-    modifier: Modifier = Modifier,
-) {
-  Row(
-      modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              CircularPercentageIndicator(
-                  percentage = measureReportIndividualResult.percentage,
-                  modifier = modifier.testTag(POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG))
-
-              Text(
-                  text = measureReportIndividualResult.title,
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Bold,
-                  modifier =
-                      modifier
-                          .wrapContentWidth()
-                          .padding(horizontal = 20.dp)
-                          .testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG),
-              )
-            }
-
-        Column(
-            modifier = modifier.wrapContentWidth(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-              Text(
-                  text = "${measureReportIndividualResult.percentage}%",
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Normal,
-                  modifier =
-                      modifier
-                          .wrapContentWidth()
-                          .testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG),
-              )
-              Text(
-                  text = measureReportIndividualResult.count,
-                  fontSize = 16.sp,
-                  color = colorResource(id = R.color.darkGrayText),
-                  modifier =
-                      modifier
-                          .wrapContentWidth()
-                          .testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG))
-            }
+fun displayChart(resultItem: MeasureReportPopulationResult) {
+  when (resultItem.chartType) {
+    "pie_chart" -> {
+      val chartInput: MutableList<PieChartInput> = mutableListOf()
+      resultItem.dataList.forEach {
+        chartInput.add(PieChartInput(color = getRandomColor(), it.count, it.title))
       }
+      PieChart(
+        modifier = Modifier.size(300.dp),
+        input = chartInput,
+        onReportMeasureClicked = {},
+        titleColor = Color.White
+      )
+    }
+    "bar_chart" -> {
+      val chartInput: MutableList<BarChartEntity> = mutableListOf()
+      val verticalAxis: MutableList<Float> = mutableListOf()
+      resultItem.dataList.forEach {
+        chartInput.add(
+          BarChartEntity(it.count.toFloat(), getRandomColor(), it.title),
+        )
+        verticalAxis.add(it.count.toFloat())
+      }
+
+      BarChart(
+        barChartData = chartInput.sortedBy { it.value },
+        verticalAxisValues = verticalAxis.sorted(),
+        isShowVerticalAxis = false,
+      )
+    }
+    "line_chart" -> {
+      val chartInput: MutableList<LineChartEntity> = mutableListOf()
+      val verticalAxis: MutableList<Float> = mutableListOf()
+      resultItem.dataList.forEach {
+        chartInput.add(
+          LineChartEntity(it.count.toFloat(), it.title),
+        )
+        verticalAxis.add(it.count.toFloat())
+      }
+      LineChart(
+        lineChartData = chartInput.sortedBy { it.value },
+        verticalAxisValues = verticalAxis.sorted()
+      )
+    }
+  }
 }
 
 @Composable
@@ -171,20 +162,24 @@ private fun PopulationResultItem(
 @ExcludeFromJacocoGeneratedReport
 fun MeasureReportPopulationResultPreview() {
   val dataList =
-      listOf(
-          MeasureReportPopulationResult(
-              title = "Population Title",
-              count = "2",
-              indicatorTitle = "Still birth",
-              dataList =
-                  listOf(
-                      MeasureReportIndividualResult(
-                          status = "Test Status",
-                          isMatchedIndicator = false,
-                          description = "This is sample description",
-                          title = "Title Individual Result",
-                          percentage = "50.0",
-                          count = "1",
-                      ))))
+    listOf(
+      MeasureReportPopulationResult(
+        title = "Population Title",
+        count = "20",
+        indicatorTitle = "Still birth",
+        measureReportDenominator = 10,
+        dataList =
+          listOf(
+            MeasureReportIndividualResult(
+              status = "Test Status",
+              isMatchedIndicator = false,
+              description = "This is sample description",
+              title = "Title Individual Result",
+              percentage = "50.0",
+              count = 8,
+            )
+          )
+      )
+    )
   MeasureReportPopulationResultView(dataList = dataList)
 }

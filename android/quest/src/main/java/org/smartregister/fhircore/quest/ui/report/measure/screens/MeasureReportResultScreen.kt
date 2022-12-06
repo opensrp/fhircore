@@ -178,9 +178,9 @@ private fun MeasureReportResultScreenForIndividualPreview() {
 @ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForPopulationPreview() {
   val testResultItem1 =
-    MeasureReportIndividualResult(title = "10 - 15 years", percentage = "10", count = "1/10")
+    MeasureReportIndividualResult(title = "10 - 15 years", percentage = "10", count = 1 / 10)
   val testResultItem2 =
-    MeasureReportIndividualResult(title = "16 - 20 years", percentage = "50", count = "30/60")
+    MeasureReportIndividualResult(title = "16 - 20 years", percentage = "50", count = 30 / 60)
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
@@ -215,23 +215,21 @@ private fun MeasureReportResultScreenForPopulationPreview() {
       )
   )
 }
+
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-private fun previewPieChart(){
-  PieChart(modifier = Modifier.size(500.dp), input = listOf(
-    PieChartInput(
-      color = Color.Green, value = 29, description = "Python"
-    ),
-    PieChartInput(
-      color = Color.Yellow, value = 21, description = "Swift"
-    ),
-    PieChartInput(
-      color = Color.Blue, value = 32, description = "JavaScript"
-    ),
-    PieChartInput(
-      color = Color.Cyan, value = 18, description = "Java"
-    )
-  ), onReportMeasureClicked = {},
-  titleColor = Color.Red)
+private fun previewPieChart() {
+  PieChart(
+    modifier = Modifier.size(500.dp),
+    input =
+      listOf(
+        PieChartInput(color = Color.Green, value = 29, description = "Python"),
+        PieChartInput(color = Color.Yellow, value = 21, description = "Swift"),
+        PieChartInput(color = Color.Blue, value = 32, description = "JavaScript"),
+        PieChartInput(color = Color.Cyan, value = 18, description = "Java")
+      ),
+    onReportMeasureClicked = {},
+    titleColor = Color.Red
+  )
 }

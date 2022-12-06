@@ -25,5 +25,7 @@ data class MeasureReportPopulationResult(
   val title: String = "",
   val count: String = "",
   val dataList: List<MeasureReportIndividualResult> = emptyList(),
-  val indicatorTitle: String = ""
+  val indicatorTitle: String = "",
+  val chartType: String = "pie_chart",
+  val measureReportDenominator: Int = 0
 )

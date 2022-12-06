@@ -135,14 +135,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(state?.exceptions?.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
         val hasAuthError =
-          state.result.exceptions.any {
+          state.result?.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+        val message = if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
         showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
@@ -152,7 +152,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
             else getString(R.string.syncing_failed)
           )
         )
-        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        if (hasAuthError == true) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Finished -> {

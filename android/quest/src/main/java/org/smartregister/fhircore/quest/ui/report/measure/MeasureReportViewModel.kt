@@ -311,13 +311,19 @@ constructor(
                 } else if (reportTypeSelectorUiState.value.patientViewData == null &&
                     !individualEvaluation
                 ) {
-                  evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted, it.title)
+                  evaluatePopulationMeasure(
+                    it.url,
+                    startDateFormatted,
+                    endDateFormatted,
+                    it.title,
+                    it.chartType
+                  )
                 }
               } else {
-                result?.last()?.let { it1 -> formatPopulationMeasureReport(it1, it.title) }?.let {
-                  it2 ->
-                  _measureReportPopulationResultList.addAll(it2)
-                }
+                result
+                  ?.last()
+                  ?.let { it1 -> formatPopulationMeasureReport(it1, it.title, it.chartType) }
+                  ?.let { it2 -> _measureReportPopulationResultList.addAll(it2) }
               }
             }
           }
@@ -342,7 +348,8 @@ constructor(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String,
-    indicatorTitle: String
+    indicatorTitle: String,
+    chartType: String
   ) {
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
@@ -367,7 +374,7 @@ constructor(
     if (measureReport != null) {
       defaultRepository.addOrUpdate(resource = measureReport)
       _measureReportPopulationResultList.addAll(
-        formatPopulationMeasureReport(measureReport, indicatorTitle)
+        formatPopulationMeasureReport(measureReport, indicatorTitle, chartType)
       )
     }
   }
@@ -379,8 +386,10 @@ constructor(
 
   fun formatPopulationMeasureReport(
     measureReport: MeasureReport,
-    indicatorTitle: String = ""
+    indicatorTitle: String = "",
+    chartType: String
   ): List<MeasureReportPopulationResult> {
+    var denominator: Int = 0
     return measureReport
       .also { Timber.w(it.encodeResourceToString()) }
       .group
@@ -393,7 +402,7 @@ constructor(
         // L3 - group.stratifier.stratum.population[]
 
         // report group is stratifier/stratum denominator
-        val denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
+        denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
         val stratifierItems: List<List<MeasureReportIndividualResult>> =
           if (reportGroup.isMonthlyReport())
             measureReport.reportingPeriodMonthsSpan.map {
@@ -402,7 +411,7 @@ constructor(
                 MeasureReportIndividualResult(
                   title = it,
                   percentage = stats?.findPercentage(denominator)?.toString() ?: "0",
-                  count = stats?.findRatio(denominator) ?: "0/$denominator"
+                  count = stats?.findRatio(denominator) ?: 0
                 )
               )
             }
@@ -412,7 +421,7 @@ constructor(
                 MeasureReportIndividualResult(
                   title = stratum.displayText,
                   percentage = stratum.findPercentage(denominator).toString(),
-                  count = stratum.findRatio(denominator),
+                  count = stratum.findRatio(denominator) ?: 0,
                   description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
                 )
               }
@@ -461,7 +470,9 @@ constructor(
               MeasureReportPopulationResult(
                 title = it.first ?: "",
                 count = it.second.toString(),
-                indicatorTitle = indicatorTitle
+                indicatorTitle = indicatorTitle,
+                chartType = chartType,
+                measureReportDenominator = denominator
               )
             )
           }

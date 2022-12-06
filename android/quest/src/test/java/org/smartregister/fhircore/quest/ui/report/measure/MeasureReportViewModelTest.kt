@@ -270,7 +270,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatPopulationMeasureReport() {
-    val result = measureReportViewModel.formatPopulationMeasureReport(measureReport)
+    val result =
+      measureReportViewModel.formatPopulationMeasureReport(measureReport, chartType = "pie_chart")
 
     assertEquals(1, result.size)
     assertEquals("3/4", result.first().count)
@@ -278,7 +279,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     val disaggregation = result.first().dataList
     assertEquals(1, result.first().dataList.size)
-    assertEquals("1/3", disaggregation.first().count)
+    assertEquals(0, disaggregation.first().count)
     assertEquals("Stratum #1", disaggregation.first().title)
     assertEquals("33", disaggregation.first().percentage)
   }
