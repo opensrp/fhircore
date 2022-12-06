@@ -1,0 +1,57 @@
+<Encounter xmlns='http://hl7.org/fhir'>
+  <status value='in-progress'/>
+  <statusHistory>
+    <status value='arrived'/>
+    <period>
+      <start value='2021-02-09T07:15:00+10:00'/>
+      <end value='2021-02-09T07:35:00+10:00'/>
+    </period>
+  </statusHistory>
+  <statusHistory>
+    <status value='triaged'/>
+    <period>
+      <start value='2021-02-09T07:15:00+10:00'/>
+      <end value='2021-02-09T07:35:00+10:00'/>
+    </period>
+  </statusHistory>
+  <statusHistory>
+    <status value='in-progress'/>
+    <period>
+      <start value='2021-02-09T07:15:00+10:00'/>
+      <end value='2021-02-09T07:35:00+10:00'/>
+    </period>
+  </statusHistory>
+  <class>
+    <system value='http://terminology.hl7.org/CodeSystem/v3-ActCode'/>
+    <code value='IMP'/>
+    <display value='inpatient encounter'/>
+  </class>
+  <classHistory>
+    <class>
+      <system value='http://terminology.hl7.org/CodeSystem/v3-ActCode'/>
+      <code value='EMER'/>
+      <display value='emergency'/>
+    </class>
+    <period>
+      <start value='2017-02-01T07:15:00+10:00'/>
+      <end value='2017-02-01T09:27:00+10:00'/>
+    </period>
+  </classHistory>
+  <classHistory>
+    <class>
+      <system value='http://terminology.hl7.org/CodeSystem/v3-ActCode'/>
+      <code value='IMP'/>
+      <display value='inpatient encounter'/>
+    </class>
+    <period>
+      <start value='2017-02-01T09:27:00+10:00'/>
+    </period>
+  </classHistory>
+  <subject>
+    <reference value='Patient/exmaple'/>
+    <display value='Charity ANC'/>
+  </subject>
+  <period>
+    <start value='2021-02-09'/>
+  </period>
+</Encounter>

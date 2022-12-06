@@ -84,6 +84,10 @@
       "id": "ActionButton",
       "visible": true,
       "display": "{{ add.member }}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_add"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -99,7 +103,12 @@
             "planDefinitions": [
               "9fac39bd-9750-4c1d-b355-1961de4e37f3",
               "e994ab6f-30a5-4450-9a90-691c8199f379"
-            ]
+            ],
+            "snackBarMessage": {
+              "message": "Household member has been added",
+              "actionLabel": "UNDO",
+              "duration": "Short"
+            }
           }
         }
       ]
@@ -142,6 +151,7 @@
         {
           "viewType": "COLUMN",
           "backgroundColor": "primaryColor",
+          "fillMaxWidth": true,
           "padding": 8,
           "children": [
             {
@@ -223,6 +233,13 @@
                     ]
                   },
                   {
+                    "name": "patientTextColor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientTextColor', Patient.active ? '#000000' : 'DefaultColor')"
+                    ]
+                  },
+                  {
                     "name": "patientGender",
                     "condition": "true",
                     "actions": [
@@ -233,7 +250,7 @@
                     "name": "patientName",
                     "condition": "true",
                     "actions": [
-                      "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ', ' +  data.get('patientAge'))"
+                      "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ', ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ', ' +  data.get('patientAge'))"
                     ]
                   },
                   {
@@ -282,7 +299,7 @@
                     "name": "showMemberTasks",
                     "condition": "true",
                     "actions": [
-                      "data.put('showMemberTasks', size(Task) > 0)"
+                      "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                     ]
                   },
                   {
@@ -384,7 +401,7 @@
                       {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientName}",
-                        "primaryTextColor": "#000000"
+                        "primaryTextColor": "@{patientTextColor}"
                       },
                       {
                         "viewType": "COMPOUND_TEXT",
@@ -398,6 +415,7 @@
                       "text": "@{taskDescription}",
                       "status": "@{serviceStatus}",
                       "smallSized": true,
+                      "enabled": "@{patientActive}",
                       "actions": [
                         {
                           "trigger": "ON_CLICK",

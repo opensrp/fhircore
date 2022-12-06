@@ -20,7 +20,6 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -216,7 +215,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     // Call the function under test
-    runBlocking { defaultRepository.addOrUpdate(patient) }
+    runBlocking { defaultRepository.addOrUpdate(resource = patient) }
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
@@ -236,7 +235,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       mockk<ResourceNotFoundException>()
     coEvery { fhirEngine.create(any()) } returns listOf()
-    runBlocking { defaultRepository.addOrUpdate(Patient()) }
+    runBlocking { defaultRepository.addOrUpdate(resource = Patient()) }
     coVerify(exactly = 1) { fhirEngine.create(any()) }
   }
 
@@ -274,7 +273,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
 
-    runBlocking { defaultRepository.addOrUpdate(resource) }
+    runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
     verify { resource.generateMissingId() }
 
@@ -376,7 +375,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(managingEntityRelatedPerson)
     coEvery { defaultRepositorySpy.delete(any()) } just runs
-    coEvery { defaultRepositorySpy.addOrUpdate(any()) } just runs
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     val group =
       Group().apply {
         id = "testGroupId"
@@ -399,12 +398,12 @@ class DefaultRepositoryTest : RobolectricTest() {
         active = true
       }
     val defaultRepositorySpy = spyk(defaultRepository)
-    coEvery { defaultRepositorySpy.addOrUpdate(any()) } just runs
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) } returns patientMemberRep
 
     defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
     Assert.assertFalse(patientMemberRep.active)
-    coVerify { defaultRepositorySpy.addOrUpdate(patientMemberRep) }
+    coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
   }
 
   @Test
@@ -447,13 +446,13 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
       listOf(relatedPerson) as List<RelatedPerson>
     coEvery { defaultRepository.delete(any()) } just runs
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
     runBlocking { defaultRepository.removeGroup(groupId, true) }
 
     coVerify { defaultRepository.delete(relatedPerson) }
-    coVerify { defaultRepository.addOrUpdate(patient) }
-    coVerify { defaultRepository.addOrUpdate(group) }
+    coVerify { defaultRepository.addOrUpdate(resource = patient) }
+    coVerify { defaultRepository.addOrUpdate(resource = group) }
   }
 
   @Test
@@ -484,7 +483,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
       listOf(relatedPerson) as List<RelatedPerson>
     coEvery { defaultRepository.delete(any()) } just runs
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
     runBlocking {
       defaultRepository.removeGroupMember(
@@ -495,6 +494,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { defaultRepository.delete(relatedPerson) }
-    coVerify { defaultRepository.addOrUpdate(group) }
+    coVerify { defaultRepository.addOrUpdate(resource = group) }
   }
 }

@@ -55,7 +55,7 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
     const val TAG = "FhirTaskExpire"
 
     fun schedule(
-      context: Context,
+      workManager: WorkManager,
       sharedPreferencesHelper: SharedPreferencesHelper,
       durationInMins: Long,
       version: Long = 1
@@ -77,7 +77,7 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
           .setInitialDelay(durationInMins, TimeUnit.MINUTES)
           .build()
 
-      WorkManager.getInstance(context)
+      workManager
         .enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
     }
   }

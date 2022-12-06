@@ -36,8 +36,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
+import org.smartregister.fhircore.engine.util.extension.today
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-11-2022. */
 class FhirTaskExpireUtilTest : RobolectricTest() {
@@ -67,7 +67,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
             authoredOn = Date()
             restriction =
               Task.TaskRestrictionComponent().apply {
-                period = Period().apply { end = DateUtils.today() }
+                period = Period().apply { end = today() }
               }
           }
         )
@@ -112,7 +112,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
           status = TaskStatus.INPROGRESS
           restriction =
             Task.TaskRestrictionComponent().apply {
-              period = Period().apply { end = DateUtils.today() }
+              period = Period().apply { end = today() }
             }
         }
       )

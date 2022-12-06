@@ -1,0 +1,76 @@
+{
+  "resourceType": "Immunization",
+  "extension": [
+    {
+      "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-VaccinationProcedure",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "1324681000000101",
+            "display": "Administration of first dose of severe acute respiratory syndrome coronavirus 2 vaccine (procedure)"
+          }
+        ]
+      }
+    }
+  ],
+  "identifier": [
+    {
+      "use": "secondary",
+      "system": "https://fhir.leedsth.nhs.uk/Id/vaccination",
+      "value": "1001324761000000"
+    }
+  ],
+  "status": "not-done",
+  "statusReason": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "1324721000000108",
+          "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) vaccination dose declined"
+        }
+      ]
+    }
+  ],
+  "vaccineCode": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "39330711000001103",
+        "display": "COVID-19 vaccine"
+      }
+    ]
+  },
+  "patient": {
+    "reference": "urn:uuid:edea022a-2d81-11eb-adc1-0242ac120002",
+    "type": "Patient",
+    "identifier": {
+      "system": "https://fhir.nhs.uk/Id/nhs-number",
+      "value": "9912003888"
+    }
+  },
+  "occurrenceDateTime": "2020-12-21T09:15:08.326+00:00",
+  "recorded": "2020-12-21",
+  "primarySource": false,
+  "reportOrigin": {
+    "text": "RR8 - LEEDS TEACHING HOSPITALS NHS TRUST"
+  },
+  "performer": [
+    {
+      "actor": {
+        "type": "Organization",
+        "identifier": {
+          "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+          "value": "C4B2A"
+        },
+        "display": "ELLAND ROAD STADIUM - COVID VACCINATION CENTRE"
+      }
+    }
+  ],
+  "protocolApplied": [
+    {
+      "doseNumberPositiveInt": 1
+    }
+  ]
+}

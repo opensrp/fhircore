@@ -100,14 +100,15 @@ class FhirTaskExpireJobTest : RobolectricTest() {
   @Test
   fun scheduleShouldCallEnqueueWithReplaceWhenVersionIsNewer() {
     // Schedule the first job of version 1
-    FhirTaskExpireJob.schedule(context, sharedPreferencesHelper, 56, 1)
+    var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
     val workInfo =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+      workManager
         .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
         .get()[0]
 
-    FhirTaskExpireJob.schedule(context, sharedPreferencesHelper, 45, 2)
+    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 2)
 
     val workInfo2 =
       WorkManager.getInstance(ApplicationProvider.getApplicationContext())
@@ -120,14 +121,15 @@ class FhirTaskExpireJobTest : RobolectricTest() {
   @Test
   fun scheduleShouldCallEnqueueWithKeepWhenVersionIsSimilar() {
     // Schedule the first job of version 1
-    FhirTaskExpireJob.schedule(context, sharedPreferencesHelper, 56, 1)
+    var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
     val workInfo =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+      workManager
         .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
         .get()[0]
 
-    FhirTaskExpireJob.schedule(context, sharedPreferencesHelper, 45, 1)
+    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 1)
 
     val workInfo2 =
       WorkManager.getInstance(ApplicationProvider.getApplicationContext())

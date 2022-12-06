@@ -21,6 +21,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -78,6 +79,7 @@ class ChangeManagingEntityViewTest {
   }
 
   @Test
+  @Ignore("Flaky test to be fixed")
   fun testChangeManagingEntityViewDisplaysCancelAndSaveButtons() {
     composeTestRule.onNodeWithTag(TEST_TAG_CANCEL).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(TEST_TAG_SAVE).assertExists().assertIsDisplayed()

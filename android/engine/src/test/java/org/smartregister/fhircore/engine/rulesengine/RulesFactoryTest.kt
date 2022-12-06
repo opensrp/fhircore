@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
@@ -201,6 +200,42 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun shouldFormatDateWithExpectedFormat() {
+    val inputDate = Date("2021/10/10")
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals("10-10-2021", rulesEngineService.formatDate(inputDate, expectedFormat))
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals("10 2021", rulesEngineService.formatDate(inputDate, expectedFormat2))
+
+    Assert.assertEquals("Sun, Oct 10 2021", rulesEngineService.formatDate(inputDate))
+  }
+
+  @Test
+  fun shouldInputDateStringWithExpectedFormat() {
+    val inputDateString = "2021-10-10"
+    val inputDateFormat = "yyyy-MM-dd"
+
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "10-10-2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+
+    val expectedFormat2 = "dd yyyy"
+    Assert.assertEquals(
+      "10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat2)
+    )
+
+    Assert.assertEquals(
+      "Sun, Oct 10 2021",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat)
+    )
+  }
+
+  @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
     val resources =
@@ -251,19 +286,12 @@ class RulesFactoryTest : RobolectricTest() {
   fun onFailureLogsWarningForJexlException_Variable() {
     val exception = mockk<JexlException.Variable>()
     every { exception.localizedMessage } returns "jexl exception"
-    every { exception.variable } returns "func"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onFailure",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
+    every { exception.variable } returns "var"
+    rulesFactory.onFailure(mockk(relaxed = true), mockk(relaxed = true), exception)
     verify {
-      rulesFactory.logWarning(
-        "jexl exception, consider checking for null before usage: e.g func != null"
+      rulesFactory.log(
+        exception,
+        "jexl exception, consider checking for null before usage: e.g var != null"
       )
     }
   }
@@ -272,32 +300,16 @@ class RulesFactoryTest : RobolectricTest() {
   fun onFailureLogsErrorForException() {
     val exception = mockk<Exception>()
     every { exception.localizedMessage } returns "jexl exception"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onFailure",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
-    verify { rulesFactory.logError(exception) }
+    rulesFactory.onFailure(mockk(relaxed = true), mockk(relaxed = true), exception)
+    verify { rulesFactory.log(exception) }
   }
 
   @Test
   fun onEvaluationErrorLogsError() {
     val exception = mockk<Exception>()
     every { exception.localizedMessage } returns "jexl exception"
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      rulesFactory,
-      "onEvaluationError",
-      ReflectionHelpers.ClassParameter(org.jeasy.rules.api.Rule::class.java, JexlRule()),
-      ReflectionHelpers.ClassParameter(Facts::class.java, Facts()),
-      ReflectionHelpers.ClassParameter(Exception::class.java, exception)
-    )
-
-    verify { rulesFactory.logError("Evaluation error", exception) }
+    rulesFactory.onEvaluationError(mockk(relaxed = true), mockk(relaxed = true), exception)
+    verify { rulesFactory.log(exception, "Evaluation error") }
   }
 
   private fun populateFactsWithResources() {

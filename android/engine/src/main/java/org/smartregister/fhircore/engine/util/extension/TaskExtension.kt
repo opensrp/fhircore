@@ -18,14 +18,11 @@ package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.util.DateUtils
-import org.smartregister.fhircore.engine.util.DateUtils.isToday
-import org.smartregister.fhircore.engine.util.DateUtils.today
 
 fun Task.hasPastEnd() =
   this.hasExecutionPeriod() &&
     this.executionPeriod.hasEnd() &&
-    this.executionPeriod.end.before(DateUtils.yesterday())
+    this.executionPeriod.end.before(yesterday())
 
 fun Task.hasStarted() =
   this.hasExecutionPeriod() &&
