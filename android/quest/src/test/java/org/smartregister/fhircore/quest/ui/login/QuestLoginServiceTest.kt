@@ -27,6 +27,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
@@ -43,7 +44,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.p2p.P2PLibrary
-import javax.inject.Inject
 
 @HiltAndroidTest
 class QuestLoginServiceTest : RobolectricTest() {
