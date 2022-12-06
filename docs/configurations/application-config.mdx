@@ -1,4 +1,51 @@
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import ReactJson from 'react-json-view'
+
+export function RenderJson(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        return <ReactJson src= { JSON.parse(`
+            {
+                "appId": "app",
+                "configType": "application",
+                "appTitle": "eCBIS (CHA & CHSS)",
+                "remoteSyncPageSize": 100,
+                "languages": [
+                     "en"
+                ],
+                "useDarkTheme": false,
+                "syncInterval": 15,
+                "syncStrategy": [
+                  "Location",
+                  "Organization",
+                  "CareTeam",
+                  "Practitioner"
+                ],
+                "loginConfig": {
+                    "showLogo": true,
+                    "enablePin": true
+                },
+                "deviceToDeviceSync": {
+                   "resourcesToSync": [
+                        "Group",
+                        "Patient",
+                        "CarePlan",
+                        "Task",
+                        "Encounter",
+                        "Observation",
+                        "Condition",
+                        "Questionnaire",
+                        "QuestionnaireResponse"
+                   ]
+                 }
+               }
+            `)
+            } />
+      }}
+    </BrowserOnly>
+  );
+}
 
 # Application configuration
 
@@ -10,43 +57,7 @@ There can only one instance of application configuration for the entire applicat
 
 ## Sample JSON
 
-<ReactJson src= { JSON.parse(`
-    {
-        "appId": "app",
-        "configType": "application",
-        "appTitle": "eCBIS (CHA & CHSS)",
-        "remoteSyncPageSize": 100,
-        "languages": [
-             "en"
-        ],
-        "useDarkTheme": false,
-        "syncInterval": 15,
-        "syncStrategy": [
-          "Location",
-          "Organization",
-          "CareTeam",
-          "Practitioner"
-        ],
-        "loginConfig": {
-            "showLogo": true,
-            "enablePin": true
-        },
-        "deviceToDeviceSync": {
-           "resourcesToSync": [
-                "Group",
-                "Patient",
-                "CarePlan",
-                "Task",
-                "Encounter",
-                "Observation",
-                "Condition",
-                "Questionnaire",
-                "QuestionnaireResponse"
-           ]
-         }
-       }
-    `)
-    } />
+<RenderJson />
 
 ## Config properties
 
@@ -63,5 +74,3 @@ syncStrategy | Tag every resource with the values for the resource types indicat
 loginConfig.showLogo | Display logo in login page | Yes | `true` |
 loginConfig.enablePin | Request user for pin after login; to be used for subsequent logins | No | `false` |
 deviceToDeviceSync.resourcesToSync | Types of resource to be synced from one device to another during peer connection | No | `false` |
-
-
