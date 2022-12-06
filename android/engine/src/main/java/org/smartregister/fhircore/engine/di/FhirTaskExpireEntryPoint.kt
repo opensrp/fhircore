@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine
+package org.smartregister.fhircore.engine.di
+
+import com.google.android.fhir.FhirEngine
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import org.smartregister.fhircore.engine.task.FhirTaskExpireUtil
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 05-12-2022. */
-class SampleParameterizedTest
+@InstallIn(SingletonComponent::class)
+@EntryPoint
+interface FhirTaskExpireEntryPoint {
+
+  fun fhirEngine(): FhirEngine
+
+  fun fhirTaskExpireUtil(): FhirTaskExpireUtil
+}

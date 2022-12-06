@@ -24,14 +24,17 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
+@Singleton
 class FhirTaskExpireUtil
-constructor(val appContext: Context, val fhirEngine: FhirEngine) {
+@Inject
+constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEngine) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",

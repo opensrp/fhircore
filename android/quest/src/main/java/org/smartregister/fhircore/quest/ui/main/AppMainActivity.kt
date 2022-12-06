@@ -25,8 +25,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -67,6 +65,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
+  // @Inject lateinit var workManager: WorkManager
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
@@ -119,10 +119,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     syncBroadcaster.runSync()
 
     schedulePeriodicJobs()
-    // Schedule periodic jobs
-
-    val oneTimeWorkRequest = OneTimeWorkRequest.Builder(FhirTaskExpireJob::class.java).build()
-    WorkManager.getInstance(this).enqueue(oneTimeWorkRequest)
   }
 
   private fun schedulePeriodicJobs() {

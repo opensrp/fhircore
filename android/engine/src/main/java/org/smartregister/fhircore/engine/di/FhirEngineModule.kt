@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.TIMEOUT_DURATION
-import org.smartregister.fhircore.engine.task.FhirTaskExpireJob
 import timber.log.Timber
 
 /**

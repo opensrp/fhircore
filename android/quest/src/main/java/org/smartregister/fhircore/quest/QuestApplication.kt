@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import androidx.work.Configuration.Provider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -24,9 +25,10 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAtta
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider {
+class QuestApplication : Application(), DataCaptureConfig.Provider { // , Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  // @Inject lateinit var workerFactory: HiltWorkerFactory
 
   private var configuration: DataCaptureConfig? = null
 
