@@ -1,52 +1,3 @@
-import BrowserOnly from '@docusaurus/BrowserOnly';
-import ReactJson from 'react-json-view'
-
-export function RenderJson(props) {
-  return (
-    <BrowserOnly fallback={<div>Loading...</div>}>
-      {() => {
-        return <ReactJson src= { JSON.parse(`
-            {
-                "appId": "app",
-                "configType": "application",
-                "appTitle": "eCBIS (CHA & CHSS)",
-                "remoteSyncPageSize": 100,
-                "languages": [
-                     "en"
-                ],
-                "useDarkTheme": false,
-                "syncInterval": 15,
-                "syncStrategy": [
-                  "Location",
-                  "Organization",
-                  "CareTeam",
-                  "Practitioner"
-                ],
-                "loginConfig": {
-                    "showLogo": true,
-                    "enablePin": true
-                },
-                "deviceToDeviceSync": {
-                   "resourcesToSync": [
-                        "Group",
-                        "Patient",
-                        "CarePlan",
-                        "Task",
-                        "Encounter",
-                        "Observation",
-                        "Condition",
-                        "Questionnaire",
-                        "QuestionnaireResponse"
-                   ]
-                 }
-               }
-            `)
-            } />
-      }}
-    </BrowserOnly>
-  );
-}
-
 # Application configuration
 
 These are app wide configurations used to control the application behaviour globally e.g. application theme, app language etc.
@@ -57,7 +8,42 @@ There can only one instance of application configuration for the entire applicat
 
 ## Sample JSON
 
-<RenderJson />
+```json
+{
+    "appId": "app",
+    "configType": "application",
+    "appTitle": "eCBIS (CHA & CHSS)",
+    "remoteSyncPageSize": 100,
+    "languages": [
+        "en"
+    ],
+    "useDarkTheme": false,
+    "syncInterval": 15,
+    "syncStrategy": [
+        "Location",
+        "Organization",
+        "CareTeam",
+        "Practitioner"
+    ],
+    "loginConfig": {
+        "showLogo": true,
+        "enablePin": true
+    },
+    "deviceToDeviceSync": {
+        "resourcesToSync": [
+            "Group",
+            "Patient",
+            "CarePlan",
+            "Task",
+            "Encounter",
+            "Observation",
+            "Condition",
+            "Questionnaire",
+            "QuestionnaireResponse"
+        ]
+    }
+}
+```
 
 ## Config properties
 
