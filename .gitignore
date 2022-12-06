@@ -27,6 +27,6 @@ captures/
 *.iml
 .idea
 
-#fleet
+# Fleet
 .fleet/
 .docusaurus/
