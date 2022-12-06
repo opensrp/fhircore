@@ -77,28 +77,25 @@ constructor(
       val monthList = campaignDate?.let { getMonthRangeList(it) }
       Timber.w("started  / . . . MeasureReportWorker . . ./")
 
-      fhirEngine
-        .search<Measure> {}
-        .forEach {
-          monthList?.forEachIndexed { index, date ->
-            val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-            val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-            if (
-              retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-                  fhirEngine = fhirEngine,
-                  startDateFormatted = startDateFormatted,
-                  endDateFormatted = endDateFormatted,
-                  measureUrl = it.url
-                )
-                ?.isEmpty() == true
-            ) {
+      fhirEngine.search<Measure> {}.forEach {
+        monthList?.forEachIndexed { index, date ->
+          val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+          val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+          if (retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+                fhirEngine = fhirEngine,
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                measureUrl = it.url
+              )
+              ?.isEmpty() == true
+          ) {
+            evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+          } else {
+            if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
               evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
-            } else {
-              if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
-                evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
-            }
           }
         }
+      }
       Timber.w("Result.success  / . . . MeasureReportWorker . . ./")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
