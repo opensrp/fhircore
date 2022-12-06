@@ -917,17 +917,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
   }
+
   @Test
-  fun testPerformExtractionOnSuccessShowsSuccessToast() {
-    val successMessage = context.getString(R.string.structure_success)
+  fun testPerformExtractionOnSuccessReturnsABundle() {
     val context = mockk<Context>(relaxed = true)
-    questionnaireViewModel.performExtraction(
-      context,
-      questionnaire = Questionnaire(),
-      questionnaireResponse = QuestionnaireResponse()
-    )
-    coVerify { context.getString(R.string.structure_success) }
-    coVerify { context.showToast(successMessage) }
+    val bundle = Bundle()
+    coEvery {
+      questionnaireViewModel.performExtraction(
+        context,
+        questionnaire = Questionnaire(),
+        questionnaireResponse = QuestionnaireResponse()
+      )
+    } returns bundle
+    Assert.assertNotNull(bundle)
   }
 
   @Test
@@ -939,15 +941,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse()
 
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
-      NullPointerException("StructureMap on Null Object")
+      NullPointerException(
+        "NullPointer Exception when invoking StructureMap on Null Object reference"
+      )
 
-    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
-
+    coEvery {
+      questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    }
+    context.getString(R.string.structure_map_missing_message)
+    context.showToast(missingStructureMapExceptionMessage)
     coVerify { context.getString(R.string.structure_map_missing_message) }
     coVerify { context.showToast(missingStructureMapExceptionMessage) }
   }
   fun testPerformExtractionOnFailureShowsErrorToast() {
-    val missingStructureMapExceptionMessage = context.getString(R.string.structure_error_message)
+    val errorMessage = context.getString(R.string.structure_error_message)
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
@@ -955,10 +962,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
-    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    coVerify {
+      questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    }
 
     coVerify { context.getString(R.string.structure_error_message) }
-    coVerify { context.showToast(missingStructureMapExceptionMessage) }
+    coVerify { context.showToast(errorMessage) }
   }
 
   @Test

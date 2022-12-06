@@ -246,8 +246,7 @@ constructor(
         if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
-        if (bundle.hasEntry())
-          performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
@@ -391,41 +390,35 @@ constructor(
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
   }
 
-  fun performExtraction(
+  suspend fun performExtraction(
     context: Context,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): Bundle {
-    var bundle = Bundle()
-    viewModelScope.launch(dispatcherProvider.main()) {
-      kotlin
-        .runCatching {
-          withContext(dispatcherProvider.io()) {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-              StructureMapExtractionContext(
-                context = context,
-                transformSupportServices = transformSupportServices,
-                structureMapProvider = retrieveStructureMapProvider()
-              )
-            )
-          }
-        }
-        .onSuccess {
-          bundle = it
-          context.showToast(context.getString(R.string.structure_success))
-        }
-        .onFailure { exception ->
-          Timber.e(exception)
+    return kotlin
+      .runCatching {
+        ResourceMapper.extract(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          StructureMapExtractionContext(
+            context = context,
+            transformSupportServices = transformSupportServices,
+            structureMapProvider = retrieveStructureMapProvider()
+          )
+        )
+      }
+      .onSuccess { Timber.d("Questionnaire ${questionnaire.id} extracted successfully") }
+      .onFailure { exception ->
+        Timber.e(exception)
+        viewModelScope.launch {
           if (exception.message!!.contains("StructureMap")) {
             context.showToast(context.getString(R.string.structure_map_missing_message))
           } else {
             context.showToast(context.getString(R.string.structure_error_message))
           }
         }
-    }
-    return bundle
+      }
+      .getOrDefault(Bundle())
   }
 
   suspend fun saveBundleResources(bundle: Bundle) {
