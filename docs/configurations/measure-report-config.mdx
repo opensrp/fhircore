@@ -1,5 +1,3 @@
-import ReactJson from 'react-json-view'
-
 # Measure report configuration
 
 Any FHIRCore app can be configured to display reports. These configurations are used to configure the report indicators, which charts to use to render the reports, the interval for generating the reports etc.
@@ -10,7 +8,8 @@ One application can have multiple configurations for measure report, each identi
 
 ## Sample JSON
 
-<ReactJson src= { JSON.parse(`{
+```json
+{
     "appId": "app",
     "configType": "measureReport",
     "registerId": "measureReport",
@@ -28,7 +27,8 @@ One application can have multiple configurations for measure report, each identi
             "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDPREGNANCY"
         }
     ]
-    }`)} />
+}
+```
 
 ## Config properties
 
