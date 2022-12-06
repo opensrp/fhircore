@@ -1,0 +1,33 @@
+<Observation xmlns='http://hl7.org/fhir'>
+  <encounter>
+    <reference value='Encounter/mom-second-contact'/>
+  </encounter>
+  <id value='mom-bleeding'/>
+  <status value='final'/>
+  <category>
+    <coding>
+      <system value='http://hl7.org/fhir/observation-category'/>
+      <code value='exam'/>
+    </coding>
+  </category>
+  <code>
+    <coding>
+      <system value='https://fhir.loinc.org/CodeSystem/$lookup?system=http://loinc.org&amp;code=LP146189-8'/>
+      <code value='LP146189-8'/>
+      <display value='Vaginal Bleeding : Procedure estimated blood loss is the approximate amount of blood that the patient lost approx quantitative amount  250 milliliters'/>
+    </coding>
+  </code>
+  <subject>
+    <reference value='Patient/exmaple'/>
+    <display value='Charity ANC'/>
+  </subject>
+  <effectivePeriod>
+    <start value='2021-02-09'/>
+    <end value='2021-02-09'/>
+  </effectivePeriod>
+  <issued value='2021-02-09T15:30:00Z'/>
+  <performer>
+    <reference value='Practitioner/midwife'/>
+    <display value='Midwife Amina'/>
+  </performer>
+</Observation>

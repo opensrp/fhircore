@@ -3,7 +3,7 @@ buildscript {
     apply from: 'deps.gradle'
     apply from: 'configs.gradle'
 
-    ext.composeVersion = "1.2.1"
+    ext.composeVersion = "1.3.1"
     ext.navigationVersion = "2.5.1"
 
     repositories {
@@ -36,10 +36,6 @@ allprojects {
 
         maven {
             url 'https://oss.sonatype.org/content/repositories/snapshots'
-        }
-        maven {
-            name = "fhirsdk"
-            url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
         }
         maven {
             url 'https://jcenter.bintray.com/'

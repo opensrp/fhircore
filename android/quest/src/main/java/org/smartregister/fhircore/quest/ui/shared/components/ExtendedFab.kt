@@ -18,36 +18,32 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val FAB_BUTTON_ROW_TEST_TAG = "fabButtonRowTestTag"
 const val FAB_BUTTON_ROW_TEXT_TEST_TAG = "fabButtonRowTextTestTag"
 const val FAB_BUTTON_ROW_ICON_TEST_TAG = "fabButtonRowIconTestTag"
-private val ExtendedFabIconPadding = 12.dp
-private val ExtendedFabTextPadding = 20.dp
 
 @Composable
 fun ExtendedFab(
@@ -55,50 +51,46 @@ fun ExtendedFab(
   fabActions: List<NavigationMenuConfig>,
   resourceData: ResourceData? = null,
   navController: NavController,
-  icon: ImageVector = Icons.Filled.Add,
 ) {
+  val firstFabAction = remember { fabActions.first() }
+  val firstFabEnabled =
+    firstFabAction.enabled.interpolate(resourceData?.computedValuesMap ?: emptyMap()).toBoolean()
+
   FloatingActionButton(
-    contentColor = Color.White,
+    contentColor = if (firstFabEnabled) Color.White else DefaultColor,
     shape = CircleShape,
     onClick = {
-      fabActions
-        .first()
-        .actions
-        ?.handleClickEvent(navController = navController, resourceData = resourceData)
-    },
-    backgroundColor = MaterialTheme.colors.primary,
-    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG)
-  ) {
-    val text = fabActions.first().display.uppercase()
-    val iconComposable =
-      @Composable
-      {
-        Icon(
-          imageVector = icon,
-          contentDescription = null,
-          modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG)
+      if (firstFabEnabled) {
+        firstFabAction.actions?.handleClickEvent(
+          navController = navController,
+          resourceData = resourceData
         )
       }
-    val padding = if (text.isBlank()) ExtendedFabIconPadding else ExtendedFabTextPadding
-    val isTextOnly = fabActions.first().menuIconConfig == null
+    },
+    backgroundColor =
+      if (firstFabEnabled) MaterialTheme.colors.primary else DefaultColor.copy(alpha = 0.25f),
+    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG),
+  ) {
+    val text = remember { firstFabAction.display.uppercase() }
+    val firstMenuIconConfig = remember { firstFabAction.menuIconConfig }
 
     Row(
       modifier =
-        Modifier.padding(
-            start = padding,
-            end = if (text.isNotBlank()) ExtendedFabTextPadding else padding
-          )
-          .testTag(FAB_BUTTON_ROW_TEST_TAG),
+        modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag(FAB_BUTTON_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.Center
     ) {
-      if (isTextOnly.not()) {
-        iconComposable()
+      if (firstMenuIconConfig != null) {
+        MenuIcon(
+          menuIconConfig = firstMenuIconConfig,
+          color = if (firstFabEnabled) Color.White else DefaultColor,
+          paddingEnd = if (text.isNotEmpty()) 8 else 0,
+          modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG)
+        )
       }
-      if (text.isNotBlank()) {
-        if (isTextOnly.not()) Spacer(Modifier.width(ExtendedFabIconPadding))
+      if (text.isNotEmpty()) {
         Text(
-          text = fabActions.first().display.uppercase(),
+          text = firstFabAction.display.uppercase(),
           modifier.testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
         )
       }
@@ -108,9 +100,49 @@ fun ExtendedFab(
 
 @Composable
 @Preview(showBackground = true)
+fun PreviewDisabledExtendedFab() {
+  ExtendedFab(
+    fabActions =
+      listOf(
+        NavigationMenuConfig(
+          id = "test",
+          display = "Fab Button",
+          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add"),
+          enabled = "false"
+        )
+      ),
+    navController = rememberNavController()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
 fun PreviewExtendedFab() {
   ExtendedFab(
-    fabActions = listOf(NavigationMenuConfig(id = "test", display = "Fab Button")),
+    fabActions =
+      listOf(
+        NavigationMenuConfig(
+          id = "test",
+          display = "Fab Button",
+          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add")
+        )
+      ),
+    navController = rememberNavController()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+fun PreviewExtendedFabJustIcon() {
+  ExtendedFab(
+    fabActions =
+      listOf(
+        NavigationMenuConfig(
+          id = "test",
+          display = "",
+          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add")
+        )
+      ),
     navController = rememberNavController()
   )
 }

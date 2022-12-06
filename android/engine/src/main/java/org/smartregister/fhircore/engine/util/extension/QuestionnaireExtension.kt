@@ -20,10 +20,23 @@ import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Locale
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.TimeType
+import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.UriType
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
   this.linkId
@@ -118,5 +131,40 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
     if (it.item.isNotEmpty()) {
       it.item.find(fieldType, value, target)
     }
+  }
+}
+
+/** Pre-Populate Questionnaire items with initial values */
+fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
+  prePopulationParams: List<ActionParameter>
+) {
+  forEach { item ->
+    prePopulationParams.firstOrNull { it.linkId == item.linkId }?.let { actionParam ->
+      item.initial =
+        arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+          Questionnaire.QuestionnaireItemInitialComponent().apply {
+            value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+          }
+        )
+    }
+    if (item.item.isNotEmpty()) {
+      item.item.prePopulateInitialValues(prePopulationParams)
+    }
+  }
+}
+
+/** Cast string value (including json string) to the FHIR {@link org.hl7.fhir.r4.model.Type} */
+fun String.castToType(type: DataType): Type? {
+  return when (type) {
+    DataType.BOOLEAN -> BooleanType(this)
+    DataType.DECIMAL -> DecimalType(this)
+    DataType.INTEGER -> IntegerType(this)
+    DataType.DATE -> DateType(this)
+    DataType.DATETIME -> DateTimeType(this)
+    DataType.TIME -> TimeType(this)
+    DataType.STRING -> StringType(this)
+    DataType.URI -> UriType(this)
+    DataType.CODING -> this.tryDecodeJson<Coding>()
+    DataType.QUANTITY -> this.tryDecodeJson<Quantity>()
   }
 }

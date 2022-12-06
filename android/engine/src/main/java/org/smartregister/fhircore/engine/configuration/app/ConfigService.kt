@@ -16,15 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import android.content.Context
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -37,15 +31,6 @@ interface ConfigService {
 
   /** Define a list of [ResourceTag] for the application. */
   fun defineResourceTags(): List<ResourceTag>
-
-  fun scheduleFhirTaskPlanWorker(context: Context) {
-    WorkManager.getInstance(context)
-      .enqueueUniquePeriodicWork(
-        FhirTaskPlanWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.REPLACE,
-        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
-      )
-  }
 
   /**
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to

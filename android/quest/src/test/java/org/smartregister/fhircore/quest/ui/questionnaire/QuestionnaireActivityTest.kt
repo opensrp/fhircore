@@ -132,7 +132,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
-    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply { id = "12345" }
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
       QuestionnaireResponse()
 
@@ -272,6 +273,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testGetQuestionnaireResponseShouldHaveSubjectAndDate() {
+    var questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertNull(questionnaireResponse.id)
+    Assert.assertNull(questionnaireResponse.authored)
+
+    questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+    Assert.assertEquals(
+      "Patient/${questionnaireConfig.resourceIdentifier}",
+      questionnaireResponse.subject.reference
+    )
+    Assert.assertEquals("Questionnaire/12345", questionnaireResponse.questionnaire)
+  }
+
+  @Test
   fun testOnBackPressedShouldShowConfirmAlert() {
     questionnaireActivity.onBackPressed()
 
@@ -387,7 +406,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() {
     val questionnaire = buildQuestionnaireWithConstraints()
 
-    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(resource = any()) } just runs
     every { questionnaireFragment.getQuestionnaireResponse() } returns
       QuestionnaireResponse().apply {
         addItem().apply { linkId = "1" }

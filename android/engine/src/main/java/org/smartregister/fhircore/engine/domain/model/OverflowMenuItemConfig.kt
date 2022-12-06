@@ -27,5 +27,6 @@ data class OverflowMenuItemConfig(
   val backgroundColor: String? = null,
   val visible: String,
   val showSeparator: Boolean = false,
+  val enabled: String = "true",
   val actions: List<ActionConfig> = emptyList()
 )

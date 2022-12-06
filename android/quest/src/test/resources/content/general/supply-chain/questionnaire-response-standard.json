@@ -1,16 +1,37 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "status": "in-progress",
-  "subject": {
-    "reference": "Group/test_group"
+  "id": "66e66bec-2de1-4722-b7a1-cf3d17649566",
+  "meta": {
+    "lastUpdated": "2022-10-28T19:32:56.089+00:00",
+    "tag": [
+      {
+        "system": "https://smartregister.org/",
+        "code": "5",
+        "display": "Practitioner Location"
+      }
+    ]
   },
+  "questionnaire": "Questionnaire/a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+  "subject": {
+    "reference": "Group/1a06dc73-575f-4cff-9424-c95605ba7c30"
+  },
+  "authored": "2022-10-28T19:32:52+00:00",
   "item": [
+    {
+      "linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
+      "text": "Commodity:",
+      "answer": [
+        {
+          "valueString": "Disposable Gloves"
+        }
+      ]
+    },
     {
       "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
       "text": "Current Stock Balance:",
       "answer": [
         {
-          "valueInteger": 34
+          "valueInteger": 0
         }
       ]
     },
@@ -19,7 +40,7 @@
       "text": "Damaged Stock",
       "answer": [
         {
-          "valueInteger": 3
+          "valueInteger": 5
         }
       ]
     },
@@ -28,7 +49,7 @@
       "text": "Expired Stock",
       "answer": [
         {
-          "valueInteger": 4
+          "valueInteger": 5
         }
       ]
     },
@@ -37,7 +58,16 @@
       "text": "Stock on hand (no damaged/expired)",
       "answer": [
         {
-          "valueInteger": 5
+          "valueInteger": 10
+        }
+      ]
+    },
+    {
+      "linkId": "6feb8bd4-701d-4864-aa4e-16e2b9332880",
+      "text": "Adjust Stock By (Hidden) - not absolute",
+      "answer": [
+        {
+          "valueInteger": 20
         }
       ]
     },
@@ -46,22 +76,19 @@
       "text": "Adjust stock by",
       "answer": [
         {
-          "valueInteger": 2
+          "valueInteger": 20
         }
       ]
-    },
-    {
-      "linkId": "34b5c839-baec-4f44-dfd3-77518b9411a9",
-      "text": "Reason for stock level difference"
     },
     {
       "linkId": "33b60f38-d578-4ac6-ae1b-a3919165fb31",
       "answer": [
         {
           "valueCoding": {
+            "id": "da73dce1-fed7-464a-9387-a440f1d96e19",
+            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3",
             "code": "donation",
-            "display": "Donation",
-            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
+            "display": "Donation"
           }
         }
       ]
@@ -71,28 +98,7 @@
       "text": "Quantity for Donation",
       "answer": [
         {
-          "valueInteger": 2
-        }
-      ]
-    },
-    {
-      "linkId": "b04daeab-23fa-4bd7-dbb8-893d0774931d",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "over-reporting",
-            "display": "Over-reporting",
-            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "66e1ca2e-a46a-42e2-c397-a12c30b8525e",
-      "text": "Quantity for Over reporting",
-      "answer": [
-        {
-          "valueInteger": 3
+          "valueInteger": 14
         }
       ]
     },
@@ -101,9 +107,10 @@
       "answer": [
         {
           "valueCoding": {
+            "id": "da73dce1-fed7-464a-9387-a440f1d96e19",
+            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3",
             "code": "under-reporting",
-            "display": "Under-reporting",
-            "system": "urn:uuid:73a7e156-6ce7-4660-8fa7-dad9cf6a49e3"
+            "display": "Under-reporting"
           }
         }
       ]
@@ -113,7 +120,16 @@
       "text": "Quantity for Under reporting",
       "answer": [
         {
-          "valueInteger": 3
+          "valueInteger": 6
+        }
+      ]
+    },
+    {
+      "linkId": "ff0821a9-29ce-4fbf-8498-c6668fd36594",
+      "text": "Adjustment Validation Value (Hidden)",
+      "answer": [
+        {
+          "valueInteger": 0
         }
       ]
     },
@@ -122,7 +138,7 @@
       "text": "Quantity Restocked",
       "answer": [
         {
-          "valueInteger": 78
+          "valueInteger": 40
         }
       ]
     }

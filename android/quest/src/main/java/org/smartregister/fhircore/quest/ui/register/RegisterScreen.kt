@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +43,7 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
@@ -69,9 +69,9 @@ fun RegisterScreen(
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
-
   Scaffold(
     topBar = {
       Column {
@@ -80,10 +80,16 @@ fun RegisterScreen(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           }
-        ) { openDrawer(true) }
+        ) {
+          when (toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+            ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+          }
+        }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
@@ -155,19 +161,21 @@ fun NoRegisterDataView(
       fontSize = 15.sp,
       color = Color.Gray
     )
-    Button(
-      modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-      onClick = onClick
-    ) {
-      Icon(
-        imageVector = Icons.Filled.Add,
-        contentDescription = null,
-        modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
-      )
-      Text(
-        text = noResults.actionButton?.display?.uppercase().toString(),
-        modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
-      )
+    if (noResults.actionButton != null) {
+      Button(
+        modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+        onClick = onClick
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          contentDescription = null,
+          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+        )
+        Text(
+          text = noResults.actionButton?.display?.uppercase().toString(),
+          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
+        )
+      }
     }
   }
 }
