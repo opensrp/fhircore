@@ -1,6 +1,6 @@
-## **Keycloak Auth Token Configuration**
+# Keycloak Auth Token Configuration
 
-### Access token and refresh token lifespans
+## Access token and refresh token lifespans
 When making API requests, the app uses an access token that represent authorizaton to access resources on the server. 
 
 When the access token expires, the app will attempt to renew it using a refresh token. 

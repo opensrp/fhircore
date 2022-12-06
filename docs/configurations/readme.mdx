@@ -1,15 +1,13 @@
-# FHIR Core Configuration
+# Configurations
 
- ### Jump to section  
-  * [Introduction](#introduction)  
-  * [Configuration Types](#configuration-types)  
-  * [Config Conventions](#config-conventions)  
-  * [FAQs](#faqs)  
-  * [Troubleshooting](#troubleshooting)  
-  * [References](#references)  
+## Jump to section
+* [Introduction](#introduction)
+* [Configuration Types](#configuration-types)
+* [Config Conventions](#config-conventions)
+* [FAQs](#faqs)
+* [Troubleshooting](#troubleshooting)
 
-
-### Introduction
+## Introduction
 
 A FHIR Core application needs configurations to work properly. These configurations are used to define application workflows (or events), user interface content, which user interface component to display and which data (FHIR Resources) to load.
 
@@ -18,7 +16,7 @@ FHIR Core configs are represented using two types of FHIR resources ([Compositio
 A `Composition` resource acts as the application  config manifest. It MUST have a unique identifier to differentiate the application from the rest of the applications sharing the same server.
 
 
-### Configuration Types
+## Configuration Types
 
 FHIR Core supports the following types of configurations:
 
@@ -36,31 +34,17 @@ FHIR Core supports the following types of configurations:
 >NOTE: Cardinality chart: 1..1 ( only one required); 1..* (can be multiple);  0..1 (optional)
 
 
-### Config Conventions
+## Config Conventions
 
  - Config attributes and types  should be in camelCase e.g. `application.deviceToDeviceSync`
  - Some config values are expected to be `enum classes`  constants. They MUST be provided in UPPER_SNAKE_CASE e.g the valid `ServiceStatus` values include: `DUE`, `OVERDUE`, `UPCOMING` and `COMPLETED`
  - Computed configuration values use `@{placeholder}` format to reference the name of the computed rule. The placeholder will be replaced with an actual value at runtime.
 
-### FAQs
+## FAQs
 1. How do I come up with a name for the app id: _app Ids should be short, human readable and easy to remember. Different application should not share the same app id. Examples of good app Ids: quest, g6pd etc. You can derive an app Id after the name of the client project._
 
 2. Can I share configurations between two apps?: _yes and no. Yes when the configs are available in the same server. This is however not recommended_
 
-### Troubleshooting
+## Troubleshooting
 - `Missing Resource ` - Check whether the referenced Binary resource exists in the server. Could be a typo in the Composition resource or you forgot include the Binary resource to the Composition section.
 - `Error loading configuration. Details : Key application is missing in the map` - Composition resource for the given application ID is missing.
-
-### References
-Refer to the following links for in-depth description of every config; including JSON samples.
-
-1. [Composition config](composition-config.md)
-2. [Application config](application-config.md)
-3. [Navigation config](navigation-config.md)
-4. [Sync config](sync-config.md)
-5. [Register config](register-config.md)
-6. [Profile config](profile-config.md)
-7. [GeoWidget config](geowidget-config.md)
-8. [MeasureReport config](measure-report-config.md)
-9. [Rules-engine](rules-engine.md)
-10. [View configurations](view-configurations.md)

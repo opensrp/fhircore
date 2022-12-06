@@ -1,8 +1,3 @@
-
-[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee9b6f38b7294fa3aa668e42e52fdf21)](https://www.codacy.com/gh/opensrp/fhircore/dashboard)
-
 # OpenSRP FHIR Core
 
 ### Introduction
@@ -27,9 +22,9 @@ FHIR Core also interoperates well with:
 
 [//]: # (<center><img width=400 src="assets/fhircore.png"/></center>)
 
-### About this repository
+### About the GitHub repository
 
-This repository contains the following directories:
+The repository contains the following directories:
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
@@ -42,7 +37,7 @@ Kotlin -[v1.7.10](https://kotlinlang.org/)
 
 #### Android libraries used
 
-1. [Hilt](https://developer.android.com/training/dependency-injection/hilt-multi-module)- for dependency injection  
+1. [Hilt](https://developer.android.com/training/dependency-injection/hilt-multi-module)- for dependency injection
 2. [Jetpack Compose](https://developer.android.com/jetpack/compose/documentation) - for building sharable declarative Android UI
 3. [Jetpack Compose navigation](https://developer.android.com/jetpack/compose/navigation) - to navigate between compose screens
 4. [Android navigation component](https://developer.android.com/guide/navigation) - to navigate between activities and fragments
@@ -52,12 +47,12 @@ Kotlin -[v1.7.10](https://kotlinlang.org/)
 #### Architecture
 
 The app is architectured in the following manner:
-1. The app is built around MVVM architecuture with the data layer implemented using the Repository pattern. 
+1. The app is built around MVVM architecuture with the data layer implemented using the Repository pattern.
 2. The entry point of the application also follows Single-Activity architecture after the user is logged in.
 
 #### Data access
 
-The application uses FHIR Engine APIs from Google's [Android FHIR SDK](https://github.com/google/android-fhir) (which internally uses 
+The application uses FHIR Engine APIs from Google's [Android FHIR SDK](https://github.com/google/android-fhir) (which internally uses
 [Room](https://developer.android.com/jetpack/androidx/releases/room) libary) to access the local Sqlite database.
 
 
@@ -69,7 +64,7 @@ The application syncs particular resources (conventionally, Composition and Bina
 #### Tests
 
 This repository also includes:
-1. Unit tests 
+1. Unit tests
 2. UI and integration tests
 
 

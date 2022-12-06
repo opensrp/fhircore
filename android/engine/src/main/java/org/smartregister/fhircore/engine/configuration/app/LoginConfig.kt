@@ -21,6 +21,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoginConfig(
   val showLogo: Boolean = true,
-  val enablePin: Boolean? = false,
-  val darkMode: Boolean = false
+  val enablePin: Boolean? = false
 )
