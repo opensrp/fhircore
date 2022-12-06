@@ -198,11 +198,11 @@ constructor(
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
-  private val _username = MutableLiveData<String>()
+  private val _username = MutableLiveData("")
   val username: LiveData<String>
     get() = _username
 
-  private val _password = MutableLiveData<String>()
+  private val _password = MutableLiveData("")
   val password: LiveData<String>
     get() = _password
 
@@ -227,12 +227,12 @@ constructor(
 
   fun onUsernameUpdated(username: String) {
     _loginErrorState.postValue(null)
-    _username.postValue(username)
+    _username.value = username
   }
 
   fun onPasswordUpdated(password: String) {
     _loginErrorState.postValue(null)
-    _password.postValue(password)
+    _password.value = password
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
