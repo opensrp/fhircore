@@ -33,7 +33,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -109,5 +108,4 @@ class ProfileViewModelTest : RobolectricTest() {
     profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
     coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
-  
 }
