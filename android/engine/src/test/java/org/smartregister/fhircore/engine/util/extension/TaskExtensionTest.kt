@@ -25,8 +25,6 @@ import org.junit.Test
 
 class TaskExtensionTest {
 
-  private val testZoneId: ZoneId = ZoneId.of("UTC")
-
   @Test
   fun testHasPastEnd() {
     val task = Task().apply { executionPeriod.end = Date() }
@@ -45,7 +43,7 @@ class TaskExtensionTest {
     val anotherTask =
       Task().apply {
         executionPeriod.end =
-          Date.from(LocalDate.now(testZoneId).plusDays(8).atStartOfDay(testZoneId).toInstant())
+          Date.from(LocalDate.now().plusDays(8).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
     Assert.assertFalse(anotherTask.hasStarted())
   }
@@ -55,20 +53,27 @@ class TaskExtensionTest {
     val task1 =
       Task().apply {
         executionPeriod.start =
-          Date.from(LocalDate.now(testZoneId).minusDays(2).atStartOfDay(testZoneId).toInstant())
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
     task1.apply {
       executionPeriod.end =
-        Date.from(LocalDate.now(testZoneId).minusDays(1).atStartOfDay(testZoneId).toInstant())
+        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
     Assert.assertTrue(task1.isReady())
 
     val task2 =
       Task().apply {
         executionPeriod.start =
-          Date.from(LocalDate.now(testZoneId).plusDays(3).atStartOfDay(testZoneId).toInstant())
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
-    Assert.assertFalse(task2.isReady())
+    Assert.assertTrue(task2.isReady())
+
+    val task3 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    Assert.assertFalse(task3.isReady())
   }
 
   @Test
@@ -76,14 +81,14 @@ class TaskExtensionTest {
     val task1 =
       Task().apply {
         executionPeriod.start =
-          Date.from(LocalDate.now(testZoneId).minusDays(2).atStartOfDay(testZoneId).toInstant())
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
 
     Assert.assertTrue(task1.executionStartIsBeforeOrToday())
 
     task1.apply {
       executionPeriod.start =
-        Date.from(LocalDate.now(testZoneId).plusDays(1).atStartOfDay(testZoneId).toInstant())
+        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
 
     Assert.assertFalse(task1.executionStartIsBeforeOrToday())
@@ -94,14 +99,14 @@ class TaskExtensionTest {
     val task1 =
       Task().apply {
         executionPeriod.end =
-          Date.from(LocalDate.now(testZoneId).minusDays(2).atStartOfDay(testZoneId).toInstant())
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
 
     Assert.assertTrue(task1.executionEndIsBeforeOrToday())
 
     task1.apply {
       executionPeriod.end =
-        Date.from(LocalDate.now(testZoneId).plusDays(1).atStartOfDay(testZoneId).toInstant())
+        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
 
     Assert.assertFalse(task1.executionEndIsBeforeOrToday())

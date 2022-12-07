@@ -60,6 +60,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)
-    Assert.assertEquals(1, appConfig.periodicTaskUpdateInterval)
+    Assert.assertEquals("PT01H", appConfig.taskUpdateInterval)
   }
 }
