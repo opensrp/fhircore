@@ -322,7 +322,11 @@ constructor(
       applicationConfiguration.registerDate
     )
 
-    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 60)
+    FhirTaskExpireJob.schedule(
+      workManager,
+      sharedPreferencesHelper,
+      applicationConfiguration.taskExpireJobRepeatIntervalConfig
+    )
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
