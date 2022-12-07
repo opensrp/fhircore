@@ -103,10 +103,7 @@ class FhirTaskExpireJobTest : RobolectricTest() {
     var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
     FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
-    val workInfo =
-      workManager
-        .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
-        .get()[0]
+    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG).get()[0]
 
     FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 2)
 
@@ -124,10 +121,7 @@ class FhirTaskExpireJobTest : RobolectricTest() {
     var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
     FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
-    val workInfo =
-      workManager
-        .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
-        .get()[0]
+    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG).get()[0]
 
     FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 1)
 

@@ -77,8 +77,7 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
           .setInitialDelay(durationInMins, TimeUnit.MINUTES)
           .build()
 
-      workManager
-        .enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
+      workManager.enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
     }
   }
 

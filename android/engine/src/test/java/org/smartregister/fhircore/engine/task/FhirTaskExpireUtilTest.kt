@@ -66,9 +66,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
             status = TaskStatus.INPROGRESS
             authoredOn = Date()
             restriction =
-              Task.TaskRestrictionComponent().apply {
-                period = Period().apply { end = today() }
-              }
+              Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
           }
         )
       )
@@ -111,9 +109,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
           id = UUID.randomUUID().toString()
           status = TaskStatus.INPROGRESS
           restriction =
-            Task.TaskRestrictionComponent().apply {
-              period = Period().apply { end = today() }
-            }
+            Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
         }
       )
     }
