@@ -25,4 +25,7 @@ data class MeasureReportConfig(
   val description: String = "",
   val url: String = "",
   val module: String = "",
+  val chartType: String =
+    "pie_chart", // default pie_chart - type can be same for each indicator and different for
+// each indicator
 )

@@ -27,5 +27,5 @@ data class MeasureReportIndividualResult(
   val description: String = "",
   val title: String = "",
   val percentage: String = "",
-  val count: String = ""
+  val count: Int = 0
 )

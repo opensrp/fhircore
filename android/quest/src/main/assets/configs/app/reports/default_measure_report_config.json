@@ -11,35 +11,40 @@
       "title": "TB Clients",
       "description": "TB Clients disaggregated by age, gender, and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/TBCLIENTSIND01",
-      "module": "Module 1 indicators"
+      "module": "Module 1 indicators",
+      "chartType": "pie_chart"
     },
     {
       "id": "4",
       "title": "HIV Clients",
       "description": "HIV Clients disaggregated by age, gender, and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/HIVCLIENTSIND01",
-      "module": "Module 1 indicators"
+      "module": "Module 1 indicators",
+      "chartType": "pie_chart"
     },
     {
       "id": "5",
       "title": "Births Home",
       "description": "Births at Home disaggregated by gender, and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Births01",
-      "module": "Module 1 indicators"
+      "module": "Module 1 indicators",
+      "chartType": "pie_chart"
     },
     {
       "id": "6",
       "title": "Births Facility",
       "description": "Births at Facility disaggregated by gender, and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Births02",
-      "module": "Module 1 indicators"
+      "module": "Module 1 indicators",
+      "chartType": "pie_chart"
     },
     {
       "id": "7",
       "title": "Stillbirths",
       "description": "Stillbirths disaggregated by months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Stillbirth01",
-      "module": "Module 2 indicators"
+      "module": "Module 2 indicators",
+      "chartType": "bar_chart"
     },
     {
       "id": "8",
@@ -60,21 +65,24 @@
       "title": "Deaths Children Under 5Y",
       "description": "Deaths Children Under 5Y disaggregated by gender and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths03",
-      "module": "Module 3 indicators"
+      "module": "Module 3 indicators",
+      "chartType": "line_chart"
     },
     {
       "id": "11",
       "title": "Deaths Maternal",
       "description": "Deaths Maternal disaggregated by age and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths04",
-      "module": "Module 3 indicators"
+      "module": "Module 3 indicators",
+      "chartType": "line_chart"
     },
     {
       "id": "12",
       "title": "Deaths Persons Over 5Y",
       "description": "Deaths Persons over 5Y disaggregated by gender, age and months",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths05",
-      "module": "Module 3 indicators"
+      "module": "Module 3 indicators",
+      "chartType": "line_chart"
     }
   ]
 }

@@ -51,6 +51,13 @@ fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String 
   return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
 }
 
+fun MeasureReport.StratifierGroupComponent.calculateDivision(denominator: Int?): Int {
+  if (denominator == 0) {
+    return 0
+  }
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)?.count?.div(denominator!!) ?: 0
+}
+
 fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
   return if (denominator == 0) 0
   else findPopulation(MeasurePopulationType.NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
