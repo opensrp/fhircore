@@ -833,14 +833,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/disease-followup/plan-definition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/disease-followup/patient.json".readFile().decodeResourceFromString<Patient>()
     val diseaseFollowUpQuestionnaireResponseString =
       "plans/disease-followup/questionnaire-response.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
