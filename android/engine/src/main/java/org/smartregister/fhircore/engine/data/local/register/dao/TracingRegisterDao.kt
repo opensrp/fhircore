@@ -80,7 +80,7 @@ constructor(
 
     val tracingPatients =
       fhirEngine.search<Patient> {
-        has<Task>(Task.PATIENT) { validTasksFilters() }
+        has<Task>(Task.SUBJECT) { validTasksFilters() }
         count =
           if (loadAll) countRegisterData(appFeatureName).toInt()
           else PaginationConstant.DEFAULT_PAGE_SIZE
@@ -98,7 +98,7 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    val patients = fhirEngine.search<Patient> { has<Task>(Task.PATIENT) { validTasksFilters() } }
+    val patients = fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }
     return patients.count { validTasks(it).any() }.toLong()
   }
 
@@ -109,7 +109,7 @@ constructor(
     val patientTasks =
       fhirEngine.search<Task> {
         validTasksFilters()
-        filter(Task.PATIENT, { value = patient.referenceValue() })
+        filter(Task.SUBJECT, { value = patient.referenceValue() })
       }
     return patientTasks.filter {
       it.executionPeriod.hasStart() && it.executionPeriod.start.before(Date())

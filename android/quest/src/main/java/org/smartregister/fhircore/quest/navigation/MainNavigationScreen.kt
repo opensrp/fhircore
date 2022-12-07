@@ -50,7 +50,8 @@ sealed class MainNavigationScreen(
         PatientGuardians,
         FamilyProfile,
         ViewChildContacts,
-        GuardianProfile
+        GuardianProfile,
+        TracingProfile
       )
   }
 }
