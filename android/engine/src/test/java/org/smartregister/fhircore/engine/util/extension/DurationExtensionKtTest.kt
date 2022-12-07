@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.extensions
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlin.time.Duration
+import java.time.Duration
+import kotlin.time.Duration as KotlinDuration
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.util.extension.tryParse
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class DurationExtensionKtTest : RobolectricTest() {
 
   @Test
   fun `parsing an ISO-8601 format string returns the correct duration`() {
     val durationString = "PT02H"
-    Assert.assertEquals(java.time.Duration.ofHours(2), Duration.Companion.tryParse(durationString))
+    Assert.assertEquals(Duration.ofHours(2), KotlinDuration.tryParse(durationString))
   }
 
   @Test
   fun `parsing a wrong ISO-8601 format string returns the default duration of 1 day`() {
     val durationString = "PTH2"
-    Assert.assertEquals(java.time.Duration.ofDays(1), Duration.Companion.tryParse(durationString))
+    Assert.assertEquals(Duration.ofDays(1), KotlinDuration.tryParse(durationString))
   }
 }
