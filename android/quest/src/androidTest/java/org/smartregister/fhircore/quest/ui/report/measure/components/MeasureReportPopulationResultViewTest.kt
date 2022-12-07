@@ -31,24 +31,28 @@ class MeasureReportPopulationResultViewTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val measureReportIndividualResultList =
-      listOf(
-          MeasureReportIndividualResult(
-              status = "Test Status",
-              isMatchedIndicator = false,
-              description = "This is sample description",
-              title = "Title Individual Result",
-              percentage = "50.0",
-              count = 10))
+    listOf(
+      MeasureReportIndividualResult(
+        status = "Test Status",
+        isMatchedIndicator = false,
+        description = "This is sample description",
+        title = "Title Individual Result",
+        percentage = "50.0",
+        count = 10
+      )
+    )
 
   private val measureReportPopulationResultList =
-      listOf(
-          MeasureReportPopulationResult(
-              title = "Population Title",
-              count = "2",
-              indicatorTitle = "Indicator1",
-              dataList = measureReportIndividualResultList,
-              chartType = "pie_chart",
-              measureReportDenominator = 10))
+    listOf(
+      MeasureReportPopulationResult(
+        title = "Population Title",
+        count = "2",
+        indicatorTitle = "Indicator1",
+        dataList = measureReportIndividualResultList,
+        chartType = "pie_chart",
+        measureReportDenominator = 10
+      )
+    )
 
   @Before
   fun setup() {
@@ -62,32 +66,33 @@ class MeasureReportPopulationResultViewTest {
   fun testPopulationResultCardRendersPopulationTitleCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-        .onNodeWithText(measureReportPopulationResultList.first().title.uppercase())
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithText(measureReportPopulationResultList.first().title.uppercase())
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
   fun testPopulationResultCardRendersPopulationIndicatorCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_INDICATOR_TITLE, useUnmergedTree = true).assertExists()
     composeTestRule
-        .onNodeWithText(measureReportPopulationResultList.first().indicatorTitle.uppercase())
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithText(measureReportPopulationResultList.first().indicatorTitle.uppercase())
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
   fun testPopulationResultCardRendersPopulationCountCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-        .onNodeWithText(
-            measureReportPopulationResultList.first().measureReportDenominator.toString())
-        .assertExists()
-        .assertIsDisplayed()
+      .onNodeWithText(measureReportPopulationResultList.first().measureReportDenominator.toString())
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
   fun testPopulationResultCardRendersPieChartCorrectly() {
-    composeTestRule.onNodeWithTag(POPULATION_RESULT_PIE_CHART, useUnmergedTree = true).assertExists()
+    composeTestRule
+      .onNodeWithTag(POPULATION_RESULT_PIE_CHART, useUnmergedTree = true)
+      .assertExists()
   }
 }
