@@ -79,6 +79,11 @@ class MeasureExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `calculateDivision should return correct division for stratum with given denominator`() {
+    val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.calculateDivision(2)
+    assertEquals(1, result)
+  }
+  @Test
   fun `findPercentage should return correct percentage for stratum with given denominator`() {
     val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(10)
 

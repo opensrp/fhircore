@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.displayText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.calculateDivision
 import org.smartregister.fhircore.engine.util.extension.findPercentage
 import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
@@ -411,7 +412,7 @@ constructor(
                 MeasureReportIndividualResult(
                   title = it,
                   percentage = stats?.findPercentage(denominator)?.toString() ?: "0",
-                  count = stats?.findRatio(denominator) ?: 0
+                  count = stats?.calculateDivision(denominator) ?: 0
                 )
               )
             }
@@ -421,7 +422,7 @@ constructor(
                 MeasureReportIndividualResult(
                   title = stratum.displayText,
                   percentage = stratum.findPercentage(denominator).toString(),
-                  count = stratum.findRatio(denominator) ?: 0,
+                  count = stratum.calculateDivision(denominator) ?: 0,
                   description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
                 )
               }

@@ -49,14 +49,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 const val POPULATION_TITLE_TEST_TAG = "populationTitleTestTag"
 const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
 const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
-const val POPULATION_RESULT_CARD_DIVIDER_TEST_TAG = "populationResultCardDividerTestTag"
-const val POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG = "populationResultItemProgressBarTestTag"
-const val POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG =
-  "populationReportIndividualResultTitleTestTag"
-const val POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG =
-  "populationReportIndividualResultPercentageTestTag"
-const val POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG =
-  "populationReportIndividualResultCountTestTag"
+const val POPULATION_RESULT_PIE_CHART = "populationResultPieChart"
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
@@ -118,7 +111,7 @@ fun displayChart(resultItem: MeasureReportPopulationResult) {
         chartInput.add(PieChartInput(color = getRandomColor(), it.count, it.title))
       }
       PieChart(
-        modifier = Modifier.size(300.dp),
+        modifier = Modifier.size(300.dp).testTag(POPULATION_RESULT_PIE_CHART),
         input = chartInput,
         onReportMeasureClicked = {},
         titleColor = Color.White
