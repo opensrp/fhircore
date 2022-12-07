@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.util.UrlUtil
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -30,7 +29,6 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
-import org.opencds.cqf.cql.engine.serializing.jackson.JsonCqlMapper
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -50,26 +48,10 @@ suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Compos
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
-    if (!UrlUtil.isValid(path)) get(IdType(path).idPart)
-    else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+    runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
+      ?: search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
 
   library?.let {
-    JsonCqlMapper.getMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    it.content
-      .find { attachment -> attachment.contentType.contains(Regex(".*elm.*json.*")) }
-      ?.let { attachment ->
-        val data =
-          attachment
-            .data
-            .decodeToString()
-            .replace("\"translatorOptions\"", "\"type\" : \"CqlToElmInfo\",\"translatorOptions\"")
-            .replace("\"t\" :", "\"type\" : \"Annotation\",\"t\" :")
-            .replace("\"s\" : {", "\"type\" : \"Annotation\",\"s\" : {")
-            .replace("\"r\" : {", "\"type\" : \"Annotation\",\"r\" : {")
-            .replace("\"errorSeverity\" : ", "\"type\" : \"Locator\",\"errorSeverity\" : ")
-
-        attachment.data = data.encodeToByteArray()
-      }
     fhirOperator.loadLib(it)
 
     it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
