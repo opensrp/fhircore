@@ -407,11 +407,14 @@ constructor(
           )
         )
       }
-      .onSuccess { Timber.d("Questionnaire ${questionnaire.id} extracted successfully") }
+      .onSuccess { Timber.d("Questionnaire with ${questionnaire.id} extracted successfully") }
       .onFailure { exception ->
         Timber.e(exception)
+        questionnaire.getExtensionByUrl(EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP).let {
+          Timber.e("FAILED Target StructureMap ${it.value}")
+        }
         viewModelScope.launch {
-          if (exception.message!!.contains("StructureMap")) {
+          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(context.getString(R.string.structure_map_missing_message))
           } else {
             context.showToast(context.getString(R.string.structure_error_message))
@@ -574,5 +577,7 @@ constructor(
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
+    private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
   }
 }

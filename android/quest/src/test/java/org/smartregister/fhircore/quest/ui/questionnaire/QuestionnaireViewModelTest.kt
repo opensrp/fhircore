@@ -942,7 +942,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       NullPointerException(
-        "NullPointer Exception when invoking StructureMap on Null Object reference"
+        "NullPointerException when invoking StructureMap on Null Object reference"
       )
 
     coEvery {
