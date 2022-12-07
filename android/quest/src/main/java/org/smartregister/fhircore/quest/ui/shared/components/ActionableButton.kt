@@ -16,15 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -40,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -52,7 +50,10 @@ import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.clickable
+import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
@@ -66,9 +67,13 @@ fun ActionableButton(
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+    val buttonEnabled =
+      buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+    val clickable = buttonProperties.clickable(resourceData)
     OutlinedButton(
       onClick = {
-        if (status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED) {
+        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData
@@ -80,47 +85,55 @@ fun ActionableButton(
           backgroundColor =
             buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor =
-            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledContentColor = DefaultColor.copy(alpha = 0.9f),
         ),
       modifier =
         modifier
-          .fillMaxWidth()
-          .padding(top = 0.dp, start = 12.dp, end = 12.dp)
+          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() })
+          .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
-          .testTag(ACTIONABLE_BUTTON_TEST_TAG)
+          .testTag(ACTIONABLE_BUTTON_TEST_TAG),
+      enabled = buttonEnabled
     ) {
       Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier.wrapContentHeight().fillMaxWidth()
+        modifier = modifier.background(Color.Transparent),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        Spacer(modifier = modifier.weight(0.5f).wrapContentHeight())
         Icon(
-          modifier = modifier.size(16.dp),
           imageVector =
             if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
           contentDescription = null,
           tint =
-            when (status) {
-              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else ->
-                buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
-            }
+            if (buttonEnabled)
+              when (status) {
+                ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+                else -> statusColor.copy(alpha = 0.9f)
+              }
+            else DefaultColor.copy(alpha = 0.9f),
         )
-        Spacer(modifier = modifier.width(6.dp))
         Text(
           text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
           fontWeight = FontWeight.Medium,
           color =
-            if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
-            else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
+            if (buttonEnabled)
+              when (status) {
+                ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
+                else -> statusColor.copy(alpha = 0.9f)
+              }
+            else DefaultColor.copy(0.9f),
+          textAlign = TextAlign.Start,
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 2,
+          modifier = modifier.padding(horizontal = 4.dp),
         )
-        Spacer(modifier = modifier.weight(0.5f))
         if (status == ServiceStatus.COMPLETED) {
           Icon(
             imageVector = Icons.Filled.ArrowDropDown,
             contentDescription = null,
-            tint = DefaultColor.copy(alpha = 0.9f)
+            tint = DefaultColor.copy(alpha = 0.9f),
           )
         }
       }
@@ -145,6 +158,7 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
     ServiceStatus.COMPLETED -> DefaultColor
+    ServiceStatus.IN_PROGRESS -> WarningColor
   }
 }
 
@@ -159,21 +173,50 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
 @Composable
 @Preview(showBackground = true)
 fun ActionableButtonPreview() {
-  Column(modifier = Modifier.height(50.dp)) {
-    ActionableButton(
-      buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      resourceData = ResourceData(Patient()),
-      navController = rememberNavController()
-    )
-  }
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.IN_PROGRESS.name,
+        text = "ANC Visit",
+        smallSized = true,
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+fun DisabledActionableButtonPreview() {
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.COMPLETED.name,
+        text = "ANC Visit",
+        smallSized = true,
+        enabled = "false"
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 fun SmallActionableButtonPreview() {
-  Column(modifier = Modifier.height(50.dp)) {
+  Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
-      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task"),
+      modifier = Modifier.weight(1.0f),
+      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = false),
+      resourceData = ResourceData(Patient()),
+      navController = rememberNavController()
+    )
+    ActionableButton(
+      modifier = Modifier.weight(1.0f),
+      buttonProperties =
+        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = false),
       resourceData = ResourceData(Patient()),
       navController = rememberNavController()
     )

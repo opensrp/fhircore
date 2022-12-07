@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.navigation
 
 object NavigationArg {
 
-  const val FAMILY_ID = "familyId"
   const val REGISTER_ID = "registerId"
   const val PROFILE_ID = "profileId"
   const val FEATURE = "feature"
@@ -26,6 +25,8 @@ object NavigationArg {
   const val RESOURCE_ID = "resourceId"
   const val RESOURCE_CONFIG = "resourceConfig"
   const val CONFIG_ID = "configId"
+  const val REPORT_ID = "reportId"
+  const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
 
   /** Create route paths */
   fun routePathsOf(vararg navArg: String): String =

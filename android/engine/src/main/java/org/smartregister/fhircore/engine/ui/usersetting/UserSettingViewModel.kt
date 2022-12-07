@@ -25,6 +25,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -58,15 +59,11 @@ constructor(
 
   val showDBResetConfirmationDialog = MutableLiveData(false)
 
-  val showProgressBar = MutableLiveData(false)
+  val progressBarState = MutableLiveData(Pair(false, 0))
 
   fun runSync() {
+    // TODO to be reactivated
     syncBroadcaster.runSync()
-  }
-
-  fun logoutUser() {
-    onLogout.postValue(true)
-    accountAuthenticator.logout()
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
@@ -83,11 +80,10 @@ constructor(
   fun onEvent(event: UserSettingsEvent) {
     when (event) {
       is UserSettingsEvent.Logout -> {
-        accountAuthenticator.logout()
+        updateProgressBarState(true, R.string.logging_out)
+        accountAuthenticator.logout { updateProgressBarState(false, R.string.logging_out) }
       }
-      is UserSettingsEvent.SyncData -> {
-        syncBroadcaster.runSync()
-      }
+      is UserSettingsEvent.SyncData -> syncBroadcaster.runSync()
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
@@ -95,15 +91,12 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      is UserSettingsEvent.ShowResetDatabaseConfirmationDialog -> {
+      is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
         showResetDatabaseConfirmationDialogFlag(event.isShow)
-      }
-      is UserSettingsEvent.ResetDatabaseFlag -> {
+      is UserSettingsEvent.ResetDatabaseFlag ->
         if (event.isReset) this.resetDatabase(dispatcherProvider.io())
-      }
-      is UserSettingsEvent.ShowLoaderView -> {
-        showProgressViewFlag(true)
-      }
+      is UserSettingsEvent.ShowLoaderView ->
+        updateProgressBarState(event.show, event.messageResourceId)
     }
   }
 
@@ -111,8 +104,8 @@ constructor(
     showDBResetConfirmationDialog.postValue(isClearDatabase)
   }
 
-  fun showProgressViewFlag(isShown: Boolean) {
-    showProgressBar.postValue(isShown)
+  fun updateProgressBarState(isShown: Boolean, messageResourceId: Int) {
+    progressBarState.postValue(Pair(isShown, messageResourceId))
   }
 
   fun resetDatabase(ioDispatcherProviderContext: CoroutineContext) {

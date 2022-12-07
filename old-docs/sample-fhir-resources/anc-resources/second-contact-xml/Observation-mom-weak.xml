@@ -1,0 +1,33 @@
+<Observation xmlns='http://hl7.org/fhir'>
+  <encounter>
+    <reference value='Encounter/mom-second-contact'/>
+  </encounter>
+  <id value='mom-weak'/>
+  <status value='final'/>
+  <category>
+    <coding>
+      <system value='http://hl7.org/fhir/observation-category'/>
+      <code value='exam'/>
+    </coding>
+  </category>
+  <code>
+    <coding>
+      <system value='https://fhir.loinc.org/CodeSystem/$lookup?system=http://loinc.org&amp;code=71336-2'/>
+      <code value='71336-2'/>
+      <display value='Feeling weak and tired'/>
+    </coding>
+  </code>
+  <subject>
+    <reference value='Patient/exmaple'/>
+    <display value='Charity ANC'/>
+  </subject>
+  <effectivePeriod>
+    <start value='2021-02-09T15:30:00Z'/>
+    <end value='2021-02-09T15:30:00Z'/>
+  </effectivePeriod>
+  <issued value='2021-02-09T15:30:00Z'/>
+  <performer>
+    <reference value='Practitioner/midwife'/>
+    <display value='Midwife Amina'/>
+  </performer>
+</Observation>

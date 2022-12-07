@@ -73,7 +73,7 @@ fun PinSetupScreen(viewModel: PinViewModel) {
     setPinEnabled = enableSetPin ?: false,
     onPinConfirmed = viewModel::onPinConfirmed,
     onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked(true) },
   )
 }
 

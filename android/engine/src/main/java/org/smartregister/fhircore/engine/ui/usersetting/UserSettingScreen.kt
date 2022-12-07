@@ -77,12 +77,13 @@ fun UserSettingScreen(
   allowSwitchingLanguages: Boolean,
   selectedLanguage: String,
   languages: List<Language>,
-  isShowDatabaseResetConfirmation: Boolean,
-  isShowProgressBar: Boolean,
+  showDatabaseResetConfirmation: Boolean,
+  progressBarState: Pair<Boolean, Int>,
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
 ) {
   val context = LocalContext.current
+  val (showProgressBar, messageResource) = progressBarState
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
@@ -167,14 +168,14 @@ fun UserSettingScreen(
       Divider(color = DividerColor)
     }
 
-    if (isShowProgressBar) {
-      LoaderDialog(modifier = modifier, stringResource(id = R.string.resetting_app))
+    if (showProgressBar) {
+      LoaderDialog(modifier = modifier, stringResource(messageResource))
     }
 
-    if (isShowDatabaseResetConfirmation) {
+    if (showDatabaseResetConfirmation) {
       ConfirmClearDatabaseDialog(
         permanentResetDatabase = {
-          onEvent(UserSettingsEvent.ShowLoaderView)
+          onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
           onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
         },
         onDismissDialog = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false)) }

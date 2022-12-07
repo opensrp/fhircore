@@ -24,10 +24,16 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class ListProperties(
   override val viewType: ViewType,
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = "#FFFFFF",
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val baseResource: String,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
-  val padding: Int = 0,
-  val backgroundColor: String = "#FFFFFF"
 ) : ViewProperties()

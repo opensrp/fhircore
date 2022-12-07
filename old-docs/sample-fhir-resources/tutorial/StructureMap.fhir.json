@@ -1,0 +1,129 @@
+{
+    "resourceType": "StructureMap",
+    "id": "irs-task-transform",
+    "url": "http://hl7.org/fhir/StructureMap/irs-task-transform",
+    "name": "Transform from an ActivityDefinition to a Task",
+    "status": "draft",
+    "structure": [
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/activitydefinition",
+            "mode": "source"
+        },
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/task",
+            "mode": "target"
+        }
+    ],
+    "group": [
+        {
+            "name": "main",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "source",
+                    "type": "ActivityDefinition",
+                    "mode": "source"
+                },
+                {
+                    "name": "target",
+                    "type": "Task",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "status",
+                    "source": [
+                        {
+                            "context": "source",
+                            "element": "id",
+                            "variable": "a"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "target",
+                            "contextType": "variable",
+                            "element": "status",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueString": "'draft'"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "groupIdentifier",
+                    "source": [
+                        {
+                            "context": "source",
+                            "element": "id",
+                            "variable": "a"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "target",
+                            "contextType": "variable",
+                            "element": "groupIdentifier",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueString": "'non-stock'"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "priority",
+                    "source": [
+                        {
+                            "context": "source",
+                            "element": "id",
+                            "variable": "a"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "target",
+                            "contextType": "variable",
+                            "element": "priority",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueString": "'routine'"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "authoredOn",
+                    "source": [
+                        {
+                            "context": "source",
+                            "element": "id",
+                            "variable": "a"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "target",
+                            "contextType": "variable",
+                            "element": "authoredOn",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueString": "now()"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

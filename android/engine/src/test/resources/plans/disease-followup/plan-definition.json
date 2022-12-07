@@ -11,7 +11,7 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
-          "count": 30,
+          "count": 10,
           "duration": 2,
           "durationMax": 4,
           "durationUnit": "h",

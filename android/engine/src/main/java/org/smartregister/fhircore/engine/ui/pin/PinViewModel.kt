@@ -118,7 +118,15 @@ constructor(
     }
   }
 
-  fun onMenuLoginClicked() {
+  fun onMenuLoginClicked(setupPin: Boolean) {
+    // reset user credentials...
+    if (setupPin) {
+      secureSharedPreference.run {
+        deleteSessionTokens()
+        deleteSessionPin()
+        deleteCredentials()
+      }
+    } else secureSharedPreference.deleteSessionPin()
     _navigateToLogin.value = true
   }
 

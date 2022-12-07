@@ -307,7 +307,6 @@ The $evaluate-measure operation is used to calculate an eMeasure and obtain the 
    <td>0..1
    </td>
    <td><a href="https://www.hl7.org/fhir/datatypes.html#string">string</a>
-<p>
 (<a href="https://www.hl7.org/fhir/search.html#reference">reference</a>)
    </td>
    <td>The measure to evaluate. This parameter is only required when the operation is invoked on the resource type, it is not used when invoking the operation on a Measure instance
@@ -333,7 +332,7 @@ The $evaluate-measure operation is used to calculate an eMeasure and obtain the 
    <td>0..1
    </td>
    <td><a href="https://www.hl7.org/fhir/datatypes.html#string">string</a>
-<p>
+
 (<a href="https://www.hl7.org/fhir/search.html#reference">reference</a>)
    </td>
    <td>Subject for which the measure will be calculated. If not specified, the measure will be calculated for all subjects that meet the requirements of the measure. If specified, the measure will only be calculated for the referenced subject(s)
@@ -347,7 +346,6 @@ The $evaluate-measure operation is used to calculate an eMeasure and obtain the 
    <td>0..1
    </td>
    <td><a href="https://www.hl7.org/fhir/datatypes.html#string">string</a>
-<p>
 (<a href="https://www.hl7.org/fhir/search.html#reference">reference</a>)
    </td>
    <td>Practitioner for which the measure will be calculated. If specified, the measure will be calculated only for subjects that have a primary relationship to the identified practitioner

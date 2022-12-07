@@ -83,7 +83,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `perform disease extraction`() {
     val immunizationQuestionnaireResponseString: String =
       "content/general/disease-registration-resources/questionnaire_response.json".readFile()
-    val immunizationStructureMap = "content/general/disease-registration-resources/structure-map.txt".readFile()
+    val immunizationStructureMap =
+      "content/general/disease-registration-resources/structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -93,7 +94,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val transformSupportServices = TransformSupportServices(contextR4)
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(immunizationStructureMap, "eCBIS Family Registration")
+    val map = scu.parse(immunizationStructureMap, "eCBIS Disease Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
@@ -459,11 +460,11 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     System.out.println(iParser.encodeResourceToString(targetResource))
 
-    // for some weird reason, the `entry` has 9 resources instead of 8. The 1st resource is blank.
-    Assert.assertTrue(targetResource.entry.size == 9)
+    // for some weird reason, the `entry` has 8 resources instead of 7. The 1st resource is blank.
+    Assert.assertTrue(targetResource.entry.size == 8)
     Assert.assertTrue(targetResource.entry[2].resource is Observation)
 
-    val observation = targetResource.entry[8].resource as Observation
+    val observation = targetResource.entry[7].resource as Observation
     Assert.assertTrue(observation.code.text == "under-reporting")
   }
 }

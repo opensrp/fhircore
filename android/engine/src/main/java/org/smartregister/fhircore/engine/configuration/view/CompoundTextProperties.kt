@@ -16,12 +16,22 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
+  override val weight: Float = 0f,
+  override val backgroundColor: String? = null,
+  override val padding: Int = 0,
+  override val borderRadius: Int = 2,
+  override val alignment: ViewAlignment = ViewAlignment.NONE,
+  override val fillMaxWidth: Boolean = false,
+  override val fillMaxHeight: Boolean = false,
+  override val clickable: String = "false",
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
@@ -30,7 +40,20 @@ data class CompoundTextProperties(
   val fontSize: Float = 16.0f,
   val primaryTextBackgroundColor: String? = null,
   val secondaryTextBackgroundColor: String? = null,
-  val backgroundColor: String? = null,
-  val padding: Int = 0,
-  val fontWeight: String? = null // TODO make this an enum
+  val primaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
+  val secondaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
+  val primaryTextActions: List<ActionConfig> = emptyList(),
+  val secondaryTextActions: List<ActionConfig> = emptyList(),
 ) : ViewProperties()
+
+enum class TextFontWeight(val fontWeight: FontWeight) {
+  THIN(FontWeight.Thin),
+  BOLD(FontWeight.Bold),
+  EXTRA_BOLD(FontWeight.ExtraBold),
+  LIGHT(FontWeight.Light),
+  MEDIUM(FontWeight.Medium),
+  NORMAL(FontWeight.Normal),
+  BLACK(FontWeight.Black),
+  EXTRA_LIGHT(FontWeight.ExtraLight),
+  SEMI_BOLD(FontWeight.SemiBold),
+}

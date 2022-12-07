@@ -36,11 +36,13 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 class ConfigExtensionsKtTest : RobolectricTest() {
 
@@ -96,21 +98,27 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ActionConfig(
         id = "registerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        display = "menu",
+        toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
       )
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
         resourceData = resourceData,
-        navMenu = navigationMenuConfig
+        navMenu = navigationMenuConfig,
       )
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
-    Assert.assertEquals(2, slotBundle.captured.size())
-    Assert.assertEquals("id", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
+    Assert.assertEquals(3, slotBundle.captured.size())
+    Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
+    Assert.assertEquals(
+      ToolBarHomeNavigation.OPEN_DRAWER,
+      slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
+    )
   }
 
   @Test
@@ -126,11 +134,18 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun testLaunchReportActionOnClick() {
     val clickAction =
-      ActionConfig(trigger = ActionTrigger.ON_CLICK, workflow = ApplicationWorkflow.LAUNCH_REPORT)
+      ActionConfig(
+        id = "reportId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REPORT
+      )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
-    verify { navController.navigate(capture(slotInt)) }
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
+    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
   }
 
   @Test
@@ -172,6 +187,14 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         questionnaire = QuestionnaireConfig(id = "qid", title = "Form")
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
-    verify { context.launchQuestionnaire<QuestionnaireActivity>(any(), any(), any()) }
+    verify {
+      (context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+        context = any(),
+        intentBundle = any(),
+        questionnaireConfig = any(),
+        computedValuesMap = any(),
+        actionParams = any()
+      )
+    }
   }
 }
