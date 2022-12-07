@@ -38,7 +38,6 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
@@ -49,9 +48,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
@@ -79,6 +81,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 
   @Inject lateinit var registerRepository: RegisterRepository
+
+  @Inject lateinit var defaultRepository: DefaultRepository
 
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
@@ -108,7 +112,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           dispatcherProvider = mockk(),
           measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
           configurationRegistry = configurationRegistry,
-          registerRepository = registerRepository
+          registerRepository = registerRepository,
+          defaultRepository = defaultRepository
         )
       )
   }
@@ -142,24 +147,25 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
-        measureReportConfig = measureReportConfig,
+        measureReportConfig = listOf(measureReportConfig),
         navController = navController
       )
     )
     val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfig.value
-    Assert.assertEquals(viewModelConfig?.id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig?.title, measureReportConfig.title)
+    val viewModelConfig = measureReportViewModel.measureReportConfigList
+    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
+    Assert.assertEquals(viewModelConfig.first().module, measureReportConfig.module)
 
     verify { navController.navigate(capture(routeSlot)) }
 
-    Assert.assertEquals("reportTypeSelector?screenTitle=Measure 1", routeSlot.captured)
+    Assert.assertEquals("reportTypeSelector?screenTitle=Module1", routeSlot.captured)
   }
 
   @Test
@@ -169,7 +175,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     val dateRange =
       Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
@@ -182,7 +189,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         family = "Orion"
       )
 
-    measureReportViewModel.measureReportConfig.value = measureReportConfig
+    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
@@ -315,13 +322,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetReportGenerationRange() {
-    val result =
-      measureReportViewModel.getReportGenerationRange(
-        reportId = "defaultMeasureReport",
-        startDate = "2022-09-27".parseDate(SDF_YYYY_MM_DD)
-      )
-    val currentMonth = Calendar.getInstance().time.formatDate("MMM")
-    val currentYear = Calendar.getInstance().time.formatDate("yyyy")
+    val result = measureReportViewModel.getReportGenerationRange("defaultMeasureReport")
+    val currentMonth = Calendar.getInstance().time.formatDate(SDF_MMMM)
+    val currentYear = Calendar.getInstance().time.formatDate(SDF_YYYY)
     assertEquals(currentYear, result.keys.first())
     assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
   }

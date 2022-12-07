@@ -25,6 +25,7 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -271,5 +272,11 @@ class ProfileViewModelTest : RobolectricTest() {
 
     val capturedIntentBundle = slot.captured
     assertNull(capturedIntentBundle.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE))
+  }
+
+  @Test
+  fun testProfileEventOnChangeManagingEntity() {
+    profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
+    coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
 }

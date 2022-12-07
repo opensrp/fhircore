@@ -92,7 +92,10 @@ constructor(
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template = configsJsonMap.getValue(configKey)
+          template =
+            configsJsonMap.getValue(
+              configKey
+            ) // java.util.NoSuchElementException: Key application is missing in the map.
         )
         .decodeJson(jsonInstance = json)
   }
@@ -106,7 +109,7 @@ constructor(
             locale = Locale.getDefault(),
             template = configsJsonMap.getValue(it)
           )
-          .decodeJson<T>()
+          .decodeJson<T>(jsonInstance = json)
       }
       .filter { it.configType.equals(configType.name, ignoreCase = true) }
 
