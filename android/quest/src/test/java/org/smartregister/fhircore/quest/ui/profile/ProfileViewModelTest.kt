@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlin.test.assertEquals
@@ -100,5 +101,11 @@ class ProfileViewModelTest : RobolectricTest() {
     assertEquals("app", profileConfiguration?.appId)
     assertEquals("profile", profileConfiguration?.configType)
     assertEquals("householdProfile", profileConfiguration?.id)
+  }
+
+  @Test
+  fun testProfileEventOnChangeManagingEntity() {
+    profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
+    coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
 }
