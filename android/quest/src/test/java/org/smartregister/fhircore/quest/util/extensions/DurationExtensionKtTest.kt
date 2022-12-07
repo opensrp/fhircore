@@ -27,12 +27,12 @@ class DurationExtensionKtTest : RobolectricTest() {
   @Test
   fun `parsing an ISO-8601 format string returns the correct duration`() {
     val durationString = "PT02H"
-    Assert.assertEquals(java.time.Duration.ofHours(2), Duration.tryParse(durationString))
+    Assert.assertEquals(java.time.Duration.ofHours(2), Duration.Companion.tryParse(durationString))
   }
 
   @Test
   fun `parsing a wrong ISO-8601 format string returns the default duration of 1 day`() {
     val durationString = "PTH2"
-    Assert.assertEquals(java.time.Duration.ofDays(1), Duration.tryParse(durationString))
+    Assert.assertEquals(java.time.Duration.ofDays(1), Duration.Companion.tryParse(durationString))
   }
 }

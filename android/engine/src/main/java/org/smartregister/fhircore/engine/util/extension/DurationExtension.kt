@@ -17,16 +17,17 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.time.Duration
-import kotlin.time.toJavaDuration
+import java.time.format.DateTimeParseException
+import kotlin.time.Duration as KotlinDuration
 
 /**
  * Parses a string that represents a duration in ISO-8601 format and returns the parsed Duration
  * value. If parsing fails a default of 1 day duration value is returned
  */
-fun kotlin.time.Duration.Companion.tryParse(durationString: String): Duration {
+fun KotlinDuration.Companion.tryParse(durationString: String): Duration {
   return try {
-    parse(durationString).toJavaDuration()
-  } catch (ex: IllegalArgumentException) {
+    Duration.parse(durationString)
+  } catch (ex: DateTimeParseException) {
     return Duration.ofDays(1)
   }
 }
