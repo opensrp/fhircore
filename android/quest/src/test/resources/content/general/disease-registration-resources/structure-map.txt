@@ -23,24 +23,17 @@ group extractDiseaseConditions(source count: Integer, source answerSize: Integer
     } "r_condition_loop";
 }
 group extractDiseaseCoding(source questionnaireResponse: QuestionnaireResponse, source valueAnswers: Coding, target condition: Condition) {
-    questionnaireResponse where(valueAnswers.code='hiv') -> "99990003" as hivcode then extractCoding(questionnaireResponse, hivcode, displayText, condition) "r_condition_c_hiv";
-    questionnaireResponse where(valueAnswers.code='tb') -> "99990005" as tbcode then extractCoding(questionnaireResponse, tbcode, displayText, condition) "r_condition_c_tb";
-    questionnaireResponse where(valueAnswers.code='mental-health') -> "99990004" as mhcode then extractCoding(questionnaireResponse, mhcode, displayText, condition) "r_condition_c_mental";
+    questionnaireResponse -> evaluate(questionnaireResponse, "99990003") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_hiv";
+    questionnaireResponse -> evaluate(questionnaireResponse, "99990005") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_tb";
+    questionnaireResponse -> evaluate(questionnaireResponse, "99990004") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_mental";
 
-    questionnaireResponse where(valueAnswers.code='cm-ntd') -> evaluate(questionnaireResponse, 0) as countCm,
-        evaluate(questionnaireResponse, $this.item.where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value.count()) as answerSizeCm then
-            extractCmntdDiseaseCoding(countCm, answerSizeCm, questionnaireResponse, valueAnswers, condition) "r_condition_c_cmntd";
-}
-
-group extractCmntdDiseaseCoding(source countCm: Integer, source answerSizeCm: Integer, source questionnaireResponse: QuestionnaireResponse, source valueAnswers: Coding, target condition: Condition) {
-    questionnaireResponse where(count < answerSize) -> evaluate(questionnaireResponse, $this.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value) as cmValueAns then {
-        questionnaireResponse where(cmValueAns.code='buruli-ulcer') -> evaluate(questionnaireResponse, "99990000") as code, evaluate(questionnaireResponse, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-        questionnaireResponse where(cmValueAns.code='leprosy') -> evaluate(questionnaireResponse, "99990001") as code, evaluate(questionnaireResponse, "CM-NTD Leprosy") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-        questionnaireResponse where(cmValueAns.code='lymphatic-filariasis') -> evaluate(questionnaireResponse, "99990002") as code, evaluate(questionnaireResponse, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-    } "r_cnd_n_cc";
-
-    questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value.code[count].toString()) as valueAnswers then extractCoding(questionnaireResponse, valueAnswers, condition) "rule_extract_disease_coding";
-    questionnaireResponse -> evaluate(questionnaireResponse, count + 1) as nextCount then extractCmntdDiseaseCoding(nextCountCm, answerSizeCm, questionnaireResponse, valueAnswers, condition) "r_condition_repeat";
+    questionnaireResponse where(valueAnswers.code='cm-ntd') -> evaluate(valueAnswers, $this.display) as dp then {
+            questionnaireResponse -> evaluate(questionnaireResponse, $this.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value) as cmValueAns then {
+                questionnaireResponse where(cmValueAns.code='buruli-ulcer') -> evaluate(questionnaireResponse, "99990000") as code, evaluate(questionnaireResponse, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
+                questionnaireResponse where(cmValueAns.code='leprosy') -> evaluate(questionnaireResponse, "99990001") as code, evaluate(questionnaireResponse, "CM-NTD Leprosy") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
+                questionnaireResponse where(cmValueAns.code='lymphatic-filariasis') -> evaluate(questionnaireResponse, "99990002") as code, evaluate(questionnaireResponse, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
+            } "r_cnd_n_cc";
+        } "r_condition_c_cmntd";
 }
 group extractCoding(source questionnaireResponse: QuestionnaireResponse, source code: String, source displayText: String, target condition: Condition) {
     questionnaireResponse -> condition.code = create("CodeableConcept") as codeableConceptDisease then {
