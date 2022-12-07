@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -66,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
+import timber.log.Timber
 
 @Singleton
 class HivRegisterDao
@@ -172,7 +174,8 @@ constructor(
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
-      observations = patient.observations()
+      observations = patient.observations(),
+      practitioners = patient.practitioners()
     )
   }
 
@@ -287,6 +290,18 @@ constructor(
       subjectType = ResourceType.Patient,
       subjectParam = CarePlan.SUBJECT
     )
+
+  internal suspend fun Patient.practitioners(): List<Practitioner> {
+    return generalPractitioner.mapNotNull {
+      try {
+        val id = it.reference.replace("Practitioner/", "")
+        fhirEngine.get(ResourceType.Practitioner, id) as Practitioner
+      } catch (e: Exception) {
+        Timber.e(e)
+        null
+      }
+    }
+  }
 
   internal suspend fun Patient.otherPatients() = this.fetchOtherPatients(this.logicalId)
 

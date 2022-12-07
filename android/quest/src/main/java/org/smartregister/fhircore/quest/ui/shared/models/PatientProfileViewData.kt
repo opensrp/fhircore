@@ -20,6 +20,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
@@ -62,7 +63,8 @@ sealed class ProfileViewData(
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
     val addressPhysicalLocator: String = "",
-    val phoneContacts: List<String> = emptyList()
+    val phoneContacts: List<String> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
       carePlans.isNotEmpty() &&
@@ -74,7 +76,7 @@ sealed class ProfileViewData(
     val populationResources: ArrayList<Resource> by lazy {
       val resources = conditions + guardiansRelatedPersonResource + observations
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
-      arrayListOf(*carePlans.toTypedArray(), resourcesAsBundle)
+      arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
     // todo : apply filter on tracingTask->meta to check patient is valid for Home or Phone Tracing
     val validForHomeTrace = false
