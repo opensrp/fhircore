@@ -103,7 +103,7 @@ constructor(
   @ApplicationContext val context: Context,
   ) : ViewModel() {
 
-  private val _pollState = MutableSharedFlow<SyncJobStatus>()
+  private val _syncPollState = MutableSharedFlow<SyncJobStatus>()
   val pollState: Flow<SyncJobStatus>
     get() = _pollState
 
