@@ -182,12 +182,7 @@ constructor(
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken
-    return try {
-      oAuthService.fetchToken(data).execute().body()
-    } catch (exception: Exception) {
-      Timber.e("Failed to refresh token, refresh token may have expired", exception)
-      throw exception
-    }
+    return oAuthService.fetchToken(data).execute().body()
   }
 
   fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
