@@ -1,4 +1,4 @@
-# Measure reporting
+# In-app Reporting
 
 In App Reporting feature empowers the health worker to see how she is performing against her daily task list, and allows for offline peer-to-peer syncing of the data collected on a daily basis. This greatly simplifies reporting requirements by eliminating the need for cumbersome paper registries and tally sheets.
 
@@ -18,11 +18,11 @@ The MeasureReport resource represents the results of calculating a measure for a
 
 The Measure resource represents a structured, computable definition of a health-related measure such as a clinical quality measure, public health indicator, or population analytics measure. A quality measure is a quantitative tool to assess the performance of an individual or organization with respect to a specified process or outcome via the measurement of actions, processes, or outcomes of clinical care. Quality measures are often derived from clinical guidelines and are designed to determine whether the appropriate care has been provided given a set of clinical criteria and an evidence base.
 
-Note that the Measure itself does not typically contain any logic; rather a Library resource is referenced that contains the logic required by the measure, and the various expression elements, such as population criteria, reference named expressions within that library (or libraries). This is done using the Clinical Quality Language syntax. The library will contain a CQL-ELM embedded as a base64 . Read more here [Clinical Quality Language (CQL)](https://cql.hl7.org/index.html) 
+Note that the Measure itself does not typically contain any logic; rather a Library resource is referenced that contains the logic required by the measure, and the various expression elements, such as population criteria, reference named expressions within that library (or libraries). This is done using the Clinical Quality Language syntax. The library will contain a CQL-ELM embedded as a base64 . Read more here [Clinical Quality Language (CQL)](https://cql.hl7.org/index.html)
 
-In addition, if the Measure references multiple libraries, then any expression references within the resource must be qualified with the name of the library that contains the referenced expression. 
+In addition, if the Measure references multiple libraries, then any expression references within the resource must be qualified with the name of the library that contains the referenced expression.
 
-Read more here  [Clinicalreasoning-quality-reporting - FHIR v4.6.0](https://build.fhir.org/clinicalreasoning-quality-reporting.html)  and here [HL7.FHIR.US.CQFMEASURES\Glossary - FHIR v4.0.1](https://build.fhir.org/ig/HL7/cqf-measures/glossary.html) 
+Read more here  [Clinicalreasoning-quality-reporting - FHIR v4.6.0](https://build.fhir.org/clinicalreasoning-quality-reporting.html)  and here [HL7.FHIR.US.CQFMEASURES\Glossary - FHIR v4.0.1](https://build.fhir.org/ig/HL7/cqf-measures/glossary.html)
 
 
 #### **Types of MeasureReports**
@@ -84,9 +84,9 @@ A working example (Households and Members disaggregated by age) of Measure can b
             "language": "text/cql-identifier",
             "expression": "Age Stratifier"
         }
-      }, 
+      },
       { ... ... ... } ]
-  }, 
+  },
   { ... ... ... } ],
   "supplementalData": [
       {
@@ -107,15 +107,15 @@ A working example (Households and Members disaggregated by age) of Measure can b
 2. **name**: A unique name for Measure i.e. `HOUSEHOLDIND01`. The Measure is loaded by name and url into measure processor
 
 3. **relatedArtifact**: Helper libraries to load before running Measure to be used by measure logic libraries i.e. FHIRHelpers|4.0.1. The Library is loaded by its canonical url i.e. Library/123
-       
-4. **library**: The CQL logic libraries used by Measure for calculation i.e. http://fhir.org/guides/cqf/common/Library/HOUSEHOLDIND01. The logic library is loaded by its url. The url must end with /Library/name 
+
+4. **library**: The CQL logic libraries used by Measure for calculation i.e. http://fhir.org/guides/cqf/common/Library/HOUSEHOLDIND01. The logic library is loaded by its url. The url must end with /Library/name
 
 5. **scoring**: proportion | ratio | continuous-variable | cohort
 
 6. **group**: The section of report defining the stats for a specific indicator (may be disaggregated by stratifier). Each group has following components
    - **id**: Group name/id.
    - **population**: The calculations (or name of variable in CQL that defines the value) for each of population components i.e. initial-population, denominator, numerator
-   - **stratifier**: The disaggregations for given population numerator. i.e. by age, by month, by education etc 
+   - **stratifier**: The disaggregations for given population numerator. i.e. by age, by month, by education etc
    - **supplementalData**: Any extra data or intermediate calculation to be output to final report. Current implementation of MeasureEvaluator does not allow running any measure which is not Patient centric i.e. a Measure.subject can always be a Patient. Hence, we are using `supplementalData` to output Group for each indicator and then counting distinct Group to count Households
 
 
@@ -163,7 +163,7 @@ The CQL is referenced by url into Measure. The CQL is translated into elm-json a
 
 **CQL to ELM REST Translator**
 
-A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API. 
+A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API.
 
 
 **CQL to ELM JAVA Translator**
@@ -182,8 +182,8 @@ The CQL can also be translated to Library using an approach as used by FHIR Core
 
 ## Testing the Measure CQL Library
 
-To make sure your Measure and Library are working and have been validated data, it is best to thoroughly test the input and output first so that multiple updates to server can be avoided and an easy and quick test driven approach is opted to implement your new functionality. The fhir-resources [repository](https://github.com/opensrp/fhir-resources) has a testing module which implements Cucumber tests to help facilitate this. 
-- Checkout [fhir-resources](https://github.com/opensrp/fhir-resources) Repository 
+To make sure your Measure and Library are working and have been validated data, it is best to thoroughly test the input and output first so that multiple updates to server can be avoided and an easy and quick test driven approach is opted to implement your new functionality. The fhir-resources [repository](https://github.com/opensrp/fhir-resources) has a testing module which implements Cucumber tests to help facilitate this.
+- Checkout [fhir-resources](https://github.com/opensrp/fhir-resources) Repository
 - Open module fhircore-testing into Intellij or VS Code
 - Install Cucumber plugin (optional and allows to run feature file directly)
 - The module has a lot of helper functions to allow creating sample data and testing basic MeasureReport output. if you understand Cucumber you can add a complete custom test as well
@@ -216,9 +216,9 @@ Feature: Household Members Count by Age group
  - Make sure to use same Step definition convention i.e. Given `TAG` CQL is "`cql-path`" OR Given `TAG` Measure is "`measure path`". Otherwise you would need to write your own Steps into YourTagTest.kt file using standard defined in [Cucumber Tutorial](https://medium.com/@mlvandijk/kukumber-getting-started-with-cucumber-in-kotlin-e55112e7309b)
  - The assertions should also use same Step convention. i.e. Then `TAG` Measure Report has "`your-fhirpath-in-measure-report`" = "`expected-size`". Or you can add additional assertions to Test code file as in `Then` section below
 - Add your test file to kotlin/com/fhircore/resources/testing/measure/YourMeasureNameTest.kt i.e. kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt
-  
+
 ***Note** The feature-file name should match with test-file name i.e. household-members.feature corresponds to HouseholdMembersMeasureTest.kt*
-  
+
 ```
 @RunWith(Cucumber::class)
 @CucumberOptions(
@@ -252,7 +252,7 @@ class HouseholdMembersMeasureTest : En {
 ```
 
 
-The final working Library, Measure, and MeasureReport are printed to console which can be copied and POST/PUT to server. 
+The final working Library, Measure, and MeasureReport are printed to console which can be copied and POST/PUT to server.
 
 
 ##### **$evaluate-measure operation**
@@ -400,7 +400,7 @@ The resulting MeasureReport of above Measure is [here](https://github.com/opensr
       "code": {
         "coding": [ {
             "code": "Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3"
-        } ] 
+        } ]
       }, ...
   } ],
   "type": "summary",
@@ -457,26 +457,26 @@ The resulting MeasureReport of above Measure is [here](https://github.com/opensr
 
 **Notable components of the MeasureReport**
 
-Details of some notable fields in above MeasureReport (calculated from Measure) are 
+Details of some notable fields in above MeasureReport (calculated from Measure) are
 
 1. **contained**: The Measure [property](http://hl7.org/fhir/R4/measure-definitions.html#Measure.supplementalData) `supplementalData` is calculated for each measure `subject` and output as an [Observation](http://hl7.org/fhir/R4/observation.html) having extension http://hl7.org/fhir/StructureDefinition/cqf-measureInfo with inner extension defining the variable requested i.e. `group` in case above. The code.coding.code has the value of given variable `Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3` in example above
 
 2. **measure**: The Measure.url for which this report was generated i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
 
-3. **period**: Measure period which was sent for date filter i.e. reporting period start and end. The Measure interval has closed boundaries. Read details [here](https://cql.hl7.org/02-authorsguide.html#interval-values) 
+3. **period**: Measure period which was sent for date filter i.e. reporting period start and end. The Measure interval has closed boundaries. Read details [here](https://cql.hl7.org/02-authorsguide.html#interval-values)
 
 4. **group**: The calculated value for each Measure indicator with
-    - id: id/name of group/indicator/stratifier as defined in Meaure. 
+    - id: id/name of group/indicator/stratifier as defined in Meaure.
     - count: Calculated value from CQL for given variable
     - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator
-5. **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
+5. **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group.
 
 
 ## FHIR Core Integration
 
 Once your Measure, and Library is ready add these to sync_config.json to make sure that the Measure and all dependent Library resources are always synced.
-1. Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id 
-2. Save/Update Library on server i.e. POST - https://your.fhir.server/fhir/Library OR PUT - https://your.fhir.server/fhir/Library/library-id 
+1. Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id
+2. Save/Update Library on server i.e. POST - https://your.fhir.server/fhir/Library OR PUT - https://your.fhir.server/fhir/Library/library-id
 3. Update the sync_config.json Debug or Binary config for your app with new your measure id, and library id as below
 ```
   {
@@ -506,7 +506,7 @@ Once your Measure, and Library is ready add these to sync_config.json to make su
   }
 ```
 4. Update the measure_report_config.json Debug or Binary config with your new measure so that it shows up in the list
-``` 
+```
 "reports": [
   ... ... ...
     {
@@ -515,7 +515,7 @@ Once your Measure, and Library is ready add these to sync_config.json to make su
       "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01"
     },
-    ... ... ... 
+    ... ... ...
   ]
 ```
 
