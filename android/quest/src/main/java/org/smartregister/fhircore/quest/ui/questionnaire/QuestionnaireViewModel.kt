@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,7 +70,9 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
 @HiltViewModel
@@ -185,10 +188,8 @@ constructor(
         questionnaire,
         questionnaireResponse
       )
-
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
@@ -246,13 +247,11 @@ constructor(
         if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
-
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
-
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
     }
   }
@@ -397,16 +396,44 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): Bundle {
-
-    return ResourceMapper.extract(
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
-      StructureMapExtractionContext(
-        context = context,
-        transformSupportServices = transformSupportServices,
-        structureMapProvider = retrieveStructureMapProvider()
-      )
-    )
+    return kotlin
+      .runCatching {
+        ResourceMapper.extract(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          StructureMapExtractionContext(
+            context = context,
+            transformSupportServices = transformSupportServices,
+            structureMapProvider = retrieveStructureMapProvider()
+          )
+        )
+      }
+      .onSuccess {
+        Timber.d("Questionnaire with ${questionnaire.id} extracted successfully")
+        viewModelScope.launch {
+          context.showToast(
+            context.getString(R.string.structure_success, questionnaire.name),
+            Toast.LENGTH_LONG
+          )
+        }
+      }
+      .onFailure { exception ->
+        Timber.e(exception)
+        viewModelScope.launch {
+          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+            context.showToast(
+              context.getString(R.string.structure_map_missing_message, questionnaire.name),
+              Toast.LENGTH_LONG
+            )
+          } else {
+            context.showToast(
+              context.getString(R.string.structure_error_message, questionnaire.name),
+              Toast.LENGTH_LONG
+            )
+          }
+        }
+      }
+      .getOrDefault(Bundle())
   }
 
   suspend fun saveBundleResources(bundle: Bundle) {
@@ -562,5 +589,7 @@ constructor(
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
+    private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
   }
 }
