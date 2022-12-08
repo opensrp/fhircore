@@ -27,6 +27,7 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -56,7 +57,8 @@ class FhirTaskExpireJobTest : RobolectricTest() {
 
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  lateinit var fhirTaskExpireJob: FhirTaskExpireJob
+  @Inject lateinit var fhirEngine: FhirEngine
+  private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   lateinit var context: Context
 
   @Before
@@ -65,8 +67,8 @@ class FhirTaskExpireJobTest : RobolectricTest() {
 
     context = ApplicationProvider.getApplicationContext()
     initializeWorkManager()
-    fhirTaskExpireJob =
-      TestListenableWorkerBuilder<FhirTaskExpireJob>(context)
+    fhirTaskExpireWorker =
+      TestListenableWorkerBuilder<FhirTaskExpireWorker>(context)
         .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
         .build()
   }
@@ -85,7 +87,7 @@ class FhirTaskExpireJobTest : RobolectricTest() {
       Pair(null, mutableListOf())
     coEvery { fhirTaskExpireUtil.markTaskExpired(any()) } just runs
 
-    val result = runBlocking { fhirTaskExpireJob.doWork() }
+    val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
     assertEquals(androidx.work.ListenableWorker.Result.success(), result)
 
@@ -100,16 +102,16 @@ class FhirTaskExpireJobTest : RobolectricTest() {
   @Test
   fun scheduleShouldCallEnqueueWithReplaceWhenVersionIsNewer() {
     // Schedule the first job of version 1
-    var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
+    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG).get()[0]
+    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
 
-    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 2)
+    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 2)
 
     val workInfo2 =
       WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
+        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
         .get()[0]
 
     assertNotEquals(workInfo.id, workInfo2.id)
@@ -119,15 +121,15 @@ class FhirTaskExpireJobTest : RobolectricTest() {
   fun scheduleShouldCallEnqueueWithKeepWhenVersionIsSimilar() {
     // Schedule the first job of version 1
     var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 56, 1)
+    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG).get()[0]
+    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
 
-    FhirTaskExpireJob.schedule(workManager, sharedPreferencesHelper, 45, 1)
+    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 1)
 
     val workInfo2 =
       WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireJob.TAG)
+        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
         .get()[0]
 
     assertEquals(workInfo.id, workInfo2.id)
@@ -144,13 +146,13 @@ class FhirTaskExpireJobTest : RobolectricTest() {
     WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
   }
 
-  class FhirTaskExpireJobWorkerFactory() : WorkerFactory() {
+  inner class FhirTaskExpireJobWorkerFactory : WorkerFactory() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
       workerParameters: WorkerParameters
-    ): ListenableWorker? {
-      return FhirTaskExpireJob(appContext, workerParameters)
+    ): ListenableWorker {
+      return FhirTaskExpireWorker(appContext, workerParameters, fhirEngine, fhirTaskExpireUtil)
     }
   }
 }

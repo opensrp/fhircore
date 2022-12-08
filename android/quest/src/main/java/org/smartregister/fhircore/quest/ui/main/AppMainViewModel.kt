@@ -58,7 +58,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.task.FhirTaskExpireJob
+import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -322,10 +322,10 @@ constructor(
       applicationConfiguration.registerDate
     )
 
-    FhirTaskExpireJob.schedule(
+    FhirTaskExpireWorker.schedule(
       workManager,
       sharedPreferencesHelper,
-      applicationConfiguration.taskExpireJobRepeatIntervalConfig
+      applicationConfiguration.taskExpireJobRepeatInterval
     )
   }
 

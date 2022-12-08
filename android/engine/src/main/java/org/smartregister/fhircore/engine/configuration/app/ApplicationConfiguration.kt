@@ -36,5 +36,5 @@ data class ApplicationConfiguration(
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",
-  val taskExpireJobRepeatIntervalConfig: Long = 60
+  val taskExpireJobRepeatInterval: Long = 60
 ) : Configuration()

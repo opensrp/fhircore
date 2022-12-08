@@ -17,22 +17,28 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
-import dagger.hilt.android.EntryPointAccessors
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
-import org.smartregister.fhircore.engine.di.FhirTaskExpireEntryPoint
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerParameters) :
-  CoroutineWorker(context, workerParams) {
-
-  var fhirEngine: FhirEngine = getFhirEngine(context)
-  var fhirTaskExpireUtil: FhirTaskExpireUtil = getFhirTaskExpireUtil(context)
+@HiltWorker
+class FhirTaskExpireWorker
+@AssistedInject
+constructor(
+  @Assisted val context: Context,
+  @Assisted workerParams: WorkerParameters,
+  val fhirEngine: FhirEngine,
+  val fhirTaskExpireUtil: FhirTaskExpireUtil
+) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
     var dateTasks = fhirTaskExpireUtil.fetchOverdueTasks()
@@ -50,8 +56,6 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
   }
 
   companion object {
-
-    const val FHIR_TASK_EXPIRE_JOB_VERSION = "fhir-task-expire-job-version"
     const val TAG = "FhirTaskExpire"
 
     fun schedule(
@@ -60,19 +64,23 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
       durationInMins: Long,
       version: Long = 1
     ) {
-      val currVersion = sharedPreferencesHelper.read(FHIR_TASK_EXPIRE_JOB_VERSION, 0)
+      val currVersion =
+        sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name, 0)
       var existingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
       if (currVersion != version) {
         existingWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
-        sharedPreferencesHelper.write(FHIR_TASK_EXPIRE_JOB_VERSION, version)
+        sharedPreferencesHelper.write(
+          SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name,
+          version
+        )
       }
 
       val periodicWorkRequest =
-        PeriodicWorkRequestBuilder<FhirTaskExpireJob>(
-            durationInMins,
-            TimeUnit.MINUTES,
-            5,
-            TimeUnit.MINUTES
+        PeriodicWorkRequestBuilder<FhirTaskExpireWorker>(
+            repeatInterval = durationInMins,
+            repeatIntervalTimeUnit = TimeUnit.MINUTES,
+            flexTimeInterval = 5,
+            flexTimeIntervalUnit = TimeUnit.MINUTES
           )
           .setInitialDelay(durationInMins, TimeUnit.MINUTES)
           .build()
@@ -80,13 +88,4 @@ class FhirTaskExpireJob constructor(val context: Context, workerParams: WorkerPa
       workManager.enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
     }
   }
-
-  private fun hiltEntryPoint(appContext: Context) =
-    EntryPointAccessors.fromApplication(appContext, FhirTaskExpireEntryPoint::class.java)
-
-  private fun getFhirEngine(appContext: Context): FhirEngine =
-    hiltEntryPoint(appContext).fhirEngine()
-
-  private fun getFhirTaskExpireUtil(appContext: Context): FhirTaskExpireUtil =
-    hiltEntryPoint(appContext).fhirTaskExpireUtil()
 }

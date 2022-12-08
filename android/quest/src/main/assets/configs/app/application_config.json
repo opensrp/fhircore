@@ -6,6 +6,7 @@
   "registerDate": "2020-10-27",
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
+  "taskExpireJobRepeatInterval": "15",
   "languages": [
     "en"
   ],
