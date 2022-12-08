@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
+import android.annotation.SuppressLint
+import android.database.CursorWindow
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
@@ -86,6 +88,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 import timber.log.Timber
 
+@SuppressLint("DiscouragedPrivateApi")
 @HiltViewModel
 class MeasureReportViewModel
 @Inject
@@ -99,6 +102,17 @@ constructor(
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
+
+  // TODO remove this code once SDK fixes cursor size issue
+  init {
+    try {
+      val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+      field.isAccessible = true
+      field.set(null, 10 * 1024 * 1024) // the 10MB is the new size
+    } catch (e: Exception) {
+      Timber.e(e)
+    }
+  }
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
 
