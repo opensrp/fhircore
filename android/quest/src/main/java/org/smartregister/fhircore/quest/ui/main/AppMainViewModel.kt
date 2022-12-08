@@ -104,7 +104,7 @@ constructor(
   ) : ViewModel() {
 
   private val _syncPollState = MutableSharedFlow<SyncJobStatus>()
-  val pollState: Flow<SyncJobStatus>
+  val syncPollState: Flow<SyncJobStatus>
     get() = _pollState
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
