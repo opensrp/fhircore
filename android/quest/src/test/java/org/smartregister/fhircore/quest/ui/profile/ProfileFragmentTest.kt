@@ -16,17 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.work.Configuration
-import androidx.work.impl.utils.SynchronousExecutor
-import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -39,6 +34,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -55,13 +51,15 @@ class ProfileFragmentTest : RobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue val registerRepository: RegisterRepository = mockk(relaxUnitFun = true)
+  @BindValue val registerRepository: RegisterRepository = mockk(relaxUnitFun = true, relaxed = true)
 
   private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
 
   private lateinit var navController: TestNavHostController
 
   private val patient = Faker.buildPatient()
+
+  private val resourceConfig = mockk<FhirResourceConfig>()
 
   private lateinit var mainActivity: AppMainActivity
 
@@ -70,21 +68,14 @@ class ProfileFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    // Initialize WorkManager for instrumentation tests.
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val config =
-      Configuration.Builder()
-        .setMinimumLoggingLevel(Log.DEBUG)
-        .setExecutor(SynchronousExecutor())
-        .build()
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
 
     profileFragment =
       ProfileFragment().apply {
         arguments =
           bundleOf(
             NavigationArg.PROFILE_ID to "defaultProfile",
-            NavigationArg.RESOURCE_ID to patient.id
+            NavigationArg.RESOURCE_ID to patient.id,
+            NavigationArg.RESOURCE_CONFIG to resourceConfig
           )
       }
     activityController.create().resume()

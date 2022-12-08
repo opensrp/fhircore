@@ -15,7 +15,12 @@
           "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,
-          "setOrganizationDetails": true
+          "setOrganizationDetails": true,
+          "snackBarMessage": {
+            "message": "Household has been created",
+            "actionLabel": "UNDO",
+            "duration": "Short"
+          }
         }
       }
     ]
@@ -209,6 +214,23 @@
   },
   "staticMenu": [
     {
+      "id": "practitionerRegister",
+      "display": "CHAs",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local","reference": "ic_households"},
+      "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_REGISTER",
+      "id": "practitionerRegister"},
+    {
+      "trigger": "ON_COUNT",
+      "id": "practitionerRegister"
+    }
+  ]
+},
+    {
       "id": "inventoryRegister",
       "display": "Stock Inventory",
       "icon": "",
@@ -232,7 +254,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports",
+      "display": "Household Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -241,7 +263,23 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "navigateToReportsScreen"
+          "id": "householdMeasureReport"
+        }
+      ]
+    },
+    {
+      "id": "otherReports",
+      "visible": true,
+      "display": "Other Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "defaultMeasureReport"
         }
       ]
     },

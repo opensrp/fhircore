@@ -138,7 +138,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.5-rc1"
+            versionName "0.1.6-rc1"
         }
 
         g6pd {
@@ -175,7 +175,14 @@ android {
             versionNameSuffix "-echis"
             versionCode 1
             versionName "0.0.1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location", "Organization"}'
+        }
+
+        sid {
+            dimension "apps"
+            applicationIdSuffix ".sid"
+            versionNameSuffix "-sid"
+            versionCode 1
+            versionName "0.0.1"
         }
     }
     sourceSets {
@@ -209,13 +216,13 @@ dependencies {
     implementation(project(":geowidget")) {
         transitive = true
     }
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.1-UI-REVAMP-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
     implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
         exclude group: 'xpp3'
@@ -224,6 +231,8 @@ dependencies {
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
+    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     implementation 'androidx.work:work-testing:2.7.1'
@@ -255,12 +264,12 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    androidTestUtil 'androidx.test:orchestrator:1.4.2-alpha04'
+    androidTestUtil 'androidx.test:orchestrator:1.4.2'
 
     androidTestImplementation deps.mockk_android
 
 //    debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
-    testImplementation 'info.cqframework:cql-to-elm:1.5.6'
+    testImplementation 'info.cqframework:cql-to-elm:2.2.0'
 }

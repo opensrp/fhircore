@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlin.test.assertEquals
@@ -33,6 +34,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -50,6 +52,8 @@ class ProfileViewModelTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   private lateinit var profileViewModel: ProfileViewModel
 
@@ -97,5 +101,11 @@ class ProfileViewModelTest : RobolectricTest() {
     assertEquals("app", profileConfiguration?.appId)
     assertEquals("profile", profileConfiguration?.configType)
     assertEquals("householdProfile", profileConfiguration?.id)
+  }
+
+  @Test
+  fun testProfileEventOnChangeManagingEntity() {
+    profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
+    coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
 }

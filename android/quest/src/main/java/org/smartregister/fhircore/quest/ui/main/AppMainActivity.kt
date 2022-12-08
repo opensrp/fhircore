@@ -17,52 +17,44 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
-
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
-  @Inject lateinit var configService: ConfigService
+open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, QuestionnaireHandler {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
+  @Inject lateinit var configService: ConfigService
   @Inject lateinit var syncListenerManager: SyncListenerManager
-
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   val appMainViewModel by viewModels<AppMainViewModel>()
@@ -70,6 +62,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
   lateinit var navHostFragment: NavHostFragment
+
+  override val startForResult =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+      if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
+    }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -95,13 +92,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
       when (geoWidgetEvent) {
-        is GeoWidgetEvent.OpenProfile -> {
+        is GeoWidgetEvent.OpenProfile ->
           appMainViewModel.launchProfileFromGeoWidget(
             navHostFragment.navController,
             geoWidgetEvent.geoWidgetConfiguration.id,
             geoWidgetEvent.data
           )
-        }
         is GeoWidgetEvent.RegisterClient ->
           appMainViewModel.launchFamilyRegistrationWithLocationId(
             context = this,
@@ -113,43 +109,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
-    syncBroadcaster.runSync()
+    syncBroadcaster.run {
+      runSync()
+      schedulePeriodicSync()
+    }
 
-    configService.scheduleFhirTaskPlanWorker(this)
-  }
-
-  @Suppress("DEPRECATION")
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-
-    if (resultCode == Activity.RESULT_OK)
-      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let { taskId ->
-        lifecycleScope.launch(dispatcherProvider.io()) { handleTaskActivityResult(taskId, data) }
-      }
-  }
-
-  suspend fun handleTaskActivityResult(taskId: String, data: Intent) {
-    taskId.takeIf { it.startsWith(ResourceType.Task.name) }?.let {
-      data
-        .getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
-        ?.decodeResourceFromString<QuestionnaireResponse>()
-        ?.let {
-          when (it.status) {
-            QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS -> {
-              fhirCarePlanGenerator.transitionTaskTo(
-                taskId.extractLogicalIdUuid(),
-                Task.TaskStatus.INPROGRESS
-              )
-            }
-            QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED, null -> {
-              fhirCarePlanGenerator.transitionTaskTo(
-                taskId.extractLogicalIdUuid(),
-                Task.TaskStatus.COMPLETED
-              )
-            }
-            else -> {}
-          }
-        }
+    // Setup the drawer and schedule jobs
+    appMainViewModel.run {
+      retrieveAppMainUiState()
+      schedulePeriodicJobs()
     }
   }
 
@@ -196,6 +164,23 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
           )
         }
+      }
+    }
+  }
+
+  override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
+    if (activityResult.resultCode == RESULT_OK) {
+      val questionnaireResponse: QuestionnaireResponse? =
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
+          QuestionnaireResponse?
+      val questionnaireConfig =
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
+          QuestionnaireConfig?
+
+      if (questionnaireConfig != null && questionnaireResponse != null) {
+        appMainViewModel.questionnaireSubmissionLiveData.postValue(
+          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+        )
       }
     }
   }

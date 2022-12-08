@@ -128,4 +128,9 @@
     <string name="cannot_logout_user">Impossible de se déconnecter. Vérifiez si l\'appareil est hors ligne.</string>
     <string name="error_logging_out">Message d\'erreur de déconnexion : %1$s</string>
     <string name="please_wait">Veuillez patienter...</string>
+    <string name="initializing">Initialisation des paramètres &#8230;</string>
+    <string name="month">Mois</string>
+    <string name="year">An</string>
+    <string name="weeks">Semaines</string>
+    <string name="days">Journées</string>
 </resources>

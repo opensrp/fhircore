@@ -51,7 +51,7 @@
     <string name="syncing_in_progress">Sync in progress</string>
     <string name="loading">Loading</string>
     <string name="error_logging_out">Logout error message: %1$s</string>
-    <string name="cannot_logout_user">Unable to logout. Check if device is offline.</string>
+    <string name="cannot_logout_user">Unable to logout: Already logged out or device is offline.</string>
     <string name="error_loading_config">Error loading configuration. Details: %1$s</string>
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
@@ -110,12 +110,12 @@
     <string name="set_pin_message">CHA will use this pin to login</string>
     <string name="enter_login_pin">Enter the user\'s pin</string>
     <string name="enter_pin_for_user">Enter pin for %1$s</string>
-    <string name="incorrect_pin_please_retry">Incorrect pin, lease try again</string>
+    <string name="incorrect_pin_please_retry">Incorrect pin, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
-    <string name="logging_out">Please wait… Logging out</string>
+    <string name="logging_out">Logging out. Please wait…</string>
     <string name="session_expired">Session has been expired and must login again</string>
     <string name="sex">Sex</string>
     <string name="age">Age</string>
@@ -142,4 +142,9 @@
     <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
     <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
     <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="weeks">Week(s)</string>
+    <string name="days">Days(s)</string>
+    <string name="initializing">Initializing settings &#8230;</string>
 </resources>

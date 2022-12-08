@@ -16,29 +16,22 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowColumn
-import com.google.accompanist.flowlayout.FlowRow
+import androidx.navigation.compose.rememberNavController
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
-import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
-import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
+import org.smartregister.fhircore.engine.configuration.view.RowArrangement
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -51,142 +44,259 @@ import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
  */
 @Composable
 fun ViewRenderer(
-  modifier: Modifier = Modifier,
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController
 ) {
   viewProperties.forEach { properties ->
-    // Render views recursively
-    if (properties is ViewGroupProperties) {
-      if (properties.children.isEmpty()) return
-      when (properties.viewType) {
-        ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(
-            modifier = modifier,
-            viewProperties = properties,
-            resourceData = resourceData,
-            navController = navController
-          )
-        else -> return
-      }
-    } else {
-      RenderChildView(
-        modifier = modifier,
-        viewProperties = properties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    }
-  }
-}
-
-@Composable
-private fun RenderViewGroup(
-  modifier: Modifier = Modifier,
-  viewProperties: ViewGroupProperties,
-  resourceData: ResourceData,
-  navController: NavController
-) {
-
-  viewProperties.children.forEach { childViewProperty ->
-    if (childViewProperty is ViewGroupProperties) {
-      if (childViewProperty.viewType == ViewType.COLUMN) {
-        FlowColumn(
-          modifier =
-            modifier
-              .background(
-                childViewProperty
-                  .backgroundColor
-                  ?.interpolate(resourceData.computedValuesMap)
-                  .parseColor()
-              )
-              .fillMaxWidth()
-              .padding(childViewProperty.padding.dp)
-        ) {
-          ViewRenderer(
-            modifier = modifier,
-            viewProperties = childViewProperty.children,
-            resourceData = resourceData,
-            navController = navController
-          )
-        }
-      } else if (childViewProperty.viewType == ViewType.ROW) {
-        FlowRow(
-          modifier =
-            modifier
-              .background(
-                childViewProperty
-                  .backgroundColor
-                  ?.interpolate(resourceData.computedValuesMap)
-                  .parseColor()
-              )
-              .fillMaxWidth()
-              .padding(childViewProperty.padding.dp)
-        ) {
-          ViewRenderer(
-            modifier = modifier,
-            viewProperties = childViewProperty.children,
-            resourceData = resourceData,
-            navController = navController
-          )
-        }
-      }
-    }
-    RenderChildView(
-      modifier = modifier,
-      viewProperties = childViewProperty,
+    GenerateView(
+      modifier = generateModifier(properties),
+      properties = properties,
       resourceData = resourceData,
       navController = navController
     )
   }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun RenderChildView(
-  modifier: Modifier = Modifier,
-  viewProperties: ViewProperties,
-  resourceData: ResourceData,
-  navController: NavController,
-) {
-  when (viewProperties) {
-    is CompoundTextProperties ->
-      CompoundText(
-        modifier = modifier,
-        compoundTextProperties = viewProperties,
-        computedValuesMap = resourceData.computedValuesMap,
-      )
-    is ServiceCardProperties ->
-      ServiceCard(
-        serviceCardProperties = viewProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    is CardViewProperties ->
-      CardView(
-        modifier = modifier,
-        viewProperties = viewProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    is PersonalDataProperties ->
-      PersonalDataView(
-        personalDataCardProperties = viewProperties,
-        computedValuesMap = resourceData.computedValuesMap
-      )
-    is ButtonProperties ->
-      ActionableButton(
-        buttonProperties = viewProperties,
-        navController = navController,
-        resourceData = resourceData
-      )
-    is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
-    is ListProperties ->
-      List(
-        modifier = modifier,
-        viewProperties = viewProperties,
-        resourceData = resourceData,
-        navController = navController,
-      )
-  }
+private fun PreviewWeightedViewsInRow() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        RowProperties(
+          viewType = ViewType.ROW,
+          fillMaxWidth = true,
+          children =
+            listOf(
+              ButtonProperties(
+                viewType = ViewType.BUTTON,
+                text = "Due Service",
+                status = "DUE",
+                fillMaxWidth = true,
+                weight = 1.0f
+              ),
+              ButtonProperties(
+                viewType = ViewType.BUTTON,
+                text = "Completed Service",
+                status = "COMPLETED",
+                fillMaxWidth = true,
+                weight = 1.0f
+              )
+            )
+        )
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewWrappedViewsInRow() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        RowProperties(
+          viewType = ViewType.ROW,
+          fillMaxWidth = true,
+          wrapContent = true,
+          children =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Malaria",
+                primaryTextColor = "#DF0E1A",
+                primaryTextBackgroundColor = "#F9CFD1",
+                padding = 8,
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "ANC Danger Signs",
+                primaryTextColor = "#D2760D",
+                primaryTextBackgroundColor = "#FFECD6",
+                padding = 8
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "TB Danger Signs",
+                primaryTextColor = "#D2760D",
+                primaryTextBackgroundColor = "#FFECD6",
+                padding = 8
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "HIV Danger Signs",
+                primaryTextColor = "#D2760D",
+                primaryTextBackgroundColor = "#FFECD6",
+                padding = 8,
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "COVID Danger Signs",
+                primaryTextColor = "#D2760D",
+                primaryTextBackgroundColor = "#FFECD6",
+                padding = 8
+              )
+            )
+        )
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewSameSizedViewInRow() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        RowProperties(
+          viewType = ViewType.ROW,
+          fillMaxWidth = true,
+          wrapContent = false,
+          alignment = ViewAlignment.START,
+          arrangement = RowArrangement.CENTER,
+          children =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Janet Sade",
+                primaryTextColor = "#000000",
+                primaryTextBackgroundColor = "#CFCFCF",
+                padding = 8,
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "ANC Danger Signs",
+                primaryTextColor = "#D2760D",
+                primaryTextBackgroundColor = "#FFECD6",
+                padding = 8,
+                alignment = ViewAlignment.END
+              )
+            )
+        )
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCardViewWithRows() {
+  ViewRenderer(
+    viewProperties =
+      listOf(
+        CardViewProperties(
+          viewType = ViewType.CARD,
+          fillMaxWidth = true,
+          header =
+            CompoundTextProperties(
+              viewType = ViewType.COMPOUND_TEXT,
+              primaryText = "PATIENTS",
+              primaryTextColor = "#6F7274",
+              padding = 8
+            ),
+          content =
+            listOf(
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "HHs",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "33",
+                            primaryTextColor = "#6F7274",
+                            secondaryText = "(Overdue)",
+                            secondaryTextColor = "#FF0000",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  ),
+              ),
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "PNC",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "10",
+                            primaryTextColor = "#6F7274",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  )
+              ),
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "ANC",
+                      primaryTextColor = "#000000",
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "2",
+                            primaryTextColor = "#6F7274",
+                          ),
+                          CompoundTextProperties(
+                            viewType = ViewType.COMPOUND_TEXT,
+                            primaryText = "VIEW ALL",
+                            primaryTextColor = "#508BE8",
+                            primaryTextFontWeight = TextFontWeight.MEDIUM
+                          )
+                        )
+                    )
+                  )
+              )
+            )
+        )
+      ),
+    resourceData = ResourceData(Patient()),
+    navController = rememberNavController()
+  )
 }

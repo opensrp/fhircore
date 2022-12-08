@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Appointment xmlns="http://hl7.org/fhir">
+	<id value="mom-second-contact"/>
+	<meta>
+		<profile value="http://hl7.org/fhir/uv/cpg/StructureDefinition/cpg-appointment"/>
+	</meta>
+	<status value="booked"/>
+	<!-- TODO: serviceCategory -->
+	<serviceCategory>
+		<coding>
+			<system value="http://example.org/service-category"/>
+			<code value="gp"/>
+			<display value="General Practice"/>
+		</coding>
+	</serviceCategory>
+	<!-- TODO: serviceType -->
+	<serviceType>
+		<coding>
+			<code value="52"/>
+			<display value="General Discussion"/>
+		</coding>
+	</serviceType>
+	<!-- TODO: specialty -->
+	<specialty>
+		<coding>
+			<system value="http://snomed.info/sct"/>
+			<code value="394814009"/>
+			<display value="General practice"/>
+		</coding>
+	</specialty>
+	<appointmentType>
+		<coding>
+			<system value="http://terminology.hl7.org/CodeSystem/v2-0276"/>
+			<code value="FOLLOWUP"/>
+			<display value="A follow up visit from a previous appointment"/>
+		</coding>
+	</appointmentType>
+	<reasonReference>
+		<reference value="Condition/mom-pregnancy"/>
+	</reasonReference>
+	<description value="Antenatal care first contact"/>
+	<start value="2019-07-26T15:00:00Z"/>
+	<minutesDuration value="30"/>
+	<created value="2019-05-24"/>
+	<participant>
+		<actor>
+			<reference value="Patient/mom"/>
+			<display value="Eve Everywoman"/>
+		</actor>
+		<required value="required"/>
+		<status value="accepted"/>
+	</participant>
+	<participant>
+		<type>
+			<coding>
+				<system value="http://terminology.hl7.org/CodeSystem/v3-ParticipationType"/>
+				<code value="ATND"/>
+			</coding>
+		</type>
+		<actor>
+			<reference value="Practitioner/midwife"/>
+			<display value="Mabel Midwife"/>
+		</actor>
+		<required value="required"/>
+		<status value="accepted"/>
+	</participant>
+</Appointment>

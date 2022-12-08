@@ -18,7 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
+import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import androidx.test.platform.app.InstrumentationRegistry
@@ -51,6 +51,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -83,36 +84,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    // Initialize WorkManager for instrumentation tests.
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val config =
-      Configuration.Builder()
-        .setMinimumLoggingLevel(Log.DEBUG)
-        .setExecutor(SynchronousExecutor())
-        .build()
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "") } returns "AppId.Test"
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-    } returns ""
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-    } returns ""
-    every { secureSharedPreference.retrieveSessionUsername() } returns "testUser"
-
-    appMainViewModel =
-      spyk(
-        AppMainViewModel(
-          accountAuthenticator = mockk(),
-          syncBroadcaster = mockk(),
-          secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
-          configurationRegistry = configurationRegistry,
-          registerRepository = mockk(),
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
-        )
-      )
 
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
@@ -217,16 +188,22 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       runTest {
     coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
 
-    appMainActivity.handleTaskActivityResult(
-      "Task/12345",
-      Intent().apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-          QuestionnaireResponse()
-            .apply { status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS }
-            .encodeResourceToString()
-        )
-      }
+    appMainActivity.onSubmitQuestionnaire(
+      ActivityResult(
+        -1,
+        Intent().apply {
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+            }
+          )
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+          )
+        }
+      )
     )
 
     coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
@@ -237,16 +214,22 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       runTest {
     coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
 
-    appMainActivity.handleTaskActivityResult(
-      "Task/12345",
-      Intent().apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-          QuestionnaireResponse()
-            .apply { status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED }
-            .encodeResourceToString()
-        )
-      }
+    appMainActivity.onSubmitQuestionnaire(
+      ActivityResult(
+        -1,
+        Intent().apply {
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+            }
+          )
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+          )
+        }
+      )
     )
 
     coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
@@ -257,14 +240,17 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       runTest {
     coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
 
-    appMainActivity.handleTaskActivityResult(
-      "Task/12345",
-      Intent().apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-          QuestionnaireResponse().encodeResourceToString()
-        )
-      }
+    appMainActivity.onSubmitQuestionnaire(
+      ActivityResult(
+        -1,
+        Intent().apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, QuestionnaireResponse())
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+          )
+        }
+      )
     )
 
     coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
@@ -275,7 +261,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       runTest {
     coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
 
-    appMainActivity.handleTaskActivityResult("Task/12345", Intent())
+    appMainActivity.onSubmitQuestionnaire(ActivityResult(-1, Intent()))
 
     coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }

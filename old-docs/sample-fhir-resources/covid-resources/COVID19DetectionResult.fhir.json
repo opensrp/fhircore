@@ -1,0 +1,16 @@
+{
+  "resourceType": "ObservationDefinition",
+  "id": "ObservationDefinition-COVID19DetectionResult",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "871562009",
+        "display": "Detection of Severe acute respiratory syndrome coronavirus 2 (observable entity)"
+      }
+    ]
+  },
+  "validCodedValueSet": {
+    "reference": "https://fhir.nhs.uk/ValueSet/covid-19-detection-result-vs"
+  }
+}
