@@ -336,6 +336,10 @@ constructor(
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
       return date.formatDate(expectedFormat)
     }
+
+    fun generateRandomIntLengthSix(): Int {
+      return (1..maxInger).shuffled().random()
+    }
   }
 
   companion object {
@@ -343,5 +347,6 @@ constructor(
     private const val DATA = "data"
     private const val TRUE = "true"
     private const val SERVICE = "service"
+    private const val maxInger = 999999
   }
 }
