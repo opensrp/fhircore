@@ -512,7 +512,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
       mockk()
     every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
     every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
-    every { accountAuthenticator.refreshToken(any()) } throws UnknownHostException("local-host")
+    every { accountAuthenticator.refreshToken(any()) } throws UnknownHostException("localhost")
 
     val bundle = runBlocking { accountAuthenticator.refreshSessionAuthToken() }
 
