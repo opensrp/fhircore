@@ -940,9 +940,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
     coVerify {
       context.showToast(
-        String.format(
-          context.getString(R.string.structure_success), questionnaire.name
-        )
+        String.format(context.getString(R.string.structure_success), questionnaire.name)
       )
     }
   }
@@ -957,9 +955,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse()
 
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
-            NullPointerException(
-              "NullPointerException when invoking StructureMap on Null Object reference"
-            )
+      NullPointerException(
+        "NullPointerException when invoking StructureMap on Null Object reference"
+      )
 
     coEvery {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
@@ -969,12 +967,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { context.getString(R.string.structure_map_missing_message) }
 
     coVerify {
-      context.showToast(
-        String.format(
-          missingStructureMapExceptionMessage,
-          questionnaire.name
-        )
-      )
+      context.showToast(String.format(missingStructureMapExceptionMessage, questionnaire.name))
     }
   }
 
@@ -985,7 +978,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse()
     questionnaire.name = "eCBIS Add Family Member Registration"
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
-            Exception("Failed to process resources")
+      Exception("Failed to process resources")
 
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)

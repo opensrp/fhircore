@@ -412,9 +412,7 @@ constructor(
         Timber.d("Questionnaire with ${questionnaire.id} extracted successfully")
         viewModelScope.launch {
           context.showToast(
-            String.format(
-              context.getString(R.string.structure_success), questionnaire.name
-            ),
+            String.format(context.getString(R.string.structure_success), questionnaire.name),
             Toast.LENGTH_LONG
           )
         }
@@ -436,7 +434,8 @@ constructor(
           } else {
             context.showToast(
               String.format(
-                context.getString(R.string.structure_error_message), questionnaire.name
+                context.getString(R.string.structure_error_message),
+                questionnaire.name
               ),
               Toast.LENGTH_LONG
             )
