@@ -21,10 +21,7 @@ import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.work.Configuration
-import androidx.work.impl.utils.SynchronousExecutor
-import androidx.work.testing.WorkManagerTestInitHelper
+import androidx.work.WorkManager
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
@@ -56,7 +53,6 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -81,9 +77,36 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   lateinit var appMainActivity: AppMainActivity
 
+  val workManager: WorkManager = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "") } returns "AppId.Test"
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+    } returns ""
+    every { secureSharedPreference.retrieveSessionUsername() } returns "testUser"
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    } returns ""
+    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
+
+    appMainViewModel =
+      spyk(
+        AppMainViewModel(
+          accountAuthenticator = mockk(),
+          syncBroadcaster = mockk(),
+          secureSharedPreference = secureSharedPreference,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          registerRepository = mockk(),
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          workManager = workManager,
+          fhirCarePlanGenerator = mockk()
+        )
+      )
 
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
