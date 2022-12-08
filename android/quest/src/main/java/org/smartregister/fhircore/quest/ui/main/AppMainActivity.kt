@@ -114,14 +114,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler {
       schedulePeriodicJobs()
     }
 
-    //Trigger a one-time Sync
-    appMainViewModel.triggerOneTimeSync()
+    // Trigger a one-time Sync
+    // appMainViewModel.triggerOneTimeSync()
     setupSyncEventObserver()
   }
 
   private fun setupSyncEventObserver() {
     lifecycleScope.launch {
-      appMainViewModel.pollState.collect { state ->
+      appMainViewModel.syncPollState.collect { state ->
         Timber.d("onViewCreated: pollState Got status $state")
         when (state) {
           is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
@@ -169,11 +169,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler {
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
-          as QuestionnaireResponse?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
+          QuestionnaireResponse?
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
-          as QuestionnaireConfig?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
+          QuestionnaireConfig?
 
       if (questionnaireConfig != null && questionnaireResponse != null) {
         appMainViewModel.questionnaireSubmissionLiveData.postValue(

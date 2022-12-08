@@ -27,12 +27,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.android.fhir.sync.BackoffCriteria
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
+import com.google.android.fhir.sync.RetryConfiguration
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -101,11 +104,11 @@ constructor(
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   @ApplicationContext val context: Context,
-  ) : ViewModel() {
+) : ViewModel() {
 
   private val _syncPollState = MutableSharedFlow<SyncJobStatus>()
   val syncPollState: Flow<SyncJobStatus>
-    get() = _pollState
+    get() = _syncPollState
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -129,22 +132,28 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
-  /*init {
+  init {
     viewModelScope.launch {
+      _syncPollState.emit(SyncJobStatus.Started())
       Sync.periodicSync<AppSyncWorker>(
-        context,
-        PeriodicSyncConfiguration(
-          syncConstraints = Constraints.Builder().build(),
-          repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+          context,
+          PeriodicSyncConfiguration(
+            syncConstraints = Constraints.Builder().build(),
+            repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+          )
         )
-      )
-        .collect { _pollState.emit(it) }
+        .collect { _syncPollState.emit(it) }
     }
-  }*/
+  }
 
   fun triggerOneTimeSync() {
     viewModelScope.launch {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { _pollState.emit(it) }
+      _syncPollState.emit(SyncJobStatus.Started())
+      Sync.oneTimeSync<AppSyncWorker>(
+          context,
+          RetryConfiguration(BackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS), 5)
+        )
+        .collect { _syncPollState.emit(it) }
     }
   }
 
@@ -192,7 +201,7 @@ constructor(
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              //syncBroadcaster.runSync()
+              // syncBroadcaster.runSync()
               return@let
             }
             accountAuthenticator.logout()
