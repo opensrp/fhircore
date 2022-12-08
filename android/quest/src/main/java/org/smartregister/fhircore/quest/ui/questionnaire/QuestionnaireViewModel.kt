@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -407,7 +408,17 @@ constructor(
           )
         )
       }
-      .onSuccess { Timber.d("Questionnaire with ${questionnaire.id} extracted successfully") }
+      .onSuccess {
+        Timber.d("Questionnaire with ${questionnaire.id} extracted successfully")
+        viewModelScope.launch {
+          context.showToast(
+            String.format(
+              context.getString(R.string.structure_success), questionnaire.name
+            ),
+            Toast.LENGTH_LONG
+          )
+        }
+      }
       .onFailure { exception ->
         Timber.e(exception)
         questionnaire.getExtensionByUrl(EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP).let {
@@ -415,9 +426,20 @@ constructor(
         }
         viewModelScope.launch {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
-            context.showToast(context.getString(R.string.structure_map_missing_message))
+            context.showToast(
+              String.format(
+                context.getString(R.string.structure_map_missing_message),
+                questionnaire.name
+              ),
+              Toast.LENGTH_LONG
+            )
           } else {
-            context.showToast(context.getString(R.string.structure_error_message))
+            context.showToast(
+              String.format(
+                context.getString(R.string.structure_error_message), questionnaire.name
+              ),
+              Toast.LENGTH_LONG
+            )
           }
         }
       }

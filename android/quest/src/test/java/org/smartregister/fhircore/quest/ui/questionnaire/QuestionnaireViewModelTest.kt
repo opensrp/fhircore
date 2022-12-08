@@ -919,17 +919,32 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testPerformExtractionOnSuccessReturnsABundle() {
+  fun testPerformExtractionOnSuccessReturnsABundleAndShowsSuccessToast() {
     val context = mockk<Context>(relaxed = true)
     val bundle = Bundle()
+    val questionnaire = Questionnaire()
+    questionnaire.name = "eCBIS Add Family Member Registration"
     coEvery {
       questionnaireViewModel.performExtraction(
         context,
-        questionnaire = Questionnaire(),
+        questionnaire = questionnaire,
         questionnaireResponse = QuestionnaireResponse()
       )
     } returns bundle
     Assert.assertNotNull(bundle)
+
+    context.getString(R.string.structure_success)
+    coVerify { context.getString(R.string.structure_success) }
+    context.showToast(
+      String.format(context.getString(R.string.structure_success), questionnaire.name)
+    )
+    coVerify {
+      context.showToast(
+        String.format(
+          context.getString(R.string.structure_success), questionnaire.name
+        )
+      )
+    }
   }
 
   @Test
@@ -938,36 +953,45 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context.getString(R.string.structure_map_missing_message)
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
+    questionnaire.name = "eCBIS Add Family Member Registration"
     val questionnaireResponse = QuestionnaireResponse()
 
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
-      NullPointerException(
-        "NullPointerException when invoking StructureMap on Null Object reference"
-      )
+            NullPointerException(
+              "NullPointerException when invoking StructureMap on Null Object reference"
+            )
 
     coEvery {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
     context.getString(R.string.structure_map_missing_message)
-    context.showToast(missingStructureMapExceptionMessage)
+    context.showToast(String.format(missingStructureMapExceptionMessage, questionnaire.name))
     coVerify { context.getString(R.string.structure_map_missing_message) }
-    coVerify { context.showToast(missingStructureMapExceptionMessage) }
+
+    coVerify {
+      context.showToast(
+        String.format(
+          missingStructureMapExceptionMessage,
+          questionnaire.name
+        )
+      )
+    }
   }
+
   fun testPerformExtractionOnFailureShowsErrorToast() {
     val errorMessage = context.getString(R.string.structure_error_message)
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
-
+    questionnaire.name = "eCBIS Add Family Member Registration"
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
-      Exception("Failed to process resources")
+            Exception("Failed to process resources")
 
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
-
     coVerify { context.getString(R.string.structure_error_message) }
-    coVerify { context.showToast(errorMessage) }
+    coVerify { context.showToast(String.format(errorMessage, questionnaire.name)) }
   }
 
   @Test
