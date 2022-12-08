@@ -114,8 +114,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler {
       schedulePeriodicJobs()
     }
 
-    // Trigger a one-time Sync
-    // appMainViewModel.triggerOneTimeSync()
     setupSyncEventObserver()
   }
 
