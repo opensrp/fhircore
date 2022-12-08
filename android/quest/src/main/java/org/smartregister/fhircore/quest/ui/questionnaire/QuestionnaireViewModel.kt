@@ -419,9 +419,6 @@ constructor(
       }
       .onFailure { exception ->
         Timber.e(exception)
-        questionnaire.getExtensionByUrl(EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP).let {
-          Timber.e("FAILED Target StructureMap ${it.value}")
-        }
         viewModelScope.launch {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(

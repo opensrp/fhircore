@@ -20,6 +20,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Looper
+import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -935,9 +936,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     context.getString(R.string.structure_success)
     coVerify { context.getString(R.string.structure_success) }
-    context.showToast(context.getString(R.string.structure_success, questionnaire.name))
+    context.showToast(
+      context.getString(R.string.structure_success, questionnaire.name),
+      Toast.LENGTH_LONG
+    )
     coVerify {
-      context.showToast(context.getString(R.string.structure_success, questionnaire.name))
+      context.showToast(
+        context.getString(R.string.structure_success, questionnaire.name),
+        Toast.LENGTH_LONG
+      )
     }
   }
 
@@ -959,10 +966,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
     context.getString(R.string.structure_map_missing_message)
-    context.showToast(missingStructureMapExceptionMessage)
+    context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG)
     coVerify { context.getString(R.string.structure_map_missing_message) }
 
-    coVerify { context.showToast(missingStructureMapExceptionMessage) }
+    coVerify { context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG) }
   }
 
   fun testPerformExtractionOnFailureShowsErrorToast() {
@@ -979,7 +986,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
     coVerify { context.getString(R.string.structure_error_message, questionnaire.name) }
-    coVerify { context.showToast(errorMessage) }
+    coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
   }
 
   @Test
