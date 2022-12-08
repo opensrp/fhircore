@@ -935,23 +935,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     context.getString(R.string.structure_success)
     coVerify { context.getString(R.string.structure_success) }
-    context.showToast(
-      String.format(context.getString(R.string.structure_success), questionnaire.name)
-    )
+    context.showToast(context.getString(R.string.structure_success, questionnaire.name))
     coVerify {
-      context.showToast(
-        String.format(context.getString(R.string.structure_success), questionnaire.name)
-      )
+      context.showToast(context.getString(R.string.structure_success, questionnaire.name))
     }
   }
 
   @Test
   fun testPerformExtractionOnFailureShowsMissingStructureMapToast() {
-    val missingStructureMapExceptionMessage =
-      context.getString(R.string.structure_map_missing_message)
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     questionnaire.name = "eCBIS Add Family Member Registration"
+    val missingStructureMapExceptionMessage =
+      context.getString(R.string.structure_map_missing_message, questionnaire.name)
     val questionnaireResponse = QuestionnaireResponse()
 
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
@@ -963,28 +959,27 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
     context.getString(R.string.structure_map_missing_message)
-    context.showToast(String.format(missingStructureMapExceptionMessage, questionnaire.name))
+    context.showToast(missingStructureMapExceptionMessage)
     coVerify { context.getString(R.string.structure_map_missing_message) }
 
-    coVerify {
-      context.showToast(String.format(missingStructureMapExceptionMessage, questionnaire.name))
-    }
+    coVerify { context.showToast(missingStructureMapExceptionMessage) }
   }
 
   fun testPerformExtractionOnFailureShowsErrorToast() {
-    val errorMessage = context.getString(R.string.structure_error_message)
+
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
     questionnaire.name = "eCBIS Add Family Member Registration"
+    val errorMessage = context.getString(R.string.structure_error_message, questionnaire.name)
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
-    coVerify { context.getString(R.string.structure_error_message) }
-    coVerify { context.showToast(String.format(errorMessage, questionnaire.name)) }
+    coVerify { context.getString(R.string.structure_error_message, questionnaire.name) }
+    coVerify { context.showToast(errorMessage) }
   }
 
   @Test

@@ -412,7 +412,7 @@ constructor(
         Timber.d("Questionnaire with ${questionnaire.id} extracted successfully")
         viewModelScope.launch {
           context.showToast(
-            String.format(context.getString(R.string.structure_success), questionnaire.name),
+            context.getString(R.string.structure_success, questionnaire.name),
             Toast.LENGTH_LONG
           )
         }
@@ -425,18 +425,12 @@ constructor(
         viewModelScope.launch {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(
-              String.format(
-                context.getString(R.string.structure_map_missing_message),
-                questionnaire.name
-              ),
+              context.getString(R.string.structure_map_missing_message, questionnaire.name),
               Toast.LENGTH_LONG
             )
           } else {
             context.showToast(
-              String.format(
-                context.getString(R.string.structure_error_message),
-                questionnaire.name
-              ),
+              context.getString(R.string.structure_error_message, questionnaire.name),
               Toast.LENGTH_LONG
             )
           }

@@ -349,11 +349,7 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "9fac39bd-9750-4c1d-b355-1961de4e37f3"
-            ],
-            "snackBarMessage": {
-              "message": "Member details updated",
-              "duration": "Short"
-            }
+            ]
           }
         }
       ]
