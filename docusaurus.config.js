@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'FhirCore Documentation',
-  tagline: 'FhirCore Documentation',
+  title: 'OpenSRP Documentation',
+  tagline: 'OpenSRP Documentation',
   url: 'https://opensrp.github.io',
   baseUrl: '/',
   trailingSlash:false,
@@ -47,9 +47,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'OpenSRP Fhir Core',
+        title: 'OpenSRP FHIR Core',
         logo: {
-          alt: 'openSRP Fhir Core Documentation',
+          alt: 'OpenSRP FHIR Core Documentation',
           src: 'img/fhircore.png',
         },
         items: [
@@ -64,16 +64,19 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'More',
             items: [
               {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                label: 'OpenSRP',
+                href: 'https://smartregister.org',
+              },
+              {
+                label: 'Ona',
+                href: 'https://ona.io',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Opensrp FHIRCore documentation`,
+        copyright: `Copyright © ${new Date().getFullYear()} Ona`,
       },
       prism: {
         theme: lightCodeTheme,
