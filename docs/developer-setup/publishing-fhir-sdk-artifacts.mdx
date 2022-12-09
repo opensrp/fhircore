@@ -1,0 +1,31 @@
+# Publishing FHIR SDK Library Artifacts
+
+### Local Publishing
+
+At the moment, we have the following FHIR SDK artifacts that need to be released so that they can be included as dependencies on reliant applications e.g. FHIR Core
+
+- Android FHIR Common Library
+- Android FHIR Engine Library
+- Android FHIR Structured Data Capture Library
+- Android FHIR Workflow Library
+- Android FHIR Structured Data Capture - Barcode Extensions (contrib)
+
+Sometimes one wants to test the changes on the repo e.g. on the `master` branch without doing a remote release to _Sonatype_ during development. It is possible to do this locally.
+
+We can use the _Android FHIR Structured Data Capture(SDC) Library_ as an example:
+
+First,  one needs to edit the _Releases_ file `buildSrc/src/main/kotlin/Releases.kt` and add a unique(to your local machine) artifact identifier for the SDC library version.
+For instance, if on the master branch under the `object DataCapture : LibraryArtifact` the version reads `0.1.0-beta02`, you might want to change that to `0.1.0-beta02-dev`. Then later for new changes use `0.1.0-beta02-dev2` and so on.
+
+This approach allows for multiple variations of local artifacts with your development changes and also helps avoid clashes with any remote artifact versions with a similar identifier.
+
+Using the above example you then need to include the new version as a dependency in your `build.gradle` file and reference it like this: <br/> `api('com.google.android.fhir:data-capture:0.1.0-beta02-dev') {`
+
+Once all the above is in place you just need to run the command: <br/>
+`./gradlew :datacapture:publishReleasePublicationToMavenLocal`. <br/>
+
+Your artifact should now be available under your maven local repo. location `~/.m2/repository/com/google/android/fhir/data-capture/0.1.0-beta02-dev/`
+
+Building FHIR Core should now import the new artifact version. MavenLocal is already configured as an artifact source.
+
+**Note:** This process needs to be repeated for all of the above aforementioned artifacts incase there are changes required there as well for testing. Also note, if you need to test changes present in other un-merged branches, you'd need to build the release artifact from a release branch that has all the other (un-merged) branch changes as well.
