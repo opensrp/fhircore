@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  THEME,
-  REMOTE_SYNC_RESOURCES,
-  FHIR_TASK_EXPIRE_WORKER_VERSION
-}
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 05-12-2022. */
+class SampleParameterizedTest
