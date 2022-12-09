@@ -247,7 +247,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
-    coEvery { fhirEngine.delete(ResourceType.Task,"12345") } answers {}
+    coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
     runBlocking {
       fhirCarePlanGenerator.completeTask("12345", null)
@@ -262,7 +262,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
-    coEvery { fhirEngine.delete(ResourceType.Task,"12345") } answers {}
+    coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
     runBlocking {
       fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.FINISHED)
@@ -277,7 +277,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
-    coEvery { fhirEngine.delete(ResourceType.Task,"12345") } answers {}
+    coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
     runBlocking {
       fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.INPROGRESS)
@@ -304,7 +304,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(carePlan)
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
-    coEvery { fhirEngine.delete(ResourceType.Task,"12345") } answers {}
+    coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
     runBlocking {
       fhirCarePlanGenerator.completeTask("12345", Encounter.EncounterStatus.FINISHED)
