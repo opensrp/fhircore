@@ -340,9 +340,7 @@ constructor(
     }
 
     fun generateRandomSixDigitInt(): Int {
-      return generateRandomSixDigitInt(
-        min = INCLUSIVE_SIX_DIGIT_MINIMUM,
-        max = EXCLUSIVE_SIX_DIGIT_MAXIMUM
+      return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
       )
     }
   }
@@ -353,6 +351,6 @@ constructor(
     private const val TRUE = "true"
     private const val SERVICE = "service"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
-    private const val EXCLUSIVE_SIX_DIGIT_MAXIMUM = 1000000
+    private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
   }
 }
