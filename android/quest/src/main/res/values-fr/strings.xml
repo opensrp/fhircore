@@ -70,5 +70,8 @@
     <string name="phone_tracing_clients">Recherche de téléphone</string>
     <string name="home_tracing_clients">Recherche de domicile</string>
     <string name="appointment_clients">Rendez-vous</string>
+    <string name="structure_success">Ressources extraites avec succès pour %1$s</string>
+    <string name="structure_error_message">Échec de l\'extraction des ressources pour le %1$s</string>
+    <string name="structure_map_missing_message">Ressources manquantes pour le %1$s</string>
 
 </resources>
