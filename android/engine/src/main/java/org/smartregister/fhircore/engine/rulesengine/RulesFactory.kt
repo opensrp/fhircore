@@ -337,6 +337,16 @@ constructor(
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
       return date.formatDate(expectedFormat)
     }
+
+    /**
+     * This function generates a random 6-digit integer between a hard-coded range. It may generate
+     * duplicate outputs on subsequent function calls.
+     *
+     * @return An Integer.
+     */
+    fun generateRandomSixDigitInt(): Int {
+      return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
+    }
   }
 
   companion object {
@@ -344,5 +354,7 @@ constructor(
     private const val DATA = "data"
     private const val TRUE = "true"
     private const val SERVICE = "service"
+    private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
+    private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
   }
 }
