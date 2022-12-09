@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Condition xmlns="http://hl7.org/fhir">
+  <id value="mom-iron-side-effects"/>
+  <clinicalStatus>
+    <coding>
+      <system value="http://terminology.hl7.org/CodeSystem/condition-clinical"/>
+      <code value="active"/>
+    </coding>
+  </clinicalStatus>
+
+  <verificationStatus>
+    <coding>
+      <system value="http://terminology.hl7.org/CodeSystem/condition-ver-status"/>
+      <code value="confirmed"/>
+    </coding>
+  </verificationStatus>
+
+  <category>
+    <coding>
+      <system value="http://terminology.hl7.org/CodeSystem/condition-category"/>
+      <code value="problem-list-item"/>
+      <display value="Problem List Item"/>
+    </coding>
+  </category>
+
+  <code>
+    <coding>
+      <system value="http://openmrs.org/concepts"/>
+      <code value="165273AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"/>
+      <display value="Iron side effects"/>
+    </coding>
+    <text value="Iron side effects"/>
+  </code>
+
+  <subject>
+    <reference value="Patient/mom"/>
+  </subject>
+  <onsetDateTime value="2019-05-24"/>
+</Condition>

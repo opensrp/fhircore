@@ -1,0 +1,32 @@
+{
+    "resourceType":"PlanDefinition",
+    "id":"anc-plan-definition",
+    "status":"active",
+    "version":"0.1.0",
+    "name":"PlanDefinition",
+    "title":"PlanDefinition - WHO ANC Guideline Recommendation A.2",
+    "library":[
+       "Library/anc"
+    ],
+    "identifier":[
+       {
+          "use":"official",
+          "value":"PlanDefinition"
+       }
+    ],
+    "type":{
+       "coding":[
+          {
+             "system":"http://terminology.hl7.org/CodeSystem/plan-definition-type",
+             "code":"eca-rule",
+             "display":"ECA Rule"
+          }
+       ]
+    },
+    "experimental":true,
+    "date":"2021-06-14",
+    "action":[
+     
+        
+    ]
+ }

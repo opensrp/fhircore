@@ -1,0 +1,45 @@
+{
+  "resourceType": "ServiceRequest",
+  "status": "completed",
+  "intent": "order",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "386637004",
+          "display": "Obstetric procedure (procedure)"
+        }
+      ],
+      "text": "OB"
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "22633006",
+        "display": "medical personnel present (procedure)"
+      }
+    ],
+    "text": "further clinical examination"
+  },
+  "subject": {
+    "reference": "Patient/exmaple",
+    "display": "Charity ANC"
+  },
+  "occurrenceDateTime": "2021-02-09",
+  "requester": {
+    "display": "Women’s Hospital"
+  },
+  "performer": [
+    {
+      "display": "Midwife Amina"
+    }
+  ],
+  "reasonCode": [
+    {
+      "text": "further clinical examination"
+    }
+  ]
+}
