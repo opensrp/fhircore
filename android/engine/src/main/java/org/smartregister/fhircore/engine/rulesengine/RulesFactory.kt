@@ -341,7 +341,7 @@ constructor(
     /**
      * This function generates a random 6-digit integer between a hard-coded range. It may generate
      * duplicate outputs on subsequent function calls.
-     * 
+     *
      * @return An Integer.
      */
     fun generateRandomSixDigitInt(): Int {
