@@ -70,10 +70,12 @@ class MeasureReportPopulationResultViewTest {
   }
 
   @Test
-  fun testPopulationResultCardRendersPopulationCountCorrectly() {
+  fun testPopulationResultCardRendersPopulationDenominatorCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-      .onNodeWithText(measureReportPopulationResultList.first().count.uppercase())
+      .onNodeWithText(
+        measureReportPopulationResultList.first().measureReportDenominator.toString().uppercase()
+      )
       .assertExists()
       .assertIsDisplayed()
   }
