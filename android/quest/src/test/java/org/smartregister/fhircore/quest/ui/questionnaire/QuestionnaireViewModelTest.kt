@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.os.Looper
+import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -81,7 +83,9 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -916,7 +920,77 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `extractAndSaveResources() should call runCqlFor when Questionnaire uses cqf-library extenion`() {
+  fun testPerformExtractionOnSuccessReturnsABundleAndShowsSuccessToast() {
+    val context = mockk<Context>(relaxed = true)
+    val bundle = Bundle()
+    val questionnaire = Questionnaire()
+    questionnaire.name = "eCBIS Add Family Member Registration"
+    coEvery {
+      questionnaireViewModel.performExtraction(
+        context,
+        questionnaire = questionnaire,
+        questionnaireResponse = QuestionnaireResponse()
+      )
+    } returns bundle
+    Assert.assertNotNull(bundle)
+
+    context.getString(R.string.structure_success)
+    coVerify { context.getString(R.string.structure_success) }
+    context.showToast(
+      context.getString(R.string.structure_success, questionnaire.name),
+      Toast.LENGTH_LONG
+    )
+    coVerify {
+      context.showToast(
+        context.getString(R.string.structure_success, questionnaire.name),
+        Toast.LENGTH_LONG
+      )
+    }
+  }
+
+  @Test
+  fun testPerformExtractionOnFailureShowsMissingStructureMapToast() {
+    val context = mockk<Context>(relaxed = true)
+    val questionnaire = Questionnaire()
+    questionnaire.name = "eCBIS Add Family Member Registration"
+    val missingStructureMapExceptionMessage =
+      context.getString(R.string.structure_map_missing_message, questionnaire.name)
+    val questionnaireResponse = QuestionnaireResponse()
+
+    coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
+      NullPointerException(
+        "NullPointerException when invoking StructureMap on Null Object reference"
+      )
+
+    coEvery {
+      questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    }
+    context.getString(R.string.structure_map_missing_message)
+    context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG)
+    coVerify { context.getString(R.string.structure_map_missing_message) }
+
+    coVerify { context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG) }
+  }
+
+  fun testPerformExtractionOnFailureShowsErrorToast() {
+
+    val context = mockk<Context>(relaxed = true)
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaire.name = "eCBIS Add Family Member Registration"
+    val errorMessage = context.getString(R.string.structure_error_message, questionnaire.name)
+    coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
+      Exception("Failed to process resources")
+
+    coVerify {
+      questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    }
+    coVerify { context.getString(R.string.structure_error_message, questionnaire.name) }
+    coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+  }
+
+  @Test
+  fun `extractAndSaveResources() should call runCqlFor when Questionnaire uses cqf-library extension`() {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns
       samplePatientRegisterQuestionnaire
     coEvery { fhirEngine.get(ResourceType.Group, any()) } returns Group()
