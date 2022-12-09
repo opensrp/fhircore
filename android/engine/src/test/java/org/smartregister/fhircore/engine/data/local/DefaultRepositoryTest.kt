@@ -229,9 +229,9 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `save() should call Resource#generateMissingVersionId()`() {
+  fun `addOrUpdate() should call Resource#generateMissingVersionId() when versionId is null`() {
     mockkStatic(Resource::generateMissingVersionId)
-    val resource = spyk(Patient())
+    val resource = Patient()
 
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
@@ -240,7 +240,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
-    runBlocking { defaultRepository.save(resource) }
+    runBlocking { defaultRepository.addOrUpdate(resource) }
 
     verify { resource.generateMissingVersionId() }
 
