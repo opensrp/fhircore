@@ -136,6 +136,7 @@ constructor(
         JexlRule(jexlEngine)
           .name(ruleConfig.name)
           .description(ruleConfig.description)
+          .priority(ruleConfig.priority)
           .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
       ruleConfig.actions.forEach { customRule.then(it) }
