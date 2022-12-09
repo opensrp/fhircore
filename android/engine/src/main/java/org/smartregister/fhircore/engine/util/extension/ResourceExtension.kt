@@ -208,6 +208,10 @@ fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
+fun Resource.generateMissingVersionId() {
+  meta.versionId = meta.versionId ?: 1.toString()
+}
+
 fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
 }

@@ -50,6 +50,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
@@ -225,5 +226,24 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.get(ResourceType.Binary, any()) }
 
     Assert.assertEquals("111", result.logicalId)
+  }
+
+  @Test
+  fun `addOrUpdate() should call Resource#generateMissingVersionId() when versionId is null`() {
+    mockkStatic(Resource::generateMissingVersionId)
+    val resource = Patient()
+
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
+      ResourceNotFoundException("Exce", "Exce")
+    coEvery { fhirEngine.create(any()) } returns listOf()
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking { defaultRepository.addOrUpdate(resource) }
+
+    verify { resource.generateMissingVersionId() }
+
+    unmockkStatic(Resource::generateMissingVersionId)
   }
 }
