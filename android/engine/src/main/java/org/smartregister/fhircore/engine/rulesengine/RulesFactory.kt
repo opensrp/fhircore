@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.generateRandomSixDigitInt
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -338,12 +339,11 @@ constructor(
       return date.formatDate(expectedFormat)
     }
 
-    fun generateRandomIntLengthSix(): Int {
-      val uniqueId =
-        System.currentTimeMillis().toString().takeLast(6).toInt() +
-          (100000..maxInger).shuffled().random()
-      return if (uniqueId.toString().length > 6) uniqueId.toString().takeLast(6).toInt()
-      else uniqueId
+    fun generateRandomSixDigitInt(): Int {
+      return generateRandomSixDigitInt(
+        min = INCLUSIVE_SIX_DIGIT_MINIMUM,
+        max = EXCLUSIVE_SIX_DIGIT_MAXIMUM
+      )
     }
   }
 
@@ -352,6 +352,7 @@ constructor(
     private const val DATA = "data"
     private const val TRUE = "true"
     private const val SERVICE = "service"
-    private const val maxInger = 999999
+    private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
+    private const val EXCLUSIVE_SIX_DIGIT_MAXIMUM = 1000000
   }
 }

@@ -314,7 +314,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testGenerateRandomNumberOfLengthSix() {
-    val generatedNumber = rulesEngineService.generateRandomIntLengthSix()
+    val generatedNumber = rulesEngineService.generateRandomSixDigitInt()
     Assert.assertEquals(generatedNumber.toString().length, 6)
   }
 
