@@ -64,11 +64,14 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'More',
             items: [
               {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                label: 'OpenSRP',
+                href: 'https://smartregister.org',
+              },
+              {
+                label: 'Ona',
+                href: 'https://ona.io',
               },
             ],
           },
