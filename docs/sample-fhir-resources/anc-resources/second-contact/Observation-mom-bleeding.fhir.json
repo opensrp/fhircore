@@ -1,0 +1,44 @@
+{
+  "resourceType": "Observation",
+  "id": "mom-bleeding",
+  "status": "final",
+  "subject": {
+    "reference": "Patient/exmaple",
+    "display": "Charity ANC"
+  },
+  "encounter": {
+    "reference": "Encounter/mom-second-contact"
+  },
+  "effectivePeriod": {
+    "start": "2021-02-09",
+    "end": "2021-02-09"
+  },
+  "issued": "2021-02-09T15:30:00Z",
+  "performer": [
+    {
+      "reference": "Practitioner/midwife",
+      "display": "Midwife Amina"
+    }
+  ],
+    "category": [
+      {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/observation-category",
+            "code": "exam"
+          }
+        ]
+      }
+    ],
+    "code": {
+      "coding": [
+        {
+          "system": "https://fhir.loinc.org/CodeSystem/$lookup?system=http://loinc.org&code=LP146189-8",
+          "code": "LP146189-8",
+          "display": "Vaginal Bleeding : Procedure estimated blood loss is the approximate amount of blood that the patient lost approx quantitative amount  250 milliliters"
+        }
+      ]
+    }
+ 
+   
+  }

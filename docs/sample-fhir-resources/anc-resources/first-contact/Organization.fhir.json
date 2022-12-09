@@ -1,0 +1,8 @@
+{
+    "resourceType": "Organization",
+    "id": "org",
+    "name": "Community Clinic",
+    "alias": [
+      "Govenrment Health Facility"
+    ]
+  }
