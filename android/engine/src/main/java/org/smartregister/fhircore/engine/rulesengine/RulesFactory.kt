@@ -338,7 +338,11 @@ constructor(
     }
 
     fun generateRandomIntLengthSix(): Int {
-      return (1..maxInger).shuffled().random()
+      val uniqueId =
+        System.currentTimeMillis().toString().takeLast(6).toInt() +
+          (100000..maxInger).shuffled().random()
+      return if (uniqueId.toString().length > 6) uniqueId.toString().takeLast(6).toInt()
+      else uniqueId
     }
   }
 
