@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
 
 class TaskExtensionTest {
 
@@ -49,7 +49,7 @@ class TaskExtensionTest {
   }
 
   @Test
-  fun `task is ready if start & end dates are before today`() {
+  fun `task is ready if date today is between start and end dates`() {
     val task1 =
       Task().apply {
         executionPeriod.start =
@@ -57,7 +57,7 @@ class TaskExtensionTest {
       }
     task1.apply {
       executionPeriod.end =
-        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
     Assert.assertTrue(task1.isReady())
 
@@ -95,21 +95,21 @@ class TaskExtensionTest {
   }
 
   @Test
-  fun `executionEndIsBeforeOrToday returns true if date is before or today`() {
+  fun `executionEndIsAfterOrToday returns true if date is after or today`() {
     val task1 =
       Task().apply {
         executionPeriod.end =
-          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+          Date.from(LocalDate.now().plusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
 
-    Assert.assertTrue(task1.executionEndIsBeforeOrToday())
+    Assert.assertTrue(task1.executionEndIsAfterOrToday())
 
     task1.apply {
       executionPeriod.end =
-        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
 
-    Assert.assertFalse(task1.executionEndIsBeforeOrToday())
+    Assert.assertFalse(task1.executionEndIsAfterOrToday())
   }
 
   @Test

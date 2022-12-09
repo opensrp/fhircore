@@ -31,15 +31,15 @@ fun Task.hasStarted() =
 
 fun Task.isReady() =
   this.hasExecutionPeriod() &&
-    ((executionStartIsBeforeOrToday() && executionEndIsBeforeOrToday()) ||
+    ((executionStartIsBeforeOrToday() && executionEndIsAfterOrToday()) ||
       (executionStartIsBeforeOrToday() && !this.executionPeriod.hasEnd()))
 
 fun Task.executionStartIsBeforeOrToday() =
   this.executionPeriod.hasStart() &&
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
-fun Task.executionEndIsBeforeOrToday() =
+fun Task.executionEndIsAfterOrToday() =
   this.executionPeriod.hasEnd() &&
-    with(this.executionPeriod.end) { this.before(today()) || this.isToday() }
+    with(this.executionPeriod.end) { this.after(today()) || this.isToday() }
 
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
