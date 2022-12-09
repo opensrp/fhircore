@@ -325,7 +325,7 @@ constructor(
     FhirTaskExpireWorker.schedule(
       workManager,
       sharedPreferencesHelper,
-      applicationConfiguration.taskExpireJobRepeatInterval
+      applicationConfiguration.taskExpireJobRepeatIntervalMinutes
     )
   }
 
