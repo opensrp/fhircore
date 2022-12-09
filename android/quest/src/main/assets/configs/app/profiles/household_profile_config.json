@@ -275,17 +275,17 @@
                     ]
                   },
                   {
-                    "name": "getReadyTask",
+                    "name": "filterTasksByStatus",
                     "condition": "true",
                     "actions": [
-                      "data.put('getReadyTask', service.getReadyTask(Task))"
+                      "data.put('filterTasksByStatus', service.filterTasksByStatus(Task, ['READY',...]))"
                     ]
                   },
                   {
                     "name": "taskId",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskId', data.get('getReadyTask').id)"
+                      "data.put('taskId', data.get('filterTasksByStatus').get(0).id)"
                     ]
                   },
                   {
@@ -299,7 +299,7 @@
                     "name": "taskQuestionnaireId",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskQuestionnaireId',  data.get('getReadyTask').reasonReference.reference)"
+                      "data.put('taskQuestionnaireId',  data.get('filterTasksByStatus').get(0).reasonReference.reference)"
                     ]
                   },
                   {

@@ -1,0 +1,409 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+  "name": "eCBIS Add Family Member Registration",
+  "title": "eCBIS Add Family Member Registration",
+  "description": "eCBIS Add Family Member Registration",
+  "version": "0.0.3",
+  "status": "active",
+  "publisher": "ona",
+  "meta": {
+    "versionId": "20",
+    "lastUpdated": "2022-05-06T13:27:54.681+00:00",
+    "source": "#d733d621895ea79b",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "nb-NO",
+        "display": "Norsk Bokmål"
+      },
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
+      }
+    ]
+  },
+  "contact": [
+    {
+      "name": "https://www.smartregister.org/"
+    }
+  ],
+  "subjectType": [
+    "Patient",
+    "RelatedPerson"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/fhir/StructureMap/febf0030-262f-443d-95b4-e002d437cfd0"
+    }
+  ],
+  "purpose": "Family Member Registration",
+  "date": "2022-02-14T00:00:00.000Z",
+  "item": [
+    {
+      "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+      "type": "integer",
+      "text": "OpenSRP ID",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 10000000
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct number between 1 and 10,000,000"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 1
+        }
+      ],
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value"
+    },
+    {
+      "linkId": "06cbc503-3fa3-49f4-d0d7-9f427c0c6dd9",
+      "type": "integer",
+      "text": "National ID number",
+      "required": false,
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 999
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 10000000
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct number between 999 and 10,000,000"
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.given"
+          }
+        }
+      ],
+      "linkId": "e6306275-b989-4375-8527-3a56092081b8",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+      "text": "First Name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.text"
+          }
+        }
+      ],
+      "linkId": "597f4425-72b3-4bc4-8f38-b742aa3e99cd",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.text",
+      "text": "Middle name",
+      "type": "string",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.family"
+          }
+        }
+      ],
+      "linkId": "8fb87910-d900-4eea-dbba-dcf76ee6806d",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+      "text": "Surname",
+      "type": "string",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.birthDate"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "cd8e3d6d-e9ff-458d-d122-57070bebffaf",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+      "text": "Date of birth (DOB)",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ],
+            "text": "Check-box"
+          }
+        }
+      ],
+      "repeats": true,
+      "linkId": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+      "type": "choice",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown",
+            "display": "Date of Birth Unknown"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 120
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-fhirpath",
+          "valueString": "Patient.extension.where(url = 'http://helsenorge.no/fhir/StructureDefinition/sdf-age').value"
+        }
+      ],
+      "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+      "text": "Age",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ],
+            "text": "Drop down"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.gender"
+          }
+        }
+      ],
+      "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+      "text": "Gender",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male",
+            "display": "Male"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "female",
+            "display": "Female"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "calculated-month",
+      "text": "calculated month",
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), ((today().toString().substring(5, 2).toInteger() + 12) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() + 1), (today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger()) + 1)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "calculated-year",
+      "text": "calculated year",
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), (today().toString().substring(0, 4).toInteger() - 1) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger(), today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(((%resource.descendants().where(linkId='calculated-year').answer.value.toString().toInteger() * 365.25) + (%resource.descendants().where(linkId='calculated-month').answer.value.toString().toInteger() * 365.25 / 12)) / 365.25).toString().replaceMatches('[.]+[0-9]+', '').toInteger()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "b5bc7f80-4a0c-486c-e5eb-32c750036f94",
+      "text": "Calculated Age",
+      "type": "integer",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', %resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toInteger(), %resource.descendants().where(linkId='b5bc7f80-4a0c-486c-e5eb-32c750036f94').answer.value.toString().toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "age",
+      "text": "Age",
+      "type": "integer",
+      "readOnly": true
+    },
+    {
+      "linkId": "1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c",
+      "type": "choice",
+      "text": "Is family head?",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "db16ca66-a958-4042-8b69-b6274d7a1cf8",
+            "code": "yes",
+            "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "634f6d26-73d0-4058-8a9e-d5a003ce002e",
+            "code": "no",
+            "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
+            "display": "No"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 15
+        },
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 15
+        },
+        {
+          "question": "8460d986-ef71-4997-80ee-7887d8c345e7",
+          "operator": ">=",
+          "answerInteger": 15
+        }
+      ],
+      "enableBehavior": "any"
+    }
+  ]
+}

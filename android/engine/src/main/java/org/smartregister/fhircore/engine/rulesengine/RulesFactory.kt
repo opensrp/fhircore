@@ -338,12 +338,13 @@ constructor(
       return date.formatDate(expectedFormat)
     }
 
-    fun getReadyTask(list: List<Task>): Task? =
-      if (list.isNotEmpty()) {
-        list.find { it.status == Task.TaskStatus.READY }
+    fun filterTasksByStatus(list: List<Task>, taskStatus : List<String>): List<Task>? {
+      return if (list.isNotEmpty()) {
+        list.filter {  taskStatus.contains(it.status.name) }
       } else {
         null
       }
+    }
   }
 
   companion object {
