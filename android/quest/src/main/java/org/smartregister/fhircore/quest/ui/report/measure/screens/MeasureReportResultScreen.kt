@@ -133,7 +133,9 @@ fun MeasureReportResultPage(
           )
         }
         if (measureReportPopulationResult != null) {
-          MeasureReportPopulationResultView(measureReportPopulationResult.distinct())
+          MeasureReportPopulationResultView(
+            measureReportPopulationResult.distinctBy { it.indicatorTitle }
+          )
         }
       }
     }
