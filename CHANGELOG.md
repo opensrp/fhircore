@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
 - Quest | Add tasking list
 - Quest | Added ability to reference Related Persons and Patients to the Groups representing families
+- Quest | Populate family-registration response from DB
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -61,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Implement language switcher on profile page
 - Engine | Add tasking abstraction
 - Engine | Integrate Group resource for family representation
-- Engine | Performance improvement when openning questionnaires and saving QRs
+- Engine | Performance improvement when opening questionnaires and saving QRs
 - Engine | Add debug mode to optionally load local config
 - Engine | Add support for Group.Characteristic model in StructureMap extraction
 - Engine | Make the list of resources to be synced via P2P configurable 
