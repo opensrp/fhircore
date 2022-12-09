@@ -395,6 +395,7 @@ constructor(
     measureReport: MeasureReport,
     indicatorTitle: String = ""
   ): List<MeasureReportPopulationResult> {
+    var denominator: Int = 0
     return measureReport
       .also { Timber.w(it.encodeResourceToString()) }
       .group
@@ -407,7 +408,7 @@ constructor(
         // L3 - group.stratifier.stratum.population[]
 
         // report group is stratifier/stratum denominator
-        val denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
+        denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
         val stratifierItems: List<List<MeasureReportIndividualResult>> =
           if (reportGroup.isMonthlyReport())
             measureReport.reportingPeriodMonthsSpan.map {
@@ -475,7 +476,8 @@ constructor(
               MeasureReportPopulationResult(
                 title = it.first ?: "",
                 count = it.second.toString(),
-                indicatorTitle = indicatorTitle
+                indicatorTitle = indicatorTitle,
+                measureReportDenominator = denominator
               )
             )
           }
