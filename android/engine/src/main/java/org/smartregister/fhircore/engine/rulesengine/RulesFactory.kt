@@ -338,13 +338,8 @@ constructor(
       return date.formatDate(expectedFormat)
     }
 
-    fun filterTasksByStatus(list: List<Task>, taskStatus : List<String>): List<Task>? {
-      return if (list.isNotEmpty()) {
-        list.filter {  taskStatus.contains(it.status.name) }
-      } else {
-        null
-      }
-    }
+    fun filterTasksByStatus(list: List<Task>, taskStatus: List<String>) =
+      list.filter { it.status.name in taskStatus }
   }
 
   companion object {
