@@ -101,11 +101,7 @@ constructor(
       Timber.w(e.localizedMessage)
       Result.failure()
     } finally {
-      time?.let {
-        if (campaignDate != null) {
-          scheduleMeasureReportWorker(workManager = workManager, it, campaignDate)
-        }
-      }
+      time?.let { if (campaignDate != null) scheduleMeasureReportWorker(workManager = workManager) }
     }
     return Result.success()
   }
@@ -174,11 +170,12 @@ constructor(
     private const val APP_CONFIG = "appConfig"
     private const val TIME = "time"
 
-    fun scheduleMeasureReportWorker(
-      workManager: WorkManager,
-      scheduleTime: String,
-      campaignRegisterDate: String
-    ) {
+    fun scheduleMeasureReportWorker(workManager: WorkManager) {
+      // TODO removed the from application config, should be retrieved from
+      // MeasureReportConfiguration instead
+      val scheduleTime = "23:22"
+      val campaignRegisterDate = "2020-10-27"
+
       try {
         val alarmTime =
           LocalTime.parse(scheduleTime, DateTimeFormatter.ofPattern(SDFHH_MM)) // 24h format

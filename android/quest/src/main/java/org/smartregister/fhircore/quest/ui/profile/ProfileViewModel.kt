@@ -20,13 +20,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -37,10 +42,12 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import timber.log.Timber
 
@@ -53,6 +60,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
+
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   val launchQuestionnaireLiveData = MutableLiveData(false)
   val profileUiState = mutableStateOf(ProfileUiState())
@@ -98,15 +107,36 @@ constructor(
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
                 if (event.navController.context is QuestionnaireHandler) {
-                  (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
-                    context = event.navController.context,
-                    intentBundle =
-                      actionConfig.paramsBundle(
-                        event.resourceData?.computedValuesMap ?: emptyMap()
-                      ),
-                    questionnaireConfig = questionnaireConfig,
-                    computedValuesMap = event.resourceData?.computedValuesMap
-                  )
+                  viewModelScope.launch {
+                    var questionnaireResponse: String? = null
+
+                    if (event.resourceData != null) {
+                      questionnaireResponse =
+                        searchQuestionnaireResponses(
+                          subjectId = event.resourceData.baseResource.id.extractLogicalIdUuid(),
+                          subjectType = event.resourceData.baseResource.resourceType,
+                          questionnaireId = questionnaireConfig.id
+                        )
+                          .maxByOrNull { it.authored } // Get latest version
+                          ?.let { parser.encodeResourceToString(it) }
+                    }
+
+                    val intentBundle =
+                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                        .apply {
+                          putString(
+                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                            questionnaireResponse
+                          )
+                        }
+
+                    (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
+                      context = event.navController.context,
+                      intentBundle = intentBundle,
+                      questionnaireConfig = questionnaireConfig,
+                      computedValuesMap = event.resourceData?.computedValuesMap
+                    )
+                  }
                 }
               }
             }
@@ -174,4 +204,19 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
+
+  private suspend fun searchQuestionnaireResponses(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): List<QuestionnaireResponse> =
+    withContext(dispatcherProvider.io()) {
+      registerRepository.fhirEngine.search {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+      }
+    }
 }

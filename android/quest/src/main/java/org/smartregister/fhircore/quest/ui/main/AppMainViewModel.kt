@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -356,8 +357,12 @@ constructor(
     // Schedule job for generating measure report in the background
     MeasureReportWorker.scheduleMeasureReportWorker(
       workManager,
-      applicationConfiguration.reportRepeatTime,
-      applicationConfiguration.registerDate
+    )
+
+    FhirTaskExpireWorker.schedule(
+      workManager,
+      sharedPreferencesHelper,
+      applicationConfiguration.taskExpireJobRepeatIntervalMinutes
     )
   }
 
