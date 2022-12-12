@@ -44,7 +44,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
       ApplicationConfiguration(
         appId = "ancApp",
         configType = "classification",
-        theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
         appTitle = "Test App",
@@ -56,7 +55,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
   fun appConfigProperties() {
     Assert.assertEquals("ancApp", appConfig.appId)
     Assert.assertEquals("classification", appConfig.configType)
-    Assert.assertEquals("dark theme", appConfig.theme)
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)

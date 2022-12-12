@@ -24,9 +24,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class ApplicationConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.Application.name,
-  val theme: String = "",
   val appTitle: String = "",
-  val registerDate: String = "",
   val remoteSyncPageSize: Int = 100,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
@@ -37,4 +35,5 @@ data class ApplicationConfiguration(
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",
   val taskUpdateInterval: String = "PT01H"
+  val taskExpireJobRepeatIntervalMinutes: Long = 60
 ) : Configuration()
