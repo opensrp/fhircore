@@ -70,4 +70,7 @@
     <string name="phone_tracing_clients">Ufuatiliaji na Simu</string>
     <string name="home_tracing_clients">Ufuatiliaji wa Nyumbani</string>
     <string name="appointment_clients">Miadi</string>
+    <string name="structure_map_missing_message">Nyenzo zinazokosekana kwa dodoso %1$s</string>
+    <string name="structure_success">Imetoa rasilimali za %1$s</string>
+    <string name="structure_error_message">Imeshindwa kutoa nyenzo za dodoso %1$s</string>
 </resources>
