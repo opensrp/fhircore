@@ -34,7 +34,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -56,7 +55,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler {
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   @Inject lateinit var configService: ConfigService
   @Inject lateinit var syncListenerManager: SyncListenerManager
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
