@@ -56,7 +56,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
       ) {
         loginService.navigateToPinLogin(false)
       } else if (accountAuthenticator.hasActiveSession() && !isPinEnabled) {
-        loginService.navigateToHome()
+        accountAuthenticator.logout()
       }
 
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
