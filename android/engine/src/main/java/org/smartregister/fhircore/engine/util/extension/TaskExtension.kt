@@ -30,3 +30,9 @@ fun Task.hasStarted() =
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
+
+fun Task.isPastExpiry() =
+  this.hasRestriction() &&
+    this.restriction.hasPeriod() &&
+    this.restriction.period.hasEnd() &&
+    !this.restriction.period.end.after(today())
