@@ -312,6 +312,12 @@ class RulesFactoryTest : RobolectricTest() {
     verify { rulesFactory.log(exception, "Evaluation error") }
   }
 
+  @Test
+  fun testGenerateRandomNumberOfLengthSix() {
+    val generatedNumber = rulesEngineService.generateRandomSixDigitInt()
+    Assert.assertEquals(generatedNumber.toString().length, 6)
+  }
+
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())
     val patientRelatedResource = mutableListOf(populateTestPatient())

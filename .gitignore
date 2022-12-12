@@ -26,3 +26,7 @@ captures/
 # IntelliJ
 *.iml
 .idea
+
+# Fleet
+.fleet/
+.docusaurus/

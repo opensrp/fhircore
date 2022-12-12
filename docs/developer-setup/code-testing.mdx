@@ -1,0 +1,34 @@
+# Code Testing
+
+## Unit Tests
+
+### Naming Conventions
+
+We follow the following naming convention for our test cases:
+```
+<methodName><ConditionUnderTest><ExpectedBehavior>
+```
+
+**Example:** for a sample method:
+```kotlin
+fun isNumberEven(value:Int):Bool{
+```
+
+Sample test case:
+
+```
+isNumberEvenWithParameterFiveShouldReturnFalse
+```
+
+## Spotless
+We use Spotless to maintain the Java/Kotlin coding style in the codebase. Run the following command to check the codebase:
+
+```
+./gradlew spotlessCheck
+```
+
+and run the following command to apply fixes to the violations:
+
+```
+./gradlew spotlessApply
+```
