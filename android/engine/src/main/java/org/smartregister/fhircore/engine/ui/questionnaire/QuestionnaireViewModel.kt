@@ -29,6 +29,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -62,14 +63,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.assertSubject
-import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
-import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.findSubject
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
-import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.*
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -77,6 +71,7 @@ import timber.log.Timber
 open class QuestionnaireViewModel
 @Inject
 constructor(
+  @ApplicationContext val applicationContext: Context,
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
@@ -114,6 +109,8 @@ constructor(
     )
   }
 
+  private var currentFormName = "";
+
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
 
@@ -140,6 +137,7 @@ constructor(
     formName: String,
     type: QuestionnaireType
   ): Pair<QuestionnaireConfig, Questionnaire> {
+    currentFormName = formName
     return try {
       val config = getQuestionnaireConfig(formName, context)
       val questionnaire =
@@ -165,6 +163,11 @@ constructor(
   private fun readFileFromAssets(context: Context, filename: String): Questionnaire {
     val quest = context.assets.open(filename).bufferedReader().use { it.readText() }
     return jsonParser.parseResource(Questionnaire::class.java, quest)
+  }
+
+  private fun readStructureMapFromAssets(filename: String): StructureMap {
+    val quest = applicationContext.assets.open(filename).bufferedReader().use { it.readText() }
+    return jsonParser.parseResource(StructureMap::class.java, quest)
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
@@ -195,7 +198,9 @@ constructor(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = defaultRepository.loadResource(this)
+      structureMap = if (currentFormName.contains(".json"))
+        readStructureMapFromAssets("tests/map/${this}.json")
+       else defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -262,93 +267,85 @@ constructor(
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
       val extras = mutableListOf<Resource>()
-      Timber.i(jsonParser.encodeResourceToString(questionnaireResponse))
+      if (questionnaire.isExtractionCandidate()) {
+        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
-      //      if (questionnaire.isExtractionCandidate()) {
-      //        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-      //
-      //        bundle.entry.forEach { bundleEntry ->
-      //          // add organization to entities representing individuals in registration
-      // questionnaire
-      //          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient,
-      // ResourceType.Group)) {
-      //            if (questionnaireConfig.setOrganizationDetails) {
-      //              appendOrganizationInfo(bundleEntry.resource)
-      //            }
-      //            // if it is new registration set response subject
-      //            if (resourceId == null)
-      //              questionnaireResponse.subject = bundleEntry.resource.asReference()
-      //          }
-      //          if (questionnaireConfig.setPractitionerDetails) {
-      //            appendPractitionerInfo(bundleEntry.resource)
-      //          }
-      //
-      //          if (questionnaireType != QuestionnaireType.EDIT &&
-      //              bundleEntry.resource.resourceType.isIn(
-      //                ResourceType.Patient,
-      //                ResourceType.RelatedPerson
-      //              )
-      //          ) {
-      //            groupResourceId?.let {
-      //              appendPatientsAndRelatedPersonsToGroups(
-      //                resource = bundleEntry.resource,
-      //                groupResourceId = it
-      //              )
-      //            }
-      //          }
-      //
-      //          // response MUST have subject by far otherwise flow has issues
-      //          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
-      //
-      //          // TODO https://github.com/opensrp/fhircore/issues/900
-      //          // for edit mode replace client and resource subject ids.
-      //          // Ideally ResourceMapper should allow this internally via structure-map
-      //          if (questionnaireType.isEditMode()) {
-      //            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient,
-      // ResourceType.Group))
-      //              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
-      //            else {
-      //              bundleEntry.resource.setPropertySafely("subject",
-      // questionnaireResponse.subject)
-      //              bundleEntry.resource.setPropertySafely("patient",
-      // questionnaireResponse.subject)
-      //            }
-      //          }
-      //          questionnaireResponse.contained.add(bundleEntry.resource)
-      //
-      //          if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
-      //        }
-      //
-      //        if (questionnaire.experimental) {
-      //          Timber.w(
-      //            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save
-      // any data"
-      //          )
-      //        } else saveBundleResources(bundle)
-      //
-      //        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
-      //          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
-      //        }
-      //
-      //        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-      //        questionnaireResponseLiveData.postValue(questionnaireResponse)
-      //        // TODO https://github.com/opensrp/fhircore/issues/900
-      //        // reassess following i.e. deleting/updating older resources because one resource
-      //        // might have generated other flow in subsequent followups
-      //        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
-      //          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
-      //        }
-      //
-      //        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-      //        extractCarePlan(questionnaireResponse, bundle)
-      //      } else {
-      // //        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-      // //        extractCqlOutput(questionnaire, questionnaireResponse, null)
-      //      }
+        bundle.entry.forEach { bundleEntry ->
+          // add organization to entities representing individuals in registration questionnaire
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+            if (questionnaireConfig.setOrganizationDetails) {
+              appendOrganizationInfo(bundleEntry.resource)
+            }
+            // if it is new registration set response subject
+            if (resourceId == null)
+              questionnaireResponse.subject = bundleEntry.resource.asReference()
+          }
+          if (questionnaireConfig.setPractitionerDetails) {
+            appendPractitionerInfo(bundleEntry.resource)
+          }
 
-      //      viewModelScope.launch(Dispatchers.Main) {
-      //        extractionProgress.postValue(ExtractionProgress.Success(extras))
-      //      }
+          if (questionnaireType != QuestionnaireType.EDIT &&
+            bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.RelatedPerson
+            )
+          ) {
+            groupResourceId?.let {
+              appendPatientsAndRelatedPersonsToGroups(
+                resource = bundleEntry.resource,
+                groupResourceId = it
+              )
+            }
+          }
+
+          // response MUST have subject by far otherwise flow has issues
+          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
+
+          // TODO https://github.com/opensrp/fhircore/issues/900
+          // for edit mode replace client and resource subject ids.
+          // Ideally ResourceMapper should allow this internally via structure-map
+          if (questionnaireType.isEditMode()) {
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
+            else {
+              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
+            }
+          }
+          questionnaireResponse.contained.add(bundleEntry.resource)
+
+          if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
+        }
+
+        if (questionnaire.experimental) {
+          Timber.w(
+            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+          )
+        } else saveBundleResources(bundle)
+
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
+        }
+
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        questionnaireResponseLiveData.postValue(questionnaireResponse)
+        // TODO https://github.com/opensrp/fhircore/issues/900
+        // reassess following i.e. deleting/updating older resources because one resource
+        // might have generated other flow in subsequent followups
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
+        }
+
+        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle)
+      } else {
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        extractCqlOutput(questionnaire, questionnaireResponse, null)
+      }
+
+      viewModelScope.launch(Dispatchers.Main) {
+        extractionProgress.postValue(ExtractionProgress.Success(extras))
+      }
     }
   }
 
