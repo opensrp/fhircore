@@ -10,14 +10,14 @@
       "id": "1",
       "title": "Household Members",
       "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/HOUSEHOLDIND01",
       "module": "Module 1 - Household"
     },
     {
       "id": "2",
       "title": "Household Members ANC",
       "description": "Number of Households, Household members enrolled into ANC, disaggregated by age",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDPREGNANCY",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/HOUSEHOLDPREGNANCY",
       "module": "Module 1 - Household"
     }
   ]

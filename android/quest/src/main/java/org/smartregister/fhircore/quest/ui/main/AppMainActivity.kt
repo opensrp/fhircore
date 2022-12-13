@@ -141,7 +141,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(state.exceptions.joinToString { it.exception.message ?: "" })
       }
       is State.Failed -> {
         val hasAuthError =
