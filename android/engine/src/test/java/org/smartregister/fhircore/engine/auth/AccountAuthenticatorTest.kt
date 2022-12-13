@@ -22,15 +22,21 @@ import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
+import android.accounts.AccountManagerCallback
 import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.Runs
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -46,7 +52,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.ResponseBody
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
@@ -56,6 +61,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUT
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
@@ -64,6 +70,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
@@ -94,6 +101,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   private val oAuthService: OAuthService = mockk()
 
+  private val fhirResourceService: FhirResourceService = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -103,8 +112,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = oAuthService,
-          fhirResourceService = mockk(),
-          parser = mockk(),
+          fhirResourceService = fhirResourceService,
+          parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
@@ -334,16 +343,161 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix assertion")
-  fun testRefreshToken() {
+  fun testRefreshTokenShouldFetchToken() {
     val callMock = mockk<Call<OAuthResponse>>()
     val mockk = mockk<OAuthResponse>()
     val mockResponse = spyk(Response.success<OAuthResponse?>(mockk))
     every { callMock.execute() } returns mockResponse
 
-    every { accountAuthenticator.oAuthService.fetchToken(any()) } returns callMock
+    every { oAuthService.fetchToken(any()) } returns callMock
     val token = accountAuthenticator.refreshToken(Faker.authCredentials.refreshToken!!)
     Assert.assertNotNull(token)
+  }
+
+  @Test
+  fun testRefreshTokenShouldReturnNull() {
+    val callMock = mockk<Call<OAuthResponse>>()
+    every { callMock.execute() } returns
+      mockk { every { body() } throws java.lang.RuntimeException() }
+
+    every { oAuthService.fetchToken(any()) } returns callMock
+    val token = accountAuthenticator.refreshToken(Faker.authCredentials.refreshToken!!)
+    Assert.assertNull(token)
+  }
+
+  @Test
+  fun testGetPractitionerDetailsFromAssets() {
+    val details = accountAuthenticator.getPractitionerDetailsFromAssets()
+    Assert.assertNotNull(details)
+  }
+
+  @Test
+  fun testGetPractitionerDetailsShouldReturnBundle() {
+    val uuidSlot = slot<String>()
+    coEvery { fhirResourceService.getResource(capture(uuidSlot)) } returns mockk()
+
+    runBlocking {
+      accountAuthenticator.getPractitionerDetails("12345")
+      Assert.assertEquals("practitioner-details?keycloak-uuid=12345", uuidSlot.captured)
+    }
+  }
+
+  @Test
+  fun testHasActivePinShouldReturnTrue() {
+    every { secureSharedPreference.retrieveSessionPin() } returns "12345"
+    Assert.assertTrue(accountAuthenticator.hasActivePin())
+  }
+
+  @Test
+  fun testLoadActiveAccountShouldVerifyActiveAccount() {
+    val errorHandler = mockk<Handler>()
+    val callback = mockk<AccountManagerCallback<Bundle>>()
+
+    val account = mockk<Account>()
+    every { tokenManagerService.getActiveAccount() } returns account
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      mockk()
+
+    accountAuthenticator.loadActiveAccount(callback, errorHandler)
+
+    verify(exactly = 1) {
+      accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any(), false, callback, errorHandler)
+    }
+  }
+
+  @Test
+  fun testLogoutShouldVerifyAlreadyLoggedOutUser() {
+
+    every { secureSharedPreference.retrieveCredentials() } returns null
+    every { tokenManagerService.isTokenActive(any()) } returns false
+
+    val onLogout = mockk<() -> Unit>()
+    every { onLogout.invoke() } returns Unit
+
+    accountAuthenticator.logout(onLogout)
+
+    verify(exactly = 1) { onLogout.invoke() }
+  }
+
+  @Test
+  fun testLogoutShouldSuccessfullyLogout() {
+    every { tokenManagerService.isTokenActive(any()) } returns true
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "111", "mystoken", "myrtoken")
+
+    val callResponse = mockk<Call<ResponseBody>>(relaxed = true)
+    val callbackSlot = slot<Callback<ResponseBody>>()
+    every { callResponse.enqueue(capture(callbackSlot)) } returns Unit
+    every { oAuthService.logout(any(), any(), any()) } returns callResponse
+
+    val onLogout = mockk<() -> Unit>()
+    every { onLogout.invoke() } returns Unit
+
+    val accountAuthenticatorSpy = spyk(accountAuthenticator)
+    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    accountAuthenticatorSpy.logout(onLogout)
+
+    callbackSlot.captured.onResponse(mockk(), mockk { every { isSuccessful } returns true })
+
+    verify(exactly = 1) { onLogout.invoke() }
+    verify(exactly = 1) { accountAuthenticatorSpy.localLogout() }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+  }
+
+  @Test
+  fun testLogoutShouldNotSuccessfullyLogout() {
+    every { tokenManagerService.isTokenActive(any()) } returns true
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "111", "mystoken", "myrtoken")
+
+    val callResponse = mockk<Call<ResponseBody>>(relaxed = true)
+    val callbackSlot = slot<Callback<ResponseBody>>()
+    every { callResponse.enqueue(capture(callbackSlot)) } returns Unit
+    every { oAuthService.logout(any(), any(), any()) } returns callResponse
+
+    val onLogout = mockk<() -> Unit>()
+    every { onLogout.invoke() } returns Unit
+
+    val accountAuthenticatorSpy = spyk(accountAuthenticator)
+    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    accountAuthenticatorSpy.logout(onLogout)
+
+    callbackSlot.captured.onResponse(
+      mockk(),
+      mockk {
+        every { isSuccessful } returns false
+        every { body() } returns null
+      }
+    )
+
+    verify(exactly = 1) { onLogout.invoke() }
+    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
+    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+  }
+
+  @Test
+  fun testLogoutShouldFailureLogout() {
+    every { tokenManagerService.isTokenActive(any()) } returns true
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "111", "mystoken", "myrtoken")
+
+    val callResponse = mockk<Call<ResponseBody>>(relaxed = true)
+    val callbackSlot = slot<Callback<ResponseBody>>()
+    every { callResponse.enqueue(capture(callbackSlot)) } returns Unit
+    every { oAuthService.logout(any(), any(), any()) } returns callResponse
+
+    val onLogout = mockk<() -> Unit>()
+    every { onLogout.invoke() } returns Unit
+
+    val accountAuthenticatorSpy = spyk(accountAuthenticator)
+    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    accountAuthenticatorSpy.logout(onLogout)
+
+    callbackSlot.captured.onFailure(mockk(), RuntimeException())
+
+    verify(exactly = 1) { onLogout.invoke() }
+    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
+    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
