@@ -286,11 +286,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
+    //    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
+      //      saveProcessingAlertDialog.dismiss()
 
       AlertDialogue.showErrorAlert(
         this,
