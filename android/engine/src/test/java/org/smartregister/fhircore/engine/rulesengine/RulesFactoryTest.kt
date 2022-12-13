@@ -29,6 +29,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
@@ -41,6 +42,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
@@ -256,6 +259,53 @@ class RulesFactoryTest : RobolectricTest() {
 
     val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD", result)
+  }
+
+  @Test
+  fun filterResourceList() {
+    val attributeName = "status"
+    val list =
+      listOf(
+        Task().apply { status = TaskStatus.COMPLETED },
+        Task().apply { status = TaskStatus.READY },
+        Task().apply { status = TaskStatus.CANCELLED }
+      )
+
+    Assert.assertTrue(
+      rulesEngineService.filterList(list, attributeName, TaskStatus.READY).size == 1
+    )
+  }
+
+  @Test
+  fun filterResourceListWithWrongAttributeName() {
+    val attributeName = "desc"
+    val list =
+      listOf(
+        Task().apply { status = TaskStatus.COMPLETED },
+        Task().apply { status = TaskStatus.READY },
+        Task().apply { status = TaskStatus.CANCELLED }
+      )
+
+    Assert.assertThrows(NoSuchFieldException::class.java) {
+      runBlocking { rulesEngineService.filterList(list, attributeName, TaskStatus.READY) }
+    }
+  }
+
+  @Test
+  fun filterResourceListWithWrongAttributeValue() {
+    val attributeName = "status"
+    val attributeValue = "CANCELLED"
+    val list =
+      listOf(
+        Task().apply { status = TaskStatus.COMPLETED },
+        Task().apply { status = TaskStatus.READY },
+        Task().apply { status = TaskStatus.CANCELLED }
+      )
+
+    Assert.assertEquals(
+      emptyList<Task>(),
+      rulesEngineService.filterList(list, attributeName, attributeValue)
+    )
   }
 
   @Test
