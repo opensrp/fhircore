@@ -1,0 +1,332 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "phone-tracing-outcome",
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/phone-tracing-outcome"
+    }
+  ],
+  "title": "Home Tracing Outcome",
+  "status": "active",
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "is-tracing-conducted",
+      "text": "Were you able to speak to the client?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "linkId": "conducted-group",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "is-tracing-conducted",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-outcome",
+          "type": "choice",
+          "text": "Select Outcome of Discussion",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "patient-will-return",
+                "display": "They will return"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "vl-and-iac",
+                "display": "Provided VL results and IAC"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "transfer-out",
+                "display": "Transfer Out"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "patient-refused-return",
+                "display": "patient refused to return"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date-of-agreed-appointment",
+          "text": "<b>ENTER</b> Date of agreed clinic Appointment",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-will-return"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "date-of-iac",
+          "text": "<b>ENTER</b> Date of IAC was provided",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "vl-and-iac"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "transfered-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "date-of-agreed-appointment",
+              "text": "<b>ENTER</b> Date of agreed clinic Appointment",
+              "type": "date",
+              "required": true
+            },
+            {
+              "linkId": "document-out",
+              "type": "display",
+              "text": "Document date of Transfer out in the EMR, Master Card and ART Facility Register"
+            }
+          ]
+        },
+        {
+          "linkId": "refused-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-refused-return"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "date-of-refusal",
+              "text": "<b>ENTER</b> Date of refusal",
+              "type": "date",
+              "required": true
+            },
+            {
+              "linkId": "psychosocial-counselling",
+              "type": "boolean",
+              "required": true,
+              "text": "Did the patient agree to speak with a psychosocial counsellor?"
+            },
+            {
+              "linkId": "notify-supervisor",
+              "type": "display",
+              "text": "Notify the Site Supervisor of this issue",
+              "enableWhen": [
+                {
+                  "question": "psychosocial-counselling",
+                  "operator": "=",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "psychosocial-counselling",
+                  "operator": "=",
+                  "answerBoolean": false
+                }
+              ],
+              "enableBehavior": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "not-conducted-group",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "is-tracing-conducted",
+          "operator": "=",
+          "answerBoolean": false
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "reason-for-no-tracing",
+          "type": "choice",
+          "required": true,
+          "text": "Select the reason you were unable to speak to the client",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "phone-busy",
+                "display": "Phone Busy"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-answer",
+                "display": "Phone Rang But No Answer"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "patient-busy",
+                "display": "Patient Was busy"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "wrong-number",
+                "display": "Wrong Number"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "number-doesnt-exist",
+                "display": "Number Does Not Exist"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "patient-died",
+                "display": "Patient Died"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "call-again",
+          "type": "display",
+          "text": "Call the patient at a different time",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "phone-busy"
+              }
+            },
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "no-answer"
+              }
+            },
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-busy"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "remove-phone",
+          "type": "display",
+          "text": "Patient will be removed from the phone tracing list and added to the Home Tracing",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "wrong-number"
+              }
+            },
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "number-doesnt-exist"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "patient-to-remove",
+          "type": "display",
+          "text": "Patient will be removed from the client list",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-died"
+              }
+            }
+          ],
+          "enableBehavior": "all"
+        }
+      ]
+    }
+  ]
+}

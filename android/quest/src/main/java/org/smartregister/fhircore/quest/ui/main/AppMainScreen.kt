@@ -45,6 +45,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
+import org.smartregister.fhircore.quest.ui.patient.profile.TracingTestsProfile
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardianRelatedPersonProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRoute
@@ -130,6 +131,16 @@ private fun AppMainNavigationGraph(
       MainNavigationScreen.Home.route +
         NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
   ) {
+    val commonNavArgs =
+      NavigationArg.commonNavArgs(
+        firstSideMenuOption.appFeatureName,
+        firstSideMenuOption.healthModule
+      )
+    composable(
+      route =
+        "tracing_tests${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
+      arguments = commonNavArgs.plus(patientIdNavArgument())
+    ) { TracingTestsProfile() }
     mainNavigationScreens.forEach {
       val commonNavArgs =
         NavigationArg.commonNavArgs(

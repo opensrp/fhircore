@@ -1,0 +1,1908 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "art-client-welcome-service-high-or-detectable-viral-load",
+  "meta": {
+    "versionId": "8",
+    "lastUpdated": "2022-10-20T15:47:47.193+03:00",
+    "source": "#Cwr1H6sMkjIOyUuW"
+  },
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCode": "https://fhir-dev.d-tree.org/StructureMap/art-client-welcome-service-high-or-detectable-viral-load"
+    }
+  ],
+  "title": "Welcome Service",
+  "status": "active",
+  "subjectType": ["Patient"],
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 1"
+              }
+            ],
+            "text": "Page 1"
+          }
+        }
+      ],
+      "linkId": "page-1",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "welcome-service-tasks",
+          "text": "<b>Welcome Service Tasks</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "activities-done",
+          "text": "Welcome the client to care <br> <b>PROVIDE</b> welcome service counselling <br> Welcome card opened for high viral load ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "tasks-done",
+          "text": "Did you complete all the tasks listed above?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 2"
+              }
+            ],
+            "text": "Page 2"
+          }
+        }
+      ],
+      "linkId": "page-2",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "adherence-challenge-display",
+          "text": "<b>Adherence Challenges</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box",
+                    "display": "Check-box"
+                  }
+                ],
+                "text": "Check-box"
+              }
+            }
+          ],
+          "linkId": "adherence-challenge",
+          "text": "What adherence challenge was identified in IAC with IMB?",
+          "type": "choice",
+          "required": true,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "do-not-want-art-anymore",
+                "display": "Do not want to take ART anymore?"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "timing-of-meds",
+                "display": "Timing of meds: current time of day is not a good time"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forget-to-take-art",
+                "display": "Forgets to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-guardian",
+                "display": "I don't have a guardian to help me"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-fatigue",
+                "display": "Treatment fatigue. Client is tired of taking treament every day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mental-health-issues",
+                "display": "Mental health issues - Worries, fears, sadness, suicidal thoughts, etc"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "child-disclosure",
+                "display": "Child asking about ART - needs disclosure"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-art-privacy",
+                "display": "Unable to take ART because no privacy and has been unable to disclose"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "miss-refill-appointment",
+                "display": "Miss appointments for refills"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "other"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other",
+          "text": "* <b>ENTER</b> Other",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "adherence-challenge",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 3"
+              }
+            ],
+            "text": "Page 3"
+          }
+        }
+      ],
+      "linkId": "do-not-want-art-anymore-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "do-not-want-art-anymore"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "do-not-want-art-anymore-display",
+          "text": "<b>Do not want to take ART anymore?</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box",
+                    "display": "Check-box"
+                  }
+                ],
+                "text": "Check-box"
+              }
+            }
+          ],
+          "linkId": "no-art-adherence-challenges",
+          "text": "What adherence challenge was identified in IAC with IMB?",
+          "type": "choice",
+          "required": true,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "timing-of-meds",
+                "display": "Timing of meds: current time of day is not a good time"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forget-to-take-art",
+                "display": "Forgets to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-guardian",
+                "display": "I don't have a guardian to help me"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-fatigue",
+                "display": "Treatment fatigue. Client is tired of taking treament every day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mental-health-issues",
+                "display": "Mental health issues - Worries, fears, sadness, suicidal thoughts, etc"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "child-disclosure",
+                "display": "Child asking about ART - needs disclosure"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-art-privacy",
+                "display": "Unable to take ART because no privacy and has been unable to disclose"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "miss-refill-appointment",
+                "display": "Miss appointments for refills"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "other"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other",
+          "text": "* <b>ENTER</b> Other",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "no-art-adherence-challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 4"
+              }
+            ],
+            "text": "Page 4"
+          }
+        }
+      ],
+      "linkId": "timing-of-meds-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "timing-of-meds"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "timing-of-meds"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "timing-of-meds-display",
+          "text": "<b>Timing of meds: current time of day is not a good time</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "timing-of-meds-tasks",
+          "text": "Confirm client knows: <br> <ol> <li> Better tiime of day identified to take ART</li> <li> Remember if you forget you can take it within the next 12 hoours </li> </ol>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "timing-of-meds-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 5"
+              }
+            ],
+            "text": "Page 5"
+          }
+        }
+      ],
+      "linkId": "forget-to-take-art-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "forget-to-take-art"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "forget-to-take-art"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "forget-to-take-art-display",
+          "text": "<b>Forgets to take ART</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "forget-to-take-art-tasks",
+          "text": "Confirm client knows: <br> <ol> <li> Set med reminder on phone </li><li> Use a calender to set a reminder </li> <li> Ask question to remind them of meds </li> </ol>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "forget-to-take-art-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 6"
+              }
+            ],
+            "text": "Page 6"
+          }
+        }
+      ],
+      "linkId": "no-guardian-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "no-guardian"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "no-guardian"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "no-guardian-display",
+          "text": "<b>I don't have a guardian to help me</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "no-guardian-tasks",
+          "text": "Confirm client knows: <br> <ol> <li>How to identify a trustworthy guardian </li> <li>We can help advise them how to do disclosure or sit with them and do disclosure </li> </ol>  ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "no-guardian-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 7"
+              }
+            ],
+            "text": "Page 7"
+          }
+        }
+      ],
+      "linkId": "treatment-fatigue-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "treatment-fatigue"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "treatment-fatigue"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "treatment-fatigue-display",
+          "text": "<b>Treatment fatigue. Client is tired of taking treament every day</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-tasks",
+          "text": "Confirm client knows:  <br> <ol> <li>Counsel with IBM, motivation part critical to support taking medication for life </li> <li>Find out what part of taking medication is tiresome </li> <li> Refer to support group </li> </ol>  ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 8"
+              }
+            ],
+            "text": "Page 8"
+          }
+        }
+      ],
+      "linkId": "mental-health-issues-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "mental-health-issues"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "mental-health-issues"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "mental-health-issues-display",
+          "text": "<b>Mental health issues - Worries, fears, sadness, suicidal thoughts, etc</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "mental-health-issues-tasks",
+          "text": "<ol> <li>If suicidal - escort to clinician immediately</li> <li>Other LIVES support</li> </ol> ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "mental-health-issues-tasks-done",
+          "text": "<b>Refer to a clinical provider </b>",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 9"
+              }
+            ],
+            "text": "Page 9"
+          }
+        }
+      ],
+      "linkId": "child-disclosure-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "child-disclosure"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "child-disclosure"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "child-disclosure-display",
+          "text": "<b>Child asking about ART - needs disclosure</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "child-disclosure-tasks",
+          "text": "<ol> <li>Refer to disclosure trained site level staff to discuss and ideally complete disclosure with the child and family</li> </ol>  ",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 10"
+              }
+            ],
+            "text": "Page 10"
+          }
+        }
+      ],
+      "linkId": "no-art-privacy-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "no-art-privacy"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "no-art-privacy"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "no-art-privacy-display",
+          "text": "<b>Unable to take ART because no privacy and has been unable to disclose</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "no-art-privacy-tasks",
+          "text": "Strategize with client: <br> <ol> <li>SAY: Everyone on ART has some concern about disclosure. You are not alone</li> <li>Verify who is a trustworthy person who can support you? </li> <li> Ask if we can help them disclose and share tips on how to disclose </li> <li> Remind them to discuss this concern with PSC when they chat </li> <li> Can you find another more private time of day and move meds to that time </li> </ol>  ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "no-art-privacy-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 11"
+              }
+            ],
+            "text": "Page 11"
+          }
+        }
+      ],
+      "linkId": "miss-refill-appointment-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "adherence-challenge",
+          "operator": "=",
+          "answerCoding": {
+            "code": "miss-refill-appointment"
+          }
+        },
+        {
+          "question": "no-art-adherence-challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "miss-refill-appointment"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "item": [
+        {
+          "linkId": "miss-refill-appointment-display",
+          "text": "<b>Miss appointments for refills</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "miss-refill-appointment-tasks",
+          "text": "<ol> <li>Welcome the client to care</li> <li><b>PROVIDE</b> welcome service counselling</li> <li>Welcome card opened for back to care </li>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "miss-refill-appointment-tasks-done",
+          "text": "Did you complete all the tasks listed above?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 12"
+              }
+            ],
+            "text": "Page 12"
+          }
+        }
+      ],
+      "linkId": "missed-appointment-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "miss-refill-appointment-tasks-done",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "linkId": "missed-appointment-display",
+          "text": "<b>Reason Client Missed Appoinment</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box",
+                    "display": "Check-box"
+                  }
+                ],
+                "text": "Check-box"
+              }
+            }
+          ],
+          "linkId": "challenges",
+          "text": "* Select and discuss the reason(s) the client missed their appointment",
+          "type": "choice",
+          "required": true,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "not-disclosed",
+                "display": "Has not disclosed to anyone so could not get away to clinic as people will notice"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "traditional-medicine",
+                "display": "Using traditional medicine for healing"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "religious-reasons",
+                "display": "Religious reasons (faith healing) make it difficult for me"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "delayed-disclosure",
+                "display": "Lack of or delayed disclosure of status in children impacting adherence e.g child refusing treatment"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "experience-discrimination",
+                "display": "Experience discrimination or stigma because of their HIV status"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "experience-discrimination-iit",
+                "display": "Experience discrimination or stigma because they have previously disengage or had IIT and feared coming back to clinic"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lack-of-support-system",
+                "display": "Lack of reliable guardian for children e.g Multiple caregivers or unstable homes for children/OVC"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "side-effects",
+                "display": "Side effects that impact adherence"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forgot-appointment",
+                "display": "Forgot when their next appointment was"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unable-on-scheduled-date",
+                "display": "Could not get to clinic on their scheduled appointment date"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-fatigue",
+                "display": "Treatment fatigue. Client is tired of taking treatment every day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mental-health-issues",
+                "display": "Mental health issues - Worries, fears, sadness, suicidal thoughts, etc"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "did-not-miss-dose",
+                "display": "Did not actually miss ART dose (had ART supply) - NOT IIT"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above-reasons",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other",
+          "text": "* <b>ENTER</b> Other",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 13"
+              }
+            ],
+            "text": "Page 13"
+          }
+        }
+      ],
+      "linkId": "side-efects-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "side-effects"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "side-effects-display",
+          "text": "<b>Side effects that impact adherence</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-advice",
+          "text": "<b>SAY</b> Side effects can occur . Other ART is available if you need it. Let's go to the clinician",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-action",
+          "text": "<b>ACTION:</b> Escort client to clinical provider",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 14"
+              }
+            ],
+            "text": "Page 14"
+          }
+        }
+      ],
+      "linkId": "not-disclosed-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "not-disclosed"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "not-disclosed-display",
+          "text": "<b>Has not disclosed to anyone so could not get away to clinic as people will notice</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "not-disclosed-advice",
+          "text": "<b>SAY</b> Everyone on ART has some concern about disclosure. You're not alone. <br> Verify who is a trust worthy person who can support you? <br> Ask if we can help them disclose and share tips on how to disclose <br> Remind them to disucss this concern with PSC when they chat <br> Ask if they'd like to meet someone at clinic who is on ART to share experience? <br> Ask if they'd like info on support group",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "not-disclosed-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 15"
+              }
+            ],
+            "text": "Page 15"
+          }
+        }
+      ],
+      "linkId": "traditional-medicine-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "traditional-medicine"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "traditional-medicine-display",
+          "text": "<b>Using Traditional Medicine For Healing</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "traditional-medicine-advice",
+          "text": "<b>EXPLAIN</b> that many people use traditional medicine to treat many aiments like diarrhoea and pain, or to try boost immunity. However, nothing can cure HIV <br> ART weakens HIV. Traditional medicines can interfere with ART and reduce the effect of ART in the body",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "traditional-medicine-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "traditional-medicine-action",
+          "text": "<b>ACTION</b> Refer to a clinic provider",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 16"
+              }
+            ],
+            "text": "Page 16"
+          }
+        }
+      ],
+      "linkId": "religious-reasons-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "religious-reasons"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "religious-reasons-display",
+          "text": "<b>Religious reasons (faith healing) make it difficult for me</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "religious-reasons-advice",
+          "text": "<b>COUNSEL</b> <br> Faith is an important part of healing and health and it is so important that you have this support. God cares for us in many ways. Just as God provides us food on this earth, we don't depend on God to keep us nourished but know he has put food here for us to eat. God has also provided people on this earth who make ART that controls the virus. God is giving us what we need to stay healthy. Do you think God would want you to use these medications with your prayers and faith and community to stay healthy? ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "religious-reasonse-action",
+          "text": "<b>ACTION</b> Refer to a clinic provider",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 17"
+              }
+            ],
+            "text": "Page 17"
+          }
+        }
+      ],
+      "linkId": "delayed-disclosure-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "delayed-disclosure"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "delayed-disclosure-display",
+          "text": "<b>Lack of or delayed disclosure of status in children impacting adherence e.g child refusing treatment</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "delayed-disclosure-advice",
+          "text": "<ol> <li><b>DISCUSS</b> benefits of disclosure and initiate disclosure if ok with guardian </li> <li>Enrol in teen club/youth supporter program/OVC program after FULL disclosure confirmed</li> <li>Continue supporting disclosure process throughout adolescence</li> <li>Reinforce guardian support for the child after disclosure</li> </ol>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "delayed-disclosure-tasks-done",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "delayed-disclosure-action",
+          "text": "<b>ACTION</b> Link to OVC program (APA or other)",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 18"
+              }
+            ],
+            "text": "Page 18"
+          }
+        }
+      ],
+      "linkId": "experience-discrimination-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "experience-discrimination"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "experience-discrimination-display",
+          "text": "<b>Experience discrimination or stigma because of their HIV status</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "experience-discrimination-advice",
+          "text": "<ol> <li>Tell the client: I am sorry this happened to you. It is NOT YOUR FAULT that someone was mean to you and discriminated against you. You did not do anything to deserve this </li> <li>Ask the client what do they think they can do to cope with discrimination if it happens again. Sometimes we cannot change others behaviour but we can minimise its effect on us </li></ol>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "experience-discrimination-action",
+          "text": "<b>Refer to a clinical provider </b>",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 19"
+              }
+            ],
+            "text": "Page 19"
+          }
+        }
+      ],
+      "linkId": "experience-discrimination-iit-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "experience-discrimination-iit"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "experience-discrimination-iit-display",
+          "text": "<b>Experience discrimination or stigma because they have previously disengage or had IIT and feared coming back to clinic</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "experience-discrimination-iit-advice",
+          "text": "Tell the client: It is NOT YOUR FAULT that someone was mean to you and discriminated against you. You did not do anything to deserve this",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "experience-discrimination-iit-action",
+          "text": "<b>Accompany client to provider</b>",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 20"
+              }
+            ],
+            "text": "Page 20"
+          }
+        }
+      ],
+      "linkId": "lack-of-support-system-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "lack-of-support-system"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "lack-of-support-system-display",
+          "text": "<b>Lack of reliable guardian for children e.g Multiple caregivers or unstable homes for children/OVC</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "lack-of-support-system-advice",
+          "text": "<ol> <li>COUNSEL: Children are VULNERABLE and completely dependent on adults </li> <li>We KNOW that it is hard to always remember ART for children and that sometimes emergencies happen and we are not available </li> <li>This is why it is SO IMPORTANT that AT LEAST 2 people know and check every day that ART is given </li> <li> Who are the 2 caregivers for this child? How do you work together to give the ART daily? WRITE ON b3c cards </li> <li>Identity 2+ care givers and help guardian think about how other caregivers can help them. Plan preART for all guardians </li> <li>If complex refer to clinician </li> </ol>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "lack-of-support-system-action",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "lack-of-support-system-action",
+          "text": "<b>ACTION</b> Link to OVC program (APA or other)",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 21"
+              }
+            ],
+            "text": "Page 21"
+          }
+        }
+      ],
+      "linkId": "side-effects-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "side-effects"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "side-effects-display",
+          "text": "<b>Side effects that impact adherence</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-advice",
+          "text": "<b>SAY:</b> Side effects can occur. Other ART is available if you need it. Let's go to the clinician ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-action",
+          "text": "<b>ACTION:</b> Escort client to clinical provider",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 22"
+              }
+            ],
+            "text": "Page 22"
+          }
+        }
+      ],
+      "linkId": "forgot-appointment-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "forgot-appointment"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "forgot-appointment-display",
+          "text": "<b>Forgot when their next appointment was</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "forgot-appointment-advice",
+          "text": "<ol> <li>Set appointment reminder on phone</li> <li>Use calender to set a reminder</li> <li> Ask guardian to remind them of the appointment</li> <li>CHW can call if the client has a phone</li> </ol> ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "forgot-appointment-action",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 23"
+              }
+            ],
+            "text": "Page 23"
+          }
+        }
+      ],
+      "linkId": "unable-on-scheduled-date-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "unable-on-scheduled-date"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "unable-on-scheduled-date-display",
+          "text": "<b>Could not get to clinic on their scheduled appointment date</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "unable-on-scheduled-date-reason",
+          "text": "Why could they not get to the clinic on their scheduled appointment date?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "work-interference",
+                "display": "Unable to get off work or school"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other-priorities",
+                "display": "Competing priorities - e.g business, working for difficult employers"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "travel",
+                "display": "Travel (in and out of the area or over holidays)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "relocation",
+                "display": "Temporarily relocated"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-transport-funds",
+                "display": "Lack of transport funds"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "priorities-advice",
+          "text": "<ol> <li>Attend appointment on possible day before scheduled date</li> <li>Weekend appointment</li> <li>Early morning or lunch hour clinic if available </li> <li>Call clinic to notify of missing appointment but has enough meds</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "unable-on-scheduled-date-reason",
+              "operator": "=",
+              "answerCoding": {
+                "code": "work-interference"
+              }
+            },
+            {
+              "question": "unable-on-scheduled-date-reason",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other-priorities"
+              }
+            }
+          ],
+          "enableBehavior": "any",
+          "required": false
+        },
+        {
+          "linkId": "travel-advice",
+          "text": "<ol> <li>Attend appointment before scheduled date</li> <li>Emergency refill</li> <li>MMS </li> <li>Notify clinic if missing appointment</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "unable-on-scheduled-date-reason",
+              "operator": "=",
+              "answerCoding": {
+                "code": "travel"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "relocation-advice",
+          "text": "<ol> <li>Emergency refill</li> <li>Refill at Drop in centre/KP programs and seek assistance from CBOs</li> <li>Transfer out to nearby clinic </li> <li>Call clinic to notify of situation</li></ol> ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "unable-on-scheduled-date-reason",
+              "operator": "=",
+              "answerCoding": {
+                "code": "relocation"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "o-transport-funds-advice",
+          "text": "<ol> <li>Ask for next appointment date after pay day</li> <li>Flash clinic if you will miss appointment to let them know</li> <li>Ask for MMS </li> <li>Move to clinic closer to home/CAD</li></ol> ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "unable-on-scheduled-date-reason",
+              "operator": "=",
+              "answerCoding": {
+                "code": "no-transport-funds"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 24"
+              }
+            ],
+            "text": "Page 24"
+          }
+        }
+      ],
+      "linkId": "treatment-fatigue-2-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "treatment-fatigue"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "treatment-fatigue-display",
+          "text": "<b>Treatment fatigue. Client is tired of taking treatment every day</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-advice",
+          "text": "<ol> <li>Counsel with IMB motivation part critical to support taking medication for life</li> <li>Refer to PSC</li> <li>Refer to support group </li> </ol> ",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-action",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 25"
+              }
+            ],
+            "text": "Page 25"
+          }
+        }
+      ],
+      "linkId": "mental-health-issues-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "mental-health-issues"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "mental-health-issues-display",
+          "text": "<b>Mental health issues - Worries, fears, sadness, suicidal thoughts, etc</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "mental-health-issues-advice",
+          "text": "<ol> <li>Refer to PSC</li> <li>If suicidal - escort to clinician immediately</li> <li>Refer to the clinical provider </li> </ol> ",
+          "type": "display",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 26"
+              }
+            ],
+            "text": "Page 26"
+          }
+        }
+      ],
+      "linkId": "did-not-miss-dose-page",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "challenges",
+          "operator": "=",
+          "answerCoding": {
+            "code": "did-not-miss-dose"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "did-not-miss-dose-display",
+          "text": "<b>Did not actually miss ART dose (had ART supply) - NOT IIT</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "did-not-miss-dose-advice",
+          "text": "Why is the client not IIT",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "meds-from-clinic",
+                "display": "Had meds from this clinic"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "borrowed-meds",
+                "display": "Borrowed meds"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "did-not-miss-dose-clinic-meds-display",
+          "text": "<ol> <li>Encourage the client to continue coming to the clinic as indicated. <b>ACTION: </b> Correct the EMR before client leaves today </li> <li><b>SAY:</b> Great job coming to clinic before your ART finished. Please try to come when you have at least 2 tabs remaining so if there is any reason you cannot get to clinic when you plan, then you will still have some doses. Don't want until meds are all gone</li> <li>Show the clinician how many tabs you have and they will give you a later clinic date </li></ol>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "did-not-miss-dose-advice",
+              "operator": "=",
+              "answerCoding": {
+                "code": "meds-from-clinic"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "did-not-miss-dose-borrowed-meds-display",
+          "text": "<ol> <li>Praise the client for not missing doses and review importance of not sharing meds and not all ART is the same </li> <li>Review their ART name </li></ol>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "did-not-miss-dose-advice",
+              "operator": "=",
+              "answerCoding": {
+                "code": "borrowed-meds"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "did-not-miss-dose-action",
+          "text": "Did you discuss everything listed with the client?",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 16"
+              }
+            ],
+            "text": "Page 16"
+          }
+        }
+      ],
+      "linkId": "page-16",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "psc-display",
+          "text": "<b>Psychosocial Counsellor</b>",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "speak-to-psc",
+          "text": "* <b>SAY:<b>We have PSC who supports all clients and would like you to have an opportunity to talk to them today. Is it ok with you if I call them now while you are waiting for the clinication",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "psc-action-display",
+          "text": "<b>ACTION</b> Refer client to PSC",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "referral-confirmation",
+          "text": "* Did you refer the client to a <b>psychosocial counselor</b>?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "follow-up-confirmation-speaks-to-psc",
+          "text": "* Is welcome care follow up needed?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "action",
+          "text": "<b>Write in passbook</b> PSC today: name of PSC; <br> reason; <br> is followup needed yes/no",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "follow-up-confirmation-speaks-to-psc",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "any",
+          "required": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.id"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "patient-id",
+          "type": "string"
+        },
+        {
+          "text": "Get Task",
+          "type": "string",
+          "linkId": "1.1.0",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "expression": "Task?code=http://snomed.info/sct|225368008&subject={{Patient.id}}",
+                "language": "application/x-fhir-query"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

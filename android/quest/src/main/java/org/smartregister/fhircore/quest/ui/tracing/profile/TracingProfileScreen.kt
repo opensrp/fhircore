@@ -144,7 +144,7 @@ fun TracingProfilePage(
     TracingProfilePageView(
       innerPadding = innerPadding,
       profileViewData = profileViewData,
-      onShowTraceOutcomes = { patientProfileViewModel.showTracingOutcomes() }
+      onShowTraceOutcomes = { patientProfileViewModel.showTracingOutcomes(context) }
     )
   }
 }

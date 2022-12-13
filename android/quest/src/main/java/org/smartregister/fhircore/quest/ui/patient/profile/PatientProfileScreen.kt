@@ -110,6 +110,16 @@ fun PatientProfileScreen(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false }
           ) {
+            DropdownMenuItem(
+              onClick = {
+                showOverflowMenu = false
+                patientProfileViewModel.onEvent(
+                  PatientProfileEvent.OverflowMenuClick(navController, context, 222)
+                )
+              }
+            ) {
+              Text(text = "Tracing Stuff") //
+            }
             viewState.visibleOverflowMenuItems().forEach {
               DropdownMenuItem(
                 onClick = {

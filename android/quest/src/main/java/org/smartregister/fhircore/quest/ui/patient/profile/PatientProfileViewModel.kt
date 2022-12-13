@@ -224,6 +224,16 @@ constructor(
             isClientVisit.value = true
             handleVisitType(true)
           }
+          222 -> {
+            val urlParams =
+              NavigationArg.bindArgumentsOf(
+                Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+                Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+                Pair(NavigationArg.PATIENT_ID, patientId)
+              )
+
+            event.navController.navigate(route = "tracing_tests$urlParams")
+          }
           R.id.view_guardians -> {
             val commonParams =
               NavigationArg.bindArgumentsOf(

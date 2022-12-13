@@ -1,0 +1,1188 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "home-tracing-outcome",
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/home-tracing-outcome"
+    }
+  ],
+  "title": "Home Tracing Outcome",
+  "status": "active",
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "is-tracing-conducted",
+      "text": "Were you able to speak to the client?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "linkId": "conducted-group",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "is-tracing-conducted",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-outcome",
+          "type": "choice",
+          "text": "Select Outcome of Discussion",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "contact-tested",
+                "display": "Contact Tested"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "will-return",
+                "display": "They said they will return"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "refused-return",
+                "display": "They refused to return"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "transfer-out",
+                "display": "Transfer Out"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "contact-tested-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "contact-tested"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "date-of-hiv-test",
+              "text": "<b>ENTER:</b> Date of HIV test",
+              "type": "date",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "hiv-test-type",
+              "text": "* <b>SELECT:</b> the HIV test type",
+              "type": "choice",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "dbs",
+                    "display": "DBS"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "rapid",
+                    "display": "Rapid"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "sample-id",
+              "text": "Sample ID",
+              "type": "string",
+              "enableWhen": [
+                {
+                  "question": "hiv-test-type",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "dbs"
+                  }
+                }
+              ],
+              "enableBehavior": "all",
+              "required": true
+            },
+            {
+              "linkId": "test-results-rapid",
+              "text": "* <b>SELECT:</b> HIV Test Results",
+              "type": "choice",
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "hiv-test-type",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "rapid"
+                  }
+                }
+              ],
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "positive",
+                    "display": "Positive"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "negative",
+                    "display": "Negative"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "test-results-dbs",
+              "text": "* <b>SELECT:</b> HIV Test Results",
+              "type": "choice",
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "sample-id",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "positive",
+                    "display": "Positive"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "negative",
+                    "display": "Negative"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "results_not_in",
+                    "display": "Results not in"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "positive-group",
+              "type": "group",
+              "enableWhen": [
+                {
+                  "question": "test-results",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "positive"
+                  }
+                }
+              ],
+              "enableBehavior": "all",
+              "item": [
+                {
+                  "linkId": "dbs-results-known",
+                  "text": "The contact must come to the clinic for a confirmatory test",
+                  "type": "display"
+                },
+                {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                      "_valueDate": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                            "valueExpression": {
+                              "language": "text/fhirpath",
+                              "expression": "today()"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "linkId": "date-of-agreed-appointment",
+                  "text": "<b>ENTER</b> Date of confirmatory test clinic appointment",
+                  "type": "date",
+                  "required": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "linkId": "date-of-agreed-appointment",
+          "text": "<b>ENTER</b> Date of agreed clinic Appointment",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "will-return"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "refused-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "refused-return"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "linkId": "date-of-refusal",
+              "text": "<b>ENTER</b> Date of refusal",
+              "type": "date",
+              "required": true
+            },
+            {
+              "linkId": "agreed-to-speak-to-counsellor",
+              "text": "Did they agree to speak with a psychosocial counsellor?",
+              "type": "boolean",
+              "enableWhen": [
+                {
+                  "question": "date-of-refusal",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all",
+              "required": true
+            },
+            {
+              "linkId": "notify-supervisor-yes",
+              "type": "display",
+              "text": "<b>Action:</b> Notify the Site Supervisor of this issue of the patient's refusal to return and willingness to speak to a psychosocial counsellor",
+              "enableWhen": [
+                {
+                  "question": "agreed-to-speak-to-counsellor",
+                  "operator": "=",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all"
+            },
+            {
+              "linkId": "notify-supervisor-no",
+              "type": "display",
+              "text": "<b>Action:</b> Notify the Site Supervisor of this issue of the patient's refusal to return and refusal to speak to a psychosocial counsellor",
+              "enableWhen": [
+                {
+                  "question": "agreed-to-speak-to-counsellor",
+                  "operator": "=",
+                  "answerBoolean": false
+                }
+              ],
+              "enableBehavior": "all"
+            }
+          ]
+        },
+        {
+          "linkId": "transfered-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "linkId": "date-of-transfer",
+              "text": "<b>ENTER</b> Date of transfer out",
+              "type": "date",
+              "required": true
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "district",
+              "text": "* District",
+              "type": "choice",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Balaka"
+                },
+                {
+                  "valueString": "Blantyre"
+                },
+                {
+                  "valueString": "Chikwawa"
+                },
+                {
+                  "valueString": "Chiradzulu"
+                },
+                {
+                  "valueString": "Chitipa"
+                },
+                {
+                  "valueString": "Dedza"
+                },
+                {
+                  "valueString": "Dowa"
+                },
+                {
+                  "valueString": "Karonga"
+                },
+                {
+                  "valueString": "Kasungu"
+                },
+                {
+                  "valueString": "Likoma"
+                },
+                {
+                  "valueString": "Lilongwe"
+                },
+                {
+                  "valueString": "Machinga"
+                },
+                {
+                  "valueString": "Mangochi"
+                },
+                {
+                  "valueString": "Mchinji"
+                },
+                {
+                  "valueString": "Mozambique"
+                },
+                {
+                  "valueString": "Mulanje"
+                },
+                {
+                  "valueString": "Mwanza"
+                },
+                {
+                  "valueString": "Mzimba"
+                },
+                {
+                  "valueString": "Neno"
+                },
+                {
+                  "valueString": "Nkhata Bay"
+                },
+                {
+                  "valueString": "Nkhotakota"
+                },
+                {
+                  "valueString": "Nsanje"
+                },
+                {
+                  "valueString": "Ntcheu"
+                },
+                {
+                  "valueString": "Ntchisi"
+                },
+                {
+                  "valueString": "Phalombe"
+                },
+                {
+                  "valueString": "Rumphi"
+                },
+                {
+                  "valueString": "Salima"
+                },
+                {
+                  "valueString": "Thyolo"
+                },
+                {
+                  "valueString": "Zomba"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-balaka",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Balaka"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Adamu"
+                },
+                {
+                  "valueString": "Amonitsute"
+                },
+                {
+                  "valueString": "Bulusi"
+                },
+                {
+                  "valueString": "Chauluka"
+                },
+                {
+                  "valueString": "Chidalala"
+                },
+                {
+                  "valueString": "Chikalogwe"
+                },
+                {
+                  "valueString": "Chikololele"
+                },
+                {
+                  "valueString": "Chikuse"
+                },
+                {
+                  "valueString": "Chimatiro"
+                },
+                {
+                  "valueString": "Chimkwakwa"
+                },
+                {
+                  "valueString": "Chimpakati"
+                },
+                {
+                  "valueString": "Chimtendere"
+                },
+                {
+                  "valueString": "Chingagwe"
+                },
+                {
+                  "valueString": "Chipochera"
+                },
+                {
+                  "valueString": "Chitala"
+                },
+                {
+                  "valueString": "Chiyembekezo"
+                },
+                {
+                  "valueString": "Damu"
+                },
+                {
+                  "valueString": "Domoka"
+                },
+                {
+                  "valueString": "Hanjahanja"
+                },
+                {
+                  "valueString": "James"
+                },
+                {
+                  "valueString": "Joshua"
+                },
+                {
+                  "valueString": "Kachikuni"
+                },
+                {
+                  "valueString": "Kadyalunda"
+                },
+                {
+                  "valueString": "Kalimba"
+                },
+                {
+                  "valueString": "Kampeni"
+                },
+                {
+                  "valueString": "Kandengwe"
+                },
+                {
+                  "valueString": "Kanyumbaaka"
+                },
+                {
+                  "valueString": "Kapalamula"
+                },
+                {
+                  "valueString": "Kapire"
+                },
+                {
+                  "valueString": "Katuma"
+                },
+                {
+                  "valueString": "Kaumphawi"
+                },
+                {
+                  "valueString": "Kayinga"
+                },
+                {
+                  "valueString": "Khoswe"
+                },
+                {
+                  "valueString": "Khwalala"
+                },
+                {
+                  "valueString": "Khwisa"
+                },
+                {
+                  "valueString": "Liwiza"
+                },
+                {
+                  "valueString": "Liwonde"
+                },
+                {
+                  "valueString": "Lupanga"
+                },
+                {
+                  "valueString": "Mackenzie"
+                },
+                {
+                  "valueString": "Majawa"
+                },
+                {
+                  "valueString": "Majo"
+                },
+                {
+                  "valueString": "Makoloje"
+                },
+                {
+                  "valueString": "Maliwata"
+                },
+                {
+                  "valueString": "Matola"
+                },
+                {
+                  "valueString": "Mbodzoole"
+                },
+                {
+                  "valueString": "Mchenga"
+                },
+                {
+                  "valueString": "Mchirakwenda"
+                },
+                {
+                  "valueString": "Mgwira"
+                },
+                {
+                  "valueString": "Mitochi"
+                },
+                {
+                  "valueString": "Mlandula"
+                },
+                {
+                  "valueString": "M'Manga"
+                },
+                {
+                  "valueString": "Mpezeni"
+                },
+                {
+                  "valueString": "Mponda"
+                },
+                {
+                  "valueString": "Mpoto"
+                },
+                {
+                  "valueString": "Mpulula"
+                },
+                {
+                  "valueString": "Mtalika"
+                },
+                {
+                  "valueString": "Mwalero"
+                },
+                {
+                  "valueString": "Mzati"
+                },
+                {
+                  "valueString": "Ngomano"
+                },
+                {
+                  "valueString": "Ng'Onga"
+                },
+                {
+                  "valueString": "Ngwalo"
+                },
+                {
+                  "valueString": "Njede"
+                },
+                {
+                  "valueString": "Ntonya"
+                },
+                {
+                  "valueString": "Petulo"
+                },
+                {
+                  "valueString": "Phalula"
+                },
+                {
+                  "valueString": "Pilitu"
+                },
+                {
+                  "valueString": "Sawali"
+                },
+                {
+                  "valueString": "Siliya"
+                },
+                {
+                  "valueString": "Sosola"
+                },
+                {
+                  "valueString": "Tembo"
+                },
+                {
+                  "valueString": "Toleza"
+                },
+                {
+                  "valueString": "Uli"
+                },
+                {
+                  "valueString": "Zammimba"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-machinga",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Machinga"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chamba Dispensary"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-mangochi",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Mangochi"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Assalaam Clinic"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-phalombe",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Phalombe"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chiringa Maternity"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-salima",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Salima"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chinguluwe Health Centre"
+                }
+              ]
+            },
+            {
+              "linkId": "notify-supervisor",
+              "type": "display",
+              "text": "<h1><b>Write:</b> Notify site supervisor to alert the other site to enter the client in their appointment register</h1>",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Balaka"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Machinga"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Mangochi"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Phalombe"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Salima"
+                }
+              ],
+              "enableBehavior": "any"
+            },
+            {
+              "linkId": "document-out",
+              "type": "display",
+              "text": "<h1>Write: date of Transfer out in the EMR, Master Card and ART Facility Register</h1>",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "not-conducted-group",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "is-tracing-conducted",
+          "operator": "=",
+          "answerBoolean": false
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "reason-for-no-tracing",
+          "type": "choice",
+          "required": true,
+          "text": "Select the reason you were unable to speak to the client",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "patient-not-home",
+                "display": "Found home but patient not home"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "home-not-found",
+                "display": "Could not find home"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "moved",
+                "display": "Moved"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "deceased",
+                "display": "Deceased"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "not-require-tracing",
+                "display": "Error, this person does not require tracing"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "visit-again",
+          "type": "display",
+          "text": "Visit the client at a different time of day and on a different day",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-not-home"
+              }
+            }
+          ],
+          "enableBehavior": "all"
+        },
+        {
+          "linkId": "verify-collection",
+          "type": "display",
+          "text": "Check if the location is collect",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "home-not-found"
+              }
+            }
+          ],
+          "enableBehavior": "all"
+        },
+        {
+          "linkId": "client-moved-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "moved"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "new-location-known",
+              "type": "boolean",
+              "text": "Do you known where the Patient moved to?"
+            },
+            {
+              "linkId": "date-new-location-known",
+              "type": "date",
+              "text": "Enter date CHW came to know that the client moved",
+              "enableWhen": [
+                {
+                  "question": "new-location-known",
+                  "operator": "=",
+                  "answerBoolean": false
+                }
+              ],
+              "enableBehavior": "all"
+            }
+          ]
+        },
+        {
+          "linkId": "patient-to-remove-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "deceased"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "patient-to-remove",
+              "type": "boolean",
+              "text": "Do you know when they died"
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "linkId": "date-of-death",
+              "text": "<b>ENTER:</b> date of death",
+              "type": "date",
+              "required": true,
+              "enableWhen": [
+                {
+                  "question": "patient-to-remove",
+                  "operator": "=",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all"
+            },
+            {
+              "linkId": "patient-to-remove-info",
+              "type": "display",
+              "text": "<b>This person will be removed from the client list</b>",
+              "enableWhen": [
+                {
+                  "question": "patient-to-remove",
+                  "operator": "=",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "patient-to-remove",
+                  "operator": "=",
+                  "answerBoolean": false
+                }
+              ],
+              "enableBehavior": "all"
+            }
+          ]
+        },
+        {
+          "linkId": "not-require-tracing",
+          "type": "display",
+          "text": "<b>They will be removed from the tracing list</b>",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "not-require-tracing"
+              }
+            }
+          ],
+          "enableBehavior": "all"
+        }
+      ]
+    }
+  ]
+}
