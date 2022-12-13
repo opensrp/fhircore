@@ -20,7 +20,7 @@
   ],
   "loginConfig": {
     "showLogo": true,
-    "enablePin": false
+    "enablePin": true
   },
   "deviceToDeviceSync": {
     "resourcesToSync": [
