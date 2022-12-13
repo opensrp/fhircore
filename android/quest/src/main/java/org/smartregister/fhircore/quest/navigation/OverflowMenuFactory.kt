@@ -166,5 +166,11 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
         confirmAction = true
       )
     )
+  ),
+  TRACING_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
+    )
   )
 }

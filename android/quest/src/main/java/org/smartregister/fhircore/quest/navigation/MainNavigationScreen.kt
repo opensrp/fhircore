@@ -32,6 +32,8 @@ sealed class MainNavigationScreen(
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
   object PatientProfile :
     MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
+  object TracingProfile :
+    MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
   object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
@@ -48,7 +50,8 @@ sealed class MainNavigationScreen(
         PatientGuardians,
         FamilyProfile,
         ViewChildContacts,
-        GuardianProfile
+        GuardianProfile,
+        TracingProfile
       )
   }
 }

@@ -51,6 +51,9 @@ import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
+import org.smartregister.fhircore.engine.util.extension.extractAddressState
+import org.smartregister.fhircore.engine.util.extension.extractAddressText
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractGivenName
@@ -150,6 +153,9 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
+      addressDistrict = patient.extractAddressDistrict(),
+      addressTracingCatchment = patient.extractAddressState(),
+      addressPhysicalLocator = patient.extractAddressText(),
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
@@ -249,25 +255,14 @@ constructor(
         patient.extractHealthStatusFromMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
         ),
-      isPregnant = patient.isPregnant(),
-      isBreastfeeding = patient.isBreastfeeding()
+      isPregnant = defaultRepository.isPatientPregnant(patient),
+      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient)
     )
-
-  internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
-  internal suspend fun Patient.isBreastfeeding() =
-    patientConditions(this.logicalId).activelyBreastfeeding()
 
   internal suspend fun Patient.activeConditions() =
-    patientConditions(this.logicalId).filter { condition ->
+    defaultRepository.patientConditions(this.logicalId).filter { condition ->
       condition.clinicalStatus.coding.any { it.code == "active" }
     }
-
-  internal suspend fun patientConditions(patientId: String) =
-    defaultRepository.searchResourceFor<Condition>(
-      subjectId = patientId,
-      subjectParam = Condition.SUBJECT,
-      subjectType = ResourceType.Patient
-    )
 
   internal suspend fun Patient.observations() =
     defaultRepository.searchResourceFor<Observation>(
@@ -392,8 +387,8 @@ constructor(
             patient.extractHealthStatusFromMeta(
               getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
             ),
-          isPregnant = patient.isPregnant(),
-          isBreastfeeding = patient.isBreastfeeding()
+          isPregnant = defaultRepository.isPatientPregnant(patient),
+          isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient)
         )
       }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
@@ -408,3 +403,16 @@ constructor(
     const val LINKED_CHILD_AGE_LIMIT = 20
   }
 }
+
+suspend fun DefaultRepository.patientConditions(patientId: String) =
+  searchResourceFor<Condition>(
+    subjectId = patientId,
+    subjectParam = Condition.SUBJECT,
+    subjectType = ResourceType.Patient
+  )
+
+suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
+  patientConditions(patient.logicalId).hasActivePregnancy()
+
+suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
+  patientConditions(patient.logicalId).activelyBreastfeeding()

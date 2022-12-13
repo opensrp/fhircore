@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile
+package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.os.bundleOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -50,27 +50,24 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
-import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactPagingSource
-import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
-class PatientProfileViewModel
+class TracingProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
@@ -88,10 +85,10 @@ constructor(
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
   val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
 
-  var patientProfileUiState: MutableState<PatientProfileUiState> =
+  var patientTracingProfileUiState: MutableState<TracingProfileUiState> =
     mutableStateOf(
-      PatientProfileUiState(
-        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
+      TracingProfileUiState(
+        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.TRACING_PROFILE)
       )
     )
 
@@ -107,26 +104,9 @@ constructor(
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
 
-  fun completedTask(value: String) {
-    patientProfileData?.let { data ->
-      if (data is ProfileData.HivProfileData) {
-        val patientData =
-          data.copy(
-            tasks =
-              data.tasks.map { task ->
-                if (task.reasonReference.extractId() == value) {
-                  task.status = Task.TaskStatus.COMPLETED
-                  task
-                } else task
-              }
-          )
-        _patientProfileViewDataFlow.value =
-          profileViewDataMapper.transformInputToOutputModel(patientData) as
-            ProfileViewData.PatientProfileViewData
-        patientProfileData = patientData
-      }
-    }
-  }
+  private val _showTracingOutcomes = MutableLiveData<Boolean>()
+  val showTracingOutcomes: LiveData<Boolean>
+    get() = _showTracingOutcomes
 
   init {
     syncBroadcaster.registerSyncListener(
@@ -158,19 +138,6 @@ constructor(
     }
   }
 
-  fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
-    if (healthModule == HealthModule.HIV) {
-      patientProfileUiState.value =
-        PatientProfileUiState(
-          overflowMenuFactory.retrieveOverflowMenuItems(
-            getOverflowMenuHostByPatientType(
-              (patientProfile as ProfileData.HivProfileData).healthStatus
-            )
-          )
-        )
-    }
-  }
-
   fun filterGuardianVisitTasks() {
     if (patientProfileData != null) {
       val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
@@ -195,169 +162,66 @@ constructor(
     }
   }
 
-  fun onEvent(event: PatientProfileEvent) {
+  fun showTracingOutcomes() {
+    _showTracingOutcomes.value = true
+  }
+
+  fun onEvent(event: TracingProfileEvent) {
     val profile = patientProfileViewData.value
 
     when (event) {
-      is PatientProfileEvent.LoadQuestionnaire ->
+      is TracingProfileEvent.LoadQuestionnaire ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           event.questionnaireId,
           clientIdentifier = patientId,
           populationResources = profile.populationResources
         )
-      is PatientProfileEvent.SeeAll -> {
-        /* TODO(View all records in this category e.g. all medical history, tasks etc) */
-      }
-      is PatientProfileEvent.OverflowMenuClick -> {
+      is TracingProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
-          R.id.individual_details ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.EDIT
-            )
-          R.id.guardian_visit -> {
-            isClientVisit.value = false
-            handleVisitType(false)
-          }
-          R.id.client_visit -> {
-            isClientVisit.value = true
-            handleVisitType(true)
-          }
-          R.id.view_guardians -> {
-            val commonParams =
-              NavigationArg.bindArgumentsOf(
-                Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV)
-              )
-
-            event.navController.navigate(
-              route = "${MainNavigationScreen.PatientGuardians.route}/$patientId$commonParams"
-            ) { launchSingleTop = true }
-          }
-          R.id.view_family -> {
-            familyId?.let {
-              val urlParams =
-                NavigationArg.bindArgumentsOf(
-                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY),
-                  Pair(NavigationArg.PATIENT_ID, it)
-                )
-              event.navController.navigate(
-                route = MainNavigationScreen.FamilyProfile.route + urlParams
-              )
-            }
-          }
-          R.id.view_children -> {
-            patientId.let {
-              val urlParams =
-                NavigationArg.bindArgumentsOf(
-                  Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
-                  Pair(NavigationArg.PATIENT_ID, it)
-                )
-              event.navController.navigate(
-                route = MainNavigationScreen.ViewChildContacts.route + urlParams
-              )
-            }
-          }
-          R.id.remove_family_member ->
-            event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
-              questionnaireId = REMOVE_FAMILY_FORM,
-              clientIdentifier = patientId,
-              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, familyId))
-            )
-          R.id.record_as_anc ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = ANC_ENROLLMENT_FORM,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
           R.id.edit_profile ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          R.id.viral_load_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = VIRAL_LOAD_RESULTS_FORM,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
-            )
-          R.id.hiv_test_and_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = HIV_TEST_AND_RESULTS_FORM,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
-            )
-          R.id.hiv_test_and_next_appointment ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
-            )
-          R.id.remove_hiv_patient ->
-            event.context.launchQuestionnaire<HivPatientQuestionnaireActivity>(
-              questionnaireId = REMOVE_HIV_PATIENT_FORM,
-              clientIdentifier = patientId,
-              populationResources = profile.populationResources
-            )
+          R.id.tracing_history -> event.context.showToast("//todo Tracing History action here")
           else -> {}
         }
       }
-      is PatientProfileEvent.OpenTaskForm ->
+      is TracingProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources
         )
-      is PatientProfileEvent.OpenChildProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
-            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
-          )
-        if (healthModule == HealthModule.FAMILY)
-          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
-          event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
-          )
-      }
     }
   }
 
   fun handleVisitType(isClientVisit: Boolean) {
     if (isClientVisit) {
       val updatedMenuItems =
-        patientProfileUiState.value.overflowMenuItems.map {
+        patientTracingProfileUiState.value.overflowMenuItems.map {
           when (it.id) {
             R.id.guardian_visit -> it.apply { hidden = false }
             R.id.client_visit -> it.apply { hidden = true }
             else -> it
           }
         }
-      patientProfileUiState.value =
-        patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+      patientTracingProfileUiState.value =
+        patientTracingProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
       undoGuardianVisitTasksFilter()
     } else {
       val updatedMenuItems =
-        patientProfileUiState.value.overflowMenuItems.map {
+        patientTracingProfileUiState.value.overflowMenuItems.map {
           when (it.id) {
             R.id.guardian_visit -> it.apply { hidden = true }
             R.id.client_visit -> it.apply { hidden = false }
             else -> it
           }
         }
-      patientProfileUiState.value =
-        patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-      filterGuardianVisitTasks()
+      patientTracingProfileUiState.value =
+        patientTracingProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
     }
   }
 
@@ -369,7 +233,7 @@ constructor(
           _patientProfileViewDataFlow.value =
             profileViewDataMapper.transformInputToOutputModel(it) as
               ProfileViewData.PatientProfileViewData
-          refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
+          // refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
           paginateChildrenRegisterData(true)
           handleVisitType(isClientVisit.value)
         }
@@ -416,15 +280,6 @@ constructor(
     )
 
   companion object {
-    const val REMOVE_FAMILY_FORM = "remove-family"
-    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-    const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
     const val EDIT_PROFILE_FORM = "edit-patient-profile"
-    const val VIRAL_LOAD_RESULTS_FORM = "art-client-viral-load-test-results"
-    const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
-    const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
-      "contact-and-community-positive-hiv-test-and-next-appointment"
-    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
-    const val PATIENT_FINISH_VISIT = "patient-finish-visit"
   }
 }

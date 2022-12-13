@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.tracing.register
 
-import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -56,8 +54,6 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
@@ -73,7 +69,7 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class PatientRegisterViewModel
+class TracingRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
@@ -87,7 +83,7 @@ constructor(
 
   private val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
   private val healthModule =
-    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
+    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.HOME_TRACING
 
   private val _isRefreshing = MutableStateFlow(false)
 
@@ -105,10 +101,6 @@ constructor(
   private val _refreshCounter = MutableStateFlow(0)
   val refreshCounter: StateFlow<Int>
     get() = _refreshCounter.asStateFlow()
-
-  private val _firstTimeSyncState = MutableStateFlow(isFirstTimeSync())
-  val firstTimeSyncState: StateFlow<Boolean>
-    get() = _firstTimeSyncState.asStateFlow()
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
@@ -157,8 +149,7 @@ constructor(
           val isStateCompleted = state is State.Failed || state is State.Finished
           if (isStateCompleted) {
             refresh()
-            _firstTimeSyncState.value = false
-          } else _firstTimeSyncState.value = isFirstTimeSync()
+          }
         }
       }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
@@ -173,29 +164,25 @@ constructor(
     appFeatureName.equals(AppFeature.HouseholdManagement.name, ignoreCase = true)
 
   fun paginateRegisterDataFlow(page: Int) =
-    getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
+    getPager(appFeatureName, loadAll = false, page = page).flow
 
   fun filterRegisterDataFlow(text: String) =
-    getPager(
-        appFeatureName = appFeatureName,
-        healthModule = healthModule,
-        loadAll = false,
-        searchFilter = text
-      )
-      .flow
-      .cachedIn(viewModelScope)
+    paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
+      pagingData.filter {
+        it.title.contains(text, ignoreCase = true) ||
+          it.identifier.contains(text, ignoreCase = true)
+      }
+    }
 
   fun paginateRegisterDataForSearch() {
     paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, healthModule, false).flow.cachedIn(viewModelScope)
+      getPager(appFeatureName, true).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
     appFeatureName: String?,
-    healthModule: HealthModule,
     loadAll: Boolean = false,
-    page: Int = 0,
-    searchFilter: String? = null
+    page: Int = 0
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
@@ -211,8 +198,7 @@ constructor(
               appFeatureName = appFeatureName,
               healthModule = healthModule,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else page,
-              searchFilter = searchFilter
+              currentPage = if (loadAll) 0 else page
             )
           )
         }
@@ -222,33 +208,19 @@ constructor(
   fun countPages() =
     _totalRecordsCount.map { it.toDouble().div(DEFAULT_PAGE_SIZE) }.map { ceil(it).toInt() }
 
-  fun patientRegisterQuestionnaireIntent(context: Context) =
-    Intent(context, QuestionnaireActivity::class.java)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          formName = registerViewConfiguration.registrationForm,
-          questionnaireType = QuestionnaireType.DEFAULT
-        )
-      )
-
-  fun onEvent(event: PatientRegisterEvent) {
+  fun onEvent(event: TracingRegisterEvent) {
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
-      is PatientRegisterEvent.SearchRegister -> {
+      is TracingRegisterEvent.SearchRegister -> {
         _searchText.value = event.searchText
       }
-      is PatientRegisterEvent.MoveToNextPage -> {
+      is TracingRegisterEvent.MoveToNextPage -> {
         this._currentPage.value = this._currentPage.value?.plus(1)
       }
-      is PatientRegisterEvent.MoveToPreviousPage -> {
+      is TracingRegisterEvent.MoveToPreviousPage -> {
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
       }
-      is PatientRegisterEvent.RegisterNewClient -> {
-        //        event.context.launchQuestionnaire<QuestionnaireActivity>(
-        //          registerViewConfiguration.registrationForm
-        //        )
-      }
-      is PatientRegisterEvent.OpenProfile -> {
+      is TracingRegisterEvent.OpenProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
@@ -259,7 +231,7 @@ constructor(
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
         else
           event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
+            route = MainNavigationScreen.TracingProfile.route + urlParams
           )
       }
     }

@@ -40,6 +40,7 @@
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
     <string name="guardians_screen_title">%1$s\'s Guardians</string>
+    <string name="tracing_history">Tracing History</string>
 
     <string name="client_visit">Client Visit</string>
     <string name="guardian_visit">Guardian Visit</string>
@@ -105,5 +106,27 @@
     <string name="record_as_anc">Record as ANC</string>
 
     <string name="search_progress_message">Search in progress. Please wait…</string>
+
+    <string name="patient_details">Patient details</string>
+    <string name="name">Name</string>
+    <string name="tracing_visit_due">Tracing Visit Due</string>
+    <string name="tracing_outcomes">Tracing outcomes</string>
+    <string name="reason_for_trace">Reason for trace</string>
+    <string name="last_home_trace_outcome">Last home trace outcome</string>
+    <string name="last_phone_trace_outcome">Last phone trace outcome</string>
+    <string name="date_of_last_attempt">Date of last attempt</string>
+    <string name="number_of_attempts">Number of attempts</string>
+    <string name="patient_district">Patient District</string>
+    <string name="patient_tracing_catchment">Patient Tracing Catchment</string>
+    <string name="patient_physcal_locator">Patient Physical Locator</string>
+    <string name="patient_phone_number_1">Patient Phone Number 1</string>
+    <string name="patient_phone_owner_1">Patient Phone Owner 1</string>
+
+    <string name="guardian_relation">Guardian Relationship</string>
+    <string name="guardian_phone_number_1">Guardian Phone Number 1</string>
+    <string name="guardian_phone_owner_1">Guardian Phone Owner 1</string>
+    <string name="guardian_phone_number_2">Guardian Phone Number 2</string>
+    <string name="guardian_phone_owner_2">Guardian Phone Owner 2</string>
+
 
 </resources>
