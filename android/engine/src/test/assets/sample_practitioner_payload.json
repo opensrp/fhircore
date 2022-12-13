@@ -16,7 +16,7 @@
     {
       "fullUrl": "https://fhir.labs.smartregister.org:443/fhir/practitioner-details/34f0d616-afc8-4446-ae87-bb60be4bdbc9",
       "resource": {
-        "resourceType": "practitioner-details",
+        "resourceType": "Practitioner",
         "id": "34f0d616-afc8-4446-ae87-bb60be4bdbc9",
         "meta": {
           "profile": [

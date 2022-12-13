@@ -7,74 +7,76 @@
   "registerId": "patientRegister",
   "reports": [
     {
-      "id": "3",
-      "title": "TB Clients",
-      "description": "TB Clients disaggregated by age, gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/TBCLIENTSIND01",
-      "module": "Module 1 indicators"
+      "title": "Household Members",
+      "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/HOUSEHOLDIND01",
+      "module": "Module 1"
     },
     {
-      "id": "4",
-      "title": "HIV Clients",
-      "description": "HIV Clients disaggregated by age, gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HIVCLIENTSIND01",
-      "module": "Module 1 indicators"
+      "title": "Household Members ANC",
+      "description": "Number of Households, Household members enrolled into ANC, disaggregated by age",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/HOUSEHOLDPREGNANCY",
+      "module": "Module 1"
     },
     {
-      "id": "5",
       "title": "Births Home",
       "description": "Births at Home disaggregated by gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Births01",
-      "module": "Module 1 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Births01",
+      "module": "Module 1"
     },
     {
-      "id": "6",
       "title": "Births Facility",
       "description": "Births at Facility disaggregated by gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Births02",
-      "module": "Module 1 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Births02",
+      "module": "Module 1"
     },
     {
-      "id": "7",
       "title": "Stillbirths",
       "description": "Stillbirths disaggregated by months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Stillbirth01",
-      "module": "Module 2 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Stillbirth01",
+      "module": "Module 1"
     },
     {
-      "id": "8",
       "title": "Deaths Neonatal",
       "description": "Deaths Neonatal disaggregated by age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths01",
-      "module": "Module 2 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Deaths01",
+      "module": "Module 1"
     },
     {
-      "id": "9",
       "title": "Deaths Post Neonatal",
       "description": "Deaths Post Neonatal disaggregated by gender and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths02",
-      "module": "Module 3 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Deaths02",
+      "module": "Module 1"
     },
     {
-      "id": "10",
       "title": "Deaths Children Under 5Y",
       "description": "Deaths Children Under 5Y disaggregated by gender and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths03",
-      "module": "Module 3 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Deaths03",
+      "module": "Module 1"
     },
     {
-      "id": "11",
       "title": "Deaths Maternal",
       "description": "Deaths Maternal disaggregated by age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths04",
-      "module": "Module 3 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Deaths04",
+      "module": "Module 1"
     },
     {
-      "id": "12",
       "title": "Deaths Persons Over 5Y",
       "description": "Deaths Persons over 5Y disaggregated by gender, age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths05",
-      "module": "Module 3 indicators"
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/Deaths05",
+      "module": "Module 1"
+    },
+    {
+      "title": "TB Clients",
+      "description": "TB Clients disaggregated by age, gender, and months",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/TBCLIENTSIND01",
+      "module": "Module 4"
+    },
+    {
+      "title": "HIV Clients",
+      "description": "HIV Clients disaggregated by age, gender, and months",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/HIVCLIENTSIND01",
+      "module": "Module 4"
     }
   ]
 }
