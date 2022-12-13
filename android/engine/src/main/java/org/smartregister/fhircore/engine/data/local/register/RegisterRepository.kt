@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -35,11 +38,13 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -84,6 +89,7 @@ constructor(
         searchResource(
           baseResourceClass = baseResourceClass,
           dataQueries = baseResourceConfig.dataQueries,
+          sortConfigs = baseResourceConfig.sortConfigs,
           currentPage = currentPage,
           pageSize = registerConfiguration.pageSize
         )
@@ -188,6 +194,7 @@ constructor(
             baseResource.logicalId
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
+          sort(resourceConfig.sortConfigs)
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
         relatedResourcesData.addLast(RelatedResourceData(resource = resource))
@@ -230,6 +237,7 @@ constructor(
   private suspend fun searchResource(
     baseResourceClass: Class<out Resource>,
     dataQueries: List<DataQuery>?,
+    sortConfigs: List<SortConfig>,
     currentPage: Int,
     pageSize: Int
   ): List<Resource> {
@@ -241,10 +249,24 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+        sort(sortConfigs)
         count = pageSize
         from = currentPage * pageSize
       }
     return fhirEngine.search(search)
+  }
+
+  private fun Search.sort(sortConfigs: List<SortConfig>) {
+    sortConfigs.forEach { sortConfig ->
+      when (sortConfig.dataType) {
+        DataType.INTEGER -> sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
+        DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
+        DataType.STRING -> sort(StringClientParam(sortConfig.paramName), sortConfig.order)
+        else -> {
+          /*Unsupported data type*/
+        }
+      }
+    }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
