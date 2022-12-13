@@ -28,7 +28,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
@@ -100,6 +102,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
+    coEvery { accountAuthenticator.hasActiveSession() } returns
+      false andThen
+      false andThen
+      true // to test this specific scenario
     every { loginViewModel.isPinEnabled() } returns false
     initLoginActivity()
     loginViewModel.navigateToHome()
@@ -116,8 +122,13 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
+    coEvery { accountAuthenticator.hasActiveSession() } returns
+      false andThen
+      false andThen
+      true // to test this specific scenario
     coEvery { accountAuthenticator.hasActivePin() } returns false
     every { loginViewModel.isPinEnabled() } returns false
+
     initLoginActivity()
     loginViewModel.navigateToHome()
 
@@ -131,6 +142,16 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun `navigateToScreen() navigates to home screen if pin not enabled`() {
+    coEvery { accountAuthenticator.hasActivePin() } returns false
+    every { loginViewModel.isPinEnabled() } returns false
+    every { accountAuthenticator.logout() } just runs
+    initLoginActivity()
+
+    verify { accountAuthenticator.logout() }
   }
 
   override fun getActivity(): Activity {
