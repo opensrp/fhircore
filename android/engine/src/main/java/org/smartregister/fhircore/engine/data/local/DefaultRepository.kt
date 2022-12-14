@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -183,6 +184,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
+        resource.generateMissingVersionId()
         fhirEngine.create(resource)
       }
     }
