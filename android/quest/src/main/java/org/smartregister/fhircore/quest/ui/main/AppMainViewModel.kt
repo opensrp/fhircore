@@ -318,9 +318,7 @@ constructor(
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
     // Schedule job for generating measure report in the background
-    MeasureReportWorker.scheduleMeasureReportWorker(
-      workManager,
-    )
+    MeasureReportWorker.scheduleMeasureReportWorker(workManager)
 
     FhirTaskExpireWorker.schedule(
       workManager,

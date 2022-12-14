@@ -41,8 +41,9 @@ import timber.log.Timber
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
  * created each time because a new instance of [ResourceParamsBasedDownloadWorkManager] is needed
- * everytime sync is triggered. This class should not be provided as a singleton. The sync [State]
- * events are sent to the registered [OnSyncListener] maintained by the [SyncListenerManager]
+ * everytime sync is triggered. This class should not be provided as a singleton. The
+ * [SyncJobStatus] events are sent to the registered [OnSyncListener] maintained by the
+ * [SyncListenerManager]
  */
 class SyncBroadcaster
 @Inject
@@ -77,8 +78,8 @@ constructor(
   private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
 
   /**
-   * Schedule periodic sync periodically as defined in the application config interval. The sync
-   * [State] will be broadcast to the listeners
+   * Schedule periodic sync periodically as defined in the application config interval. The
+   * [SyncJobStatus] will be broadcast to the listeners
    */
   fun schedulePeriodicSync() {
     Timber.i("Scheduling periodic sync...")
