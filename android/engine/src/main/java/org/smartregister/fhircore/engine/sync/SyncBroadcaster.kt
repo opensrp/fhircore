@@ -83,21 +83,28 @@ constructor(
    */
   fun schedulePeriodicSync() {
     Timber.i("Scheduling periodic sync...")
-    val periodicSyncFlow: Flow<SyncJobStatus> =
-      Sync.periodicSync<AppSyncWorker>(
-        context,
-        PeriodicSyncConfiguration(
-          syncConstraints = Constraints.Builder().build(),
-          repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
-        )
-      )
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
+    val syncStateFlow = MutableSharedFlow<SyncJobStatus>()
     coroutineScope.launch {
-      periodicSyncFlow.collect { state ->
-        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-          onSyncListener.onSync(state)
+      syncStateFlow
+        .onEach {
+          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+            onSyncListener.onSync(it)
+          }
         }
-      }
+        .handleErrors()
+        .launchIn(this)
+    }
+
+    coroutineScope.launch(dispatcherProvider.main()) {
+      Sync.periodicSync<AppSyncWorker>(
+          context,
+          PeriodicSyncConfiguration(
+            syncConstraints = Constraints.Builder().build(),
+            repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+          )
+        )
+        .collect { syncStateFlow.emit(it) }
     }
   }
 }

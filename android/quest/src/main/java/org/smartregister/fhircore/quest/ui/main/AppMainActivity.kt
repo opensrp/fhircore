@@ -115,7 +115,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
 
     syncBroadcaster.run {
-      runSync()
+      // runSync()
       schedulePeriodicSync()
     }
   }
