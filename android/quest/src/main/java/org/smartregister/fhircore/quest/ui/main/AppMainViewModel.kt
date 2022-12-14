@@ -155,10 +155,7 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> {
-        syncBroadcaster.runSync()
-        retrieveAppMainUiState()
-      }
+      AppMainEvent.SyncData -> syncBroadcaster.runSync()
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
