@@ -263,7 +263,8 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val attributeName = "status"
+    val attributeValue = "ready"
+    val fhirPathExpression = "Task.status"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -272,13 +273,14 @@ class RulesFactoryTest : RobolectricTest() {
       )
 
     Assert.assertTrue(
-      rulesEngineService.filterList(list, attributeName, TaskStatus.READY).size == 1
+      rulesEngineService.filterList(list, attributeValue, fhirPathExpression).size == 1
     )
   }
 
   @Test
-  fun filterResourceListWithWrongAttributeName() {
-    val attributeName = "desc"
+  fun filterResourceListWithWrongExpression() {
+    val attributeValue = "ready"
+    val fhirPathExpression = "Task.desc"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -286,15 +288,15 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertThrows(NoSuchFieldException::class.java) {
-      runBlocking { rulesEngineService.filterList(list, attributeName, TaskStatus.READY) }
+    Assert.assertThrows(NoSuchElementException::class.java) {
+      runBlocking { rulesEngineService.filterList(list, attributeValue, fhirPathExpression) }
     }
   }
 
   @Test
   fun filterResourceListWithWrongAttributeValue() {
-    val attributeName = "status"
-    val attributeValue = "CANCELLED"
+    val attributeValue = "not ready"
+    val fhirPathExpression = "Task.status"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -304,7 +306,7 @@ class RulesFactoryTest : RobolectricTest() {
 
     Assert.assertEquals(
       emptyList<Task>(),
-      rulesEngineService.filterList(list, attributeName, attributeValue)
+      rulesEngineService.filterList(list, attributeValue, fhirPathExpression)
     )
   }
 

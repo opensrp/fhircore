@@ -25,6 +25,7 @@ import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
@@ -347,6 +348,18 @@ constructor(
      */
     fun generateRandomSixDigitInt(): Int {
       return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
+    }
+
+    fun filterList(
+      list: List<Resource>,
+      value: String,
+      fhirPathExpression: String
+    ): List<Resource> {
+      return list.filter {
+        (fhirPathDataExtractor.extractData(it, "$fhirPathExpression = '$value'").first() as
+            BooleanType)
+          .value
+      }
     }
 
     fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
