@@ -151,7 +151,7 @@ fun TracingProfilePage(
             backgroundColor = LoginButtonColor,
             LoginFieldBackgroundColor
           ),
-          onClick = { patientProfileViewModel.showTracingOutcomes(context) },
+          onClick = { patientProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context)) },
           modifier = modifier.fillMaxWidth()
         ) {
           Text(
@@ -177,13 +177,17 @@ fun TracingProfilePageView(
   profileViewData: ProfileViewData.TracingProfileData =
     ProfileViewData.TracingProfileData()
 ) {
-  Column(modifier = modifier
-    .fillMaxHeight()
-    .fillMaxWidth()
-    .padding(innerPadding)) {
-    Box(modifier = Modifier
-      .padding(5.dp)
-      .weight(2.0f)) {
+  Column(
+    modifier = modifier
+      .fillMaxHeight()
+      .fillMaxWidth()
+      .padding(innerPadding)
+  ) {
+    Box(
+      modifier = Modifier
+        .padding(5.dp)
+        .weight(2.0f)
+    ) {
       Column(
         modifier =
         modifier
@@ -363,9 +367,11 @@ private fun TracingContactAddress(
     shape = RoundedCornerShape(12.dp),
     border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
-    Column(modifier = modifier
-      .padding(horizontal = 4.dp)
-      .fillMaxWidth()) {
+    Column(
+      modifier = modifier
+        .padding(horizontal = 4.dp)
+        .fillMaxWidth()
+    ) {
       if (displayForHomeTrace) {
         TracingReasonItem(
           title = stringResource(R2.string.patient_district),
