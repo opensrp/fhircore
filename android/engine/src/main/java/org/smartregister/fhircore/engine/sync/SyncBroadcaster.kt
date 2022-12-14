@@ -69,7 +69,9 @@ constructor(
         .launchIn(this)
     }
 
-    coroutineScope.launch(dispatcherProvider.io()) { Sync.oneTimeSync<AppSyncWorker>(context) }
+    coroutineScope.launch(dispatcherProvider.io()) {
+      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncStateFlow.emit(it) }
+    }
   }
 
   private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
