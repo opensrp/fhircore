@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -38,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
@@ -62,6 +64,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.WorkAround
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
@@ -105,6 +109,8 @@ constructor(
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
+
+  @WorkAround private var ignoreResource: Resource? = null
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -306,6 +312,12 @@ constructor(
           questionnaireResponse.contained.add(bundleEntry.resource)
 
           if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
+
+          if ((bundleEntry.resource is CarePlan || bundleEntry.resource is Patient) &&
+              bundleEntry.resource.meta.tag.isNotEmpty()
+          ) {
+            carePlanAndPatientMetaExtraction(bundleEntry.resource)
+          }
         }
 
         if (questionnaire.experimental) {
@@ -337,6 +349,28 @@ constructor(
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
+    }
+  }
+
+  @WorkAround
+  suspend fun carePlanAndPatientMetaExtraction(source: Resource) {
+    try {
+      /** Get a FHIR [Resource] in the local storage. */
+      var resource = fhirEngine.get(source.resourceType, source.id)
+      /** Append passed [Resource.meta] to the [source]. */
+      resource.addTags(source.meta.tag)
+      /** Increment [Resource.meta] versionId of [source]. */
+      resource =
+        resource.copy().apply { meta.versionId = meta.versionId.toInt().plus(1).toString() }
+      /** Recreate a FHIR [source] in the local storage. */
+      fhirEngine.create(resource)
+      /**
+       * Assign the [ResourceType] to [ignoreResource] to skip the resource when a [saveResource] is
+       * extracting and saving [QuestionnaireResponse].
+       */
+      ignoreResource = source
+    } catch (e: Exception) {
+      Timber.e(e)
     }
   }
 
@@ -448,7 +482,12 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
+      bundle.entry.forEach { bundleEntry ->
+        @WorkAround
+        if (ignoreResource != bundleEntry.resource) {
+          defaultRepository.addOrUpdate(bundleEntry.resource)
+        }
+      }
     }
   }
 
@@ -477,6 +516,14 @@ constructor(
 
   open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)?.let {
+      Log.e("TAG", "QUESTIONNAIRE_ARG_FORM" + it)
+    }
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
+      Log.e("TAG", "QUESTIONNAIRE_BACK_REFERENCE_KEY" + it)
+    }
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
