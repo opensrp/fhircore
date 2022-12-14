@@ -70,7 +70,7 @@ constructor(
         .launchIn(this)
     }
 
-    coroutineScope.launch(dispatcherProvider.io()) {
+    coroutineScope.launch(dispatcherProvider.main()) {
       Sync.oneTimeSync<AppSyncWorker>(context).collect { syncStateFlow.emit(it) }
     }
   }
