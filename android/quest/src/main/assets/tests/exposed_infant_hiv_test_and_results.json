@@ -2,8 +2,8 @@
   "resourceType": "Questionnaire",
   "id": "exposed-infant-hiv-test-and-results",
   "meta": {
-    "versionId": "47",
-    "lastUpdated": "2022-11-09T16:10:53.207+03:00",
+    "versionId": "49",
+    "lastUpdated": "2022-11-26T15:12:41.505+03:00",
     "source": "#wOt9aLULKfRnLnvs"
   },
   "language": "en",
@@ -19,23 +19,6 @@
   "contact": [
     {
       "name": "http://www.d-tree.org"
-    }
-  ],
-  "useContext": [
-    {
-      "code": {
-        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
-        "code": "focus"
-      },
-      "valueCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://fhir.ona.io",
-            "code": "000002",
-            "display": "Malawi Core Patient"
-          }
-        ]
-      }
     }
   ],
   "item": [
@@ -89,8 +72,24 @@
       "enableBehavior": "any",
       "item": [
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
           "linkId": "date-of-hiv-test",
-          "text": "* <b>ENTER:</b> Date of HIV test",
+          "text": "* <b>Enter:</b> Date of HIV test",
           "type": "date",
           "required": true
         },
@@ -111,7 +110,7 @@
             }
           ],
           "linkId": "hiv-test-type",
-          "text": "* <b>SELECT:</b> the HIV test type",
+          "text": "* <b>Select:</b> the HIV test type",
           "type": "choice",
           "answerOption": [
             {
@@ -130,7 +129,7 @@
         },
         {
           "linkId": "dbs-sample-id",
-          "text": "* <b>ENTER:</b> DBS Sample ID",
+          "text": "* <b>Enter:</b> DBS Sample ID",
           "type": "string",
           "enableWhen": [
             {
@@ -177,20 +176,52 @@
       "enableBehavior": "any",
       "item": [
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
           "linkId": "date-of-hiv-test",
-          "text": "* <b>ENTER:</b> Date of DBS sample collection",
+          "text": "* <b>Enter:</b> Date of DBS sample collection",
           "type": "date",
           "required": true
         },
         {
           "linkId": "dbs-sample-id",
-          "text": "* <b>ENTER:</b> DBS Sample ID",
+          "text": "* <b>Enter:</b> DBS Sample ID",
           "type": "string",
           "required": true
         },
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
           "linkId": "date-dbs-results-received",
-          "text": "* <b>ENTER:</b> Date DBS results were received",
+          "text": "* <b>Enter:</b> Date DBS results were received",
           "type": "date",
           "required": true
         }
@@ -239,7 +270,7 @@
             }
           ],
           "linkId": "hiv-test-results",
-          "text": "* <b>SELECT:</b> HIV test results",
+          "text": "* <b>Select:</b> HIV test results",
           "type": "choice",
           "required": true,
           "answerOption": [
@@ -474,7 +505,7 @@
     },
     {
       "linkId": "record-info",
-      "text": "Record the information in the health passport, pink card, and HTS register",
+      "text": "<h1>Write: <em>the information in the health passport, pink card, and HTS register</em></h1>",
       "type": "display",
       "enableWhen": [
         {

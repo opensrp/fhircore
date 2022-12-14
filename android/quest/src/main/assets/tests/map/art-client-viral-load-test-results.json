@@ -1,0 +1,4439 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-viral-load-test-results",
+  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/art-client-viral-load-test-results",
+  "name": "ART Client Viral Load Test Results",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Encounter",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [{ "valueString": "collection" }]
+            }
+          ],
+          "dependent": [
+            { "name": "ExtractEncounter", "variable": ["src", "bundle"] },
+            {
+              "name": "CheckIfResultsAreAvailable",
+              "variable": ["src", "bundle"]
+            },
+            {
+              "name": "CheckIfResultsAreMissingOrInvalid",
+              "variable": ["src", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_encounter",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [{ "valueString": "Encounter" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_data",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "finished" }]
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    { "valueString": "IMP" },
+                    { "valueString": "inpatient encounter" }
+                  ]
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    { "valueString": "https://d-tree.org" },
+                    { "valueString": "art-client-viral-load-test-results" },
+                    { "valueString": "ART Client Viral Load Test Results" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_subject",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_subject_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "ref",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractObservations",
+                  "variable": ["src", "bundle", "encounter"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractDateOfSampleCollection",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractLastKnownResultsConfirmation",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractSampleId",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractTestType",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractDBSViralLoadResults",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractVLResultNumber",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractPlasmaViralLoadResults",
+              "variable": ["src", "bundle", "encounter"]
+            },
+            {
+              "name": "ExtractPlasmaResultNumber",
+              "variable": ["src", "bundle", "encounter"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDateOfSampleCollection",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_date_of_sample_collection",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'vl-sample-collection-date') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_date_of_sample_collection",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_date_of_sample_collection",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-date-of-sample-collection"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_date_of_sample_collection",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_date_of_sample_collection",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_date_of_sample_collection",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        { "valueString": "$this.answer.value.toString()" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractLastKnownResultsConfirmation",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_last_known_results_confirmation",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'last-known-vl-results-available') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_last_known_results_confirmation",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_last_known_results_confirmation",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-last-known-results-confirmation"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_last_known_results_confirmation",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_last_known_results_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_last_known_results_confirmation",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CodeableConcept" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_last_known_results_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value.display" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_last_known_results_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractSampleId",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_sample_id",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'sample-id') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_sample_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_sample_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-sample-id"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_sample_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_sample_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_sample_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        { "valueString": "$this.answer.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTestType",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_test_type",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'test-type') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_test_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_test_type",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-test-type"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_test_type",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_test_type",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_test_type",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CodeableConcept" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_test_type",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value.display" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_test_type",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDBSViralLoadResults",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_dbs_viral_load_results",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'dbs-viral-load-results') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_dbs_viral_load_results",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_dbs_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-dbs-viral-load-results"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_dbs_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_dbs_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_dbs_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CodeableConcept" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_dbs_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value.display" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_dbs_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractVLResultNumber",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_vl_result_number",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'vl-result-other-enter-number') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_vl_result_number",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_vl_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-vl-result-number"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_vl_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_vl_result_number",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_vl_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        { "valueString": "$this.answer.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPlasmaViralLoadResults",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_plasma_viral_load_results",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'plasma-viral-load-results') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_plasma_viral_load_results",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_plasma_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-plasma-viral-load-results"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_plasma_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_plasma_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_plasma_viral_load_results",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CodeableConcept" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_plasma_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value.display" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_plasma_viral_load_results",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "item" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPlasmaResultNumber",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_item_plasma_result_number",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'plasma-result-other-enter-number') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_plasma_result_number",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_plasma_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "art-client-viral-load-test-results-plasma-result-number"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub_plasma_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_plasma_result_number",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_plasma_result_number",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        { "valueString": "$this.answer.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckIfResultsAreAvailable",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_results_check_available",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'last-known-vl-results-available') and (answer.count() > 0) and (answer.value.code = 'available'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_if_dbs_selected",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "dbsResult",
+                  "condition": "((linkId = 'dbs-viral-load-results') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_check_dbs_results",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "CheckIfDBSResultsAreHighOrDetectable",
+                      "variable": ["src", "dbsResult", "bundle"]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_if_plasma_selected",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "plasmaResult",
+                  "condition": "((linkId = 'plasma-viral-load-results') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_check_plasma_results",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "CheckIfPlasmaResultsAreHighOrDetectable",
+                      "variable": ["src", "plasmaResult", "bundle"]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckIfDBSResultsAreHighOrDetectable",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "dbsResult",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_dbs_not_ldl",
+          "source": [
+            {
+              "context": "dbsResult",
+              "condition": "(answer.value.code != 'dbs-ldl')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_dbs_create_care_plan",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "carePlan",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CarePlan" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_care_plan_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "care_plan_id",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "id" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_care_plan_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "care_plan_id",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-id') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_set_period",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "period",
+                      "variable": "period"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_care_plan_start",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "start",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-period-start') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_care_plan_period_end",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "end",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-period-end') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_check_existing_activities",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "RecreateExistingActivities",
+                      "variable": ["src", "carePlan"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_dbs_results_add_welcome_service",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "AddWelcomeServiceActivity",
+                      "variable": ["src", "carePlan", "bundle"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_dbs_other",
+                  "source": [
+                    {
+                      "context": "dbsResult",
+                      "condition": "(answer.value.code = 'dbs-other')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_dbs_high",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = 'vl-result-other-enter-number') and (answer.count() > 0) and (answer.value >= 1000))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "HVL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueString": "hvl" }]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        { "valueString": "High Viral Load" }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "CreateTracingTask",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "bundle"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_dbs_results_add_ict",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "AddIndexCaseTestingActivity",
+                              "variable": ["src", "carePlan", "bundle"]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_lessthan_1000",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = 'vl-result-other-enter-number') and (answer.count() > 0) and (answer.value >= 400) and (answer.value < 1000))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Detectable VL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "detectable-vl" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        {
+                                          "valueString": "Detectable Viral Load"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "CreateTracingTask",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "bundle"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_dbs_less_than_1000",
+                  "source": [
+                    {
+                      "context": "dbsResult",
+                      "condition": "(answer.value.code != 'dbs-other')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "Detectable VL" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "detectable-vl" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "Detectable Viral Load" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "CreateTracingTask",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "bundle"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckIfPlasmaResultsAreHighOrDetectable",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "plasmaResult",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_plasma_results",
+          "source": [
+            {
+              "context": "plasmaResult",
+              "condition": "(answer.value.code = 'plasma-other')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_plasma_other",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "plasma_other_result",
+                  "condition": "((linkId = 'plasma-result-other-enter-number') and (answer.count() > 0) and (answer.value >= 200))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_plasma_create_care_plan",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "carePlan",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CarePlan" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_plasma_create_care_plan_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlan",
+                          "contextType": "variable",
+                          "element": "id",
+                          "variable": "care_plan_id",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "id" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_plasma_care_plan_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "care_plan_id",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "$this.item.where((linkId = 'care-plan-id') and (answer.count() > 0)).answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_set_period",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlan",
+                          "contextType": "variable",
+                          "element": "period",
+                          "variable": "period"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_plasma_care_plan_start",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "period",
+                              "contextType": "variable",
+                              "element": "start",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "$this.item.where((linkId = 'care-plan-period-start') and (answer.count() > 0)).answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_plasma_care_plan_period_end",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "period",
+                              "contextType": "variable",
+                              "element": "end",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "$this.item.where((linkId = 'care-plan-period-end') and (answer.count() > 0)).answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_check_existing_activities",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "RecreateExistingActivities",
+                          "variable": ["src", "carePlan"]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_results_add_welcome_service",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "AddWelcomeServiceActivity",
+                          "variable": ["src", "carePlan", "bundle"]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_greaterthan_1000",
+                      "source": [
+                        {
+                          "context": "plasma_other_result",
+                          "condition": "(answer.value >= 1000)"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "HVL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueString": "hvl" }]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        { "valueString": "High Viral Load" }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "CreateTracingTask",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "bundle"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_plasma_results_add_ict",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "AddIndexCaseTestingActivity",
+                              "variable": ["src", "carePlan", "bundle"]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_plasma_lessthan_1000",
+                      "source": [
+                        {
+                          "context": "plasma_other_result",
+                          "condition": "(answer.value < 1000)"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Detectable VL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "detectable-vl" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        {
+                                          "valueString": "Detectable Viral Load"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "CreateTracingTask",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "bundle"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckIfResultsAreMissingOrInvalid",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_missing_or_invalid_results_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "((linkId = 'last-known-vl-results-available') and (answer.count() > 0) and ((answer.value.code = 'missing') or (answer.value.code = 'invalid')))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_missing_or_invalid_create_care_plan",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "carePlan",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CarePlan" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_missing_or_invalid_create_care_plan_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "care_plan_id",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "id" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_missing_or_invalid_care_plan_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "care_plan_id",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-id') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_missing_or_invalid_set_period",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "period",
+                      "variable": "period"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_missing_or_invalid_care_plan_start",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "start",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-period-start') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_missing_or_invalid_care_plan_period_end",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "end",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-period-end') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_missing_or_invalid_check_existing_activities",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "RecreateExistingActivities",
+                      "variable": ["src", "carePlan"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_results_missing",
+                  "source": [
+                    {
+                      "context": "item",
+                      "condition": "(answer.value.code = 'missing')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "Missing VL" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "missing-vl" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "Missing Viral Load" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "CreateTracingTask",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "bundle"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_results_missing",
+                  "source": [
+                    {
+                      "context": "item",
+                      "condition": "(answer.value.code = 'invalid')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "Invalid VL" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "invalid-vl" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "Invalid Viral Load" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "CreateTracingTask",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "bundle"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_add_vl_collection_activity",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "AddViralLoadCollectionActivity",
+                      "variable": ["src", "carePlan", "bundle"]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateTracingTask",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "reasonCode", "type": "string", "mode": "source" },
+        { "name": "reasonDescription", "type": "string", "mode": "source" },
+        { "name": "reasonText", "type": "string", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_task",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [{ "valueString": "Task" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_task_data",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "ready" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "plan" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "routine" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "variable": "current_date_time",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "now()" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "lastModified",
+                  "transform": "copy",
+                  "parameter": [{ "valueId": "current_date_time" }]
+                }
+              ]
+            },
+            {
+              "name": "r_task_create_identifier",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "identifier",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Identifier" }]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "official" }]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_task_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Contact Tracing" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "http://snomed.info/sct" }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "225368008" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Contact tracing (procedure)" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_has_phonenumber",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'has-phonenumber') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "meta",
+                      "variable": "meta",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Meta" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_meta_tag",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "meta",
+                          "contextType": "variable",
+                          "element": "tag",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Coding" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_task_meta_tag_system",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "http://snomed.info/sct" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "phone-tracing" }]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Phone Tracing" }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_description",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "copy",
+                      "parameter": [
+                        { "valueString": "HIV Contact Tracing via phone" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_does_not_have_phonenumber",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'has-phonenumber') and (answer.value = false))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "meta",
+                      "variable": "meta",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Meta" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_meta_tag",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "meta",
+                          "contextType": "variable",
+                          "element": "tag",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Coding" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_task_meta_tag_system",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "https://d-tree.org" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "home-tracing" }]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Home Tracing" }]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_task_description",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "task",
+                          "contextType": "variable",
+                          "element": "description",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIV Contact Tracing via home visit"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_for",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "variable": "taskFor",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_for_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskFor",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_for_disp",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskFor",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "$this.name.given + ' ' + $this.name.family"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_period",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "variable": "taskPeriod",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Period" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_period",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "current_date_time",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    },
+                    {
+                      "context": "taskPeriod",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "current_date_time" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_author",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "variable": "taskOwner",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_owner_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_code_value",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_resonCode_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "reasonText" },
+                        { "valueString": "$this.value" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_resonCode_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_resonCode_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "https://d-tree.org" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "reasonCode" },
+                            { "valueString": "$this.value" }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "reasonDescription" },
+                            { "valueString": "$this.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_reference",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "taskReasonRef",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_reason_reference_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Questionnaire/art-client-viral-load-test-results"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RecreateExistingActivities",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_check_care_plan_task",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "care_plan_task",
+              "condition": "(linkId.startsWith('care-plan-task') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_string_variables",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "taskQuestionnaireId",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "string" }]
+                },
+                {
+                  "variable": "taskId",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "string" }]
+                },
+                {
+                  "variable": "taskDescription",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "string" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_first_separator_index",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "firstSeparatorIndex",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "care_plan_task" },
+                        { "valueString": "$this.answer.value.indexOf('|')" }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_set_task_questionnaire_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "taskQuestionnaireId",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "care_plan_task" },
+                            {
+                              "valueString": "$this.answer.value.substring(0, firstSeparatorIndex)"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_get_remaining_string",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "remainingString",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "care_plan_task" },
+                            {
+                              "valueString": "$this.answer.value.substring(firstSeparatorIndex + 1)"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_get_second_separator_index",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "secondSeparatorIndex",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "remainingString" },
+                                { "valueString": "$this.value.indexOf('|')" }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_set_task_id",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "taskId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    { "valueId": "remainingString" },
+                                    {
+                                      "valueString": "$this.value.substring(0, secondSeparatorIndex)"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_set_task_description",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "taskDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    { "valueId": "remainingString" },
+                                    {
+                                      "valueString": "$this.value.substring(secondSeparatorIndex + 1)"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_recreate_activity",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "RecreateCarePlanActivity",
+                      "variable": [
+                        "src",
+                        "carePlan",
+                        "taskDescription",
+                        "taskQuestionnaireId",
+                        "taskId"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RecreateCarePlanActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "taskDescription", "type": "string", "mode": "target" },
+        { "name": "taskQuestionnaireId", "type": "string", "mode": "target" },
+        { "name": "taskId", "type": "string", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_act",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "carePlan",
+              "contextType": "variable",
+              "element": "activity",
+              "variable": "activity",
+              "transform": "create",
+              "parameter": [{ "valueString": "CarePlan_Activity" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_act_det",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "detail",
+                  "variable": "detail",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CarePlan_ActivityDetail" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_act_det_data",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "kind",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Task" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "in-progress" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        { "valueId": "taskQuestionnaireId" },
+                        { "valueId": "taskDescription" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "scheduled",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.period" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "performer",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.author" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_act_outcome_reference",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "outcomeReference",
+                  "variable": "activityOutcomeRef",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_act_outcome_reference_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "activityOutcomeRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskId" },
+                        { "valueString": "'Task/' + $this.value" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_act_outcome_reference_display",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "activityOutcomeRef",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddViralLoadCollectionActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_string_variables_for_vl_collection",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "variable": "taskDescription",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "taskQuestionnaireId",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "order",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_vl_collection",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "taskDescription",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Viral Load Collection" }]
+                },
+                {
+                  "context": "taskQuestionnaireId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    { "valueString": "art-client-viral-load-collection" }
+                  ]
+                },
+                {
+                  "context": "order",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "clinic-visit-task-order-7" }]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "AddCarePlanActivity",
+                  "variable": [
+                    "src",
+                    "carePlan",
+                    "bundle",
+                    "taskDescription",
+                    "taskQuestionnaireId",
+                    "order"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddIndexCaseTestingActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_string_variables_for_ict",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "variable": "taskDescription",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "taskQuestionnaireId",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "order",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_ict",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "taskDescription",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Index Case Testing" }]
+                },
+                {
+                  "context": "taskQuestionnaireId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    { "valueString": "art-client-index-case-testing" }
+                  ]
+                },
+                {
+                  "context": "order",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "clinic-visit-task-order-8" }]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "AddCarePlanActivity",
+                  "variable": [
+                    "src",
+                    "carePlan",
+                    "bundle",
+                    "taskDescription",
+                    "taskQuestionnaireId",
+                    "order"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddWelcomeServiceActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_string_variables_for_welcome_service",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "variable": "taskDescription",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "taskQuestionnaireId",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "order",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_welcome_service",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "taskDescription",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Welcome Service" }]
+                },
+                {
+                  "context": "taskQuestionnaireId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "art-client-welcome-service-high-or-detectable-viral-load"
+                    }
+                  ]
+                },
+                {
+                  "context": "order",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "clinic-visit-task-order-11" }]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "AddCarePlanActivity",
+                  "variable": [
+                    "src",
+                    "carePlan",
+                    "bundle",
+                    "taskDescription",
+                    "taskQuestionnaireId",
+                    "order"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddCarePlanActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "taskDescription", "type": "string", "mode": "target" },
+        { "name": "taskQuestionnaireId", "type": "string", "mode": "target" },
+        { "name": "order", "type": "string", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_act",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "carePlan",
+              "contextType": "variable",
+              "element": "activity",
+              "variable": "activity",
+              "transform": "create",
+              "parameter": [{ "valueString": "CarePlan_Activity" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_act_det",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "detail",
+                  "variable": "detail",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CarePlan_ActivityDetail" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_act_det_data",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "kind",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Task" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "in-progress" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        { "valueId": "taskQuestionnaireId" },
+                        { "valueId": "taskDescription" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "scheduled",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.period" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "performer",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.author" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_create_task_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "taskId",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "string" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_set_task_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "uuid"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_act_outcome_reference",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "activity",
+                          "contextType": "variable",
+                          "element": "outcomeReference",
+                          "variable": "activityOutcomeRef",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_act_outcome_reference_ref",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "activityOutcomeRef",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "taskId" },
+                                { "valueString": "'Task/' + $this.value" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_act_outcome_reference_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "activityOutcomeRef",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "taskDescription" },
+                                { "valueString": "$this.value" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_create_task_uuid",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "ExtractTask",
+                              "variable": [
+                                "src",
+                                "carePlan",
+                                "bundle",
+                                "taskId",
+                                "taskDescription",
+                                "taskQuestionnaireId",
+                                "order"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTask",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "taskId", "type": "string", "mode": "target" },
+        { "name": "taskDescription", "type": "string", "mode": "target" },
+        { "name": "taskQuestionnaireId", "type": "string", "mode": "target" },
+        { "name": "order", "type": "string", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_task",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [{ "valueString": "Task" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_task_data",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "ready" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "plan" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "routine" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "description",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "taskDescription" },
+                    { "valueString": "$this.value" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "variable": "current_date_time",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "now()" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "lastModified",
+                  "transform": "copy",
+                  "parameter": [{ "valueId": "current_date_time" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "carePlan" },
+                    { "valueString": "$this.subject" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "carePlan" },
+                    { "valueString": "$this.period" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "requester",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "carePlan" },
+                    { "valueString": "$this.author" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "carePlan" },
+                    { "valueString": "$this.author" }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_identifier",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "identifier",
+                      "variable": "taskIdentifier",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Identifier" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_identifier_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "taskIdentifier",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [{ "valueId": "taskId" }]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_task_identifier_use",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "taskIdentifier",
+                          "contextType": "variable",
+                          "element": "use",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "official" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_create_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "task_id",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "id" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_set_task_id_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task_id",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "taskId" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_set_task_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "task_id" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_meta",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "meta",
+                  "variable": "meta",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Meta" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta_tag",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "meta",
+                      "contextType": "variable",
+                      "element": "tag",
+                      "transform": "c",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        { "valueId": "order" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_reference",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "taskReasonRef",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_reason_reference_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskQuestionnaireId" },
+                        { "valueString": "'Questionnaire/' + $this.value" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_reason_reference_display",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "taskDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

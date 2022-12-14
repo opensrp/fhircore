@@ -16,7 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
@@ -32,7 +33,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 
@@ -50,7 +53,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
       topBar = {
         TopAppBar(
           navigationIcon = {
-            IconButton(onClick = { /*TODO*/}) {
+            IconButton(onClick = { /*TODO*/ }) {
               Icon(Icons.Default.ArrowBack, contentDescription = "")
             }
           },
@@ -58,8 +61,27 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
         )
       },
       bottomBar = {
-        Button(onClick = { viewModel.updateUserWithTracing() }, enabled = !isOnTracing) {
-          Text(text = "Add to Tracing")
+        Column(Modifier.fillMaxWidth()) {
+          Button(onClick = { viewModel.clearAllTracingData() }) {
+            Text(text = "Clear Tracing Data for All")
+          }
+          Box(modifier = Modifier
+            .height(1.dp).background(Color.Blue)
+            .fillMaxWidth())
+          Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+              onClick = { viewModel.updateUserWithTracing(isHomeTracing = true) },
+              enabled = !isOnTracing
+            ) {
+              Text(text = "Add Home Tracing")
+            }
+            Button(
+              onClick = { viewModel.updateUserWithTracing(isHomeTracing = false) },
+              enabled = !isOnTracing
+            ) {
+              Text(text = "Add Phone Tracing")
+            }
+          }
         }
       }
     ) {

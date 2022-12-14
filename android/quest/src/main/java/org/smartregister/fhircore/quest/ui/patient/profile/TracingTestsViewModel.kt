@@ -23,22 +23,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.delete
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -53,6 +59,7 @@ import timber.log.Timber
 class TracingTestsViewModel
 @Inject
 constructor(
+  syncBroadcaster: SyncBroadcaster,
   savedStateHandle: SavedStateHandle,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: AppRegisterRepository,
@@ -78,9 +85,20 @@ constructor(
 
   val hasTracing = MutableLiveData(false)
 
+  val tracingHomeCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")
+  val tracingPhoneCoding: Coding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
+
   init {
     fetchPatientProfileData()
     checkIfOnTracing()
+    val syncStateListener =
+      object : OnSyncListener {
+        override fun onSync(state: State) {
+          val isStateCompleted = state is State.Failed || state is State.Finished
+         if (isStateCompleted) checkIfOnTracing()
+        }
+      }
+    syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
   }
 
   fun fetchPatientProfileData() {
@@ -98,8 +116,11 @@ constructor(
   }
 
   fun open(context: Context, item: TestItem) {
+    val profile = patientProfileViewData.value
+
     context.launchQuestionnaire<QuestionnaireActivity>(
       questionnaireId = item.questionnaire,
+      populationResources = profile.populationResources,
       clientIdentifier = patientId,
       questionnaireType = QuestionnaireType.EDIT
     )
@@ -108,8 +129,8 @@ constructor(
   fun checkIfOnTracing() {
     viewModelScope.launch {
       try {
-        val stuff = fhirEngine.search("Task?code=http://snomed.info/sct|225368008&subject")
-        val values =
+        val patientRef = "Patient/${patientId}"
+        val valuesHome =
           fhirEngine.search<Task> {
             filter(
               Task.CODE,
@@ -123,39 +144,28 @@ constructor(
                   )
               }
             )
+            filter(Task.SUBJECT, {
+              value = patientRef
+            })
           }
-        val tracingTasks =
-          stuff.forEach {
-            val data = jsonParser.encodeResourceToString(it)
-            Timber.e(data)
-          }
-        Timber.i(tracingTasks.toString())
-        hasTracing.value = values.isNotEmpty()
+        valuesHome.forEach {
+          val data = jsonParser.encodeResourceToString(it)
+          Timber.e(data)
+        }
+        hasTracing.value = valuesHome.isNotEmpty() // || valuesPhone.isNotEmpty()
       } catch (e: Exception) {
         Timber.e(e)
       }
     }
   }
 
-  fun updateUserWithTracing(isHomeTracing: Boolean = false) {
+  fun updateUserWithTracing(isHomeTracing: Boolean) {
     try {
       viewModelScope.launch {
         val data =
-          if (isHomeTracing) {
-            ""
-          } else {
-            """
+          """
             {
         "resourceType": "Task",
-        "meta": {
-          "tag": [
-            {
-              "system": "https://d-tree.org",
-              "code": "phone-tracing",
-              "display": "Phone Tracing"
-            }
-          ]
-        },
         "status": "ready",
         "intent": "plan",
         "priority": "routine",
@@ -169,7 +179,6 @@ constructor(
           ],
           "text": "Contact Tracing"
         },
-        "description": "HIV Contact Tracing via phone",
         "executionPeriod": { "start": "2022-11-22T09:51:57+02:00" },
         "authoredOn": "2022-11-22T09:51:57+02:00",
         "lastModified": "2022-11-22T09:51:57+02:00",
@@ -192,9 +201,17 @@ constructor(
         "for": { "reference": "Patient/$patientId" }
       }
             """.trimIndent()
-          }
 
         val task = jsonParser.parseResource(Task::class.java, data)
+        task.description =
+          if (isHomeTracing) "HIV Contact Tracing via home visit" else "HIV Contact Tracing via phone"
+        task.meta.tag.add(
+          Coding(
+            "https://d-tree.org",
+            if (isHomeTracing) "home-tracing" else "phone-tracing",
+            if (isHomeTracing) "Home Tracing" else "Phone Tracing"
+          )
+        )
         val tasks = fhirEngine.create(task)
         val createdTask = fhirEngine.get(ResourceType.Task, tasks.first())
         Timber.i(jsonParser.encodeResourceToString(createdTask))
@@ -202,6 +219,30 @@ constructor(
       }
     } catch (e: Exception) {
       Timber.e(e)
+    }
+  }
+
+  fun clearAllTracingData() {
+    viewModelScope.launch {
+      val allData =
+        fhirEngine.search<Task> {
+          filter(
+            Task.CODE,
+            {
+              value =
+                of(
+                  CodeableConcept()
+                    .addCoding(
+                      Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)")
+                    )
+                )
+            }
+          )
+        }
+      allData.forEach {
+        fhirEngine.delete<Task>(it.logicalId)
+      }
+      checkIfOnTracing()
     }
   }
 
