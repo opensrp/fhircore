@@ -94,8 +94,8 @@ constructor(
     )
 
   private val _patientProfileViewDataFlow =
-    MutableStateFlow(ProfileViewData.PatientProfileViewData())
-  val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
+    MutableStateFlow(ProfileViewData.TracingProfileData())
+  val patientProfileViewData: StateFlow<ProfileViewData.TracingProfileData>
     get() = _patientProfileViewDataFlow.asStateFlow()
 
   var patientProfileData: ProfileData? = null
@@ -126,7 +126,14 @@ constructor(
   }
 
   fun fetchTracingData() {
-
+    viewModelScope.launch {
+      registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
+        patientProfileData = it
+        _patientProfileViewDataFlow.value =
+          profileViewDataMapper.transformInputToOutputModel(it) as
+            ProfileViewData.TracingProfileData
+      }
+    }
   }
 
   fun showTracingOutcomes(context: Context) {
