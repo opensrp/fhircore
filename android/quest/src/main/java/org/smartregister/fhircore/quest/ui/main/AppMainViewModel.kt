@@ -27,16 +27,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.BackoffCriteria
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.RetryConfiguration
-import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -47,8 +40,6 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -66,7 +57,6 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
@@ -96,8 +86,8 @@ class AppMainViewModel
 @Inject
 constructor(
   val accountAuthenticator: AccountAuthenticator,
-  val syncBroadcaster: SyncBroadcaster,
   val secureSharedPreference: SecureSharedPreference,
+  val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
@@ -106,10 +96,6 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   @ApplicationContext val context: Context,
 ) : ViewModel() {
-
-  private val _syncPollState = MutableSharedFlow<SyncJobStatus>()
-  val syncPollState: Flow<SyncJobStatus>
-    get() = _syncPollState
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -131,31 +117,6 @@ constructor(
 
   val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
-  }
-
-  init {
-    viewModelScope.launch {
-      _syncPollState.emit(SyncJobStatus.Started())
-      Sync.periodicSync<AppSyncWorker>(
-          context,
-          PeriodicSyncConfiguration(
-            syncConstraints = Constraints.Builder().build(),
-            repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
-          )
-        )
-        .collect { _syncPollState.emit(it) }
-    }
-  }
-
-  fun triggerOneTimeSync() {
-    viewModelScope.launch {
-      _syncPollState.emit(SyncJobStatus.Started())
-      Sync.oneTimeSync<AppSyncWorker>(
-          context,
-          RetryConfiguration(BackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS), 5)
-        )
-        .collect { _syncPollState.emit(it) }
-    }
   }
 
   fun retrieveIconsAsBitmap() {
@@ -195,7 +156,7 @@ constructor(
         }
       }
       AppMainEvent.SyncData -> {
-        triggerOneTimeSync()
+        syncBroadcaster.runSync()
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {

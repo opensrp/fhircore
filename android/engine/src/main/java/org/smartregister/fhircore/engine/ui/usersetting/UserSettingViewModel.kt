@@ -20,7 +20,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -29,7 +28,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.AppSyncWorker
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -45,6 +44,7 @@ class UserSettingViewModel
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
+  val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
@@ -78,9 +78,7 @@ constructor(
         updateProgressBarState(true, R.string.logging_out)
         accountAuthenticator.logout { updateProgressBarState(false, R.string.logging_out) }
       }
-      is UserSettingsEvent.SyncData -> {
-        viewModelScope.launch { Sync.oneTimeSync<AppSyncWorker>(event.context) }
-      }
+      is UserSettingsEvent.SyncData -> syncBroadcaster.runSync()
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {

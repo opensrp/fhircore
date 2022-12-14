@@ -16,11 +16,27 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import android.content.Context
+import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.RepeatInterval
+import com.google.android.fhir.sync.Sync
+import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import timber.log.Timber
 
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
@@ -34,13 +50,14 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  @ApplicationContext val context: Context,
 ) {
 
-  /*fun runSync() {
+  fun runSync() {
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
-    val syncStateFlow = MutableSharedFlow<State>()
+    val syncStateFlow = MutableSharedFlow<SyncJobStatus>()
     coroutineScope.launch {
       syncStateFlow
         .onEach {
@@ -52,37 +69,24 @@ constructor(
         .launchIn(this)
     }
 
-    coroutineScope.launch(dispatcherProvider.io()) {
-      syncJob.run(
-        fhirEngine = fhirEngine,
-        downloadManager =
-          ResourceParamsBasedDownloadWorkManager(syncParams = syncListenerManager.loadSyncParams()),
-        subscribeTo = syncStateFlow,
-        resolver = AcceptLocalConflictResolver
-      )
-    }
+    coroutineScope.launch(dispatcherProvider.io()) { Sync.oneTimeSync<AppSyncWorker>(context) }
   }
 
   private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
 
-  */
   /**
    * Schedule periodic sync periodically as defined in the application config interval. The sync
    * [State] will be broadcast to the listeners
    */
-  /*
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun schedulePeriodicSync() {
     Timber.i("Scheduling periodic sync...")
-    val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val periodicSyncFlow: Flow<State> =
-      syncJob.poll(
-        periodicSyncConfiguration =
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(appConfig.syncInterval, TimeUnit.MINUTES)
-          ),
-        clazz = AppSyncWorker::class.java
+    val periodicSyncFlow: Flow<SyncJobStatus> =
+      Sync.periodicSync<AppSyncWorker>(
+        context,
+        PeriodicSyncConfiguration(
+          syncConstraints = Constraints.Builder().build(),
+          repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+        )
       )
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     coroutineScope.launch {
@@ -92,5 +96,5 @@ constructor(
         }
       }
     }
-  }*/
+  }
 }
