@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.Task
-import org.junit.Assert
-import org.junit.Test
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import org.hl7.fhir.r4.model.Task
+import org.junit.Assert
+import org.junit.Test
 
 class TaskExtensionTest {
 
