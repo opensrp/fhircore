@@ -359,17 +359,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testRefreshTokenShouldReturnNull() {
-    val callMock = mockk<Call<OAuthResponse>>()
-    every { callMock.execute() } returns
-      mockk { every { body() } throws java.lang.RuntimeException() }
-
-    every { oAuthService.fetchToken(any()) } returns callMock
-    val token = accountAuthenticator.refreshToken(Faker.authCredentials.refreshToken!!)
-    Assert.assertNull(token)
-  }
-
-  @Test
   fun testGetPractitionerDetailsFromAssets() {
     val details = accountAuthenticator.getPractitionerDetailsFromAssets()
     Assert.assertNotNull(details)
