@@ -1093,21 +1093,25 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `test carePlanAndPatientMetaExtraction should return resource`() = runTest {
-    val ignoreResource: Resource?
-    val carePlan = CarePlan().copy().apply { id = "12345" }
+  fun `test carePlanAndPatientMetaExtraction`() = runTest {
+    val carePlan =
+      CarePlan().copy().apply {
+        id = "12345"
+        meta.versionId = 1.toString()
+      }
     val tags = emptyList<Coding>()
     carePlan.addTags(tags)
-
-    coEvery { questionnaireViewModel.carePlanAndPatientMetaExtraction(carePlan) } returns Unit
 
     coEvery { fhirEngine.create(carePlan) } answers { listOf(carePlan.id) }
     coEvery { fhirEngine.get<CarePlan>("12345") } returns carePlan
 
-    ignoreResource = carePlan
+    questionnaireViewModel.carePlanAndPatientMetaExtraction(carePlan)
 
-    Assert.assertEquals(carePlan.status, null)
-    assertTrue { ignoreResource.resourceType == carePlan.resourceType }
-    Assert.assertNotNull(ignoreResource)
+    val resource = fhirEngine.get(carePlan.resourceType, carePlan.id) as CarePlan
+
+    Assert.assertTrue(resource.meta.tag.isEmpty())
+    Assert.assertEquals(1.toString(), resource.meta.versionId)
+
+    Assert.assertNull(resource.status)
   }
 }
