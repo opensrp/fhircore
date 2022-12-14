@@ -82,14 +82,17 @@ fun TracingProfileScreen(
   patientProfileViewModel: TracingProfileViewModel = hiltViewModel()
 ) {
 
-  TracingProfilePage(modifier = modifier, onBackPress = { navController.popBackStack() })
+  TracingProfilePage(
+    modifier = modifier,
+    patientProfileViewModel = patientProfileViewModel,
+    onBackPress = { navController.popBackStack() })
 }
 
 @Composable
 fun TracingProfilePage(
   modifier: Modifier = Modifier,
   onBackPress: () -> Unit,
-  patientProfileViewModel: TracingProfileViewModel = hiltViewModel(),
+  patientProfileViewModel: TracingProfileViewModel,
 ) {
 
   val context = LocalContext.current
@@ -127,67 +130,28 @@ fun TracingProfilePage(
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
-                  modifier
-                    .fillMaxWidth()
-                    .background(
-                      color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
+                modifier
+                  .fillMaxWidth()
+                  .background(
+                    color =
+                    if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                    else Color.Transparent
+                  )
               ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
             }
           }
         }
       )
-    }
-  ) { innerPadding ->
-    TracingProfilePageView(
-      innerPadding = innerPadding,
-      profileViewData = profileViewData,
-      onShowTraceOutcomes = { patientProfileViewModel.showTracingOutcomes() }
-    )
-  }
-}
-
-@Composable
-fun TracingProfilePageView(
-  modifier: Modifier = Modifier,
-  innerPadding: PaddingValues = PaddingValues(all = 0.dp),
-  profileViewData: ProfileViewData.PatientProfileViewData =
-    ProfileViewData.PatientProfileViewData(),
-  onShowTraceOutcomes: () -> Unit
-) {
-  Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
-    Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
-      Column(
-        modifier =
-          modifier
-            .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
-      ) {
-        // Personal Data: e.g. sex, age, dob
-        PatientInfo(profileViewData)
-        Spacer(modifier = modifier.height(20.dp))
-        // Tracing Visit Due // pull tracingTask -> executionPeriod -> end
-        TracingVisitDue(profileViewData.dob)
-        // TracingVisitDue(profileViewData.tracingTask.executionPeriod.end.asDdMmYyyy())
-        Spacer(modifier = modifier.height(20.dp))
-        // Tracing Reason
-        TracingReasonBox(profileViewData.tracingTask, displayForHomeTrace = true)
-        Spacer(modifier = modifier.height(20.dp))
-        // Tracing Patient address/contact
-        TracingContactAddress(profileViewData, displayForHomeTrace = false)
-        Spacer(modifier = modifier.height(20.dp))
-        TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
-      }
+    },
+    bottomBar = {
       Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
         Button(
           colors =
-            ButtonDefaults.buttonColors(
-              backgroundColor = LoginButtonColor,
-              LoginFieldBackgroundColor
-            ),
-          onClick = onShowTraceOutcomes,
+          ButtonDefaults.buttonColors(
+            backgroundColor = LoginButtonColor,
+            LoginFieldBackgroundColor
+          ),
+          onClick = { patientProfileViewModel.showTracingOutcomes(context) },
           modifier = modifier.fillMaxWidth()
         ) {
           Text(
@@ -198,6 +162,52 @@ fun TracingProfilePageView(
         }
       }
     }
+  ) { innerPadding ->
+    TracingProfilePageView(
+      innerPadding = innerPadding,
+      profileViewData = profileViewData
+    )
+  }
+}
+
+@Composable
+fun TracingProfilePageView(
+  modifier: Modifier = Modifier,
+  innerPadding: PaddingValues = PaddingValues(all = 0.dp),
+  profileViewData: ProfileViewData.TracingProfileData =
+    ProfileViewData.TracingProfileData()
+) {
+  Column(modifier = modifier
+    .fillMaxHeight()
+    .fillMaxWidth()
+    .padding(innerPadding)) {
+    Box(modifier = Modifier
+      .padding(5.dp)
+      .weight(2.0f)) {
+      Column(
+        modifier =
+        modifier
+          .verticalScroll(rememberScrollState())
+          .background(PatientProfileSectionsBackgroundColor)
+      ) {
+        // Personal Data: e.g. sex, age, dob
+        PatientInfo(profileViewData)
+        Spacer(modifier = modifier.height(20.dp))
+        // Tracing Visit Due // pull tracingTask -> executionPeriod -> end
+        TracingVisitDue(profileViewData.dueDate)
+        // TracingVisitDue(profileViewData.tracingTask.executionPeriod.end.asDdMmYyyy())
+        Spacer(modifier = modifier.height(20.dp))
+        // Tracing Reason
+        repeat(profileViewData.tracingTasks.size) {
+          TracingReasonBox(profileViewData.tracingTasks[it], displayForHomeTrace = true)
+          Spacer(modifier = modifier.height(20.dp))
+        }
+        // Tracing Patient address/contact
+        TracingContactAddress(profileViewData, displayForHomeTrace = false)
+        Spacer(modifier = modifier.height(20.dp))
+        TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
+      }
+    }
   }
 }
 
@@ -205,12 +215,12 @@ fun TracingProfilePageView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun TracingScreenPreview() {
-  TracingProfilePageView(modifier = Modifier, onShowTraceOutcomes = {})
+  TracingProfilePageView(modifier = Modifier)
 }
 
 @Composable
 fun PatientInfo(
-  patientProfileViewData: ProfileViewData.PatientProfileViewData,
+  patientProfileViewData: ProfileViewData.TracingProfileData,
   modifier: Modifier = Modifier,
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
@@ -286,7 +296,9 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
     border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
     Row(
-      modifier = modifier.padding(6.dp, 8.dp).fillMaxWidth(),
+      modifier = modifier
+        .padding(6.dp, 8.dp)
+        .fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
       Text(
@@ -316,7 +328,7 @@ private fun TracingReasonBox(
     Column(modifier = modifier.padding(horizontal = 4.dp)) {
       TracingReasonItem(
         title = stringResource(R2.string.reason_for_trace),
-        value = tracingTask.reasonCode?.codingFirstRep?.display ?: "High Viral Load"
+        value = tracingTask.reasonCode?.codingFirstRep?.display ?: ""
       )
       if (displayForHomeTrace)
         TracingReasonItem(
@@ -341,7 +353,7 @@ private fun TracingReasonBox(
 
 @Composable
 private fun TracingContactAddress(
-  patientProfileViewData: ProfileViewData.PatientProfileViewData,
+  patientProfileViewData: ProfileViewData.TracingProfileData,
   displayForHomeTrace: Boolean = false,
   modifier: Modifier = Modifier
 ) {
@@ -351,7 +363,9 @@ private fun TracingContactAddress(
     shape = RoundedCornerShape(12.dp),
     border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
-    Column(modifier = modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
+    Column(modifier = modifier
+      .padding(horizontal = 4.dp)
+      .fillMaxWidth()) {
       if (displayForHomeTrace) {
         TracingReasonItem(
           title = stringResource(R2.string.patient_district),
@@ -379,7 +393,9 @@ private fun TracingContactAddress(
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier = modifier
+            .fillMaxWidth()
+            .padding(end = 16.dp, bottom = 8.dp)
         )
       }
     }
@@ -402,7 +418,7 @@ private fun TracingGuardianAddress(
         TracingReasonItem(
           title = stringResource(R2.string.guardian_relation),
           value =
-            "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
+          "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
         )
         TracingReasonItem(
           title = stringResource(R2.string.guardian_phone_number_1),
@@ -417,7 +433,9 @@ private fun TracingGuardianAddress(
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier = modifier
+            .fillMaxWidth()
+            .padding(end = 16.dp, bottom = 8.dp)
         )
       }
     }
@@ -432,7 +450,7 @@ private fun TracingGuardianAddress(
           TracingReasonItem(
             title = stringResource(R2.string.guardian_phone_number_2),
             value =
-              "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
+            "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
           )
           TracingReasonItem(
             title = stringResource(R2.string.guardian_phone_number_2),
@@ -447,7 +465,9 @@ private fun TracingGuardianAddress(
             textAlign = TextAlign.End,
             fontSize = 14.sp,
             color = SuccessColor,
-            modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+            modifier = modifier
+              .fillMaxWidth()
+              .padding(end = 16.dp, bottom = 8.dp)
           )
         }
       }

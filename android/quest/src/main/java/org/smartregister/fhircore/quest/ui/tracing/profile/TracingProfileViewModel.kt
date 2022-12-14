@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -93,16 +94,14 @@ constructor(
     )
 
   private val _patientProfileViewDataFlow =
-    MutableStateFlow(ProfileViewData.PatientProfileViewData())
-  val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
+    MutableStateFlow(ProfileViewData.TracingProfileData())
+  val patientProfileViewData: StateFlow<ProfileViewData.TracingProfileData>
     get() = _patientProfileViewDataFlow.asStateFlow()
 
   var patientProfileData: ProfileData? = null
 
   val applicationConfiguration: ApplicationConfiguration
     get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
-
-  private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
 
   private val _showTracingOutcomes = MutableLiveData<Boolean>()
   val showTracingOutcomes: LiveData<Boolean>
@@ -114,7 +113,7 @@ constructor(
         override fun onSync(state: State) {
           when (state) {
             is State.Finished, is State.Failed -> {
-              fetchPatientProfileDataWithChildren()
+              fetchTracingData()
             }
             else -> {}
           }
@@ -123,47 +122,27 @@ constructor(
       viewModelScope
     )
 
-    fetchPatientProfileDataWithChildren()
+    fetchTracingData()
   }
 
-  fun getOverflowMenuHostByPatientType(healthStatus: HealthStatus): OverflowMenuHost {
-    return when (healthStatus) {
-      HealthStatus.NEWLY_DIAGNOSED_CLIENT -> OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE
-      HealthStatus.CLIENT_ALREADY_ON_ART -> OverflowMenuHost.ART_CLIENT_PROFILE
-      HealthStatus.EXPOSED_INFANT -> OverflowMenuHost.EXPOSED_INFANT_PROFILE
-      HealthStatus.CHILD_CONTACT -> OverflowMenuHost.CHILD_CONTACT_PROFILE
-      HealthStatus.SEXUAL_CONTACT -> OverflowMenuHost.SEXUAL_CONTACT_PROFILE
-      HealthStatus.COMMUNITY_POSITIVE -> OverflowMenuHost.COMMUNITY_POSITIVE_PROFILE
-      else -> OverflowMenuHost.PATIENT_PROFILE
+  fun fetchTracingData() {
+    viewModelScope.launch {
+      registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
+        patientProfileData = it
+        _patientProfileViewDataFlow.value =
+          profileViewDataMapper.transformInputToOutputModel(it) as
+            ProfileViewData.TracingProfileData
+      }
     }
   }
 
-  fun filterGuardianVisitTasks() {
-    if (patientProfileData != null) {
-      val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
-      val newProfileData =
-        hivPatientProfileData.copy(
-          tasks =
-            hivPatientProfileData.tasks.filter {
-              it.isGuardianVisit(applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem)
-            }
-        )
-      _patientProfileViewDataFlow.value =
-        profileViewDataMapper.transformInputToOutputModel(newProfileData) as
-          ProfileViewData.PatientProfileViewData
-    }
-  }
-
-  fun undoGuardianVisitTasksFilter() {
-    if (patientProfileData != null) {
-      _patientProfileViewDataFlow.value =
-        profileViewDataMapper.transformInputToOutputModel(patientProfileData!!) as
-          ProfileViewData.PatientProfileViewData
-    }
-  }
-
-  fun showTracingOutcomes() {
+  fun showTracingOutcomes(context: Context) {
     _showTracingOutcomes.value = true
+    context.launchQuestionnaire<QuestionnaireActivity>(
+      questionnaireId = "tests/home_outcome.json",
+      clientIdentifier = patientId,
+      questionnaireType = QuestionnaireType.EDIT
+    )
   }
 
   fun onEvent(event: TracingProfileEvent) {
@@ -197,87 +176,6 @@ constructor(
         )
     }
   }
-
-  fun handleVisitType(isClientVisit: Boolean) {
-    if (isClientVisit) {
-      val updatedMenuItems =
-        patientTracingProfileUiState.value.overflowMenuItems.map {
-          when (it.id) {
-            R.id.guardian_visit -> it.apply { hidden = false }
-            R.id.client_visit -> it.apply { hidden = true }
-            else -> it
-          }
-        }
-      patientTracingProfileUiState.value =
-        patientTracingProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-      undoGuardianVisitTasksFilter()
-    } else {
-      val updatedMenuItems =
-        patientTracingProfileUiState.value.overflowMenuItems.map {
-          when (it.id) {
-            R.id.guardian_visit -> it.apply { hidden = true }
-            R.id.client_visit -> it.apply { hidden = false }
-            else -> it
-          }
-        }
-      patientTracingProfileUiState.value =
-        patientTracingProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
-    }
-  }
-
-  fun fetchPatientProfileDataWithChildren() {
-    if (patientId.isNotEmpty()) {
-      viewModelScope.launch {
-        registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
-          patientProfileData = it
-          _patientProfileViewDataFlow.value =
-            profileViewDataMapper.transformInputToOutputModel(it) as
-              ProfileViewData.PatientProfileViewData
-          // refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
-          paginateChildrenRegisterData(true)
-          handleVisitType(isClientVisit.value)
-        }
-      }
-    }
-  }
-
-  val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
-    MutableStateFlow(emptyFlow())
-
-  fun paginateChildrenRegisterData(loadAll: Boolean = true) {
-    paginatedChildrenRegisterData.value =
-      getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
-  }
-
-  private fun getPager(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = true
-  ): Pager<Int, RegisterViewData> =
-    Pager(
-      config =
-        PagingConfig(
-          pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
-          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
-        ),
-      pagingSourceFactory = {
-        ChildContactPagingSource(
-            patientProfileViewData.value.otherPatients,
-            registerRepository,
-            registerViewDataMapper
-          )
-          .apply {
-            setPatientPagingSourceState(
-              PatientPagingSourceState(
-                appFeatureName = appFeatureName,
-                healthModule = healthModule,
-                loadAll = loadAll,
-                currentPage = 0
-              )
-            )
-          }
-      }
-    )
 
   companion object {
     const val EDIT_PROFILE_FORM = "edit-patient-profile"

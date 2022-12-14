@@ -78,6 +78,7 @@ sealed class ProfileViewData(
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
+
     // todo : apply filter on tracingTask->meta to check patient is valid for Home or Phone Tracing
     val validForHomeTrace = false
     val validForPhoneTracing = tracingTask.extractedTracingCategoryIsPhone("https://d-tree.org")
@@ -90,4 +91,31 @@ sealed class ProfileViewData(
     val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
   ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class TracingProfileData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val sex: String = "",
+    val age: String = "",
+    val attempts: Int = 0,
+    val dueDate: String = "",
+    val identifierKey: String = "",
+    val showIdentifierInProfile: Boolean = false,
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
+    val tracingTasks: List<Task> = emptyList(),
+    val carePlans: List<CarePlan> = emptyList(),
+    val guardians: List<Guardian> = emptyList(),
+    val observations: List<Observation> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList(),
+    val conditions: List<Condition> = emptyList(),
+  ) : ProfileViewData(logicalId = logicalId, name = name) {
+    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
+    val populationResources: ArrayList<Resource> by lazy {
+      val resources = conditions + guardiansRelatedPersonResource + observations
+      val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
+    }
+  }
 }
