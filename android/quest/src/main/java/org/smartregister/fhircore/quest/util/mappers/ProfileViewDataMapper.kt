@@ -45,6 +45,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberView
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.util.extensions.isHomeTracingTask
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
@@ -179,6 +180,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
         name = inputModel.name,
         sex = inputModel.gender.translateGender(context),
         age = inputModel.age,
+        isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
         attempts = 0,
         dueDate = "",
         identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),

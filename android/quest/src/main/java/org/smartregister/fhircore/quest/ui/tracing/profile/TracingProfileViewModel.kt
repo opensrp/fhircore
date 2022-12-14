@@ -136,15 +136,6 @@ constructor(
     }
   }
 
-  fun showTracingOutcomes(context: Context) {
-    _showTracingOutcomes.value = true
-    context.launchQuestionnaire<QuestionnaireActivity>(
-      questionnaireId = "tests/home_outcome.json",
-      clientIdentifier = patientId,
-      questionnaireType = QuestionnaireType.EDIT
-    )
-  }
-
   fun onEvent(event: TracingProfileEvent) {
     val profile = patientProfileViewData.value
 
@@ -174,6 +165,15 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources
         )
+      is TracingProfileEvent.LoadOutComesForm -> {
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          // TODO: Replace with actual tracing outcomes url
+          if (profile.isHomeTracing) "tests/home_outcome.json" else "tests/phone_outcome.json",
+          clientIdentifier = patientId,
+          questionnaireType = QuestionnaireType.EDIT,
+          populationResources = profile.populationResources
+        )
+      }
     }
   }
 
