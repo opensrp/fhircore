@@ -123,7 +123,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
 
   override fun onSync(state: State) {
     Timber.i("Sync state received is $state")
-    when (state) {
+    /*when (state) {
       is State.Started -> showToast(getString(R.string.syncing))
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
@@ -163,7 +163,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
           )
         }
       }
-    }
+    }*/
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
