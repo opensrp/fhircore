@@ -25,9 +25,7 @@ fun Task.hasPastEnd() =
     this.executionPeriod.end.before(yesterday())
 
 fun Task.hasStarted() =
-  this.hasExecutionPeriod() &&
-    this.executionPeriod.hasStart() &&
-    with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
+  this.hasExecutionPeriod() && this.executionPeriod.hasStart() && executionStartIsBeforeOrToday()
 
 fun Task.isReady() =
   this.hasExecutionPeriod() &&
