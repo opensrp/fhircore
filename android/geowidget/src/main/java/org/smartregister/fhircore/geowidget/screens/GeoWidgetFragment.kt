@@ -214,7 +214,8 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
       if (geometry is Point) {
         points.add(geometry)
       }
-    } ?: return
+    }
+      ?: return
 
     val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))
     val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)

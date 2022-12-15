@@ -85,7 +85,6 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
     val familiesList = ArrayList<Pair<Group, Location>>()
 
     familiesWithLocations.forEach { family ->
-
       try {
         val familyLocation =
           defaultRepository.fhirEngine.get<Location>(
