@@ -51,7 +51,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
-class FhirTaskExpireJobTest : RobolectricTest() {
+class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -120,7 +120,7 @@ class FhirTaskExpireJobTest : RobolectricTest() {
   @Test
   fun scheduleShouldCallEnqueueWithKeepWhenVersionIsSimilar() {
     // Schedule the first job of version 1
-    var workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
     FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
 
     val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
