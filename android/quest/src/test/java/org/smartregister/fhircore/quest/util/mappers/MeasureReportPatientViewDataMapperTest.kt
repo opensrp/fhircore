@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.util.mappers
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.time.LocalDate
+import java.time.Period
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
@@ -52,12 +54,19 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("TEST_PATIENT", logicalId)
       Assert.assertEquals("Bareera Hadi", name)
-      Assert.assertEquals("24y", age)
+      Assert.assertEquals("24y", getTestPatientAge())
       Assert.assertEquals("Hadi Family", family)
       Assert.assertEquals(
         Enumerations.AdministrativeGender.FEMALE.toString().first().uppercase(),
         gender
       )
     }
+  }
+
+  private fun getTestPatientAge(): String {
+    // Update this according to value in patient-registration-questionnaire/sample/patient.json file
+    val dob: LocalDate = LocalDate.of(1998, 12, 14)
+    val period: Period = Period.between(dob, LocalDate.now())
+    return "${period.years}y"
   }
 }
