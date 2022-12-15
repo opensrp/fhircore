@@ -52,10 +52,7 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("TEST_PATIENT", logicalId)
       Assert.assertEquals("Bareera Hadi", name)
-      Assert.assertEquals(
-        "24y",
-        age
-      ) // Will fail annually - might need a better way to handle this check
+      Assert.assertEquals("24y", age)
       Assert.assertEquals("Hadi Family", family)
       Assert.assertEquals(
         Enumerations.AdministrativeGender.FEMALE.toString().first().uppercase(),

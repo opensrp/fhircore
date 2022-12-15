@@ -61,11 +61,6 @@ constructor(
 
   val progressBarState = MutableLiveData(Pair(false, 0))
 
-  fun runSync() {
-    // TODO to be reactivated
-    syncBroadcaster.runSync()
-  }
-
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun allowSwitchingLanguages() = languages.size > 1
