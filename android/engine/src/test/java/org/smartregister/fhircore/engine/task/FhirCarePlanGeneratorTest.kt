@@ -1031,6 +1031,82 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `Generate CarePlan should generate disease followup schedule`() = runTest {
+    val plandefinition =
+      "plans/disease-followup/plan-definition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/disease-followup/patient.json".readFile().decodeResourceFromString<Patient>()
+    val diseaseFollowUpQuestionnaireResponseString =
+      "plans/disease-followup/questionnaire-response.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
+        println(it.encodeResourceToString())
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
+      structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = diseaseFollowUpQuestionnaireResponseString
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+
+        Assert.assertEquals("Disease Follow Up", carePlan.title)
+        Assert.assertEquals(
+          "This is a follow up for patient's marked with the following diseases HIV, TB, Mental Health & CM-NTD",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .also { println(it.last().encodeResourceToString()) }
+          .all { task ->
+            task.status == TaskStatus.INPROGRESS &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+      }
+  }
+
   @Test
   fun `transitionTaskTo should update task status`() = runTest {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }

@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -64,6 +63,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
 /**
@@ -199,12 +199,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (questionnaireConfig.resourceIdentifier != null) {
                 setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(
-                    questionnaire,
-                    intent,
-                    questionnaireConfig
-                  )
+                if (questionnaireResponse == null) {
+                  questionnaireResponse =
+                    questionnaireViewModel.generateQuestionnaireResponse(
+                      questionnaire,
+                      intent,
+                      questionnaireConfig
+                    )
+                }
                 this.putString(
                   QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
                   questionnaireResponse.encodeResourceToString()

@@ -80,6 +80,40 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   }
 
   @Test
+  fun `perform disease extraction`() {
+    val immunizationQuestionnaireResponseString: String =
+      "content/general/disease-registration-resources/questionnaire_response.json".readFile()
+    val immunizationStructureMap =
+      "content/general/disease-registration-resources/structure-map.txt".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(immunizationStructureMap, "eCBIS Disease Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        immunizationQuestionnaireResponseString
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
   fun `populate immunization Questionnaire`() {
     val patientJson = "content/eir/immunization/patient.json".readFile()
     val immunizationJson = "content/eir/immunization/immunization-1.json".readFile()

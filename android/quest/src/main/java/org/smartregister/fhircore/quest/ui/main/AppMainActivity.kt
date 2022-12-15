@@ -25,7 +25,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -50,7 +50,7 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, QuestionnaireHandler {
+open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   @Inject lateinit var configService: ConfigService
@@ -74,6 +74,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
       topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
+    syncListenerManager.registerSyncListener(this, lifecycle)
 
     navHostFragment =
       NavHostFragment.create(
@@ -107,62 +108,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
       }
     }
 
-    // Register sync listener then run sync in that order
-    syncListenerManager.registerSyncListener(this, lifecycle)
-    syncBroadcaster.run {
-      runSync()
-      schedulePeriodicSync()
-    }
-
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
       schedulePeriodicJobs()
     }
-  }
 
-  override fun onSync(state: State) {
-    Timber.i("Sync state received is $state")
-    when (state) {
-      is State.Started -> showToast(getString(R.string.syncing))
-      is State.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
-        )
-      }
-      is State.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Failed -> {
-        val hasAuthError =
-          state.result.exceptions.any {
-            it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
-        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
-        showToast(getString(message))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              appMainViewModel.retrieveLastSyncTimestamp()
-            else getString(R.string.syncing_failed)
-          )
-        )
-        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
-        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Finished -> {
-        showToast(getString(R.string.sync_completed))
-        appMainViewModel.run {
-          onEvent(
-            AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
-          )
-        }
-      }
+    syncBroadcaster.run {
+      runSync()
+      schedulePeriodicSync()
     }
   }
 
@@ -179,6 +133,49 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
         appMainViewModel.questionnaireSubmissionLiveData.postValue(
           QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
         )
+      }
+    }
+  }
+
+  override fun onSync(state: SyncJobStatus) {
+    Timber.e("Sync state is $state")
+    when (state) {
+      is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
+      is SyncJobStatus.InProgress -> {
+        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
+        )
+      }
+      is SyncJobStatus.Glitch -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
+        )
+        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is SyncJobStatus.Failed -> {
+        val hasAuthError =
+          state.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+        showToast(getString(message))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(
+            state,
+            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+              appMainViewModel.retrieveLastSyncTimestamp()
+            else getString(R.string.syncing_failed)
+          )
+        )
+        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is SyncJobStatus.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        appMainViewModel.run {
+          onEvent(AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.timestamp)))
+        }
       }
     }
   }
