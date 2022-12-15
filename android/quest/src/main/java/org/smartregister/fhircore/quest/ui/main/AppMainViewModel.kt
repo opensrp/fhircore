@@ -162,9 +162,8 @@ constructor(
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
             bundle.getString(AccountManager.KEY_ERROR_MESSAGE)?.let { event.context.showToast(it) }
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
-              retrieveAppMainUiState()
               // syncBroadcaster.runSync()
+              retrieveAppMainUiState()
               return@let
             }
             if (bundle.containsKey(AccountManager.KEY_ERROR_CODE) &&
