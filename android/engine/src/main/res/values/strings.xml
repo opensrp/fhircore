@@ -135,4 +135,5 @@
     <string name="identifier_unassigned">Unassigned</string>
     <string name="press_back_again">Please click BACK again to exit</string>
     <string name="unable_to_sync">Unable to sync. Connect to the internet and try again</string>
+    <string name="appointment_date">Appointment Date</string>
 </resources>
