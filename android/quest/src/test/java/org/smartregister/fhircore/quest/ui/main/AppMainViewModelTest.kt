@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -85,6 +86,8 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val application: Context = ApplicationProvider.getApplicationContext()
 
+  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+
   private lateinit var appMainViewModel: AppMainViewModel
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
@@ -103,6 +106,7 @@ class AppMainViewModelTest : RobolectricTest() {
       spyk(
         AppMainViewModel(
           accountAuthenticator = accountAuthenticator,
+          syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,

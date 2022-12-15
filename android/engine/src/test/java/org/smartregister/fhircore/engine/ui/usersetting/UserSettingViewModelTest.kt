@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -72,6 +73,8 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   private var configService: ConfigService
 
+  private lateinit var syncBroadcaster: SyncBroadcaster
+
   private val application: Context = ApplicationProvider.getApplicationContext()
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -93,9 +96,19 @@ class UserSettingViewModelTest : RobolectricTest() {
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk()
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry,
+        fhirEngine = mockk(),
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        syncListenerManager = mockk(relaxed = true),
+        context = application
+      )
+
     userSettingViewModel =
       UserSettingViewModel(
         fhirEngine = fhirEngine,
+        syncBroadcaster,
         accountAuthenticator,
         secureSharedPreference,
         sharedPreferencesHelper,
