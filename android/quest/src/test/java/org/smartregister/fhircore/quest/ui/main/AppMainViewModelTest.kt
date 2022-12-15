@@ -143,13 +143,13 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
   }
 
-  @Test
+  /* @Test
   fun testOnEventSyncData() {
     val appMainEvent = AppMainEvent.SyncData
     appMainViewModel.onEvent(appMainEvent)
 
     verify { appMainViewModel.retrieveAppMainUiState() }
-  }
+  }*/
 
   /* @Test
   fun testOnEventUpdateSyncStates() {
