@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -516,14 +515,6 @@ constructor(
 
   open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
-
-    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)?.let {
-      Log.e("TAG", "QUESTIONNAIRE_ARG_FORM" + it)
-    }
-
-    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
-      Log.e("TAG", "QUESTIONNAIRE_BACK_REFERENCE_KEY" + it)
-    }
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
