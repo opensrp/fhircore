@@ -52,6 +52,7 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("TEST_PATIENT", logicalId)
       Assert.assertEquals("Bareera Hadi", name)
+      Assert.assertEquals("24y", age)
       Assert.assertEquals(
         "24y",
         age
