@@ -19,12 +19,13 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.result.ActivityResult
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
+import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.ResourceSyncException
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -40,15 +41,14 @@ import java.util.Locale
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -79,6 +79,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   val workManager: WorkManager = mockk()
 
+  val registerRepository: RegisterRepository = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -91,7 +93,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     every {
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
     } returns ""
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name, 0)
+    } returns 1
     every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
+    coEvery { registerRepository.countRegisterData(any()) } returns 2
 
     appMainViewModel =
       spyk(
@@ -101,10 +107,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
-          registerRepository = mockk(),
+          registerRepository = registerRepository,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
-          fhirCarePlanGenerator = mockk()
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          context = ApplicationProvider.getApplicationContext()
         )
       )
 
@@ -206,7 +213,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     )
   }*/
 
-  @Ignore("Needs refactoring")
   @Test
   fun `handleTaskActivityResult should set task status in-progress when response status is in-progress`() =
       runTest {
@@ -230,7 +236,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 
   @Test
@@ -256,7 +262,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 
   @Test
@@ -266,7 +272,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
-        -1,
+        AppCompatActivity.RESULT_OK,
         Intent().apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, QuestionnaireResponse())
           putExtra(
@@ -277,7 +283,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 
   @Test
@@ -292,11 +298,9 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `onSync with StateFailed and auth error calls appMainViewModel with RefreshAuthToken event`() {
-    val result: Result.Error = mockk()
     val exception: HttpException = mockk()
-    val stateFailed = State.Failed(result)
-    every { result.exceptions } returns
-      listOf(ResourceSyncException(ResourceType.Questionnaire, exception))
+    val stateFailed =
+      SyncJobStatus.Failed(listOf(ResourceSyncException(ResourceType.Questionnaire, exception)))
     every { exception.code() } returns 401
     every { exception.message } returns "Unauthorized"
 
