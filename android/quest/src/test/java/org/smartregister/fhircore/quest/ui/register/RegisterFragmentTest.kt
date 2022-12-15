@@ -21,18 +21,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SnackbarDuration
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
@@ -42,6 +51,7 @@ class RegisterFragmentTest : RobolectricTest() {
   val view = mockk<View>()
   val savedInstance: Bundle? = mockk()
   val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk())
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
 
@@ -67,5 +77,36 @@ class RegisterFragmentTest : RobolectricTest() {
     coEvery { registerFragment.onSync(state) } just runs
     registerFragment.onSync(state = state)
     verify { registerFragment.onSync(state) }
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  fun `test On changed emits a snack bar message`() {
+    val snackBarMessageConfig =
+      SnackBarMessageConfig(
+        message = "Household member has been added",
+        actionLabel = "UNDO",
+        duration = SnackbarDuration.Short,
+        snackBarActions = emptyList()
+      )
+    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireConfig = mockk<QuestionnaireConfig>()
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
+      )
+    val registerViewModel = mockk<RegisterViewModel>()
+    coEvery { registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission) } just
+      runs
+    registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission)
+    verify { registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission) }
+    coroutineTestRule.launch {
+      registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
+    }
+    coEvery {
+      registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
+    } just runs
+    coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig) }
   }
 }
