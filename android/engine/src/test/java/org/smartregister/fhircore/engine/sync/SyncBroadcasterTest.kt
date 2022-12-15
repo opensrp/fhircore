@@ -16,15 +16,14 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.MockKAnnotations
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -56,13 +55,13 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  private val syncJob = mockk<SyncJob>(relaxed = true)
-
   private val fhirEngine = mockk<FhirEngine>()
 
   private lateinit var syncListenerManager: SyncListenerManager
 
   private lateinit var syncBroadcaster: SyncBroadcaster
+
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Before
   fun setup() {
@@ -79,10 +78,10 @@ class SyncBroadcasterTest : RobolectricTest() {
       spyk(
         SyncBroadcaster(
           configurationRegistry = configurationRegistry,
-          syncJob = syncJob,
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          syncListenerManager = syncListenerManager
+          syncListenerManager = syncListenerManager,
+          context = context
         )
       )
   }
@@ -257,11 +256,5 @@ class SyncBroadcasterTest : RobolectricTest() {
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(practitionerId)) }
-  }
-
-  @Test
-  fun testSchedulePeriodicSyncShouldPoll() = runTest {
-    syncBroadcaster.schedulePeriodicSync()
-    verify { syncJob.poll<FhirSyncWorker>(periodicSyncConfiguration = any(), clazz = any()) }
   }
 }
