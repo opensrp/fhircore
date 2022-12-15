@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
@@ -39,6 +40,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.launchFragmentInHiltContainer
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -65,6 +68,10 @@ class UserSettingFragmentTest : RobolectricTest() {
 
   private var fhirResourceDataSource: FhirResourceDataSource
 
+  private lateinit var syncBroadcaster: SyncBroadcaster
+
+  private val application: Context = ApplicationProvider.getApplicationContext()
+
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     configService = AppConfigService(context = context)
@@ -77,9 +84,19 @@ class UserSettingFragmentTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry,
+        fhirEngine = mockk(),
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        syncListenerManager = mockk(relaxed = true),
+        context = application
+      )
+
     userSettingViewModel =
       UserSettingViewModel(
         fhirEngine = mockk(),
+        syncBroadcaster,
         accountAuthenticator,
         secureSharedPreference,
         sharedPreferencesHelper,
