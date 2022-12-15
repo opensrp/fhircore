@@ -32,7 +32,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -51,7 +50,6 @@ class RegisterFragmentTest : RobolectricTest() {
   val view = mockk<View>()
   val savedInstance: Bundle? = mockk()
   val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk())
-  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
 
