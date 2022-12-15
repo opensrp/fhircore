@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.OnInActivityListener
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileViewModel
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -178,6 +179,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     if (resultCode == Activity.RESULT_OK)
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
         when {
+          it.asReference(ResourceType.Task).extractId() ==
+            PatientProfileViewModel.PATIENT_FINISH_VISIT -> {
+            /**
+             * Send a random string to trigger [FhirCarePlanGenerator.completeTask] to invoke
+             * [PatientProfileViewModel.fetchPatientProfileDataWithChildren]
+             */
+            appMainViewModel.onTaskComplete(System.currentTimeMillis().toString())
+          }
           it.startsWith(ResourceType.Task.name) -> {
             lifecycleScope.launch(Dispatchers.IO) {
               val encounterStatus =
