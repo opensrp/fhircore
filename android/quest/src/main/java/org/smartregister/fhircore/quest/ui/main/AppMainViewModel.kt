@@ -316,14 +316,16 @@ constructor(
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
 
-    // Schedule job for generating measure report in the background
+    //TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+    //Down the app
+   /* // Schedule job for generating measure report in the background
     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
 
     FhirTaskExpireWorker.schedule(
       workManager,
       sharedPreferencesHelper,
       applicationConfiguration.taskExpireJobRepeatIntervalMinutes
-    )
+    )*/
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
