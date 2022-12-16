@@ -33,6 +33,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -40,6 +45,7 @@ import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -97,6 +103,7 @@ constructor(
           relatedResourcesConfig = relatedResourcesConfig,
           baseResourceType = baseResourceType,
           baseResource = baseResource,
+          views = registerConfiguration.registerCard.views,
           rules = registerConfiguration.registerCard.rules
         )
       }
@@ -107,7 +114,8 @@ constructor(
     relatedResourcesConfig: List<ResourceConfig>,
     baseResourceType: ResourceType,
     baseResource: Resource,
-    rules: List<RuleConfig>
+    rules: List<RuleConfig>,
+    views: List<ViewProperties>
   ): ResourceData {
     val currentRelatedResources = LinkedList<RelatedResourceData>()
 
@@ -135,14 +143,93 @@ constructor(
         relatedResourcesMap = relatedResourcesMap
       )
 
-    // TODO Pre-compute rules for the all the LIST views used in the register
-    val listResourceData = emptyMap<String, List<ResourceData>>()
+    val listResourceDataMap = computeListRules(views, relatedResourcesMap, computedValuesMap)
+
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,
       computedValuesMap = computedValuesMap,
-      listResourceDataMap = listResourceData
+      listResourceDataMap = listResourceDataMap
     )
+  }
+
+  /**
+   * This function pre-computes all the Rules for [ViewType]'s of List including list nested in the
+   * views. This function also retrieves Lists rendered inside other views and computes their rules.
+   * The LIST view computed values includes the parent's.
+   *
+   * This function re-uses the parent view's [computedValuesMap] and [relatedResourcesMap]. It does
+   * not re-query data from the cache. For a List view, the base resource will always be available
+   * in the parent's view relatedResourcesMap. We retrieve it and use it to get it's related
+   * resources so we can fire rules for the List.
+   */
+  private fun computeListRules(
+    views: List<ViewProperties>,
+    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
+    computedValuesMap: Map<String, Any>
+  ) =
+    views.retrieveListProperties().associate { viewProperties ->
+
+      // Retrieve baseResource for List, then the related resources then fire rules
+      val resourceDataList =
+        relatedResourcesMap[viewProperties.baseResource]?.map { resource ->
+          val newRelatedResources =
+            viewProperties.relatedResources.associate {
+              Pair(
+                it.resourceType,
+                rulesFactory.rulesEngineService.retrieveRelatedResources(
+                  resource = resource,
+                  relatedResourceType = it.resourceType,
+                  fhirPathExpression = it.fhirPathExpression,
+                  relatedResourcesMap = relatedResourcesMap
+                )
+              )
+            }
+
+          // Values computed from the rules defined in LIST view RegisterCard
+          val listComputedValuesMap =
+            rulesFactory.fireRule(
+              ruleConfigs = viewProperties.registerCard.rules,
+              baseResource = resource,
+              relatedResourcesMap = newRelatedResources
+            )
+
+          // LIST view should reuse the previously computed values
+          ResourceData(
+            baseResourceId = resource.logicalId.extractLogicalIdUuid(),
+            baseResourceType = resource.resourceType,
+            computedValuesMap = computedValuesMap.plus(listComputedValuesMap),
+            listResourceDataMap = emptyMap()
+          )
+        }
+          ?: emptyList()
+
+      Pair(viewProperties.id, resourceDataList)
+    }
+
+  /**
+   * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
+   * LISTs
+   */
+  fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
+    val listProperties = mutableListOf<ListProperties>()
+    val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
+    while (viewPropertiesLinkedList.isNotEmpty()) {
+      val properties = viewPropertiesLinkedList.removeFirst()
+      if (properties.viewType == ViewType.LIST) {
+        listProperties.add(properties as ListProperties)
+      }
+      when (properties.viewType) {
+        ViewType.COLUMN ->
+          viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
+        ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
+        ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
+        ViewType.LIST ->
+          viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
+        else -> {}
+      }
+    }
+    return listProperties
   }
 
   /**
@@ -298,6 +385,7 @@ constructor(
       relatedResourcesConfig = relatedResourcesConfig,
       baseResourceType = baseResourceType,
       baseResource = baseResource,
+      views = profileConfiguration.views,
       rules = profileConfiguration.rules
     )
   }
