@@ -16,11 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Before
@@ -64,15 +61,6 @@ class MeasureReportPopulationResultViewTest {
   }
 
   @Test
-  fun testPopulationResultCardRendersPopulationTitleCorrectly() {
-    composeTestRule.onNodeWithTag(POPULATION_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule
-      .onNodeWithText(measureReportPopulationResultList.first().title.uppercase())
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
   fun testPopulationResultCardRendersPopulationIndicatorCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_INDICATOR_TITLE, useUnmergedTree = true).assertExists()
     composeTestRule
@@ -82,60 +70,12 @@ class MeasureReportPopulationResultViewTest {
   }
 
   @Test
-  fun testPopulationResultCardRendersPopulationCountCorrectly() {
+  fun testPopulationResultCardRendersPopulationDenominatorCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-      .onNodeWithText(measureReportPopulationResultList.first().count.uppercase())
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testPopulationResultCardDisplaysDivider() {
-    composeTestRule
-      .onNodeWithTag(POPULATION_RESULT_CARD_DIVIDER_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testPopulationResultItemRendersProgressBarCorrectly() {
-    composeTestRule
-      .onAllNodesWithTag(POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG, useUnmergedTree = true)
-      .assertCountEquals(2)
-  }
-
-  @Test
-  fun testPopulationResultItemRendersTitleTextCorrectly() {
-    composeTestRule
-      .onNodeWithTag(POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-    composeTestRule
-      .onNodeWithText(measureReportIndividualResultList.first().title)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testPopulationResultItemRendersPercentageTextCorrectly() {
-    composeTestRule
-      .onNodeWithTag(
-        POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG,
-        useUnmergedTree = true
+      .onNodeWithText(
+        measureReportPopulationResultList.first().measureReportDenominator.toString().uppercase()
       )
-      .assertExists()
-    composeTestRule
-      .onAllNodesWithText("${measureReportIndividualResultList.first().percentage}%")
-      .assertCountEquals(2)
-  }
-
-  @Test
-  fun testPopulationResultItemRendersCountTextCorrectly() {
-    composeTestRule
-      .onNodeWithTag(POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-    composeTestRule
-      .onNodeWithText(measureReportIndividualResultList.first().count)
       .assertExists()
       .assertIsDisplayed()
   }

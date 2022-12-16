@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
+import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -72,7 +73,9 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   private var configService: ConfigService
 
-  private var syncBroadcaster: SyncBroadcaster
+  private lateinit var syncBroadcaster: SyncBroadcaster
+
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -84,14 +87,6 @@ class UserSettingViewModelTest : RobolectricTest() {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
-    syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        syncJob = mockk(),
-        fhirEngine = mockk(),
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
-        syncListenerManager = mockk(relaxed = true)
-      )
   }
 
   @Before
@@ -101,6 +96,15 @@ class UserSettingViewModelTest : RobolectricTest() {
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk()
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry,
+        fhirEngine = mockk(),
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        syncListenerManager = mockk(relaxed = true),
+        context = application
+      )
+
     userSettingViewModel =
       UserSettingViewModel(
         fhirEngine = fhirEngine,
@@ -114,7 +118,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData(application))
   }
 
   @Test

@@ -175,6 +175,7 @@ dependencies {
     api ("com.google.accompanist:accompanist-flowlayout:0.23.1")
     api ("com.google.accompanist:accompanist-placeholder:0.23.1")
     api("androidx.work:work-runtime-ktx:2.7.1")
+    testImplementation 'androidx.work:work-runtime-ktx:2.7.1'
     api("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
 
     def coroutineVersion = '1.6.2'
@@ -211,7 +212,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview6-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview9-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
     }
@@ -268,4 +269,5 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutineVersion")
+    testImplementation "androidx.work:work-testing:2.7.1"
 }
