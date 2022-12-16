@@ -354,7 +354,7 @@ constructor(
                 }
                 Timber.e("Failed to get the refresh token", it.stackTraceToString())
               }
-              .onSuccess { Timber.i("Got new access token") }
+              .onSuccess { Timber.i("Received new access token") }
           }
         }
       }
