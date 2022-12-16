@@ -89,7 +89,7 @@ class ProfileFragmentTest : RobolectricTest() {
         baseResource = patient,
         relatedResourcesMap = emptyMap(),
         computedValuesMap =
-          mapOf("patientName" to patient.name, "patientId" to patient.identifierFirstRep)
+          mapOf("patientName" to patient.name, "patientId" to patient.identifierFirstRep),
       )
   }
 

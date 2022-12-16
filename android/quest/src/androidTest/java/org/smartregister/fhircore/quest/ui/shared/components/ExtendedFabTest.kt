@@ -60,7 +60,10 @@ class ExtendedFabTest {
                 )
             )
           ),
-        resourceData = ResourceData(Patient()),
+        resourceData =
+          ResourceData(
+            Patient(),
+          ),
         navController = navController
       )
     }

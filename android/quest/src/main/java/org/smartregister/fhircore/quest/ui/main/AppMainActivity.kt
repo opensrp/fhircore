@@ -138,7 +138,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   override fun onSync(state: SyncJobStatus) {
-    Timber.e("Sync state is $state")
     when (state) {
       is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
       is SyncJobStatus.InProgress -> {

@@ -23,7 +23,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
-import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
@@ -55,7 +54,13 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
   @Test
   fun loadShouldReturnResults() {
     coEvery { reportRepository.retrievePatients(0) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          Faker.buildPatient(),
+          emptyMap(),
+          emptyMap(),
+        )
+      )
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null

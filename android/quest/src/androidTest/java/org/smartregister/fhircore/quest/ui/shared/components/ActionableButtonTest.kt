@@ -61,7 +61,10 @@ class ActionableButtonTest {
                   )
                 )
             ),
-          resourceData = ResourceData(Patient()),
+          resourceData =
+            ResourceData(
+              Patient(),
+            ),
           navController = navController
         )
       }

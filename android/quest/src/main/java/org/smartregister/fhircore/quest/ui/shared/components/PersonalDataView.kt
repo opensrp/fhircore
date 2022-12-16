@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowRow
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
@@ -115,7 +115,7 @@ fun PersonalDataViewPreview() {
 
   PersonalDataView(
     personalDataCardProperties = personalDataCardProperties,
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
