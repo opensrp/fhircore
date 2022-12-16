@@ -39,6 +39,7 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -94,6 +95,8 @@ constructor(
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
+
+  val periodicSyncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -312,6 +315,7 @@ constructor(
       ExistingPeriodicWorkPolicy.REPLACE,
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
+
     // Schedule job for generating measure report in the background
     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
 

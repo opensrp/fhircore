@@ -116,7 +116,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     syncBroadcaster.run {
       runSync()
-      schedulePeriodicSync()
+      schedulePeriodicSync(appMainViewModel.periodicSyncSharedFlow)
     }
   }
 
@@ -137,43 +137,48 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(state: SyncJobStatus) {
-    when (state) {
+  override fun onSync(syncJobStatus: SyncJobStatus) {
+    when (syncJobStatus) {
       is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
       is SyncJobStatus.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        Timber.d("Syncing in progress: Resource type ${syncJobStatus.resourceType?.name}")
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
+          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
         )
       }
       is SyncJobStatus.Glitch -> {
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
+          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Failed -> {
         val hasAuthError =
-          state.exceptions.any {
+          syncJobStatus.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
         val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
-            state,
+            syncJobStatus,
             if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
               appMainViewModel.retrieveLastSyncTimestamp()
             else getString(R.string.syncing_failed)
           )
         )
         if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
-        Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Finished -> {
         showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
-          onEvent(AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.timestamp)))
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              syncJobStatus,
+              formatLastSyncTimestamp(syncJobStatus.timestamp)
+            )
+          )
         }
       }
     }

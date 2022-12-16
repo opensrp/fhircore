@@ -25,7 +25,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @ExcludeFromJacocoGeneratedReport
 @AndroidEntryPoint
 class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
-  override fun onSync(state: SyncJobStatus) {
+  override fun onSync(syncJobStatus: SyncJobStatus) {
     // DO nothing. This activity implements OnSyncListener for testing purposes
   }
 }
