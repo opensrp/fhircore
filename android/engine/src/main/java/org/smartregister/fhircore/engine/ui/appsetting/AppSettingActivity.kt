@@ -35,7 +35,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -49,7 +48,6 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  @Inject lateinit var loginService: LoginService
   @Inject lateinit var libraryEvaluator: LibraryEvaluator
 
   val appSettingViewModel: AppSettingViewModel by viewModels()

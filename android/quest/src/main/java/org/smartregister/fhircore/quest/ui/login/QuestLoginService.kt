@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.login
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
+import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
@@ -27,6 +28,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.p2p.P2PLibrary
 
+@ActivityScoped
 class QuestLoginService
 @Inject
 constructor(
