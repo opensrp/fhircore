@@ -93,8 +93,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  @ApplicationContext val context: Context,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
