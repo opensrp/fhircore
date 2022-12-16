@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.mockk.spyk
@@ -30,12 +31,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
+import org.smartregister.fhircore.quest.ui.report.measure.screens.MONTH_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.PLEASE_WAIT_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorPage
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICKER_FORM_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_INDICATOR_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.TEST_MONTH_CLICK_TAG
+import org.smartregister.fhircore.quest.ui.report.measure.screens.YEAR_TEST_TAG
 
 class ReportTypeSelectorScreenTest {
 
@@ -153,6 +156,57 @@ class ReportTypeSelectorScreenTest {
       .assertExists()
       .performClick()
       .assertIsDisplayed()
+  }
+  @Test
+  fun testScreenTitleIsDisplayedCorrectly() {
+    composeTestRule.setContent {
+      FixedMonthYearListing(
+        screenTitle = "Measure Report",
+        onMonthSelected = mockRangeSelectListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = true
+      )
+    }
+    composeTestRule.onNodeWithText("Measure Report").assertExists().assertIsDisplayed()
+  }
+  @Test
+  fun testCorrectHeaderYearDisplayedCorrectly() {
+    composeTestRule.setContent {
+      FixedMonthYearListing(
+        screenTitle = "Measure Report",
+        onMonthSelected = mockRangeSelectListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = false
+      )
+    }
+    composeTestRule
+      .onNodeWithTag(YEAR_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .performClick()
+      .assertIsDisplayed()
+
+    composeTestRule.onNodeWithText("2022").assertExists().assertIsDisplayed()
+  }
+  @Test
+  fun testCorrectHeaderMonthDisplayedCorrectly() {
+    composeTestRule.setContent {
+      FixedMonthYearListing(
+        screenTitle = "Measure Report",
+        onMonthSelected = mockRangeSelectListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = false
+      )
+    }
+    composeTestRule
+      .onNodeWithTag(MONTH_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .performClick()
+      .assertIsDisplayed()
+
+    composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
   }
   private fun defaultDateRangeState() =
     androidx.core.util.Pair(
