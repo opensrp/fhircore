@@ -30,6 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
+import org.smartregister.fhircore.quest.ui.report.measure.screens.PLEASE_WAIT_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorPage
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICKER_FORM_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
@@ -136,6 +137,23 @@ class ReportTypeSelectorScreenTest {
       .assertIsDisplayed()
   }
 
+  @Test
+  fun testPleaseWaitDisplayedCorrectly() {
+    composeTestRule.setContent {
+      FixedMonthYearListing(
+        screenTitle = "Measure Report",
+        onMonthSelected = mockRangeSelectListener,
+        onBackPress = mockBackListener,
+        reportGenerationRange = dateRange,
+        showProgressIndicator = true
+      )
+    }
+    composeTestRule
+      .onNodeWithTag(PLEASE_WAIT_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .performClick()
+      .assertIsDisplayed()
+  }
   private fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),

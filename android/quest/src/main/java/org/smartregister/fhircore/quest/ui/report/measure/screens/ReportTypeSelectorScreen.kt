@@ -87,6 +87,7 @@ const val SHOW_FIXED_RANGE_TEST_TAG = "SHOW_FIXED_RANGE_TEST_TAG"
 const val SHOW_PROGRESS_INDICATOR_TAG = "SHOW_PROGRESS_INDICATOR_TAG"
 const val TEST_MONTH_CLICK_TAG = "TEST_MONTH_CLICK_TAG"
 const val SHOW_DATE_PICKER_FORM_TAG = "SHOW_DATE_PICKER_FORM_TAG"
+const val PLEASE_WAIT_TEST_TAG = "PLEASE_WAIT_TEST_TAG"
 
 @Composable
 fun ReportTypeSelectorScreen(
@@ -197,7 +198,7 @@ fun ReportTypeSelectorPage(
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
+                modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
               )
             }
           } else {
@@ -280,7 +281,7 @@ fun FixedMonthYearListing(
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
+                modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
               )
             }
           }
