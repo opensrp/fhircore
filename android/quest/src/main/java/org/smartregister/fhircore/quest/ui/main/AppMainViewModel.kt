@@ -30,8 +30,9 @@ import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.util.Date
@@ -85,14 +86,15 @@ class AppMainViewModel
 @Inject
 constructor(
   val accountAuthenticator: AccountAuthenticator,
-  val syncBroadcaster: SyncBroadcaster,
   val secureSharedPreference: SecureSharedPreference,
+  val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  @ApplicationContext val context: Context,
 ) : ViewModel() {
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
@@ -153,15 +155,12 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> {
-        syncBroadcaster.runSync()
-        retrieveAppMainUiState()
-      }
+      AppMainEvent.SyncData -> syncBroadcaster.runSync()
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
+              // syncBroadcaster.runSync()
               return@let
             }
             accountAuthenticator.logout()
@@ -171,11 +170,11 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished, is State.Failed -> {
-            if (event.state is State.Finished) {
+          is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            if (event.state is SyncJobStatus.Finished) {
               sharedPreferencesHelper.write(
                 SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                formatLastSyncTimestamp(event.state.result.timestamp)
+                formatLastSyncTimestamp(event.state.timestamp)
               )
             }
             retrieveAppMainUiState()
@@ -316,9 +315,7 @@ constructor(
       PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
     )
     // Schedule job for generating measure report in the background
-    MeasureReportWorker.scheduleMeasureReportWorker(
-      workManager,
-    )
+    MeasureReportWorker.scheduleMeasureReportWorker(workManager)
 
     FhirTaskExpireWorker.schedule(
       workManager,

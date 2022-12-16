@@ -40,7 +40,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
@@ -167,8 +167,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     registerViewModel.searchText.value = "" // Clear the search term
   }
 
-  override fun onSync(state: State) {
-    if (state is State.Finished || state is State.Failed) {
+  override fun onSync(state: SyncJobStatus) {
+    if (state is SyncJobStatus.Finished || state is SyncJobStatus.Failed) {
       with(registerFragmentArgs) {
         registerViewModel.run {
           // Clear pages cache to load new data

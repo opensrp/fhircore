@@ -32,6 +32,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -39,7 +40,8 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 class CoreModule {
   @Singleton
   @Provides
-  fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
+  fun provideSyncJob(@ApplicationContext context: Context) =
+    Sync.oneTimeSync<AppSyncWorker>(context)
 
   @Singleton
   @Provides
