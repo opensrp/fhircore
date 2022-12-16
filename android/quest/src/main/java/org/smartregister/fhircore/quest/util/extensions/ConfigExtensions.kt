@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.util.extensions
 
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -71,7 +72,13 @@ fun List<ActionConfig>.handleClickEvent(
             ),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
           )
-        navController.navigate(MainNavigationScreen.Home.route, args)
+
+        // Register is the entry point destination, clear back stack with every register switch
+        navController.navigate(
+          MainNavigationScreen.Home.route,
+          args,
+          navOptions(MainNavigationScreen.Home.route),
+        )
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
         val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
@@ -89,6 +96,12 @@ fun List<ActionConfig>.handleClickEvent(
     }
   }
 }
+
+/**
+ * Apply navigation options. Restrict destination to only use a single instance in the back stack.
+ */
+fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
+  NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
