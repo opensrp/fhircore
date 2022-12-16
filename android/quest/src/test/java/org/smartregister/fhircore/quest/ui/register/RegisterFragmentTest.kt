@@ -22,8 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -71,7 +70,7 @@ class RegisterFragmentTest : RobolectricTest() {
   @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testOnSyncState() {
-    val state = State.Finished(result = Result.Success())
+    val state = SyncJobStatus.Finished()
     coEvery { registerFragment.onSync(state) } just runs
     registerFragment.onSync(state = state)
     verify { registerFragment.onSync(state) }
