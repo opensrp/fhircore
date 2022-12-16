@@ -167,8 +167,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     registerViewModel.searchText.value = "" // Clear the search term
   }
 
-  override fun onSync(state: SyncJobStatus) {
-    if (state is SyncJobStatus.Finished || state is SyncJobStatus.Failed) {
+  override fun onSync(syncJobStatus: SyncJobStatus) {
+    if (syncJobStatus is SyncJobStatus.Finished || syncJobStatus is SyncJobStatus.Failed) {
       with(registerFragmentArgs) {
         registerViewModel.run {
           // Clear pages cache to load new data
