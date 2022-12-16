@@ -317,7 +317,6 @@ constructor(
     )
 
     //TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-    //Down the app
    /* // Schedule job for generating measure report in the background
     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
 
