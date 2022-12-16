@@ -23,6 +23,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
@@ -62,5 +63,17 @@ class RegisterScreenTest : RobolectricTest() {
     composeTestRule
       .onAllNodesWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
       .assertCountEquals(1)
+  }
+
+  @Test
+  fun checkNodeWithNoRegisterViewColumTestTag() {
+    composeTestRule
+      .onNodeWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
+      .onChildAt(0)
+      .assertExists()
+    composeTestRule
+      .onNodeWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
+      .onChildAt(1)
+      .assertExists()
   }
 }
