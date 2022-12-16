@@ -49,7 +49,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -164,7 +164,7 @@ fun ProfileScreen(
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
-          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          resourceData = profileUiState.resourceData,
           navController = navController
         )
       }
@@ -184,7 +184,8 @@ fun ProfileScreen(
       Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          resourceData = profileUiState.resourceData
+              ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
           navController = navController
         )
       }

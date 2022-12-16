@@ -58,7 +58,10 @@ class ProfileScreenTest {
     runBlocking {
       val profileUiState =
         ProfileUiState(
-          resourceData = ResourceData(Patient()),
+          resourceData =
+            ResourceData(
+              Patient(),
+            ),
           profileConfiguration =
             configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")
         )

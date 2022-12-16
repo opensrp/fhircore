@@ -82,7 +82,10 @@ class ProfileViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     expectedBaseResource = Faker.buildPatient()
-    resourceData = ResourceData(baseResource = expectedBaseResource)
+    resourceData =
+      ResourceData(
+        baseResource = expectedBaseResource,
+      )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
 
@@ -124,7 +127,10 @@ class ProfileViewModelTest : RobolectricTest() {
   fun testOnEventLaunchQuestionnaireWithQuestionnaireResponseFromDbShouldReturnQuestionnaireResponse() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
-    val resourceData = ResourceData(Patient().apply { id = "Patient/999" })
+    val resourceData =
+      ResourceData(
+        Patient().apply { id = "Patient/999" },
+      )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
@@ -171,7 +177,10 @@ class ProfileViewModelTest : RobolectricTest() {
   fun testOnEventLaunchQuestionnaireWhenQuestionnaireResponseFromDbIsNotFoundShouldReturnNullQuestionnaireResponse() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
-    val resourceData = ResourceData(Patient().apply { id = "Patient/999" })
+    val resourceData =
+      ResourceData(
+        Patient().apply { id = "Patient/999" },
+      )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
@@ -217,7 +226,10 @@ class ProfileViewModelTest : RobolectricTest() {
   fun testOnEventLaunchQuestionnaireWhenContextIsNotQuestionnaireHandler() {
     val context = mockk<Context>()
     val navController = NavController(context)
-    val resourceData = ResourceData(Patient().apply { id = "Patient/999" })
+    val resourceData =
+      ResourceData(
+        Patient().apply { id = "Patient/999" },
+      )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,

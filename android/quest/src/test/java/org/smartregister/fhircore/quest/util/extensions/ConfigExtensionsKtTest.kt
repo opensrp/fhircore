@@ -59,7 +59,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   private val resourceData by lazy {
     ResourceData(
       baseResource = patient,
-      computedValuesMap = mapOf("logicalId" to patient.id, "name" to patient.name)
+      computedValuesMap = mapOf("logicalId" to patient.id, "name" to patient.name),
     )
   }
 

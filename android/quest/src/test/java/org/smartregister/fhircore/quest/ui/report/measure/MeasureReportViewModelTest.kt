@@ -101,7 +101,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { measureReportRepository.retrievePatients(0) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          Faker.buildPatient(),
+          emptyMap(),
+          emptyMap(),
+        )
+      )
 
     measureReportViewModel =
       spyk(

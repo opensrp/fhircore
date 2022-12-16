@@ -45,7 +45,13 @@ class RegisterPagingSourceTest {
   @Test
   fun testLoadShouldReturnResults() {
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          Faker.buildPatient(),
+          emptyMap(),
+          emptyMap(),
+        )
+      )
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null

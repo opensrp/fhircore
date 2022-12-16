@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.util.extensions
 
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
-import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -56,7 +55,7 @@ fun List<ActionConfig>.handleClickEvent(
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
-              NavigationArg.RESOURCE_ID to resourceData?.baseResource?.logicalId,
+              NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
@@ -91,5 +90,5 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
-fun ViewProperties.clickable(resourceData: ResourceData) =
-  this.clickable.interpolate(resourceData.computedValuesMap).toBoolean()
+fun ViewProperties.clickable(ResourceData: ResourceData) =
+  this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()

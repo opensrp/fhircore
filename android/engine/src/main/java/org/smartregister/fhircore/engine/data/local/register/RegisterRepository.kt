@@ -135,7 +135,14 @@ constructor(
         relatedResourcesMap = relatedResourcesMap
       )
 
-    return ResourceData(baseResource, relatedResourcesMap, computedValuesMap)
+    // TODO Pre-compute rules for the all the LIST views used in the register
+    val listResourceData = emptyMap<String, List<ResourceData>>()
+    return ResourceData(
+      baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
+      baseResourceType = baseResource.resourceType,
+      computedValuesMap = computedValuesMap,
+      listResourceDataMap = listResourceData
+    )
   }
 
   /**

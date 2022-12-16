@@ -22,25 +22,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.placeholder
-import com.google.accompanist.placeholder.shimmer
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -51,10 +40,9 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
-  viewModel: ViewRendererViewModel = hiltViewModel(),
 ) {
-  var showPlaceholder by remember { mutableStateOf(true) }
-  val resources = resourceData.relatedResourcesMap[viewProperties.baseResource]
+  val currentListResourceData = remember { resourceData.listResourceDataMap[viewProperties.id] }
+
   Column(
     modifier =
       modifier
@@ -66,54 +54,18 @@ fun List(
           vertical = viewProperties.padding.div(4).dp
         )
   ) {
-    resources?.forEachIndexed { index, resource ->
-      // Retrieve available related resources proceed to compute rules
-      var listItemResourceData by remember { mutableStateOf(ResourceData(resource)) }
-
-      SideEffect {
-        val newRelatedResources =
-          viewProperties.relatedResources.associate {
-            Pair(
-              it.resourceType,
-              viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
-                resource = resource,
-                relatedResourceType = it.resourceType,
-                fhirPathExpression = it.fhirPathExpression,
-                resourceData = resourceData
-              )
-            )
-          }
-        val listComputedValuesMap =
-          viewModel.rulesFactory.fireRule(
-            ruleConfigs = viewProperties.registerCard.rules,
-            baseResource = resource,
-            relatedResourcesMap = newRelatedResources
-          )
-        showPlaceholder = false
-        // Include all the previously computed values from the provided resourceData for re-use
-        val allComputedValues = listComputedValuesMap.plus(resourceData.computedValuesMap)
-        listItemResourceData = ResourceData(resource, newRelatedResources, allComputedValues)
-      }
-
+    currentListResourceData?.forEachIndexed { index, listResourceData ->
       Column {
         Spacer(modifier = modifier.height(5.dp))
-        Box(
-          modifier =
-            modifier.placeholder(
-              visible = showPlaceholder,
-              highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White),
-              color = DefaultColor.copy(alpha = 0.15f),
-              shape = RoundedCornerShape(4.dp)
-            )
-        ) {
+        Box {
           ViewRenderer(
             viewProperties = viewProperties.registerCard.views,
-            resourceData = listItemResourceData,
+            resourceData = listResourceData,
             navController = navController,
           )
         }
         Spacer(modifier = modifier.height(5.dp))
-        if (index < resources.lastIndex && viewProperties.showDivider)
+        if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
           Divider(color = DividerColor, thickness = 0.5.dp)
       }
     }
