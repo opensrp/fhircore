@@ -397,7 +397,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val physicalInventoryCountQuestionnaireResponseString: String =
       "content/general/supply-chain/questionnaire-response-standard.json".readFile()
     val physicalInventoryCountStructureMap =
-      "content/general/supply-chain/physical _inventory _count_and_stock.map".readFile()
+      "content/general/supply-chain/physical_inventory_count_and_stock.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
