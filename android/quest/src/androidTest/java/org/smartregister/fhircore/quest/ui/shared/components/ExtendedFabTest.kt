@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -60,10 +61,7 @@ class ExtendedFabTest {
                 )
             )
           ),
-        resourceData =
-          ResourceData(
-            Patient(),
-          ),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = navController
       )
     }
