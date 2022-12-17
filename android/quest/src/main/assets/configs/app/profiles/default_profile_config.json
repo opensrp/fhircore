@@ -17,7 +17,13 @@
       },
       {
         "resource": "Task",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE"
+          }
+        ]
       }
     ]
   },
