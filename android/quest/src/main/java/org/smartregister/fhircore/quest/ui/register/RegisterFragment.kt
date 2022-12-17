@@ -80,7 +80,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     savedInstanceState: Bundle?
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
-    syncListenerManager.registerSyncListener(this, lifecycle)
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
@@ -166,6 +165,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         }
       }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onStop() {
