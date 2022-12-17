@@ -138,8 +138,7 @@ constructor(
   suspend fun addGroupMember(resource: Resource, groupResourceId: String) {
     defaultRepository.loadResource<Group>(groupResourceId)?.run {
       // Support all the valid group member references as per the FHIR specs
-      if (
-        resource.resourceType.isIn(
+      if (resource.resourceType.isIn(
           ResourceType.CareTeam,
           ResourceType.Device,
           ResourceType.Group,
@@ -177,13 +176,11 @@ constructor(
     }
 
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaire.useContext
-        .filter { it.hasValueCodeableConcept() }
-        .forEach {
-          it.valueCodeableConcept.coding.forEach { coding ->
-            questionnaireResponse.meta.addTag(coding)
-          }
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { coding ->
+          questionnaireResponse.meta.addTag(coding)
         }
+      }
 
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(
@@ -207,8 +204,7 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
-          if (
-            questionnaireConfig.type != QuestionnaireType.EDIT &&
+          if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
                 ResourceType.RelatedPerson
@@ -269,8 +265,7 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    if (
-      !questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
+    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
         !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
     ) {
       extractCqlOutput(questionnaire, questionnaireResponse, bundle)
@@ -447,9 +442,10 @@ constructor(
 
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
-        fetchStructureMap(structureMapUrl)
-      }
+      structureMapProvider =
+        { structureMapUrl: String, _: IWorkerContext ->
+          fetchStructureMap(structureMapUrl)
+        }
     }
 
     return structureMapProvider!!
