@@ -95,7 +95,7 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
 
-  val periodicSyncSharedFlow = MutableSharedFlow<SyncJobStatus>()
+  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -155,7 +155,7 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> syncBroadcaster.runSync()
+      AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->

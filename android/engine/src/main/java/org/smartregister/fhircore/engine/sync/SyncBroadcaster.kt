@@ -57,12 +57,11 @@ constructor(
   @ApplicationContext val context: Context,
 ) {
 
-  fun runSync() {
+  fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
-    val syncStateFlow = MutableSharedFlow<SyncJobStatus>()
     coroutineScope.launch {
-      syncStateFlow
+      syncSharedFlow
         .onEach {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
             onSyncListener.onSync(it)
@@ -73,7 +72,7 @@ constructor(
     }
 
     coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncStateFlow.emit(it) }
+      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
     }
   }
 

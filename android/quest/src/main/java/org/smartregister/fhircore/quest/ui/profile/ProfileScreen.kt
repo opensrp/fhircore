@@ -60,7 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import org.smartregister.fhircore.quest.util.extensions.showSnackBar
+import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -79,7 +79,7 @@ fun ProfileScreen(
   var showOverflowMenu by remember { mutableStateOf(false) }
 
   LaunchedEffect(Unit) {
-    snackStateFlow.showSnackBar(scaffoldState, profileUiState.resourceData, navController)
+    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
 
   Scaffold(
