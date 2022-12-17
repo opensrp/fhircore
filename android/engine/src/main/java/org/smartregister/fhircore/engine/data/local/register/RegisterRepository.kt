@@ -170,7 +170,7 @@ constructor(
   ) =
     views.retrieveListProperties().associate { viewProperties ->
 
-      // Retrieve baseResource for List, then the related resources then fire rules
+      // Retrieve baseResource for LIST, then the related resources then fire rules
       val resourceDataList =
         relatedResourcesMap[viewProperties.baseResource]?.map { resource ->
           val newRelatedResources =

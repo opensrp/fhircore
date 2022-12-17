@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -86,8 +87,9 @@ class ProfileFragmentTest : RobolectricTest() {
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any()) } returns
       ResourceData(
-        baseResource = patient,
-        relatedResourcesMap = emptyMap(),
+        baseResourceId = "resourceId",
+        baseResourceType = ResourceType.Patient,
+        listResourceDataMap = emptyMap(),
         computedValuesMap =
           mapOf("patientName" to patient.name, "patientId" to patient.identifierFirstRep),
       )
