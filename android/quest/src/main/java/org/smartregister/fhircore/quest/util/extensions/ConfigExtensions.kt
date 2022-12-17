@@ -75,9 +75,9 @@ fun List<ActionConfig>.handleClickEvent(
 
         // Register is the entry point destination, clear back stack with every register switch
         navController.navigate(
-          MainNavigationScreen.Home.route,
-          args,
-          navOptions(MainNavigationScreen.Home.route),
+          resId = MainNavigationScreen.Home.route,
+          args = args,
+          navOptions = navOptions(MainNavigationScreen.Home.route),
         )
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {

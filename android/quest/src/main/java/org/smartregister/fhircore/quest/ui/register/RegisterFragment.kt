@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,16 +46,21 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
-import org.smartregister.fhircore.quest.util.extensions.showSnackBar
+import retrofit2.HttpException
+import timber.log.Timber
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -101,7 +107,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         }
 
         LaunchedEffect(Unit) {
-          registerViewModel.snackBarStateFlow.showSnackBar(
+          registerViewModel.snackBarStateFlow.hookSnackBar(
             scaffoldState = scaffoldState,
             resourceData = null,
             navController = findNavController()
@@ -168,13 +174,57 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
-    if (syncJobStatus is SyncJobStatus.Finished || syncJobStatus is SyncJobStatus.Failed) {
-      with(registerFragmentArgs) {
-        registerViewModel.run {
-          // Clear pages cache to load new data
-          pagesDataCache.clear()
-          retrieveRegisterUiState(registerId, screenTitle)
+    when (syncJobStatus) {
+      is SyncJobStatus.Started ->
+        lifecycleScope.launch {
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(message = getString(R.string.syncing))
+          )
         }
+      is SyncJobStatus.Finished -> {
+        refreshRegisterData()
+        lifecycleScope.launch {
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(
+              message = getString(R.string.sync_completed),
+              actionLabel = getString(R.string.ok).uppercase(),
+              duration = SnackbarDuration.Long
+            )
+          )
+        }
+      }
+      is SyncJobStatus.Failed -> {
+        refreshRegisterData()
+        // Show error message in snackBar message
+        val hasAuthError =
+          syncJobStatus.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+        val messageResourceId =
+          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+        lifecycleScope.launch {
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(
+              message = getString(messageResourceId),
+              duration = SnackbarDuration.Long
+            )
+          )
+        }
+      }
+      else -> {
+        /* Do nothing*/
+      }
+    }
+  }
+
+  private fun refreshRegisterData() {
+    with(registerFragmentArgs) {
+      registerViewModel.run {
+        // Clear pages cache to load new data
+        pagesDataCache.clear()
+        retrieveRegisterUiState(registerId, screenTitle)
       }
     }
   }

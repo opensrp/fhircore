@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -115,8 +113,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
 
     syncBroadcaster.run {
-      runSync()
-      schedulePeriodicSync(appMainViewModel.periodicSyncSharedFlow)
+      with(appMainViewModel.syncSharedFlow) {
+        runSync(this)
+        schedulePeriodicSync(this)
+      }
     }
   }
 
@@ -139,9 +139,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
       is SyncJobStatus.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${syncJobStatus.resourceType?.name}")
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
         )
@@ -153,12 +151,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Failed -> {
-        val hasAuthError =
-          syncJobStatus.exceptions.any {
-            it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
-        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
-        showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             syncJobStatus,
@@ -167,11 +159,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             else getString(R.string.syncing_failed)
           )
         )
-        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
-        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Finished -> {
-        showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -180,6 +169,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             )
           )
         }
+      }
+      else -> {
+        /*Do nothing */
       }
     }
   }
