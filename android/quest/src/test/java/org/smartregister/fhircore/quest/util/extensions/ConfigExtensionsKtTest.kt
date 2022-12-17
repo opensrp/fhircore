@@ -19,11 +19,13 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -58,8 +60,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
 
   private val resourceData by lazy {
     ResourceData(
-      baseResource = patient,
+      baseResourceId = patient.logicalId,
+      baseResourceType = ResourceType.Patient,
       computedValuesMap = mapOf("logicalId" to patient.id, "name" to patient.name),
+      listResourceDataMap = emptyMap(),
     )
   }
 
@@ -110,7 +114,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       )
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    val navOptions = slot<NavOptions>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
     Assert.assertEquals(3, slotBundle.captured.size())
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
@@ -119,6 +124,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.OPEN_DRAWER,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
     )
+    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
   @Test

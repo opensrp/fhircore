@@ -84,7 +84,10 @@ class ProfileViewModelTest : RobolectricTest() {
     expectedBaseResource = Faker.buildPatient()
     resourceData =
       ResourceData(
-        baseResource = expectedBaseResource,
+        baseResourceId = expectedBaseResource.logicalId,
+        baseResourceType = expectedBaseResource.resourceType,
+        computedValuesMap = emptyMap(),
+        listResourceDataMap = emptyMap(),
       )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
@@ -110,12 +113,10 @@ class ProfileViewModelTest : RobolectricTest() {
     runBlocking { profileViewModel.retrieveProfileUiState("householdProfile", "sampleId") }
 
     assertNotNull(profileViewModel.profileUiState.value)
-    val actualPatient = profileViewModel.profileUiState.value.resourceData?.baseResource as Patient
-    assertNotNull(actualPatient)
-    assertEquals(expectedBaseResource.logicalId, actualPatient.logicalId)
-    assertEquals(expectedBaseResource.name[0].family, actualPatient.name[0].family)
-    assertEquals(expectedBaseResource.name[0].given, actualPatient.name[0].given)
-    assertEquals(expectedBaseResource.address[0].city, actualPatient.address[0].city)
+    val theResourceData = profileViewModel.profileUiState.value.resourceData
+    assertNotNull(theResourceData)
+    assertEquals(expectedBaseResource.logicalId, theResourceData.baseResourceId)
+    assertEquals(expectedBaseResource.resourceType, theResourceData.baseResourceType)
 
     val profileConfiguration = profileViewModel.profileUiState.value.profileConfiguration
     assertEquals("app", profileConfiguration?.appId)
@@ -129,7 +130,10 @@ class ProfileViewModelTest : RobolectricTest() {
     val navController = NavController(context)
     val resourceData =
       ResourceData(
-        Patient().apply { id = "Patient/999" },
+        baseResourceId = "Patient/999",
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = emptyMap(),
+        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
@@ -179,8 +183,12 @@ class ProfileViewModelTest : RobolectricTest() {
     val navController = NavController(context)
     val resourceData =
       ResourceData(
-        Patient().apply { id = "Patient/999" },
+        baseResourceId = "Patient/999",
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = emptyMap(),
+        listResourceDataMap = emptyMap(),
       )
+
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
@@ -228,7 +236,10 @@ class ProfileViewModelTest : RobolectricTest() {
     val navController = NavController(context)
     val resourceData =
       ResourceData(
-        Patient().apply { id = "Patient/999" },
+        baseResourceId = "Patient/999",
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = emptyMap(),
+        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(

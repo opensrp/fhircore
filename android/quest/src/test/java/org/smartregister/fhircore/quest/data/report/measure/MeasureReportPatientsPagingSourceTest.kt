@@ -24,12 +24,12 @@ import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
@@ -56,9 +56,10 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
     coEvery { reportRepository.retrievePatients(0) } returns
       listOf(
         ResourceData(
-          Faker.buildPatient(),
-          emptyMap(),
-          emptyMap(),
+          baseResourceId = "resourceId",
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+          listResourceDataMap = emptyMap(),
         )
       )
 
