@@ -60,7 +60,7 @@ constructor(
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
+  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =

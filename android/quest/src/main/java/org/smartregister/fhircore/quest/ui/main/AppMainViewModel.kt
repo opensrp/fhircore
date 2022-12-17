@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -316,13 +317,14 @@ constructor(
 
     // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
     /* // Schedule job for generating measure report in the background
-    MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+    */
 
     FhirTaskExpireWorker.schedule(
       workManager,
       sharedPreferencesHelper,
       applicationConfiguration.taskExpireJobRepeatIntervalMinutes
-    )*/
+    )
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
