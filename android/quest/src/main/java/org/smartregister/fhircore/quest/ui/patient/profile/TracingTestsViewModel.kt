@@ -260,6 +260,10 @@ constructor(
         TestItem(
           title = "D and H VL",
           questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json"
+        ),
+        TestItem(
+          title = "Next Appointment",
+          questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
         )
       )
   }

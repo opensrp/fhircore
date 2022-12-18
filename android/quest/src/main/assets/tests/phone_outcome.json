@@ -8,7 +8,7 @@
       "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/phone-tracing-outcome"
     }
   ],
-  "title": "Home Tracing Outcome",
+  "title": "Phone Tracing Outcome",
   "status": "active",
   "publisher": "mcore",
   "contact": [
@@ -76,13 +76,35 @@
             },
             {
               "valueCoding": {
+                "code": "patient-refused-visit",
+                "display": "Requested home visit"
+              }
+            },
+            {
+              "valueCoding": {
                 "code": "patient-refused-return",
-                "display": "patient refused to return"
+                "display": "Refused to return"
               }
             }
           ]
         },
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
           "linkId": "date-of-agreed-appointment",
           "text": "<b>ENTER</b> Date of agreed clinic Appointment",
           "type": "date",
@@ -99,6 +121,22 @@
           "required": true
         },
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
           "linkId": "date-of-iac",
           "text": "<b>ENTER</b> Date of IAC was provided",
           "type": "date",
@@ -129,15 +167,629 @@
           "enableBehavior": "all",
           "item": [
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
               "linkId": "date-of-agreed-appointment",
               "text": "<b>ENTER</b> Date of agreed clinic Appointment",
               "type": "date",
               "required": true
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "district",
+              "text": "Where did they transfer to? <b>Select</b> District",
+              "type": "choice",
+              "required": true,
+              "enableWhen": [
+                {
+                  "question": "tracing-outcome",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "transfer-out"
+                  }
+                }
+              ],
+              "enableBehavior": "all",
+              "answerOption": [
+                {
+                  "valueString": "Balaka"
+                },
+                {
+                  "valueString": "Blantyre"
+                },
+                {
+                  "valueString": "Chikwawa"
+                },
+                {
+                  "valueString": "Chiradzulu"
+                },
+                {
+                  "valueString": "Chitipa"
+                },
+                {
+                  "valueString": "Dedza"
+                },
+                {
+                  "valueString": "Dowa"
+                },
+                {
+                  "valueString": "Karonga"
+                },
+                {
+                  "valueString": "Kasungu"
+                },
+                {
+                  "valueString": "Likoma"
+                },
+                {
+                  "valueString": "Lilongwe"
+                },
+                {
+                  "valueString": "Machinga"
+                },
+                {
+                  "valueString": "Mangochi"
+                },
+                {
+                  "valueString": "Mchinji"
+                },
+                {
+                  "valueString": "Mozambique"
+                },
+                {
+                  "valueString": "Mulanje"
+                },
+                {
+                  "valueString": "Mwanza"
+                },
+                {
+                  "valueString": "Mzimba"
+                },
+                {
+                  "valueString": "Neno"
+                },
+                {
+                  "valueString": "Nkhata Bay"
+                },
+                {
+                  "valueString": "Nkhotakota"
+                },
+                {
+                  "valueString": "Nsanje"
+                },
+                {
+                  "valueString": "Ntcheu"
+                },
+                {
+                  "valueString": "Ntchisi"
+                },
+                {
+                  "valueString": "Phalombe"
+                },
+                {
+                  "valueString": "Rumphi"
+                },
+                {
+                  "valueString": "Salima"
+                },
+                {
+                  "valueString": "Thyolo"
+                },
+                {
+                  "valueString": "Zomba"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-balaka",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Balaka"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Adamu"
+                },
+                {
+                  "valueString": "Amonitsute"
+                },
+                {
+                  "valueString": "Bulusi"
+                },
+                {
+                  "valueString": "Chauluka"
+                },
+                {
+                  "valueString": "Chidalala"
+                },
+                {
+                  "valueString": "Chikalogwe"
+                },
+                {
+                  "valueString": "Chikololele"
+                },
+                {
+                  "valueString": "Chikuse"
+                },
+                {
+                  "valueString": "Chimatiro"
+                },
+                {
+                  "valueString": "Chimkwakwa"
+                },
+                {
+                  "valueString": "Chimpakati"
+                },
+                {
+                  "valueString": "Chimtendere"
+                },
+                {
+                  "valueString": "Chingagwe"
+                },
+                {
+                  "valueString": "Chipochera"
+                },
+                {
+                  "valueString": "Chitala"
+                },
+                {
+                  "valueString": "Chiyembekezo"
+                },
+                {
+                  "valueString": "Damu"
+                },
+                {
+                  "valueString": "Domoka"
+                },
+                {
+                  "valueString": "Hanjahanja"
+                },
+                {
+                  "valueString": "James"
+                },
+                {
+                  "valueString": "Joshua"
+                },
+                {
+                  "valueString": "Kachikuni"
+                },
+                {
+                  "valueString": "Kadyalunda"
+                },
+                {
+                  "valueString": "Kalimba"
+                },
+                {
+                  "valueString": "Kampeni"
+                },
+                {
+                  "valueString": "Kandengwe"
+                },
+                {
+                  "valueString": "Kanyumbaaka"
+                },
+                {
+                  "valueString": "Kapalamula"
+                },
+                {
+                  "valueString": "Kapire"
+                },
+                {
+                  "valueString": "Katuma"
+                },
+                {
+                  "valueString": "Kaumphawi"
+                },
+                {
+                  "valueString": "Kayinga"
+                },
+                {
+                  "valueString": "Khoswe"
+                },
+                {
+                  "valueString": "Khwalala"
+                },
+                {
+                  "valueString": "Khwisa"
+                },
+                {
+                  "valueString": "Liwiza"
+                },
+                {
+                  "valueString": "Liwonde"
+                },
+                {
+                  "valueString": "Lupanga"
+                },
+                {
+                  "valueString": "Mackenzie"
+                },
+                {
+                  "valueString": "Majawa"
+                },
+                {
+                  "valueString": "Majo"
+                },
+                {
+                  "valueString": "Makoloje"
+                },
+                {
+                  "valueString": "Maliwata"
+                },
+                {
+                  "valueString": "Matola"
+                },
+                {
+                  "valueString": "Mbodzoole"
+                },
+                {
+                  "valueString": "Mchenga"
+                },
+                {
+                  "valueString": "Mchirakwenda"
+                },
+                {
+                  "valueString": "Mgwira"
+                },
+                {
+                  "valueString": "Mitochi"
+                },
+                {
+                  "valueString": "Mlandula"
+                },
+                {
+                  "valueString": "M'Manga"
+                },
+                {
+                  "valueString": "Mpezeni"
+                },
+                {
+                  "valueString": "Mponda"
+                },
+                {
+                  "valueString": "Mpoto"
+                },
+                {
+                  "valueString": "Mpulula"
+                },
+                {
+                  "valueString": "Mtalika"
+                },
+                {
+                  "valueString": "Mwalero"
+                },
+                {
+                  "valueString": "Mzati"
+                },
+                {
+                  "valueString": "Ngomano"
+                },
+                {
+                  "valueString": "Ng'Onga"
+                },
+                {
+                  "valueString": "Ngwalo"
+                },
+                {
+                  "valueString": "Njede"
+                },
+                {
+                  "valueString": "Ntonya"
+                },
+                {
+                  "valueString": "Petulo"
+                },
+                {
+                  "valueString": "Phalula"
+                },
+                {
+                  "valueString": "Pilitu"
+                },
+                {
+                  "valueString": "Sawali"
+                },
+                {
+                  "valueString": "Siliya"
+                },
+                {
+                  "valueString": "Sosola"
+                },
+                {
+                  "valueString": "Tembo"
+                },
+                {
+                  "valueString": "Toleza"
+                },
+                {
+                  "valueString": "Uli"
+                },
+                {
+                  "valueString": "Zammimba"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-machinga",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Machinga"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chamba Dispensary"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-mangochi",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Mangochi"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Assalaam Clinic"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-phalombe",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Phalombe"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chiringa Maternity"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "tracing-catchment-salima",
+              "text": "* <b>SELECT</b> Tracing Catchment",
+              "type": "choice",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Salima"
+                }
+              ],
+              "enableBehavior": "any",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Chinguluwe Health Centre"
+                }
+              ]
+            },
+            {
               "linkId": "document-out",
               "type": "display",
-              "text": "Document date of Transfer out in the EMR, Master Card and ART Facility Register"
+              "text": "<h1>Action: Notify site supervisor to alert the other site to enter the client in their appointment register</h1>",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Balaka"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Machinga"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Mangochi"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Phalombe"
+                },
+                {
+                  "question": "district",
+                  "operator": "=",
+                  "answerString": "Salima"
+                }
+              ],
+              "enableBehavior": "any"
+            },
+            {
+              "linkId": "document-out",
+              "type": "display",
+              "text": "<h1>Write: date of Transfer out in the EMR, Master Card and ART Facility Register</h1>",
+              "enableWhen": [
+                {
+                  "question": "district",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all"
+            }
+          ]
+        },
+        {
+          "linkId": "refused-visit-group",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "tracing-outcome",
+              "operator": "=",
+              "answerCoding": {
+                "code": "patient-refused-visit"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "linkId": "date-of-visit",
+              "text": "<b>ENTER</b> Date of home visit",
+              "type": "date",
+              "required": true
+            },
+            {
+              "linkId": "doc-out",
+              "type": "display",
+              "text": "<h1>This person will be added to the home tracing list</h1>",
+              "enableWhen": [
+                {
+                  "question": "date-of-visit",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "any"
             }
           ]
         },
@@ -156,6 +808,22 @@
           "enableBehavior": "all",
           "item": [
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
               "linkId": "date-of-refusal",
               "text": "<b>ENTER</b> Date of refusal",
               "type": "date",
@@ -168,15 +836,23 @@
               "text": "Did the patient agree to speak with a psychosocial counsellor?"
             },
             {
-              "linkId": "notify-supervisor",
+              "linkId": "notify-supervisor-yes",
               "type": "display",
-              "text": "Notify the Site Supervisor of this issue",
+              "text": "<h1>Notify the Site Supervisor of this patient's refusal to return and willingness to speak to a psychosocial counsellor</h1>",
               "enableWhen": [
                 {
                   "question": "psychosocial-counselling",
                   "operator": "=",
                   "answerBoolean": true
-                },
+                }
+              ],
+              "enableBehavior": "any"
+            },
+            {
+              "linkId": "notify-supervisor-no",
+              "type": "display",
+              "text": "<h1>Notify the Site Supervisor of this patient's refusal to return and refusal to speak to a psychosocial counsellor</h1>",
+              "enableWhen": [
                 {
                   "question": "psychosocial-counselling",
                   "operator": "=",
@@ -237,7 +913,7 @@
             {
               "valueCoding": {
                 "code": "patient-busy",
-                "display": "Patient Was busy"
+                "display": "They were busy"
               }
             },
             {
@@ -254,8 +930,14 @@
             },
             {
               "valueCoding": {
-                "code": "patient-died",
-                "display": "Patient Died"
+                "code": "deceased",
+                "display": "Deceased"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no-tracing-required",
+                "display": "Error, this person does not require tracing"
               }
             }
           ]
@@ -263,7 +945,7 @@
         {
           "linkId": "call-again",
           "type": "display",
-          "text": "Call the patient at a different time",
+          "text": "<h1>Action: Call the patient at a different time</h1>",
           "enableWhen": [
             {
               "question": "reason-for-no-tracing",
@@ -292,7 +974,7 @@
         {
           "linkId": "remove-phone",
           "type": "display",
-          "text": "Patient will be removed from the phone tracing list and added to the Home Tracing",
+          "text": "<h1>This person will be removed from the phone tracing list and added to the home tracing list</h1>",
           "enableWhen": [
             {
               "question": "reason-for-no-tracing",
@@ -312,19 +994,88 @@
           "enableBehavior": "any"
         },
         {
-          "linkId": "patient-to-remove",
-          "type": "display",
-          "text": "Patient will be removed from the client list",
+          "linkId": "deceased-group",
+          "type": "group",
           "enableWhen": [
             {
               "question": "reason-for-no-tracing",
               "operator": "=",
               "answerCoding": {
-                "code": "patient-died"
+                "code": "deceased"
               }
             }
           ],
-          "enableBehavior": "all"
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "death-date-known",
+              "type": "boolean",
+              "text": "Do you know when they died?"
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "_valueDate": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                        "valueExpression": {
+                          "language": "text/fhirpath",
+                          "expression": "today()"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "linkId": "date-of-death",
+              "text": "<b>ENTER:</b> date of death",
+              "type": "date",
+              "required": true,
+              "enableWhen": [
+                {
+                  "question": "death-date-known",
+                  "operator": "=",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all"
+            },
+            {
+              "linkId": "patient-to-remove",
+              "type": "display",
+              "text": "<h1>This person will be removed from the client list</h1>",
+              "enableWhen": [
+                {
+                  "question": "death-date-known",
+                  "operator": "=",
+                  "answerBoolean": false
+                },
+                {
+                  "question": "date-of-death",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "any"
+            }
+          ]
+        },
+        {
+          "linkId": "does-not-require-tracing",
+          "type": "display",
+          "text": "<h1>This person will be removed from the tracing list</h1>",
+          "enableWhen": [
+            {
+              "question": "reason-for-no-tracing",
+              "operator": "=",
+              "answerCoding": {
+                "code": "no-tracing-required"
+              }
+            }
+          ],
+          "enableBehavior": "any"
         }
       ]
     }

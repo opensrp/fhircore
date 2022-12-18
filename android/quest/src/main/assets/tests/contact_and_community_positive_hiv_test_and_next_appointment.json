@@ -1,0 +1,681 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "contact-and-community-positive-hiv-test-and-next-appointment",
+  "meta": {
+    "versionId": "22",
+    "lastUpdated": "2022-10-31T23:50:44.555+03:00",
+    "source": "#pLaw3C4qrmpE2TLM"
+  },
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/contact-and-community-positive-hiv-test-and-next-appointment"
+    }
+  ],
+  "title": "HIV Test and Next Appointment",
+  "status": "active",
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "hiv-test-location",
+      "text": "* <b>SELECT</b> the HIV test location",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "community",
+            "display": "Community"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "facility",
+            "display": "Facility"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "hiv-test-type",
+      "text": "* <b>SELECT</b> HIV Test Type",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "test-location",
+          "operator": "=",
+          "answerCoding": {
+            "code": "facility"
+          }
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "dbs",
+            "display": "DBS"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "rapid",
+            "display": "Rapid"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "facility-hts-number",
+      "text": "* <b>ENTER:</b> Facility HTS Number",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "hiv-test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        },
+        {
+          "question": "hiv-test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "rapid"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "dbs-sample-id",
+      "text": "* <b>ENTER:</b> DBS Sample ID",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "hiv-test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "dbs-results-known",
+      "text": "* Are DBS results known?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "hiv-test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "facility-hiv-test-results",
+      "text": "* <b>SELECT:</b> HIV Test Results",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "dbs-results-known",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "negative",
+            "display": "Negative"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "positive",
+            "display": "Positive"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "invalid",
+            "display": "Invalid"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "missing",
+            "display": "Missing"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "negative-result",
+      "text": "<b>Explain:</b> We have services that could help you remain negative such as PrEP, condoms, VMMC etc. I am happy to escort you to the ones that provide this service.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "negative"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "prep-consent",
+      "text": "* <b>ASK:</b> Would you like me to escort you to receive PrEP?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "negative"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "receive-prep",
+      "text": "<b>Action:</b> Escort client to  receive PrEP",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "prep-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "positive-result",
+      "text": "<b>Explain:</b> Your results are positive.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "positive"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "positive-result-action",
+      "text": "<font color=red>This patient will now be converted to a Newly Diagnosed Client.</font> <br><b>Action:</b> <font color=red>Provide ICT after saving this information</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "positive"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "invalid-result",
+      "text": "<b>Explain:</b> Your HIV test results are unknown. You will have to come to the clinic on a different day to conduct an HIV test.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "hiv-test-invalid-result-consent",
+      "text": "* Does client consent to come to the clinic for another HIV test?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "appointment-date",
+      "text": "* <b>ENTER:</b> date of appointment at the facility",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "hiv-test-invalid-result-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "missing-result",
+      "text": "<b>Explain:</b> Your results are missing",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "missing"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "hiv-test-missing-result-consent",
+      "text": "* Does client consent to come to have another HIV test conducted?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "facility-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "missing"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "appointment-date-missing",
+      "text": "* <b>ENTER:</b> date of appointment at the facility",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "hiv-test-missing-result-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "community-hiv-test",
+      "text": "* <b>ENTER</b> Date of community HIV test",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "hiv-test-location",
+          "operator": "=",
+          "answerCoding": {
+            "code": "community"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "hts-number",
+      "text": "* <b>ENTER</b> HTS number given at community",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "hiv-test-location",
+          "operator": "=",
+          "answerCoding": {
+            "code": "community"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "community-hiv-test-results",
+      "text": "* What are the Community HIV Test Results?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "hiv-test-location",
+          "operator": "=",
+          "answerCoding": {
+            "code": "community"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "negative",
+            "display": "Negative"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "positive",
+            "display": "Positive"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "invalid",
+            "display": "Invalid"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "community-positive-result",
+      "text": "<b>TELL THE CLIENT:</b> You have a positive HIV test result. You need an appointment at the clinic to verify these results.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "community-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "positive"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "community-positive-consent",
+      "text": "* Does client consent to come to the clinic for another HIV test?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "community-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "positive"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "facility-next-appointment-date",
+      "text": "* <b>ENTER</b> date of appointment at the facility",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "community-positive-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "community-invalid-result",
+      "text": "<b>TELL THE CLIENT:</b> You have an invalid HIV test result. You need an appointment at the clinic to know your HIV status.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "community-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "community-invalid-consent",
+      "text": "* Does client consent to come to the clinic for another HIV test?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "community-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "facility-next-appointment-date-invalid",
+      "text": "* <b>ENTER</b> date of appointment at the facility",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "community-invalid-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "linkId": "page-details",
+      "text": "<b>Write:</b>  the HIV test information in the health passport and HTS register Write:  the HIV test information in the health passport, DBS register  and HTS register",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "community-hiv-test-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "negative"
+          }
+        },
+        {
+          "question": "community-positive-consent",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "facility-next-appointment-date-invalid",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "dbs-results-known",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "receive-prep",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "prep-consent",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "positive-result-action",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "hiv-test-invalid-result-consent",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "appointment-date",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "hiv-test-missing-result-consent",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "facility-next-appointment-date",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "linkId": "page-details-missing",
+      "text": "<b>Write:</b>  the HIV test information in the health passport",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "hiv-test-missing-result-consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.identifier.value"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-identifier-value",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Practitioner.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "practitioner-id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Practitioner.name[0].family+' '+Practitioner.name[0].given[0]"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "practitioner-fullname",
+      "type": "string",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.telecom.where(system = 'phone').exists()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-has-phone",
+      "type": "boolean"
+    }
+  ]
+}
