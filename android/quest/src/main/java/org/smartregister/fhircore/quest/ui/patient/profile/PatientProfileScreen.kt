@@ -269,9 +269,10 @@ fun PatientProfileScreen(
           shape = RectangleShape,
           onClick = {
             patientProfileViewModel.onEvent(
-              PatientProfileEvent.LoadQuestionnaire(
-                PatientProfileViewModel.PATIENT_FINISH_VISIT,
-                context
+              PatientProfileEvent.OpenTaskForm(
+                context = context,
+                taskFormId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
+                taskId = PatientProfileViewModel.PATIENT_FINISH_VISIT
               )
             )
           },
