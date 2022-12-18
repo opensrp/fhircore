@@ -28,7 +28,9 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -50,6 +52,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -62,6 +65,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.*
+import org.smartregister.fhircore.engine.util.*
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
@@ -471,6 +476,13 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadTracing(patientId: String): List<Task> {
+    val tasks = fhirEngine.search<Task> {
+      filter(Task.SUBJECT, { value = patientId })
+    }
+    return tasks
+  }
+
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
@@ -499,6 +511,16 @@ constructor(
         resourcesList.add(this)
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+
+      if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
+        val tasks = loadTracing(patientId)
+        val bundle = Bundle()
+        tasks.forEach {
+          bundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
+        }
+        resourcesList.add(bundle)
+      }
+
 
       // for situations where patient RelatedPersons not passed through intent extras
       if (resourcesList.none { it.resourceType == ResourceType.RelatedPerson }) {
