@@ -19,22 +19,24 @@ package org.smartregister.fhircore.engine.domain.model
 import androidx.compose.runtime.Stable
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * Represent the resource types that are used on a Register.
- * @property baseResource is the main resource used on the register
- * @property relatedResourcesMap are the other/extra resources accompanying the [baseResource]. For
- * each [baseResource] return associated [relatedResourcesMap].
- * @property computedValuesMap Contains data extracted from the resources to be used on the UI
+ * @property baseResourceId is the unique identifier for the main resource in the register
+ * @property baseResourceType is the [ResourceType] for the main resource
+ * @property computedValuesMap contains data extracted from the resources to be used on the UI
+ * @property listResourceDataMap a map containing the pre-computed values for LIST views used
  *
  * For example. For every Patient resource we return also their Immunization and Observation
- * resources
+ * resources but precompute the values needed by firing the configured rules.
  */
 @Stable
 data class ResourceData(
-  val baseResource: Resource,
-  val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
-  val computedValuesMap: Map<String, Any> = emptyMap()
+  val baseResourceId: String,
+  val baseResourceType: ResourceType,
+  val computedValuesMap: Map<String, Any>,
+  val listResourceDataMap: Map<String, List<ResourceData>>
 )
 
 /**

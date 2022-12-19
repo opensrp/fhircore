@@ -19,10 +19,10 @@ package org.smartregister.fhircore.engine.sync
 import com.google.android.fhir.sync.SyncJobStatus
 
 /**
- * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
- * [State].
+ * An interface the exposes a callback method [onSync] which accepts an application level FHIR
+ * [SyncJobStatus].
  */
 interface OnSyncListener {
-  /** Callback method invoked to handle sync [state] */
-  fun onSync(state: SyncJobStatus)
+  /** Callback method invoked to handle sync [SyncJobStatus] */
+  fun onSync(syncJobStatus: SyncJobStatus)
 }

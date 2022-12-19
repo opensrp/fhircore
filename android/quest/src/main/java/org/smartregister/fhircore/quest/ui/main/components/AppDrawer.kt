@@ -118,7 +118,7 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(modifier, appUiState, onSideMenuClick)
+      NavBottomSection(modifier, appUiState, onSideMenuClick, openDrawer)
     },
     backgroundColor = SideMenuDarkColor
   ) { innerPadding ->
@@ -172,7 +172,8 @@ fun AppDrawer(
 private fun NavBottomSection(
   modifier: Modifier,
   appUiState: AppMainUiState,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  openDrawer: (Boolean) -> Unit
 ) {
   Box(
     modifier =
@@ -188,7 +189,10 @@ private fun NavBottomSection(
       endText = appUiState.lastSyncTime,
       showEndText = true,
       endTextColor = SubtitleTextColor
-    ) { onSideMenuClick(AppMainEvent.SyncData) }
+    ) {
+      openDrawer(false)
+      onSideMenuClick(AppMainEvent.SyncData)
+    }
   }
 }
 
