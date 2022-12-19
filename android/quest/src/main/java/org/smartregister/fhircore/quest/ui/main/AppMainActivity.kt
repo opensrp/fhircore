@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -74,8 +72,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
       topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
-    syncListenerManager.registerSyncListener(this, lifecycle)
-
     navHostFragment =
       NavHostFragment.create(
         R.navigation.application_nav_graph,
@@ -115,9 +111,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
 
     syncBroadcaster.run {
-      runSync()
-      schedulePeriodicSync()
+      with(appMainViewModel.syncSharedFlow) {
+        runSync(this)
+        schedulePeriodicSync(this)
+      }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -137,32 +140,23 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(state: SyncJobStatus) {
-    Timber.e("Sync state is $state")
-    when (state) {
-      is SyncJobStatus.Started -> showToast(getString(R.string.syncing))
+  override fun onSync(syncJobStatus: SyncJobStatus) {
+    when (syncJobStatus) {
       is SyncJobStatus.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
+          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
         )
       }
       is SyncJobStatus.Glitch -> {
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
+          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Failed -> {
-        val hasAuthError =
-          state.exceptions.any {
-            it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
-        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
-        showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
-            state,
+            syncJobStatus,
             if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
               appMainViewModel.retrieveLastSyncTimestamp()
             else getString(R.string.syncing_failed)
@@ -174,10 +168,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Finished -> {
-        showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
-          onEvent(AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.timestamp)))
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              syncJobStatus,
+              formatLastSyncTimestamp(syncJobStatus.timestamp)
+            )
+          )
         }
+      }
+      else -> {
+        /*Do nothing */
       }
     }
   }

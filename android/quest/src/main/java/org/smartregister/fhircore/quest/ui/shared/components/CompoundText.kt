@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowRow
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
@@ -174,7 +174,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryTextColor = "#000000",
           primaryTextFontWeight = TextFontWeight.SEMI_BOLD
         ),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController
     )
     CompoundText(
@@ -183,7 +183,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
         ),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController
     )
   }
@@ -197,7 +197,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController
     )
     SpacerView(spacerProperties = SpacerProperties(viewType = ViewType.SPACER, width = 8f))
@@ -211,7 +211,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
           separator = ".",
           secondaryTextBackgroundColor = "#FFA500"
         ),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController
     )
   }

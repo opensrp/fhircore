@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.quest.util.mappers
 
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Before
@@ -42,11 +42,15 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToOutputModelPatient() {
+    val samplePatient =
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
+        Patient
     val dto =
       ResourceData(
-        baseResource =
-          "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
-            Patient
+        baseResourceId = samplePatient.logicalId,
+        baseResourceType = samplePatient.resourceType,
+        computedValuesMap = emptyMap(),
+        listResourceDataMap = emptyMap()
       )
     val profileViewDataHiv = measureReportPatientViewDataMapper.transformInputToOutputModel(dto)
     with(profileViewDataHiv) {
