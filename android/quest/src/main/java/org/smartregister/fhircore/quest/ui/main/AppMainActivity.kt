@@ -24,7 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -83,37 +83,37 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     appMainViewModel.retrieveAppMainUiState()
   }
 
-  override fun onSync(state: State) {
+  override fun onSync(state: SyncJobStatus) {
     Timber.i("Sync state received is $state")
     when (state) {
-      is State.Started -> {
+      is SyncJobStatus.Started -> {
         showToast(getString(R.string.syncing))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
         )
       }
-      is State.InProgress -> {
+      is SyncJobStatus.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
         )
       }
-      is State.Glitch -> {
+      is SyncJobStatus.Glitch -> {
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
-      is State.Failed -> {
-        if (state.result.exceptions.isNotEmpty() &&
-            state.result.exceptions.first().resourceType == ResourceType.Flag
+      is SyncJobStatus.Failed -> {
+        if (state.exceptions.isNotEmpty() &&
+            state.exceptions.first().resourceType == ResourceType.Flag
         ) {
-          showToast(state.result.exceptions.first().exception.message!!)
+          showToast(state.exceptions.first().exception.message!!)
           return
         }
         showToast(getString(R.string.sync_failed_text))
         val hasAuthError =
-          state.result.exceptions.any {
+          state.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
         val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
@@ -131,22 +131,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent) }
           )
         }
-        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
+        Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
         scheduleFhirTaskStatusUpdater()
       }
-      is State.Finished -> {
+      is SyncJobStatus.Finished -> {
         showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
               state,
-              getString(
-                R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.result.timestamp)
-              )
+              getString(R.string.last_sync_timestamp, formatLastSyncTimestamp(state.timestamp))
             )
           )
-          updateLastSyncTimestamp(state.result.timestamp)
+          updateLastSyncTimestamp(state.timestamp)
         }
         scheduleFhirTaskStatusUpdater()
       }

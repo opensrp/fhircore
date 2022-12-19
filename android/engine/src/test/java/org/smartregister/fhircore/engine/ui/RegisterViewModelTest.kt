@@ -74,7 +74,6 @@ class RegisterViewModelTest : RobolectricTest() {
     viewModel =
       RegisterViewModel(
         fhirEngine = fhirEngine,
-        syncJob = mockk(),
         fhirResourceDataSource = mockk(),
         configurationRegistry = configurationRegistry,
         configService = configService,

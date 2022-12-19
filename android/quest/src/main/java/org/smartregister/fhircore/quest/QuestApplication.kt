@@ -20,9 +20,11 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -33,7 +35,10 @@ import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifecycleObserver {
+class QuestApplication :
+  Application(), DataCaptureConfig.Provider, DefaultLifecycleObserver, Configuration.Provider {
+
+  @Inject lateinit var workerFactory: HiltWorkerFactory
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
@@ -112,4 +117,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
       )
     }
   }
+
+  override fun getWorkManagerConfiguration(): Configuration =
+    Configuration.Builder()
+      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setWorkerFactory(workerFactory)
+      .build()
 }

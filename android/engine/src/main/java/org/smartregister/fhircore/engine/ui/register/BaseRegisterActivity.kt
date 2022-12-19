@@ -44,7 +44,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
 import dagger.Lazy
@@ -150,9 +150,9 @@ abstract class BaseRegisterActivity :
     sideMenuOptions().forEach { updateCount(it) }
   }
 
-  private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
+  private fun BaseRegisterActivityBinding.updateSyncStatus(state: SyncJobStatus) {
     when (state) {
-      is State.Started, is State.InProgress -> {
+      is SyncJobStatus.Started, is SyncJobStatus.InProgress -> {
         progressSync.show()
         tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
         containerProgressSync.apply {
@@ -160,8 +160,8 @@ abstract class BaseRegisterActivity :
           setOnClickListener(null)
         }
       }
-      is State.Finished, is State.Failed -> setLastSyncTimestamp(state)
-      is State.Glitch -> {
+      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> setLastSyncTimestamp(state)
+      is SyncJobStatus.Glitch -> {
         progressSync.hide()
         val lastSyncTimestamp =
           sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
@@ -174,11 +174,11 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  private fun BaseRegisterActivityBinding.setLastSyncTimestamp(state: State) {
+  private fun BaseRegisterActivityBinding.setLastSyncTimestamp(state: SyncJobStatus) {
     val syncTimestamp =
       when (state) {
-        is State.Finished -> state.result.timestamp.asString()
-        is State.Failed -> state.result.timestamp.asString()
+        is SyncJobStatus.Finished -> state.timestamp.asString()
+        is SyncJobStatus.Failed -> state.timestamp.asString()
         else -> ""
       }
     progressSync.hide()
@@ -380,24 +380,24 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  override fun onSync(state: State) {
+  override fun onSync(state: SyncJobStatus) {
     Timber.i("Sync state received is $state")
     when (state) {
-      is State.Started -> {
+      is SyncJobStatus.Started -> {
         showToast(getString(R.string.syncing))
         registerActivityBinding.updateSyncStatus(state)
       }
-      is State.Failed, is State.Glitch -> {
+      is SyncJobStatus.Failed, is SyncJobStatus.Glitch -> {
         handleSyncFailed(state)
       }
-      is State.Finished -> {
+      is SyncJobStatus.Finished -> {
         showToast(getString(R.string.sync_completed))
         registerActivityBinding.updateSyncStatus(state)
         sideMenuOptions().forEach { updateCount(it) }
         manipulateDrawer(open = false)
         this.registerViewModel.setRefreshRegisterData(true)
       }
-      is State.InProgress -> {
+      is SyncJobStatus.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         registerActivityBinding.updateSyncStatus(state)
       }
@@ -692,12 +692,12 @@ abstract class BaseRegisterActivity :
 
   open fun onBarcodeResult(barcode: String, view: View) {}
 
-  private fun handleSyncFailed(state: State) {
+  private fun handleSyncFailed(state: SyncJobStatus) {
 
     val exceptions =
       when (state) {
-        is State.Glitch -> state.exceptions
-        is State.Failed -> state.result.exceptions
+        is SyncJobStatus.Glitch -> state.exceptions
+        is SyncJobStatus.Failed -> state.exceptions
         else -> listOf()
       }
 

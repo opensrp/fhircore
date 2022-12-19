@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.ui.userprofile
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -29,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class UserProfileViewModelTest : RobolectricTest() {
 
@@ -65,7 +67,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   private var configService: ConfigService
 
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
+  private val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
   private var syncBroadcaster: SyncBroadcaster
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -80,12 +82,11 @@ class UserProfileViewModelTest : RobolectricTest() {
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
-        sharedPreferencesHelper,
         configService,
-        syncJob = mockk(),
         fhirEngine = mockk(),
         sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        appContext = context
       )
   }
 

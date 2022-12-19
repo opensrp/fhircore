@@ -18,7 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
 import android.content.Intent
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
@@ -27,6 +27,6 @@ sealed class AppMainEvent {
   object Logout : AppMainEvent()
   data class SyncData(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
   object ResumeSync : AppMainEvent()
-  data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+  data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
   data class RefreshAuthToken(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
 }
