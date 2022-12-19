@@ -28,12 +28,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
@@ -55,12 +57,11 @@ constructor(
   @ApplicationContext val context: Context,
 ) {
 
-  fun runSync() {
+  fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
-    val syncStateFlow = MutableSharedFlow<SyncJobStatus>()
     coroutineScope.launch {
-      syncStateFlow
+      syncSharedFlow
         .onEach {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
             onSyncListener.onSync(it)
@@ -71,7 +72,7 @@ constructor(
     }
 
     coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncStateFlow.emit(it) }
+      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
     }
   }
 
@@ -81,12 +82,14 @@ constructor(
    * Schedule periodic sync periodically as defined in the application config interval. The
    * [SyncJobStatus] will be broadcast to the listeners
    */
-  fun schedulePeriodicSync() {
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun schedulePeriodicSync(periodicSyncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
     Timber.i("Scheduling periodic sync...")
+
+    // Launch in main to observer UI updates that should ONLY happen on main thread
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
-    val syncStateFlow = MutableSharedFlow<SyncJobStatus>()
     coroutineScope.launch {
-      syncStateFlow
+      periodicSyncSharedFlow
         .onEach {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
             onSyncListener.onSync(it)
@@ -94,17 +97,18 @@ constructor(
         }
         .handleErrors()
         .launchIn(this)
-    }
 
-    coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.periodicSync<AppSyncWorker>(
-          context,
-          PeriodicSyncConfiguration(
-            syncConstraints = Constraints.Builder().build(),
-            repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+      // Switch to io thread when triggering periodic sync
+      withContext(dispatcherProvider.io()) {
+        Sync.periodicSync<AppSyncWorker>(
+            context,
+            PeriodicSyncConfiguration(
+              syncConstraints = Constraints.Builder().build(),
+              repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+            )
           )
-        )
-        .collect { syncStateFlow.emit(it) }
+          .collect { periodicSyncSharedFlow.emit(it) }
+      }
     }
   }
 }

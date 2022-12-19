@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Parcelable
+import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -53,5 +54,14 @@ data class ResourceConfig(
   val searchParameter: String? = null,
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
-  val relatedResources: List<ResourceConfig> = emptyList()
+  val relatedResources: List<ResourceConfig> = emptyList(),
+  val sortConfigs: List<SortConfig> = emptyList()
+) : Parcelable
+
+@Serializable
+@Parcelize
+data class SortConfig(
+  val paramName: String,
+  val dataType: DataType,
+  val order: Order = Order.ASCENDING
 ) : Parcelable
