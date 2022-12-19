@@ -19,6 +19,20 @@ package org.smartregister.fhircore.engine.configuration.profile
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 
+/**
+ * @property infoFhirPathExpression FHIRPath expression used to extract content from the managing
+ * entity resource e.g. the names of the Patient who can be a managing entity
+ * @property fhirPathResource config for indicating the type of resource used for the ManagingEntity
+ * and the FHIR path expression for filtering the resources eligible for being ManagingEntities e.g.
+ * patients of a particular age
+ * @property dialogTitle The dialog title for selecting managing entity (can be regular or
+ * translatable string)
+ * @property dialogWarningMessage A warning message displayed on the view for selecting managing
+ * entity (can be regular or translatable string)
+ *
+ * @property dialogContentMessage A message displayed to the user informing them about the action
+ * they are about to perform
+ */
 @Serializable
 data class ManagingEntityConfig(
   val infoFhirPathExpression: String,

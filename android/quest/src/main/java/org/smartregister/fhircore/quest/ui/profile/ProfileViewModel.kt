@@ -22,7 +22,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -43,10 +42,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
-import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import timber.log.Timber
@@ -113,8 +109,8 @@ constructor(
                     if (event.resourceData != null) {
                       questionnaireResponse =
                         searchQuestionnaireResponses(
-                          subjectId = event.resourceData.baseResource.id.extractLogicalIdUuid(),
-                          subjectType = event.resourceData.baseResource.resourceType,
+                          subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
+                          subjectType = event.resourceData.baseResourceType,
                           questionnaireId = questionnaireConfig.id
                         )
                           .maxByOrNull { it.authored } // Get latest version
@@ -142,7 +138,7 @@ constructor(
             }
             ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
               if (event.managingEntity == null) return@forEach
-              if (event.resourceData?.baseResource?.resourceType != ResourceType.Group) {
+              if (event.resourceData?.baseResourceType != ResourceType.Group) {
                 Timber.w("Wrong resource type. Expecting Group resource")
                 return
               }
@@ -161,44 +157,44 @@ constructor(
   }
 
   private fun changeManagingEntity(event: ProfileEvent.OverflowMenuClick) {
+    // TODO Refactor implementation to use ResourceData
+    /*
     val resourceTypeToFilter = event.managingEntity?.fhirPathResource?.resourceType
-
     val eligibleManagingEntityList =
-      event
-        .resourceData
-        ?.relatedResourcesMap
-        ?.get(resourceTypeToFilter)
-        ?.filter {
-          fhirPathDataExtractor
-            .extractValue(it, event.managingEntity?.fhirPathResource?.fhirPathExpression ?: "")
-            .toBoolean()
-        }
-        ?.map {
-          EligibleManagingEntity(
-            groupId = event.resourceData.baseResource.logicalId,
-            logicalId = it.logicalId,
-            memberInfo =
-              fhirPathDataExtractor.extractValue(
-                it,
-                event.managingEntity?.infoFhirPathExpression ?: ""
-              )
-          )
-        }
-    (event.navController.context.getActivity())?.let { activity ->
-      ProfileBottomSheetFragment(
-          eligibleManagingEntities = eligibleManagingEntityList!!,
-          onSaveClick = {
-            onEvent(
-              ProfileEvent.OnChangeManagingEntity(
-                newManagingEntityId = it.logicalId,
-                groupId = it.groupId
-              )
-            )
-          },
-          managingEntity = event.managingEntity
-        )
-        .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
-    }
+       event.ResourceData
+         ?.relatedResourcesMap
+         ?.get(resourceTypeToFilter)
+         ?.filter {
+           fhirPathDataExtractor
+             .extractValue(it, event.managingEntity?.fhirPathResource?.fhirPathExpression ?: "")
+             .toBoolean()
+         }
+         ?.map {
+           EligibleManagingEntity(
+             groupId = event.ResourceData.baseResource.logicalId,
+             logicalId = it.logicalId,
+             memberInfo =
+               fhirPathDataExtractor.extractValue(
+                 it,
+                 event.managingEntity?.infoFhirPathExpression ?: ""
+               )
+           )
+         }
+     (event.navController.context.getActivity())?.let { activity ->
+       ProfileBottomSheetFragment(
+           eligibleManagingEntities = eligibleManagingEntityList!!,
+           onSaveClick = {
+             onEvent(
+               ProfileEvent.OnChangeManagingEntity(
+                 newManagingEntityId = it.logicalId,
+                 groupId = it.groupId
+               )
+             )
+           },
+           managingEntity = event.managingEntity
+         )
+         .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+     }*/
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {

@@ -70,10 +70,10 @@ class RegisterFragmentTest : RobolectricTest() {
   @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testOnSyncState() {
-    val state = SyncJobStatus.Finished()
-    coEvery { registerFragment.onSync(state) } just runs
-    registerFragment.onSync(state = state)
-    verify { registerFragment.onSync(state) }
+    val syncJobStatus = SyncJobStatus.Finished()
+    coEvery { registerFragment.onSync(syncJobStatus) } just runs
+    registerFragment.onSync(syncJobStatus = syncJobStatus)
+    verify { registerFragment.onSync(syncJobStatus) }
   }
 
   @Test
