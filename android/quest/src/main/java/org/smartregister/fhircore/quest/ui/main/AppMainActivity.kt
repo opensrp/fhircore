@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
@@ -185,6 +186,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
              * Send a random string to trigger [FhirCarePlanGenerator.completeTask] to invoke
              * [PatientProfileViewModel.fetchPatientProfileDataWithChildren]
              */
+            AlertDialogue.showInfoAlert(
+              this,
+              getString(R.string.new_visit_created_message),
+              getString(R.string.new_visit_created_title),
+            )
             appMainViewModel.onTaskComplete(System.currentTimeMillis().toString())
           }
           it.startsWith(ResourceType.Task.name) -> {
