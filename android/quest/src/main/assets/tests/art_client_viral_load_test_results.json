@@ -1092,6 +1092,34 @@
       "linkId": "has-phonenumber",
       "text": "Has Phone",
       "type": "boolean"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.select(resource.id).toString()"
+          }
+        }
+      ],
+      "linkId": "jdjjdd",
+      "text": "Tests",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.empty().not()"
+          }
+        }
+      ],
+      "linkId": "isOnTracing",
+      "text": "On Tracing",
+      "type": "boolean"
     }
   ]
 }
