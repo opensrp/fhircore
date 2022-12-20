@@ -26,6 +26,7 @@ import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -37,7 +38,6 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -60,7 +60,7 @@ constructor(
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
+  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
@@ -182,10 +182,10 @@ constructor(
       resource: Resource,
       relatedResourceType: String,
       fhirPathExpression: String,
-      resourceData: ResourceData? = null
+      relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        resourceData?.relatedResourcesMap?.get(relatedResourceType)
+        relatedResourcesMap?.get(relatedResourceType)
           ?: if (facts.getFact(relatedResourceType) != null)
             facts.getFact(relatedResourceType).value as List<Resource>
           else emptyList()
@@ -346,6 +346,15 @@ constructor(
      */
     fun generateRandomSixDigitInt(): Int {
       return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
+    }
+
+    fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
+      list.filter { getValue(it, attribute) == attributeValue }
+
+    private fun getValue(resource: Resource, attribute: String): Any? {
+      val property = (resource.javaClass).getDeclaredField(attribute)
+      property.isAccessible = true
+      return (property.get(resource) as? PrimitiveType<*>)?.value
     }
   }
 

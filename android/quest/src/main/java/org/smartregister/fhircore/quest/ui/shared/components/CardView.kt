@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -107,7 +107,7 @@ private fun CardViewWithoutPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -149,7 +149,7 @@ private fun CardViewWithPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
   }

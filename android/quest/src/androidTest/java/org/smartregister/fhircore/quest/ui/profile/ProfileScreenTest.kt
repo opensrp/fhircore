@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,7 +59,13 @@ class ProfileScreenTest {
     runBlocking {
       val profileUiState =
         ProfileUiState(
-          resourceData = ResourceData(Patient()),
+          resourceData =
+            ResourceData(
+              baseResourceId = "patientId",
+              baseResourceType = ResourceType.Patient,
+              computedValuesMap = emptyMap(),
+              listResourceDataMap = emptyMap()
+            ),
           profileConfiguration =
             configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")
         )

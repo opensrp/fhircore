@@ -99,13 +99,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val resourceData = listResourceData.first()
 
       Assert.assertEquals(1, listResourceData.size)
-      Assert.assertEquals(ResourceType.Patient, resourceData.baseResource.resourceType)
-
-      Assert.assertEquals(1, resourceData.relatedResourcesMap.values.first().size)
-      Assert.assertEquals(
-        ResourceType.Immunization,
-        resourceData.relatedResourcesMap.values.first().first().resourceType
-      )
+      Assert.assertEquals(ResourceType.Patient, resourceData.baseResourceType)
 
       Assert.assertEquals("Nelson Mandela", resourceData.computedValuesMap["patientName"])
       Assert.assertEquals(
@@ -154,13 +148,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val resourceData = listResourceData.first()
 
       Assert.assertEquals(1, listResourceData.size)
-      Assert.assertEquals(ResourceType.Group, resourceData.baseResource.resourceType)
-
-      Assert.assertEquals(1, resourceData.relatedResourcesMap.values.first().size)
-      Assert.assertEquals(
-        ResourceType.Patient,
-        resourceData.relatedResourcesMap.values.first().first().resourceType
-      )
+      Assert.assertEquals(ResourceType.Group, resourceData.baseResourceType)
 
       Assert.assertEquals("Snow", resourceData.computedValuesMap["familyName"])
     }

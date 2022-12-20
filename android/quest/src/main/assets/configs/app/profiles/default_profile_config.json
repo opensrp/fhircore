@@ -17,7 +17,13 @@
       },
       {
         "resource": "Task",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE"
+          }
+        ]
       }
     ]
   },
@@ -271,10 +277,32 @@
                     ]
                   },
                   {
+                    "name": "taskExecutionEndDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskExecutionEndDate', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
+                    ]
+                  },
+                  {
+                    "name": "taskExecutionPeriodDueDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskExecutionPeriodDueDate', service.prettifyDate(data.get('taskExecutionEndDate')))"
+                    ]
+                  },
+                  {
                     "name": "taskDescription",
                     "condition": "true",
                     "actions": [
                       "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskDescriptionDate",
+                    "condition": "true",
+                    "priority": 2,
+                    "actions": [
+                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + '-' + ' ' + data.get('taskExecutionPeriodDueDate'))"
                     ]
                   },
                   {
@@ -303,7 +331,7 @@
                   {
                     "viewType": "BUTTON",
                     "smallSized": "true",
-                    "text": "@{taskDescription}",
+                    "text": "@{taskDescriptionDate}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
                     "enabled": "@{patientActive}",
@@ -313,7 +341,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
-                          "title": "@{taskDescription}",
+                          "title": "@{taskDescriptionDate}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"

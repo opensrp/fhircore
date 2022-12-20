@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -101,7 +102,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { measureReportRepository.retrievePatients(0) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          baseResourceId = Faker.buildPatient().id,
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+          listResourceDataMap = emptyMap(),
+        )
+      )
 
     measureReportViewModel =
       spyk(
