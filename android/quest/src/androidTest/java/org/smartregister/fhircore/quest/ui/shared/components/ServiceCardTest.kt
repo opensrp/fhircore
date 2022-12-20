@@ -19,7 +19,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.NavController
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class ServiceCardTest {
 
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-  private val resourceData = ResourceData(Patient(), emptyMap(), emptyMap())
+  private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
 
   @get:Rule val composeRule = createComposeRule()
 
