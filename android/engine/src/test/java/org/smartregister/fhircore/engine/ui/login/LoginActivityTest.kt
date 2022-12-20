@@ -148,10 +148,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun `on log out navigateToScreen() navigates to login screen if PIN not enabled`() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
     every { loginViewModel.isPinEnabled() } returns false
-    every { accountAuthenticator.localLogout() } just runs
+    every { accountAuthenticator.invalidateSession() } just runs
     initLoginActivity()
 
-    verify { accountAuthenticator.localLogout() }
+    verify { accountAuthenticator.invalidateSession() }
   }
 
   override fun getActivity(): Activity {
