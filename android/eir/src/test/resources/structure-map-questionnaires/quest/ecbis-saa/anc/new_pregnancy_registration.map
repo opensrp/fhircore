@@ -1,0 +1,43 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/ff7b22df-7645-43fe-9731-d90c3a21130b" = "Pregnancy Registration"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ANCPregnancy(source src : QuestionnaireResponse, target bundle: Bundle) {
+   src -> bundle.type = "collection" "r_bundle_type";
+   src -> evaluate(src, $this.subject) as refPatient then
+      ExtractPregnancyCondition(src, bundle, refPatient), MarkFPConditionAsInactive(src, bundle) "r_bundle_entries";
+}
+
+group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+   src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+      src -> cnd.id = uuid() "r_cnd_id";
+
+      src.item as item_lmp_date where(linkId = "245679f2-6172-456e-8ff3-425f5cea3243") then {
+          src -> cnd.onset = create('dateTime') as dt, dt.value = evaluate(item_lmp_date, $this.answer.value.toString()) "r_cnd_onset_date_val";
+      } "r_cnd_onset_date";
+
+      src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+      src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+      src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+      src -> cnd.subject = refPatient "r_cnd_sub";
+      src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+      src -> cnd.code = create("CodeableConcept") as ccPreg then {
+            src -> ccPreg.coding = c("http://snomed.info/sct", "77386006", "Pregnancy") as coding, coding.display = 'Pregnancy' "r_cnd_code_coding";
+            src -> ccPreg.text = "Pregnant" "r_cnd_code_text";
+       } "r_cnd_code";
+   } "r_cnd";
+}
+
+group MarkFPConditionAsInactive(source src: QuestionnaireResponse, target bundle: Bundle) {
+  src.item as item where(linkId = "e152df80-7f89-11ed-a1eb-0242ac120002" and answer.value.exists()) then {
+      src->bundle.entry as entry,
+      entry.resource = create("Condition") as cnd then {
+          src->cnd.id = create("id") as cnd_id then {
+              src->cnd_id.value = evaluate(item, $this.answer.value) "r_item_cnd_id_value";
+          } "r_item_cnd_id";
+          src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "inactive") "r_cnd_clinical_status";
+      } "r_cnd";
+  } "r_item";
+}

@@ -1,0 +1,61 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "b0d01ba5-2a3d-4d2b-9138-f9154b392741",
+  "meta": {
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS New Pregnancy Registration"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/9b22f3ed-e7e1-4222-bf72-1ced42696189",
+  "subject": {
+    "reference": "Patient/12345"
+  },
+  "authored": "2022-12-19T21:40:00+05:00",
+  "item": [
+    {
+      "linkId": "1aa4d0b3-8c3e-47b7-8fa5-effcb5130fac",
+      "text": "Is this an active or passive case finding?"
+    },
+    {
+      "linkId": "da999955-2174-4219-825e-8ae2b948b7e7",
+      "text": "Was the pregnancy confirmed in a health facility?"
+    },
+    {
+      "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
+      "text": "Last Monthly Period (LMP) date"
+    },
+    {
+      "linkId": "a887e708-85d8-4fb2-871a-9c9d90887a50",
+      "text": "Gestational age (GA)"
+    },
+    {
+      "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
+      "text": "Expected date of delivery (EDD)"
+    },
+    {
+      "linkId": "84d77d0b-754d-48ed-800e-905cf47b9ba6",
+      "text": "Woman has danger signs?"
+    },
+    {
+      "linkId": "31009ee0-a0c9-46f0-8ef6-e65b34777aa1",
+      "text": "Made plans on how to get to the hospital for birth?"
+    },
+    {
+      "linkId": "ec905b2f-7fa6-4f74-d7ae-a76539eb2632",
+      "text": "Prepared woman to plan to breastfeed exclusively for six months and immediately after birth."
+    },
+    {
+      "linkId": "e152df80-7f89-11ed-a1eb-0242ac120002",
+      "text": "FP Condition Id",
+      "answer": [
+        {
+          "valueString": "0444af45-c8c4-43f7-a8d3-c0c3b562b21b"
+        }
+      ]
+    }
+  ]
+}
+
