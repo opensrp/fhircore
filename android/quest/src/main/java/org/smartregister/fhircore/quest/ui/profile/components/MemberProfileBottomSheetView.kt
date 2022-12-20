@@ -50,7 +50,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -66,7 +66,7 @@ fun MemberProfileBottomSheetView(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   buttonProperties: List<ButtonProperties>,
-  resourceData: ResourceData,
+  ResourceData: ResourceData,
   navController: NavController,
   onViewProfile: () -> Unit
 ) {
@@ -108,7 +108,7 @@ fun MemberProfileBottomSheetView(
       buttonProperties.forEach {
         ActionableButton(
           buttonProperties = it,
-          resourceData = resourceData,
+          resourceData = ResourceData,
           navController = navController
         )
       }
@@ -140,7 +140,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    resourceData = ResourceData(Patient())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
   )
 }
 
@@ -159,6 +159,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    resourceData = ResourceData(Patient())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
   )
 }

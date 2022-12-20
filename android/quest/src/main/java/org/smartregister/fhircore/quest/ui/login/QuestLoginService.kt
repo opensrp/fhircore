@@ -50,7 +50,7 @@ constructor(
       if (!username.isNullOrEmpty()) {
         P2PLibrary.init(
           P2PLibrary.Options(
-            context = loginActivity,
+            context = applicationContext,
             dbPassphrase = username,
             username = username,
             senderTransferDao = p2pSenderTransferDao,

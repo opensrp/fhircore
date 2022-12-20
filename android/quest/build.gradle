@@ -249,7 +249,7 @@ dependencies {
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
     testImplementation deps.kotlin.test
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")

@@ -114,7 +114,6 @@ class AppMainViewModelTest : RobolectricTest() {
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
-          context = application
         )
       )
 
