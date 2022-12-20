@@ -28,9 +28,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
@@ -142,16 +140,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun `on log out navigateToScreen() navigates to login screen if PIN not enabled`() {
-    coEvery { accountAuthenticator.hasActivePin() } returns false
-    every { loginViewModel.isPinEnabled() } returns false
-    every { accountAuthenticator.invalidateSession() } just runs
-    initLoginActivity()
-
-    verify { accountAuthenticator.invalidateSession() }
   }
 
   override fun getActivity(): Activity {

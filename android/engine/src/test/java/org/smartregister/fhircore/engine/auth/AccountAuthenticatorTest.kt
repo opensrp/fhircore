@@ -445,7 +445,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testLogoutShouldNotSuccessfullyLogout() {
+  fun userIsLoggedOutOfAppWhenKeycloakLogoutFails() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -472,11 +472,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify(exactly = 1) { onLogout.invoke() }
     verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
-  fun testLogoutShouldFailureLogout() {
+  fun testLogoutFailureLogoutsUser() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -497,7 +497,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify(exactly = 1) { onLogout.invoke() }
     verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
