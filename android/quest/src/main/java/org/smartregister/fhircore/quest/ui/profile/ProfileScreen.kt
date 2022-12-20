@@ -49,7 +49,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -60,7 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import org.smartregister.fhircore.quest.util.extensions.showSnackBar
+import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -79,7 +79,7 @@ fun ProfileScreen(
   var showOverflowMenu by remember { mutableStateOf(false) }
 
   LaunchedEffect(Unit) {
-    snackStateFlow.showSnackBar(scaffoldState, profileUiState.resourceData, navController)
+    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
 
   Scaffold(
@@ -164,7 +164,7 @@ fun ProfileScreen(
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
-          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          resourceData = profileUiState.resourceData,
           navController = navController
         )
       }
@@ -184,7 +184,8 @@ fun ProfileScreen(
       Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          resourceData = profileUiState.resourceData
+              ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
           navController = navController
         )
       }

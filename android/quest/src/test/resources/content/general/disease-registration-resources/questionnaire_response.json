@@ -1,0 +1,68 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "in-progress",
+  "subject": "Patient/123456",
+  "item": [
+    {
+      "linkId": "dd55485e-322a-434e-d37d-235e37dd235c",
+      "text": "Which disease does the client have?",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "hiv",
+            "display": "HIV",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "tb",
+            "display": "TB",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "cm-ntd",
+            "display": "CM-NTD ",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "mental-health",
+            "display": "Mental health",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "605bd5c8-f279-4903-876f-5e7920d80c32",
+      "text": "The CM-NTD diagnosed?",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "leprosy",
+            "display": "Leprosy",
+            "system": "urn:uuid:8caa106d-5b97-433e-fa91-85fa5859fc22"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "buruli-ulcer",
+            "display": "Buruli Ulcer",
+            "system": "urn:uuid:8caa106d-5b97-433e-fa91-85fa5859fc22"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "lymphatic-filariasis",
+            "display": "Lymphatic filariasis",
+            "system": "urn:uuid:8caa106d-5b97-433e-fa91-85fa5859fc22"
+          }
+        }
+      ]
+    }
+  ]
+}

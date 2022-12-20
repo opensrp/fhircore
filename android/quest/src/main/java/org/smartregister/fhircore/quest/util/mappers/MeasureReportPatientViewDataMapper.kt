@@ -20,14 +20,9 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
 class MeasureReportPatientViewDataMapper
@@ -38,6 +33,8 @@ constructor(
 ) : DataMapper<ResourceData, MeasureReportPatientViewData> {
 
   override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportPatientViewData {
+    // TODO Refactor measure reporting register to use register configuration
+    /*
     // Patient resource can be the baseResource or any of the relatedResources of the resourceData
     // Ensure the register is configured to return a Patient resource; app will crash otherwise
     val patient: Patient =
@@ -45,19 +42,14 @@ constructor(
         is Patient -> inputModel.baseResource as Patient
         else ->
           inputModel.relatedResourcesMap.getValue(ResourceType.Patient.name).first() as Patient
-      }
+      }*/
 
     return MeasureReportPatientViewData(
-      logicalId = patient.logicalId,
-      name =
-        fhirPathDataExtractor.extractValue(patient, "Patient.name.select(given + ' ' + family)"),
-      gender = patient.gender.translateGender(context).first().uppercase(),
-      age = patient.extractAge(context),
-      family =
-        context.getString(
-          R.string.family_suffix,
-          fhirPathDataExtractor.extractValue(patient, "Patient.name.family")
-        )
+      logicalId = inputModel.baseResourceId,
+      name = "",
+      gender = "",
+      age = ",",
+      family = ""
     )
   }
 }

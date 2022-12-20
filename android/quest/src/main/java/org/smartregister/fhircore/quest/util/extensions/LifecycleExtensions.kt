@@ -47,10 +47,11 @@ fun rememberLifecycleEvent(
   return state
 }
 
-suspend fun SharedFlow<SnackBarMessageConfig>.showSnackBar(
+suspend fun SharedFlow<SnackBarMessageConfig>.hookSnackBar(
   scaffoldState: ScaffoldState,
   resourceData: ResourceData?,
-  navController: NavController
+  navController: NavController,
+  action: () -> Unit = {}
 ) {
   this.collectLatest { snackBarState ->
     if (snackBarState.message.isNotEmpty()) {
@@ -61,8 +62,10 @@ suspend fun SharedFlow<SnackBarMessageConfig>.showSnackBar(
           duration = snackBarState.duration
         )
       when (snackBarResult) {
-        SnackbarResult.ActionPerformed ->
+        SnackbarResult.ActionPerformed -> {
           snackBarState.snackBarActions.handleClickEvent(navController, resourceData)
+          action()
+        }
         SnackbarResult.Dismissed -> {
           /* Do nothing (for now) when snackBar is dismissed */
         }

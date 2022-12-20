@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.sync
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.fhir.sync.State
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton

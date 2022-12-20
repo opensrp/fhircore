@@ -41,7 +41,7 @@ class MeasureReportIndividualResultViewTest {
       name = "Jacky Coughlin",
       gender = "F",
       age = "27",
-      logicalId = "12444"
+      logicalId = "12444",
     )
 
   @Before
@@ -86,6 +86,15 @@ class MeasureReportIndividualResultViewTest {
     composeTestRule.onNodeWithTag(RESULT_VIEW_STALLED_ICON).assertExists().assertIsDisplayed()
   }
 
+  @Test
+  fun testResultViewRendersIndicatorDescriptionCorrectly() {
+    initComposable(isMatchedIndicator = true)
+    composeTestRule.onNodeWithTag(RESULT_VIEW_INDICATOR_DESCRIPTION).assertExists()
+    composeTestRule
+      .onNodeWithText(useUnmergedTree = true, text = "Indicator description")
+      .assertExists()
+      .assertIsDisplayed()
+  }
   private fun initComposable(isMatchedIndicator: Boolean) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -94,7 +103,7 @@ class MeasureReportIndividualResultViewTest {
             patientViewData = patientViewData,
             isMatchedIndicator = isMatchedIndicator,
             indicatorStatus = "True",
-            indicatorDescription = ""
+            indicatorDescription = "Indicator description"
           )
         }
       }
