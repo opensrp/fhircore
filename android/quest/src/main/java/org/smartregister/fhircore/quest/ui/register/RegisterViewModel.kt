@@ -75,7 +75,7 @@ constructor(
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
-  private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
+  private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -87,7 +87,10 @@ constructor(
     loadAll: Boolean = false,
     clearCache: Boolean = false
   ) {
-    if (clearCache) pagesDataCache.clear()
+    if (clearCache) {
+      pagesDataCache.clear()
+      allPatientRegisterData = null
+    }
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
@@ -125,10 +128,10 @@ constructor(
 
   private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
     // Ensure that we only initialize this flow once
-    if (!::allPatientRegisterData.isInitialized) {
+    if (allPatientRegisterData == null) {
       allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
-    return allPatientRegisterData
+    return allPatientRegisterData!!
   }
 
   fun onEvent(event: RegisterEvent) =

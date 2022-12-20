@@ -42,7 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
@@ -181,7 +181,7 @@ fun ActionableButtonPreview() {
         text = "ANC Visit",
         smallSized = true,
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -198,7 +198,7 @@ fun DisabledActionableButtonPreview() {
         smallSized = true,
         enabled = "false"
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -210,14 +210,14 @@ fun SmallActionableButtonPreview() {
     ActionableButton(
       modifier = Modifier.weight(1.0f),
       buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = false),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
       buttonProperties =
         ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = false),
-      resourceData = ResourceData(Patient()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
   }
