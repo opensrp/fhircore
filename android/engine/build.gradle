@@ -176,6 +176,7 @@ dependencies {
     api("androidx.activity:activity-compose:1.4.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     api("androidx.work:work-runtime-ktx:2.7.1")
+    testImplementation 'androidx.work:work-testing:2.7.1'
 
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")

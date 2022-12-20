@@ -22,6 +22,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
@@ -37,8 +38,9 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class AppointmentRegisterDaoTest : RobolectricTest() {
+class AppointmentRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
