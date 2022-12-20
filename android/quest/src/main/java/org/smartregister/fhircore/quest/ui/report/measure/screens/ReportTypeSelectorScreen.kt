@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
@@ -87,6 +86,10 @@ const val SHOW_FIXED_RANGE_TEST_TAG = "SHOW_FIXED_RANGE_TEST_TAG"
 const val SHOW_PROGRESS_INDICATOR_TAG = "SHOW_PROGRESS_INDICATOR_TAG"
 const val TEST_MONTH_CLICK_TAG = "TEST_MONTH_CLICK_TAG"
 const val SHOW_DATE_PICKER_FORM_TAG = "SHOW_DATE_PICKER_FORM_TAG"
+const val PLEASE_WAIT_TEST_TAG = "PLEASE_WAIT_TEST_TAG"
+const val SCREEN_TITLE = "SCREEN_TITLE"
+const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
+const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
 fun ReportTypeSelectorScreen(
@@ -173,7 +176,14 @@ fun ReportTypeSelectorPage(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        title = {
+          Text(
+            text = screenTitle,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            modifier = modifier.testTag(SCREEN_TITLE)
+          )
+        },
         navigationIcon = {
           IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
         },
@@ -197,7 +207,7 @@ fun ReportTypeSelectorPage(
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
+                modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
               )
             }
           } else {
@@ -256,7 +266,14 @@ fun FixedMonthYearListing(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        title = {
+          Text(
+            text = screenTitle,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            modifier = modifier.testTag(SCREEN_TITLE)
+          )
+        },
         navigationIcon = {
           IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
         },
@@ -280,7 +297,7 @@ fun FixedMonthYearListing(
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
+                modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
               )
             }
           }
@@ -313,7 +330,12 @@ fun LazyMonthList(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceBetween
         ) {
-          Text(text = year, fontSize = 14.sp, color = DefaultColor)
+          Text(
+            text = year,
+            fontSize = 14.sp,
+            color = DefaultColor,
+            modifier = Modifier.testTag(YEAR_TEST_TAG)
+          )
           Icon(
             Icons.Filled.KeyboardArrowDown,
             contentDescription = null,
@@ -348,7 +370,12 @@ private fun ListItem(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
-    Text(text = data.month, fontSize = 16.sp, style = MaterialTheme.typography.h5)
+    Text(
+      text = data.month,
+      fontSize = 16.sp,
+      style = MaterialTheme.typography.h5,
+      modifier = Modifier.testTag(MONTH_TEST_TAG)
+    )
     Icon(
       imageVector = Icons.Filled.KeyboardArrowRight,
       contentDescription = null,
