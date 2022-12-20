@@ -142,6 +142,14 @@ class LoginActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
+  @Test
+  fun `navigate to screen shows PIN activity if PIN is enabled and active`() {
+    coEvery { accountAuthenticator.hasActivePin() } returns true
+    every { loginViewModel.isPinEnabled() } returns true
+    initLoginActivity()
+    verify { loginService.navigateToPinLogin(false) }
+  }
+
   override fun getActivity(): Activity {
     return loginActivity
   }
