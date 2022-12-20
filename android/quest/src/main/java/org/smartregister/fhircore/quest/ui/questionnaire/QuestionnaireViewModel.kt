@@ -409,13 +409,9 @@ constructor(
         )
       }
       .onSuccess {
-        Timber.d("Questionnaire with ${questionnaire.id} extracted successfully")
-        viewModelScope.launch {
-          context.showToast(
-            context.getString(R.string.structure_success, questionnaire.name),
-            Toast.LENGTH_LONG
-          )
-        }
+        Timber.d(
+          "Questionnaire (${questionnaire.name}) with ${questionnaire.id} extracted successfully"
+        )
       }
       .onFailure { exception ->
         Timber.e(exception)

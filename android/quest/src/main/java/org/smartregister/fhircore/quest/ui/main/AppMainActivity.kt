@@ -25,7 +25,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -47,12 +46,11 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, QuestionnaireHandler {
+open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   @Inject lateinit var configService: ConfigService
@@ -76,7 +74,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
       topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
-
     navHostFragment =
       NavHostFragment.create(
         R.navigation.application_nav_graph,
@@ -125,51 +122,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
       retrieveAppMainUiState()
       schedulePeriodicJobs()
     }
-  }
 
-  override fun onSync(state: State) {
-    Timber.i("Sync state received is $state")
-    when (state) {
-      is State.Started -> showToast(getString(R.string.syncing))
-      is State.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
-        )
-      }
-      is State.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        Timber.w(state.exceptions.joinToString { it.exception.message ?: "" })
-      }
-      is State.Failed -> {
-        val hasAuthError =
-          state.result.exceptions.any {
-            it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
-        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
-        showToast(getString(message))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              appMainViewModel.retrieveLastSyncTimestamp()
-            else getString(R.string.syncing_failed)
-          )
-        )
-        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
-        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Finished -> {
-        showToast(getString(R.string.sync_completed))
-        appMainViewModel.run {
-          onEvent(
-            AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
-          )
-        }
+    syncBroadcaster.run {
+      with(appMainViewModel.syncSharedFlow) {
+        runSync(this)
+        schedulePeriodicSync(this)
       }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -185,6 +149,45 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener, Questi
         appMainViewModel.questionnaireSubmissionLiveData.postValue(
           QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
         )
+      }
+    }
+  }
+
+  override fun onSync(syncJobStatus: SyncJobStatus) {
+    when (syncJobStatus) {
+      is SyncJobStatus.InProgress -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
+        )
+      }
+      is SyncJobStatus.Glitch -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
+        )
+        Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is SyncJobStatus.Failed -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(
+            syncJobStatus,
+            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+              appMainViewModel.retrieveLastSyncTimestamp()
+            else getString(R.string.syncing_failed)
+          )
+        )
+      }
+      is SyncJobStatus.Finished -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              syncJobStatus,
+              formatLastSyncTimestamp(syncJobStatus.timestamp)
+            )
+          )
+        }
+      }
+      else -> {
+        /*Do nothing */
       }
     }
   }
