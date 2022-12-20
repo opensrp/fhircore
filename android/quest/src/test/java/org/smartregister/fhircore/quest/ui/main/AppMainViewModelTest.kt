@@ -25,8 +25,6 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -83,8 +81,6 @@ class AppMainViewModelTest : RobolectricTest() {
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
-
-  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
 
   val fhirEngine = mockk<FhirEngine>()
 

@@ -108,10 +108,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
-    syncBroadcaster.run {
-      runSync()
-      schedulePeriodicSync()
-    }
 
     CoroutineScope(dispatcherProvider.io()).launch {
       appMainViewModel.fetchNonWorkflowConfigResources()
