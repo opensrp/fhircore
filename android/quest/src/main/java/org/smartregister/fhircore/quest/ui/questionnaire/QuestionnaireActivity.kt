@@ -199,22 +199,32 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (questionnaireConfig.resourceIdentifier != null) {
                 setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-                if (questionnaireResponse == null) {
-                  questionnaireResponse =
-                    questionnaireViewModel.generateQuestionnaireResponse(
-                      questionnaire,
-                      intent,
-                      questionnaireConfig
-                    )
-                }
+              }
+
+              if (questionnaireResponse == null && intentHasPopulationResources(intent)) {
+                questionnaireResponse =
+                  questionnaireViewModel.generateQuestionnaireResponse(
+                    questionnaire,
+                    intent,
+                    questionnaireConfig
+                  )
+              }
+
+              if (questionnaireResponse != null) {
                 this.putString(
                   QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
                   questionnaireResponse.encodeResourceToString()
                 )
               }
+
             }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+  }
+
+  protected fun intentHasPopulationResources(intent: Intent) : Boolean {
+    val resourceList = intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+    return resourceList != null && resourceList.size > 0
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
