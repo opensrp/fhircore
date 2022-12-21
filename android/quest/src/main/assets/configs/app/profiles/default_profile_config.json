@@ -277,17 +277,17 @@
                     ]
                   },
                   {
-                    "name": "taskExecutionEndDate",
+                    "name": "taskExecutionStartDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskExecutionEndDate', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
+                      "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
                     ]
                   },
                   {
-                    "name": "taskExecutionPeriodDueDate",
+                    "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskExecutionPeriodDueDate', service.prettifyDate(data.get('taskExecutionEndDate')))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd-MM-yyyy\"))"
                     ]
                   },
                   {
@@ -302,7 +302,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + '-' + ' ' + data.get('taskExecutionPeriodDueDate'))"
+                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + 'due' + ' ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {

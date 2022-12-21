@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -237,6 +238,18 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService.formatDate(inputDateString, inputDateFormat)
     )
   }
+
+  @Test
+  fun shouldInputDateTimeStringWithExpectedFormat() {
+    val inputDateString = "2023-09-01T00:00:00.00Z"
+    val inputDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "01-09-2023",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+  }
+
 
   @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
