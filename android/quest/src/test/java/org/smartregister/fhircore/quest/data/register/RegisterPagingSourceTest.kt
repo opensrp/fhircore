@@ -21,12 +21,12 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 
 class RegisterPagingSourceTest {
@@ -45,7 +45,14 @@ class RegisterPagingSourceTest {
   @Test
   fun testLoadShouldReturnResults() {
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          baseResourceId = "resourceId",
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+          listResourceDataMap = emptyMap(),
+        )
+      )
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null

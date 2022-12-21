@@ -85,7 +85,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
       valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
       testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
       result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
-      evaluator = LibraryEvaluator()
+      evaluator = LibraryEvaluator().apply { initialize() }
     } catch (e: IOException) {
       Timber.e(e, e.message)
     }
@@ -203,8 +203,6 @@ class LibraryEvaluatorTest : RobolectricTest() {
         true
       )
     }
-
-    System.out.println(result)
 
     Assert.assertTrue(result.contains("AgeRange -> BooleanType[true]"))
     Assert.assertTrue(result.contains("Female -> BooleanType[true]"))
