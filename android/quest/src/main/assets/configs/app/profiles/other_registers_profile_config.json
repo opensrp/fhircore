@@ -299,7 +299,7 @@
                   {
                     "viewType": "BUTTON",
                     "smallSized": "true",
-                    "text": "@{taskDescription}",
+                    "text": "@{taskDescriptionDate}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
                     "enabled": "@{patientActive}",
@@ -309,7 +309,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
-                          "title": "@{taskDescription}",
+                          "title": "@{taskDescriptionDate}",
                           "resourceIdentifier": "@{taskFor}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
