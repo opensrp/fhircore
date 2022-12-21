@@ -271,9 +271,7 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertTrue(
-      rulesEngineService.filterList(list, fhirPathExpression).size == 1
-    )
+    Assert.assertTrue(rulesEngineService.filterList(list, fhirPathExpression).size == 1)
   }
 
   @Test
@@ -301,10 +299,7 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertEquals(
-      emptyList<Task>(),
-      rulesEngineService.filterList(list, fhirPathExpression)
-    )
+    Assert.assertEquals(emptyList<Task>(), rulesEngineService.filterList(list, fhirPathExpression))
   }
 
   @Test

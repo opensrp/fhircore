@@ -349,14 +349,9 @@ constructor(
       return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
     }
 
-    fun filterList(
-      list: List<Resource>,
-      fhirPathExpression: String
-    ): List<Resource> {
+    fun filterList(list: List<Resource>, fhirPathExpression: String): List<Resource> {
       return list.filter {
-        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as
-            BooleanType)
-          .value
+        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as BooleanType).value
       }
     }
 
