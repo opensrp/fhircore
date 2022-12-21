@@ -214,7 +214,8 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
       if (geometry is Point) {
         points.add(geometry)
       }
-    } ?: return
+    }
+      ?: return
 
     if (featureCollection.features()!!.size == 0) {
       return

@@ -216,14 +216,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                   questionnaireResponse.encodeResourceToString()
                 )
               }
-
             }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
   }
 
-  protected fun intentHasPopulationResources(intent: Intent) : Boolean {
-    val resourceList = intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+  protected fun intentHasPopulationResources(intent: Intent): Boolean {
+    val resourceList =
+      intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
     return resourceList != null && resourceList.size > 0
   }
 

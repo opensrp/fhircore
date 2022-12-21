@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
