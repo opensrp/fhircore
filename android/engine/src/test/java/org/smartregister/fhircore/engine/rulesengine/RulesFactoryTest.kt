@@ -249,7 +249,6 @@ class RulesFactoryTest : RobolectricTest() {
     )
   }
 
-
   @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
