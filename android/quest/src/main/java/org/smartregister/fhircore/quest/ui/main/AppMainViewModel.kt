@@ -32,13 +32,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.time.Duration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -77,7 +77,6 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -94,9 +93,10 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  @ApplicationContext val context: Context,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator
 ) : ViewModel() {
+
+  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
@@ -156,7 +156,7 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> syncBroadcaster.runSync()
+      AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
@@ -318,8 +318,11 @@ constructor(
         )
         .build()
     )
-    // Schedule job for generating measure report in the background
-    MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+
+    // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+    /* // Schedule job for generating measure report in the background
+     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+    */
 
     FhirTaskExpireWorker.schedule(
       workManager,

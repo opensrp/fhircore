@@ -38,7 +38,6 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -61,7 +60,7 @@ constructor(
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
+  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
@@ -183,10 +182,10 @@ constructor(
       resource: Resource,
       relatedResourceType: String,
       fhirPathExpression: String,
-      resourceData: ResourceData? = null
+      relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        resourceData?.relatedResourcesMap?.get(relatedResourceType)
+        relatedResourcesMap?.get(relatedResourceType)
           ?: if (facts.getFact(relatedResourceType) != null)
             facts.getFact(relatedResourceType).value as List<Resource>
           else emptyList()
