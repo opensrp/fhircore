@@ -266,7 +266,7 @@
                     ]
                   },
                   {
-                    "name": "taskDescriptionDate",
+                    "name": "taskDescriptionWithStartDate",
                     "condition": "true",
                     "priority": 2,
                     "actions": [
@@ -309,7 +309,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
-                          "title": "@{taskDescriptionDate}",
+                          "title": "@{taskDescription}",
                           "resourceIdentifier": "@{taskFor}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
