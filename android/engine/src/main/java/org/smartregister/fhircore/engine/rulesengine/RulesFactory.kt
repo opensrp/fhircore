@@ -351,11 +351,10 @@ constructor(
 
     fun filterList(
       list: List<Resource>,
-      value: String,
       fhirPathExpression: String
     ): List<Resource> {
       return list.filter {
-        (fhirPathDataExtractor.extractData(it, "$fhirPathExpression = '$value'").first() as
+        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as
             BooleanType)
           .value
       }

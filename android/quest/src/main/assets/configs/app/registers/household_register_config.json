@@ -84,7 +84,7 @@
         "name": "taskCount",
         "condition": "true",
         "actions": [
-          "data.put('taskCount', size(service.filterList(Task, 'ready', 'Task.status')))"
+          "data.put('taskCount', size(service.filterList(Task, \"Task.status = 'ready'\")))"
         ]
       },
       {
