@@ -20,10 +20,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -61,10 +63,7 @@ constructor(
 
   val progressBarState = MutableLiveData(Pair(false, 0))
 
-  fun runSync() {
-    // TODO to be reactivated
-    syncBroadcaster.runSync()
-  }
+  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
@@ -83,7 +82,7 @@ constructor(
         updateProgressBarState(true, R.string.logging_out)
         accountAuthenticator.logout { updateProgressBarState(false, R.string.logging_out) }
       }
-      is UserSettingsEvent.SyncData -> syncBroadcaster.runSync()
+      is UserSettingsEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
