@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
@@ -37,7 +40,7 @@ class ServiceCardTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun serviceActionButtonIsDisplayed() {
+  fun serviceActionButtonIsDisplayedCorrectly() {
     composeRule.setContent {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(),
@@ -45,12 +48,55 @@ class ServiceCardTest {
         navController = navController
       )
     }
+    composeRule
+      .onNodeWithText("Next visit 09-10-2022", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun serviceActionButtonNotDisplayedWhenVisibleIsFalse() {
+    composeRule.setContent {
+      ServiceCard(
+        serviceCardProperties = initTestServiceCardProperties(visible = "false"),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithText("Next visit 09-10-2022", useUnmergedTree = true).assertDoesNotExist()
+  }
+
+  @Test
+  fun canShowVerticalDivider() {
+    composeRule.setContent {
+      ServiceCard(
+        serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = true),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertExists().assertIsDisplayed()
+  }
+
+  @Test
+  fun serviceMemberIconsDisplayedWhenDividerIsNotShown() {
+    composeRule.setContent {
+      ServiceCard(
+        serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = false),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertDoesNotExist()
+    // icons are displayed
+    composeRule.onNodeWithText("+2").assertExists().assertIsDisplayed()
   }
 
   private fun initTestServiceCardProperties(
     showVerticalDivider: Boolean = false,
     serviceStatus: String = ServiceStatus.UPCOMING.name,
-    smallSized: Boolean = false
+    smallSized: Boolean = false,
+    visible: String = "true"
   ): ServiceCardProperties {
     return ServiceCardProperties(
       viewType = ViewType.SERVICE_CARD,
@@ -78,7 +124,7 @@ class ServiceCardTest {
       showVerticalDivider = showVerticalDivider,
       serviceButton =
         ButtonProperties(
-          visible = "true",
+          visible = visible,
           status = serviceStatus,
           text = "Next visit 09-10-2022",
           smallSized = smallSized
