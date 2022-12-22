@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
@@ -78,7 +79,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
           // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
           it.characteristic.firstOrNull { characteristic ->
             characteristic.value is Reference &&
-              characteristic.valueReference.reference.contains("Location")
+              characteristic.valueReference.reference.contains(ResourceType.Location.name)
           } != null
         }
 
@@ -86,16 +87,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
 
     familiesWithLocations.forEach { family ->
       try {
-        val familyLocation =
-          defaultRepository.fhirEngine.get<Location>(
-            family.characteristic.firstOrNull { characteristic ->
-                characteristic.value is Reference &&
-                  characteristic.valueReference.reference.contains("Location")
-              }!!
-              .valueReference
-              .referenceElement
-              .idPart
-          )
+        val familyLocation = defaultRepository.fhirEngine.get<Location>(familyLocationId(family))
 
         familiesList.add(Pair(family, familyLocation))
       } catch (ex: ResourceNotFoundException) {
@@ -105,6 +97,15 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
 
     return familiesList
   }
+
+  private fun familyLocationId(family: Group) =
+    family.characteristic.firstOrNull { characteristic ->
+        characteristic.value is Reference &&
+          characteristic.valueReference.reference.contains("Location")
+      }!!
+      .valueReference
+      .referenceElement
+      .idPart
 
   fun saveLocation(location: Location): LiveData<Boolean> {
     val liveData = MutableLiveData<Boolean>()

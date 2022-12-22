@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Geowidget | Fixed bug not linking registered families and their location
-- Geowidget | Fixed crash when a family location is not found
+- Geowidget | Fixed a bug disabling the link between registered families and their location
+- Geowidget | Fixed a crash when a family location is not found
 
 ## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added

@@ -673,12 +673,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `Bundle#attachQuestionnaireResponse() should throw exception when QR not available and QuestionnaireConfig is readOnly`() {
-    val bundle = Bundle()
     questionnaireConfig.type = QuestionnaireType.READ_ONLY
 
     Assertions.assertThrows(java.lang.IllegalArgumentException::class.java) {
       runBlocking {
-        questionnaireActivity.attachQuestionnaireResponse(bundle, Intent(), questionnaireConfig)
+        questionnaireActivity.attachQuestionnaireResponse(Bundle(), Intent(), questionnaireConfig)
       }
     }
   }
@@ -713,9 +712,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
 
-    val bundle = Bundle()
     runBlocking {
-      questionnaireActivity.attachQuestionnaireResponse(bundle, intent, questionnaireConfig)
+      questionnaireActivity.attachQuestionnaireResponse(Bundle(), intent, questionnaireConfig)
     }
 
     coVerify {
@@ -725,11 +723,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         questionnaireConfig
       )
     }
-    val qr =
-      fhirJsonParser.parseResource(
-        QuestionnaireResponse::class.java,
-        bundle.getString(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING)
-      )
   }
 
   @Test

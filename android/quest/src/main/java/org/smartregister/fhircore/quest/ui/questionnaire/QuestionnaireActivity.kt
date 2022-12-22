@@ -195,7 +195,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   @VisibleForTesting
-  suspend fun attachQuestionnaireResponse(
+  internal suspend fun attachQuestionnaireResponse(
     bundle: Bundle,
     intent: Intent,
     questionnaireConfig: QuestionnaireConfig
