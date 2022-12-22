@@ -51,6 +51,7 @@ const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
 const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
 const val RESULT_VIEW_STALLED_ICON = "resultViewStalledIcon"
 const val RESULT_VIEW_INDICATOR_STATUS = "resultViewIndicatorStatus"
+const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 
 @Composable
 fun MeasureReportIndividualResultView(
@@ -118,7 +119,7 @@ fun MeasureReportIndividualResultView(
               color = SubtitleTextColor,
               text = indicatorDescription,
               fontSize = 14.sp,
-              modifier = modifier.wrapContentWidth()
+              modifier = modifier.wrapContentWidth().testTag(RESULT_VIEW_INDICATOR_DESCRIPTION)
             )
           }
         }

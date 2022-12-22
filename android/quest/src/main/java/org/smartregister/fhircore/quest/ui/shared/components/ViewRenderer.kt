@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
- * properties. The content used in the views is provided via [ResourceData] class.
+ * properties. The content used in the views is provided via [resourceData] class.
  *
  * Note that by default the view render is not rendered in a view group like a Column/Row. This is
  * to allow us to call the function recursively for nested view group layout. Therefore when using
@@ -86,7 +86,7 @@ private fun PreviewWeightedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -141,7 +141,7 @@ private fun PreviewWrappedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -178,7 +178,7 @@ private fun PreviewSameSizedViewInRow() {
             )
         )
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -296,7 +296,7 @@ private fun PreviewCardViewWithRows() {
             )
         )
       ),
-    resourceData = ResourceData(Patient()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
   )
 }

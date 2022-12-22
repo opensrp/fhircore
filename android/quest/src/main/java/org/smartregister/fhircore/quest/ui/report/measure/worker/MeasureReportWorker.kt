@@ -173,7 +173,7 @@ constructor(
     fun scheduleMeasureReportWorker(workManager: WorkManager) {
       // TODO removed the from application config, should be retrieved from
       // MeasureReportConfiguration instead
-      val scheduleTime = "23:22"
+      val scheduleTime = "12:55"
       val campaignRegisterDate = "2020-10-27"
 
       try {
