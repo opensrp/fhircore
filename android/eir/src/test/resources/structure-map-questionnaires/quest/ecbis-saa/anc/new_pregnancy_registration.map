@@ -6,7 +6,7 @@ uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 group ANCPregnancy(source src : QuestionnaireResponse, target bundle: Bundle) {
    src -> bundle.type = "collection" "r_bundle_type";
    src -> evaluate(src, $this.subject) as refPatient then
-      ExtractPregnancyCondition(src, bundle, refPatient), MarkFPConditionAsInactive(src, bundle) "r_bundle_entries";
+      ExtractPregnancyCondition(src, bundle, refPatient), markFPConditionAsInactive(src, bundle) "r_bundle_entries";
 }
 
 group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
@@ -30,7 +30,7 @@ group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundl
    } "r_cnd";
 }
 
-group MarkFPConditionAsInactive(source src: QuestionnaireResponse, target bundle: Bundle) {
+group markFPConditionAsInactive(source src: QuestionnaireResponse, target bundle: Bundle) {
   src.item as item where(linkId = "e152df80-7f89-11ed-a1eb-0242ac120002" and answer.value.exists()) then {
       src->bundle.entry as entry,
       entry.resource = create("Condition") as cnd then {
