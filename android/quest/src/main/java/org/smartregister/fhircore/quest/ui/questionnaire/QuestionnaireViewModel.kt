@@ -265,12 +265,8 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
-        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
-    ) {
-      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
-    }
+    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
   }
 
   fun savePartialQuestionnaireResponse(
