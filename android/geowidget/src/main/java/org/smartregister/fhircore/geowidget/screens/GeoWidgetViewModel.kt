@@ -21,7 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import com.mapbox.geojson.FeatureCollection
@@ -98,7 +98,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
           )
 
         familiesList.add(Pair(family, familyLocation))
-      } catch (ex: com.google.android.fhir.db.ResourceNotFoundException) {
+      } catch (ex: ResourceNotFoundException) {
         Timber.e(ex)
       }
     }

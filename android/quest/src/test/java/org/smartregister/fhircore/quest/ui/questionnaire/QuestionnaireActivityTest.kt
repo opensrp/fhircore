@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
@@ -34,6 +35,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -42,8 +44,13 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -56,6 +63,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.jupiter.api.Assertions
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
@@ -661,6 +669,84 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
       }
     }
+  }
+
+  @Test
+  fun `Bundle#attachQuestionnaireResponse() should throw exception when QR not available and QuestionnaireConfig is readOnly`() {
+    val bundle = Bundle()
+    questionnaireConfig.type = QuestionnaireType.READ_ONLY
+
+    Assertions.assertThrows(java.lang.IllegalArgumentException::class.java) {
+      runBlocking {
+        questionnaireActivity.attachQuestionnaireResponse(bundle, Intent(), questionnaireConfig)
+      }
+    }
+  }
+
+  @Test
+  fun `Bundle#attachQuestionnaireResponse() should generate populated QR when population resources provided`() {
+    val fhirJsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val patientString =
+      fhirJsonParser.encodeResourceToString(Patient().apply { id = "my-patient-id" })
+    val intent =
+      Intent().apply { putExtra("questionnaire-population-resources", arrayListOf(patientString)) }
+
+    val questionnaire =
+      Questionnaire().apply {
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "patient-assigned-id"
+            type = Questionnaire.QuestionnaireItemType.TEXT
+            extension =
+              listOf(
+                Extension(
+                  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  Expression().apply {
+                    language = "text/fhirpath"
+                    expression = "Patient.id"
+                  }
+                )
+              )
+          }
+        )
+      }
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    val bundle = Bundle()
+    runBlocking {
+      questionnaireActivity.attachQuestionnaireResponse(bundle, intent, questionnaireConfig)
+    }
+
+    coVerify {
+      questionnaireViewModel.generateQuestionnaireResponse(
+        questionnaire,
+        intent,
+        questionnaireConfig
+      )
+    }
+    val qr =
+      fhirJsonParser.parseResource(
+        QuestionnaireResponse::class.java,
+        bundle.getString(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING)
+      )
+  }
+
+  @Test
+  fun `intentHasPopulationResources() should return false when questionnaire-population-resources extra is not set`() {
+    assertFalse { questionnaireActivity.intentHasPopulationResources(Intent()) }
+  }
+
+  @Test
+  fun `intentHasPopulationResources() should return true when questionnaire-population-resources extra is set`() {
+    val patientString =
+      FhirContext.forCached(FhirVersionEnum.R4)
+        .newJsonParser()
+        .encodeResourceToString(Patient().apply { id = "my-patient-id" })
+    val intent =
+      Intent().apply { putExtra("questionnaire-population-resources", arrayListOf(patientString)) }
+
+    assertTrue { questionnaireActivity.intentHasPopulationResources(intent) }
   }
 
   override fun getActivity(): Activity {
