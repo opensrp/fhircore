@@ -57,6 +57,66 @@
 					"valueBoolean": true
 				}
 			]
+		},
+		{
+			"linkId": "31a51db1-a53c-4952-8c80-fb74c712de97",
+			"text": "Current FP method",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "eca3d724-4db2-402d-816c-fab17a8903cf",
+						"system": "urn:uuid:b3805f5a-4eed-4357-81bc-c89cddd24059",
+						"code": "male-condoms",
+						"display": "Male condoms"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "58bd476b-5d63-4e8a-a208-1d837b2a3fb6",
+			"text": "Any side effects?"
+		},
+		{
+			"linkId": "084063fb-39fd-4c1f-cac8-359371b55451",
+			"text": "Any danger signs?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "f471d35d-399b-437f-bdc2-71376e206cde",
+						"system": "urn:uuid:0b1c481f-07db-4bfb-c8cc-3bdbf8d585ac",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "d94f058f-3a08-488d-e973-d9f0cf47b63b",
+			"text": "Do you want to continue using this method?",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "0e2a9c34-3099-45ad-d7ec-e9025fd0a66a",
+						"system": "urn:uuid:86f8a824-3912-42fe-c7f3-b76221ae8df2",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "798107ef-b7fb-4734-8be1-8b42ad10991f",
+			"text": "Do you want to select an alternate FP method? ",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "91c32317-f8c7-4966-bd4d-79c5440e6891",
+						"system": "urn:uuid:5de8c3e0-fd52-48eb-e8d7-93be6ff9a3c3",
+						"code": "no",
+						"display": "No"
+					}
+				}
+			]
 		}
 	]
 }

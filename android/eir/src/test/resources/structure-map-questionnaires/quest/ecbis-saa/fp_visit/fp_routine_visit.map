@@ -1,10 +1,27 @@
-map "https://fhir.labs.smartregister.org/fhir/StructureMap/219527e8-44a1-11ed-b878-0242ac120002" = "FP Routine Visit"
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/219527e8-44a1-11ed-b878-0242ac120002" = "FP Routine Visit Commodity Extraction"
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
 group FPRoutineVisit(source src : QuestionnaireResponse, target bundle: Bundle) {
-    src -> evaluate(src, $this.subject) as refPatient then ExtractObservation(src, bundle, refPatient) "r_obs_entry";
+    src -> evaluate(src, $this.subject) as refPatient then
+        markFPConditionAsInactive(src, bundle), ExtractObservation(src, bundle, refPatient) "r_obs_entry";
+}
+
+group markFPConditionAsInactive(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src.item as confirm_using_same_method where(linkId = 'd94f058f-3a08-488d-e973-d9f0cf47b63b' and answer.value.exists() and answer.value.code = 'no') then {
+        src.item as alternate_method_item where(linkId = '798107ef-b7fb-4734-8be1-8b42ad10991f' and answer.value.exists() and answer.value.code = 'no') then {
+            src.item as item where(linkId = '772e0f8a-829a-11ed-a1eb-0242ac120002' and answer.value.exists()) then {
+                src->bundle.entry as entry,
+                entry.resource = create("Condition") as cnd then {
+                    src->cnd.id = create("id") as cnd_id then {
+                        src->cnd_id.value = evaluate(alternate_method_item, $this.answer.value) "r_item_cnd_id_value";
+                    } "r_item_cnd_id";
+                   src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "inactive") "r_cnd_clinical_status";
+                } "r_cnd";
+            } "r_item";
+        } "r_item_alternate_method_item";
+    } "r_item_confirm_using_same_method";
 }
 
 group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
@@ -102,7 +119,7 @@ group ExtractReference(source src: QuestionnaireResponse, target ref: Reference)
 
     // female condom
     src.item where(linkId = '2b257a07-1968-4794-8d28-fc92078a3f6a' and answer.value.code = 'yes') then {
-        src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
+        src -> ref.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc' "r_female_condom_ref";
     } "r_female_condom_type_check";
 
     // microlut
@@ -112,7 +129,7 @@ group ExtractReference(source src: QuestionnaireResponse, target ref: Reference)
 
     // microgynon
     src.item where(linkId = 'ac74c719-0fda-46cf-8247-a511cfdb76e1' and answer.value.code = 'yes') then {
-        src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5' "r_microgynon_ref";
+        src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c' "r_microgynon_ref";
     } "r_microgynon_type_check";
 
     // depo
