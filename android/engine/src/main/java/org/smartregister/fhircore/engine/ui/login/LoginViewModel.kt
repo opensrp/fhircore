@@ -253,6 +253,13 @@ constructor(
       accountAuthenticator.run {
         val trimmedUsername = username.value!!.trim()
         if (validatePreviousLogin(trimmedUsername)) {
+          if (accountAuthenticator.hasActiveSession()) {
+            if (attemptLocalLogin()) {
+              _navigateToHome.value = true
+              _showProgressBar.postValue(false)
+              return@run
+            }
+          }
           fetchToken(trimmedUsername, password.value!!.trim().toCharArray())
             .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
         } else {
