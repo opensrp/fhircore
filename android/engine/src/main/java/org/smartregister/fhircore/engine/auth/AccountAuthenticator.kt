@@ -306,13 +306,13 @@ constructor(
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if (response.isSuccessful) {
               onLogout()
-              localLogout()
-              launchScreen(LoginActivity::class.java)
+              invalidateSession()
             } else {
               onLogout()
               Timber.w(response.body()?.string())
               context.showToast(context.getString(R.string.cannot_logout_user))
             }
+            launchScreen(LoginActivity::class.java)
           }
 
           override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
@@ -321,6 +321,7 @@ constructor(
             context.showToast(
               context.getString(R.string.error_logging_out, throwable.localizedMessage)
             )
+            launchScreen(LoginActivity::class.java)
           }
         }
       )
@@ -366,7 +367,7 @@ constructor(
     return bundle
   }
 
-  fun localLogout() {
+  fun invalidateSession() {
     accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
     secureSharedPreference.deleteSessionTokens()
   }
