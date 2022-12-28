@@ -27,6 +27,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +37,7 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -57,6 +60,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -304,6 +308,12 @@ constructor(
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
+    // Schedule job that updates the status of the tasks periodically
+    workManager.enqueueUniquePeriodicWork(
+      FhirTaskPlanWorker.WORK_ID,
+      ExistingPeriodicWorkPolicy.REPLACE,
+      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+    )
 
     // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
     /* // Schedule job for generating measure report in the background

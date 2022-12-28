@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.task
 
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -43,12 +45,9 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
-import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -59,7 +58,8 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val workManager: WorkManager
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -171,7 +171,8 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    updateTaskStatus()
+    // Schedule onetime immediate job that updates the status of the tasks
+    workManager.enqueue(OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build())
 
     return if (output.hasActivity()) output else null
   }
@@ -223,47 +224,4 @@ constructor(
 
   suspend fun getTask(id: String) =
     kotlin.runCatching { fhirEngine.get<Task>(id) }.onFailure { Timber.e(it) }.getOrNull()
-
-  suspend fun updateTaskStatus() {
-    Timber.i("Starting task scheduler")
-
-    // TODO also filter by date range for better performance
-    fhirEngine
-      .search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.READY.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.INPROGRESS.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) },
-        )
-      }
-      .forEach { task ->
-        if (task.hasPastEnd()) {
-          task.status = TaskStatus.FAILED
-          fhirEngine.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              }
-            }
-        } else if (task.hasStarted() && task.status == TaskStatus.REQUESTED) {
-          task.status = TaskStatus.READY
-          fhirEngine.update(task)
-        }
-      }
-
-    Timber.i("Done task scheduling")
-  }
-
-  private fun CarePlan.isLastTask(task: Task) =
-    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
 }
