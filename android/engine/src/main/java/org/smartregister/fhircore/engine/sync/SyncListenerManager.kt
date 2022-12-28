@@ -120,7 +120,7 @@ constructor(
           // replace the evaluated value into expression for complex expressions
           // e.g. #organization -> 123
           // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
+          paramExpression?.replace(paramLiteral, it)
         }
 
       // for each entity in base create and add param map

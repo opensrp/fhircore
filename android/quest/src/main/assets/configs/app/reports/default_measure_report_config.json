@@ -77,6 +77,12 @@
       "description": "HIV Clients disaggregated by age, gender, and months",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/HIVCLIENTSIND01",
       "module": "Module 4"
+    },
+    {
+      "title": "Stock Consumption",
+      "description": "Stock Consumption Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND01",
+      "module": "Stock"
     }
   ]
 }
