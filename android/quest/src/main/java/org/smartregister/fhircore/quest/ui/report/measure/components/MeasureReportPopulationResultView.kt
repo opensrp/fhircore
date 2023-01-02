@@ -72,12 +72,33 @@ private fun PopulationResultCard(
             textAlign = TextAlign.Start
           )
           Text(
-            text = resultItem.measureReportDenominator.toString().uppercase(),
+            text =
+              resultItem.count.uppercase() +
+                " / " +
+                resultItem.measureReportDenominator.toString().uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
             textAlign = TextAlign.End
           )
+        }
+        resultItem.dataList.forEach {
+          Row(modifier = modifier.fillMaxWidth()) {
+            Text(
+              text = it.title,
+              color = colorResource(id = R.color.black),
+              fontSize = 15.sp,
+              modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
+              textAlign = TextAlign.Start
+            )
+            Text(
+              text = it.count,
+              color = colorResource(id = R.color.black),
+              fontSize = 15.sp,
+              modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
+              textAlign = TextAlign.End
+            )
+          }
         }
       }
     }
@@ -93,6 +114,7 @@ fun MeasureReportPopulationResultPreview() {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
+        measureReportDenominator = 4,
         indicatorTitle = "Still birth",
         dataList =
           listOf(

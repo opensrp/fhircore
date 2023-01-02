@@ -151,7 +151,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(syncJobStatus.exceptions?.joinToString { it.exception.message?.toString() ?: "" })
       }
       is SyncJobStatus.Failed -> {
         appMainViewModel.onEvent(

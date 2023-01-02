@@ -25,4 +25,10 @@ data class MeasureReportConfig(
   val description: String = "",
   val url: String = "",
   val module: String = "",
+  val type: MeasureReportConfigType = MeasureReportConfigType.PATIENT,
 )
+
+enum class MeasureReportConfigType {
+  PATIENT,
+  STOCK
+}

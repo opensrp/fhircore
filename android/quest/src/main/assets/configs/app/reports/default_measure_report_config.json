@@ -82,7 +82,8 @@
       "title": "Stock Consumption",
       "description": "Stock Consumption Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND01",
-      "module": "Stock"
+      "module": "Stock",
+      "type": "STOCK"
     }
   ]
 }
