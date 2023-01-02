@@ -38,6 +38,7 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
@@ -49,6 +50,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfigType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -277,18 +279,17 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFormatPopulationMeasureReport() {
-    val result = measureReportViewModel.formatPopulationMeasureReport(measureReport)
+  fun testFormatPopulationMeasureReport() = runTest {
+    val result =
+      measureReportViewModel.formatPopulationMeasureReports(
+        listOf(measureReport),
+        "IND",
+        MeasureReportConfigType.PATIENT
+      )
 
     assertEquals(1, result.size)
-    assertEquals("3/4", result.first().count)
     assertEquals("report group 1", result.first().title)
-
-    val disaggregation = result.first().dataList
-    assertEquals(1, result.first().dataList.size)
-    assertEquals("1/3", disaggregation.first().count)
-    assertEquals("Stratum #1", disaggregation.first().title)
-    assertEquals("33", disaggregation.first().percentage)
+    assertEquals(0, result.first().dataList.size)
   }
 
   private val measureReport =

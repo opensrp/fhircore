@@ -30,6 +30,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -37,17 +38,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlin.random.Random
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Group.GroupType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
@@ -366,38 +371,75 @@ constructor(
     type: MeasureReportConfigType
   ) {
     val measureReport: List<MeasureReport> =
-      withContext(dispatcherProvider.io()) {
-        if (type == MeasureReportConfigType.STOCK) {
-          fhirEngine
-            .search<Group> {
-              filter(
-                Group.TYPE,
-                {
-                  value =
-                    of(
-                      Coding(
-                        GroupType.MEDICATION.system,
-                        GroupType.MEDICATION.toCode(),
-                        GroupType.MEDICATION.display
-                      )
+      if (type == MeasureReportConfigType.STOCK) {
+        fhirEngine
+          .search<Group> {
+            filter(
+              Group.TYPE,
+              {
+                value =
+                  of(
+                    Coding(
+                      GroupType.MEDICATION.system,
+                      GroupType.MEDICATION.toCode(),
+                      GroupType.MEDICATION.display
                     )
-                }
-              )
-            }
-            .map {
-              // TODO a hack to prevent missing subject in case of Stock (Group) report where
-              // MeasureEvaluator looks for Group members and skips the Group itself
-              if (!it.hasMember()) {
-                it.addMember(Group.GroupMemberComponent(it.asReference()))
-                fhirEngine.update(it)
+                  )
               }
-              runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
+            )
+          }
+          .map {
+            fhirEngine.create(
+              Observation().apply {
+                subject = it.asReference()
+                code =
+                  CodeableConcept().apply {
+                    addCoding(Coding("https://smartregister.org/", "current-stock", null))
+                  }
+                effective = DateTimeType("2022-12-02")
+                value = Quantity(Random.nextDouble(20.0) * 4)
+              },
+              Observation().apply {
+                subject = it.asReference()
+                code =
+                  CodeableConcept().apply {
+                    addCoding(Coding("https://smartregister.org/", "consumption", null))
+                  }
+                effective = DateTimeType("2022-12-02")
+                value = Quantity(Random.nextDouble(20.0))
+              },
+              Observation().apply {
+                subject = it.asReference()
+                code =
+                  CodeableConcept().apply {
+                    addCoding(Coding("https://smartregister.org/", "consumption", null))
+                  }
+                effective = DateTimeType("2022-12-02")
+                value = Quantity(Random.nextDouble(20.0))
+              },
+              Observation().apply {
+                subject = it.asReference()
+                code =
+                  CodeableConcept().apply {
+                    addCoding(Coding("https://smartregister.org/", "consumption", null))
+                  }
+                effective = DateTimeType("2022-12-02")
+                value = Quantity(Random.nextDouble(20.0))
+              }
+            )
+
+            // TODO a hack to prevent missing subject in case of Stock (Group) report where
+            // MeasureEvaluator looks for Group members and skips the Group itself
+            if (!it.hasMember()) {
+              it.addMember(Group.GroupMemberComponent(it.asReference()))
+              fhirEngine.update(it)
             }
-        } else
-          listOfNotNull(
-            runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)
-          )
-      }
+            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
+          }
+      } else
+        listOfNotNull(
+          runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)
+        )
 
     measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
 
@@ -450,7 +492,10 @@ constructor(
             indicatorTitle = group.name,
             dataList =
               formatSupplementalData(it.contained, type).map {
-                MeasureReportIndividualResult(title = it.indicatorTitle, count = it.count)
+                MeasureReportIndividualResult(
+                  title = it.indicatorTitle,
+                  count = it.measureReportDenominator.toString()
+                )
               }
           )
         )
@@ -459,7 +504,7 @@ constructor(
       it
         .group
         .map { group ->
-          val denominator = group.findPopulation(MeasurePopulationType.DENOMINATOR)?.count
+          val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
           group to
             group.stratifier.flatMap { it.stratum }.map { stratifier ->
               stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
@@ -473,13 +518,11 @@ constructor(
             }
         }
         .mapNotNull {
-          it.first.findPopulation(MeasurePopulationType.DENOMINATOR)?.let { denominator ->
+          it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
             MeasureReportPopulationResult(
               title = it.first.id.replace("-", " "),
-              count = it.first.findPopulation(MeasurePopulationType.NUMERATOR)!!.count.toString(),
-              dataList = it.second,
               indicatorTitle = indicatorTitle,
-              measureReportDenominator = denominator.count
+              measureReportDenominator = count.count
             )
           }
         }
@@ -516,9 +559,8 @@ constructor(
       .map {
         MeasureReportPopulationResult(
           title = it.first,
-          count = it.second,
           indicatorTitle = it.first,
-          measureReportDenominator = it.first.toInt()
+          measureReportDenominator = it.second.toBigDecimal().toInt()
         )
       }
   }
