@@ -17,7 +17,6 @@ class GeoWidgetConfigurationTest {
                 appId, id = id, profileId = profileId,
                 registrationQuestionnaire = registrationQuestionnaire, resourceConfig = resourceConfig
         )
-
         Assert.assertEquals(appId, geoWidgetConfiguration.appId)
         Assert.assertEquals("geoWidget", geoWidgetConfiguration.configType)
         Assert.assertEquals(id, geoWidgetConfiguration.id)
