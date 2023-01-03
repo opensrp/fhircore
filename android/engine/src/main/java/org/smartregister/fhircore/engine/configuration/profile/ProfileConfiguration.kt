@@ -23,6 +23,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
@@ -31,6 +32,7 @@ data class ProfileConfiguration(
   override var configType: String = ConfigType.Profile.name,
   val id: String,
   val fhirResource: FhirResourceConfig,
+  val secondaryResources: List<ResourceConfig>? = null,
   val managingEntity: ManagingEntityConfig? = null,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),

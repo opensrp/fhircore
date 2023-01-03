@@ -27,6 +27,35 @@
       }
     ]
   },
+  "secondaryResources": [
+    {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "commoditiesQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "386452003"
+          }
+        }
+      ],
+      "relatedResources": [
+        {
+          "resource": "Observation",
+          "searchParameter": "subject",
+          "sortConfigs": [
+            {
+              "paramName": "effectiveDateTime",
+              "dataType": "DATETIME"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "rules": [
     {
       "name": "patientFirstName",
