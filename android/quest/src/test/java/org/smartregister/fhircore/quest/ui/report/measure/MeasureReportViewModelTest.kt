@@ -41,9 +41,13 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -336,5 +340,101 @@ class MeasureReportViewModelTest : RobolectricTest() {
     val currentYear = Calendar.getInstance().time.formatDate(SDF_YYYY)
     assertEquals(currentYear, result.keys.first())
     assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
+  }
+
+  @Test
+  fun testFormatMeasureReportsForPatient() = runTest {
+    measureReport.contained.clear()
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("ABC")
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("CDE")
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("EFG")
+      }
+    )
+
+    val result =
+      measureReportViewModel.formatPopulationMeasureReports(
+        listOf(measureReport),
+        "Test Indicator",
+        MeasureReportConfigType.PATIENT
+      )
+
+    assertEquals(2, result.size)
+
+    assertEquals("", result.first().count)
+    assertEquals(0, result.first().dataList.size)
+    assertEquals("Test Code", result.first().indicatorTitle)
+    assertEquals(3, result.first().measureReportDenominator)
+
+    assertEquals("", result.last().count)
+    assertEquals(0, result.last().dataList.size)
+    assertEquals("Test Indicator", result.last().indicatorTitle)
+    assertEquals(3, result.last().measureReportDenominator)
+  }
+
+  @Test
+  fun testFormatMeasureReportsStock() = runTest {
+    measureReport.contained.clear()
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 1")) }
+        value = CodeableConcept().apply { addCoding().code = "2" }
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 2")) }
+        value = CodeableConcept().apply { addCoding().code = "4" }
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 3")) }
+        value = CodeableConcept().apply { addCoding().code = "6" }
+      }
+    )
+
+    measureReport.subject = Reference().apply { reference = "Group/1" }
+
+    coEvery { fhirEngine.get(ResourceType.Group, any()) } returns
+      Group().apply { name = "Commodity 1" }
+
+    val result =
+      measureReportViewModel.formatPopulationMeasureReports(
+        listOf(measureReport),
+        "Test Indicator",
+        MeasureReportConfigType.STOCK
+      )
+
+    assertEquals(2, result.size)
+
+    assertEquals("", result.first().count)
+    assertEquals(3, result.first().dataList.size)
+    assertEquals("Commodity 1", result.first().indicatorTitle)
+    assertEquals(-1, result.first().measureReportDenominator)
+
+    assertEquals("Test Code 1", result.first().dataList.elementAt(0).title)
+    assertEquals("2", result.first().dataList.elementAt(0).count)
+
+    assertEquals("Test Code 2", result.first().dataList.elementAt(1).title)
+    assertEquals("4", result.first().dataList.elementAt(1).count)
+
+    assertEquals("Test Code 3", result.first().dataList.elementAt(2).title)
+    assertEquals("6", result.first().dataList.elementAt(2).count)
+
+    assertEquals("Test Indicator", result.last().indicatorTitle)
+    assertEquals(3, result.last().measureReportDenominator)
   }
 }

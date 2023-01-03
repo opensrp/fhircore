@@ -38,21 +38,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
-import kotlin.random.Random
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Group.GroupType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
@@ -389,45 +385,6 @@ constructor(
             )
           }
           .map {
-            fhirEngine.create(
-              Observation().apply {
-                subject = it.asReference()
-                code =
-                  CodeableConcept().apply {
-                    addCoding(Coding("https://smartregister.org/", "current-stock", null))
-                  }
-                effective = DateTimeType("2022-12-02")
-                value = Quantity(Random.nextDouble(20.0) * 4)
-              },
-              Observation().apply {
-                subject = it.asReference()
-                code =
-                  CodeableConcept().apply {
-                    addCoding(Coding("https://smartregister.org/", "consumption", null))
-                  }
-                effective = DateTimeType("2022-12-02")
-                value = Quantity(Random.nextDouble(20.0))
-              },
-              Observation().apply {
-                subject = it.asReference()
-                code =
-                  CodeableConcept().apply {
-                    addCoding(Coding("https://smartregister.org/", "consumption", null))
-                  }
-                effective = DateTimeType("2022-12-02")
-                value = Quantity(Random.nextDouble(20.0))
-              },
-              Observation().apply {
-                subject = it.asReference()
-                code =
-                  CodeableConcept().apply {
-                    addCoding(Coding("https://smartregister.org/", "consumption", null))
-                  }
-                effective = DateTimeType("2022-12-02")
-                value = Quantity(Random.nextDouble(20.0))
-              }
-            )
-
             // TODO a hack to prevent missing subject in case of Stock (Group) report where
             // MeasureEvaluator looks for Group members and skips the Group itself
             if (!it.hasMember()) {
@@ -564,65 +521,6 @@ constructor(
         )
       }
   }
-
-  /*fun formatPopulationMeasureReport(
-    measureReports: List<MeasureReport>,
-    indicatorTitle: String = ""
-  ): List<MeasureReportPopulationResult> {
-    var denominator: Int = 0
-    return measureReports
-      .also { Timber.w(it.encodeResourceToString()) }
-      .group
-      .flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
-        // Measure Report model is as follows:
-        // L0 - group[]
-        // L1 - group.population[]
-        // L1 - group.stratifier[]
-        // L2 - group.stratifier.stratum[]
-        // L3 - group.stratifier.stratum.population[]
-
-        // report group is stratifier/stratum denominator
-        denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
-        val stratifierItems: List<List<MeasureReportIndividualResult>> =
-          if (reportGroup.isMonthlyReport())
-            measureReports.reportingPeriodMonthsSpan.map {
-              val stats = reportGroup.findStratumForMonth(it)
-              listOf(
-                MeasureReportIndividualResult(
-                  title = it,
-                  percentage = stats?.findPercentage(denominator)?.toString() ?: "0",
-                  count = stats?.findRatio(denominator) ?: "0/$denominator"
-                )
-              )
-            }
-          else
-            reportGroup.stratifier.map { stratifier ->
-              stratifier.stratum.filter { it.hasValue() }.map { stratum ->
-                MeasureReportIndividualResult(
-                  title = stratum.displayText,
-                  percentage = stratum.findPercentage(denominator).toString(),
-                  count = stratum.findRatio(denominator),
-                  description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                )
-              }
-            }
-        // if each stratum evaluated to single item, display all under one group else for each add
-        // a
-        // separate group
-        val dataList =
-          if (stratifierItems.all { it.count() <= 1 }) listOf(stratifierItems.flatten())
-          else stratifierItems
-
-        dataList.map {
-          MeasureReportPopulationResult(
-            title = reportGroup.id.replace("-", " "),
-            count = reportGroup.findRatio(),
-            dataList = it,
-            indicatorTitle = indicatorTitle
-          )
-        }
-      }
-  }*/
 
   /** This function @returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
