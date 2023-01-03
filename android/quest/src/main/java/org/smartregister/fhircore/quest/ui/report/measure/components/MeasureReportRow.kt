@@ -69,8 +69,8 @@ fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier =
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun MeasureReportRowPreview() {
   MeasureReportRow(title = "Module 1- ANC Contacts ", onRowClick = {})

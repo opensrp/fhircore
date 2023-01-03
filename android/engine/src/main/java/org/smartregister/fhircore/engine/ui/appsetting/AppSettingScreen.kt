@@ -107,8 +107,8 @@ fun AppSettingScreen(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun AppSettingScreenPreview() {
   AppSettingScreen(appId = "", onAppIdChanged = {}, onLoadConfigurations = {})

@@ -133,8 +133,8 @@ fun showDateRangePicker(
     }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun DateRangeSelectedPreview() {
   val dateRange = remember {

@@ -50,8 +50,8 @@ fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun CircularProgressBarPreview() {
   CircularProgressBar()

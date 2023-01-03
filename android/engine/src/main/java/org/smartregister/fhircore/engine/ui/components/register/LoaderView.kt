@@ -91,8 +91,8 @@ fun LoaderDialog(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun LoaderPreview() {
   LoaderDialog()

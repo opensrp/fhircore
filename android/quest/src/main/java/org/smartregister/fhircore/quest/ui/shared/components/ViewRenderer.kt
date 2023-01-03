@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -60,6 +61,7 @@ fun ViewRenderer(
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewWeightedViewsInRow() {
   ViewRenderer(
     viewProperties =
@@ -93,6 +95,7 @@ private fun PreviewWeightedViewsInRow() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewWrappedViewsInRow() {
   ViewRenderer(
     viewProperties =
@@ -148,6 +151,7 @@ private fun PreviewWrappedViewsInRow() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewSameSizedViewInRow() {
   ViewRenderer(
     viewProperties =
@@ -185,6 +189,7 @@ private fun PreviewSameSizedViewInRow() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewCardViewWithRows() {
   ViewRenderer(
     viewProperties =

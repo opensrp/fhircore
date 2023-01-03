@@ -142,8 +142,8 @@ fun MeasureReportResultPage(
   }
 }
 //
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForIndividualPreview() {
   MeasureReportResultPage(
@@ -171,8 +171,8 @@ private fun MeasureReportResultScreenForIndividualPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForPopulationPreview() {
   val testResultItem1 =

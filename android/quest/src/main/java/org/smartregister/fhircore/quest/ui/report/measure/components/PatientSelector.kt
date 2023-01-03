@@ -131,8 +131,8 @@ fun PatientSelector(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SelectedPatientPreview() {
   PatientSelector(patientName = "Mary Magdalene", onChangePatient = {})

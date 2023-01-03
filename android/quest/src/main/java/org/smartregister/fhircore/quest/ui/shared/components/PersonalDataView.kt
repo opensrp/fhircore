@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun PersonalDataView(
@@ -77,8 +78,9 @@ private fun PersonalDataItem(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun PersonalDataViewPreview() {
   val genderLabel =
     CompoundTextProperties(

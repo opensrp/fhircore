@@ -125,8 +125,8 @@ fun RegisterListItem(
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun RegisterListItemPreview() {
   RegisterListItem(
     navigationMenuConfig =
@@ -137,8 +137,8 @@ fun RegisterListItemPreview() {
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun RegisterBottomSheetPreview() {
   RegisterBottomSheetView(
     navigationMenuConfigs =

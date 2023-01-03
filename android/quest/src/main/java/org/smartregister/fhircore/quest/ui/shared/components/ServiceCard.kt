@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -288,6 +289,7 @@ private fun BigServiceButton(
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -342,6 +344,7 @@ private fun ServiceCardServiceOverduePreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -396,6 +399,7 @@ private fun ServiceCardServiceDuePreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -450,6 +454,7 @@ private fun ServiceCardServiceUpcomingPreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardServiceFamilyMemberPreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -485,6 +490,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -538,6 +544,7 @@ private fun ServiceCardServiceCompletedPreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
@@ -586,6 +593,7 @@ private fun ServiceCardANCServiceDuePreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(

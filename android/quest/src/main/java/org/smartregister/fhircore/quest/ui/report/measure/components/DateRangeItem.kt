@@ -64,8 +64,8 @@ fun DateRangeItem(text: String, showBackground: Boolean = true, modifier: Modifi
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun DateRangeItemPreview() {
   DateRangeItem(text = "Date Range", showBackground = true)

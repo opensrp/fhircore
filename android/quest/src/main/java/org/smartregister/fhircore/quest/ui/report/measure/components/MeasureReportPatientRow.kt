@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
 const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
@@ -90,8 +91,9 @@ fun MeasureReportPatientRow(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportPatientRowPreview() {
   MeasureReportPatientRow(
     measureReportPatientViewData =

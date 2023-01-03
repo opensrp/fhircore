@@ -53,8 +53,8 @@ fun NoResults(modifier: Modifier = Modifier) {
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun NoResultsPreview() {
   NoResults(modifier = Modifier)

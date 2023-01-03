@@ -393,8 +393,8 @@ private fun SideMenuItemText(title: String, textColor: Color) {
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun AppDrawerPreview() {
   AppDrawer(
     appUiState =

@@ -61,8 +61,8 @@ fun ErrorMessage(message: String, modifier: Modifier = Modifier, onClickRetry: (
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun ErrorMessagePreview() {
   ErrorMessage(

@@ -33,6 +33,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 
 const val BOTTOM_NAV_CONTAINER_TEST_TAG = "bottomNavContainerTestTag"
@@ -83,6 +84,7 @@ fun BottomScreenSection(
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun BottomScreenSectionPreview() {
   val navController = rememberNavController()
   val navigationScreens =

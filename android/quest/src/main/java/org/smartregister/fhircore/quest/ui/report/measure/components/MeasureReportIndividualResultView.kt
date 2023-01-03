@@ -128,8 +128,8 @@ fun MeasureReportIndividualResultView(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 private fun MeasureReportIndividualResultViewPreview() {
   MeasureReportIndividualResultView(

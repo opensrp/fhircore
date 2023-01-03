@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -170,8 +171,9 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
   else ServiceStatus.UPCOMING
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun ActionableButtonPreview() {
   ActionableButton(
     buttonProperties =
@@ -186,8 +188,9 @@ fun ActionableButtonPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun DisabledActionableButtonPreview() {
   ActionableButton(
     buttonProperties =
@@ -203,8 +206,9 @@ fun DisabledActionableButtonPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun SmallActionableButtonPreview() {
   Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(

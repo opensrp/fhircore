@@ -181,8 +181,8 @@ fun NoRegisterDataView(
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewNoRegistersView() {
   NoRegisterDataView(
     noResults =

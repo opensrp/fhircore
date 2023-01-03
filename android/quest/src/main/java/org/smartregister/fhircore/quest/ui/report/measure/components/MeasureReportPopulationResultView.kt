@@ -84,8 +84,8 @@ private fun PopulationResultCard(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun MeasureReportPopulationResultPreview() {
   val dataList =

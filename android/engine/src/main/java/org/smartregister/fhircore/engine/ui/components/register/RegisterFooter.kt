@@ -108,29 +108,29 @@ fun RegisterFooter(
     }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
   RegisterFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
   RegisterFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
   RegisterFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
   RegisterFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})

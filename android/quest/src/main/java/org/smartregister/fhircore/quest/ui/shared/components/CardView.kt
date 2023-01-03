@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.parseColor
 
 @Composable
@@ -84,8 +85,9 @@ fun CardView(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 private fun CardViewWithoutPaddingPreview() {
   Column(modifier = Modifier.fillMaxWidth()) {
     CardView(
@@ -113,8 +115,9 @@ private fun CardViewWithoutPaddingPreview() {
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 private fun CardViewWithPaddingPreview() {
   Column(modifier = Modifier.fillMaxWidth()) {
     CardView(

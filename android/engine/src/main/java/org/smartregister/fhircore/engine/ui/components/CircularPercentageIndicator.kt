@@ -93,8 +93,8 @@ fun CircularPercentageIndicator(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun CircularPercentageIndicatorPreview() {
   CircularPercentageIndicator(percentage = "10")

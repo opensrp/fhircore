@@ -252,8 +252,8 @@ fun ForgotPinDialog(
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
   PinLoginPage(
@@ -265,8 +265,8 @@ fun PinLoginPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
   PinLoginPage(

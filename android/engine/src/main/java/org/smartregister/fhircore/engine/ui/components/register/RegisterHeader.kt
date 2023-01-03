@@ -47,8 +47,8 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun SearchHeaderPreview() {
   RegisterHeader(resultCount = 2)

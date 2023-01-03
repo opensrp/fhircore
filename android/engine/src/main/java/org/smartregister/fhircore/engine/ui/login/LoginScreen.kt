@@ -382,8 +382,8 @@ fun ForgotPasswordDialog(
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun LoginScreenPreview() {
   LoginPage(
     applicationConfiguration =
@@ -399,8 +399,8 @@ fun LoginScreenPreview() {
 }
 
 @Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun LoginScreenPreviewDarkMode() {
   LoginPage(
     applicationConfiguration =

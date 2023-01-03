@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
@@ -132,6 +133,7 @@ fun MemberProfileBottomSheetView(
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun MemberProfileBottomSheetViewPreview() {
   MemberProfileBottomSheetView(
     coroutineScope = rememberCoroutineScope(),
@@ -146,6 +148,7 @@ private fun MemberProfileBottomSheetViewPreview() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun MemberProfileBottomSheetViewWithFormDataPreview() {
   MemberProfileBottomSheetView(
     coroutineScope = rememberCoroutineScope(),

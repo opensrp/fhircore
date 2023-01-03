@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -98,8 +99,9 @@ fun ExtendedFab(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewDisabledExtendedFab() {
   ExtendedFab(
     fabActions =
@@ -115,8 +117,9 @@ fun PreviewDisabledExtendedFab() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewExtendedFab() {
   ExtendedFab(
     fabActions =
@@ -131,8 +134,9 @@ fun PreviewExtendedFab() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewExtendedFabJustIcon() {
   ExtendedFab(
     fabActions =

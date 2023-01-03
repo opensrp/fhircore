@@ -458,8 +458,8 @@ fun GenerateReportButton(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PatientSelectionAllPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }
@@ -481,8 +481,8 @@ fun PatientSelectionAllPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PatientSelectionIndividualPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.INDIVIDUAL) }
@@ -504,8 +504,8 @@ fun PatientSelectionIndividualPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun FixedRangeListPreview() {
   val ranges = HashMap<String, List<ReportRangeSelectionData>>()
@@ -528,8 +528,8 @@ fun FixedRangeListPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun ReportFilterPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }

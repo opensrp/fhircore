@@ -186,8 +186,8 @@ fun PinSetupPage(
   }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PinSetupPreview() {
   PinSetupPage(
@@ -200,8 +200,8 @@ fun PinSetupPreview() {
   )
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 @ExcludeFromJacocoGeneratedReport
 fun PinSetupFilledPreview() {
   PinSetupPage(
