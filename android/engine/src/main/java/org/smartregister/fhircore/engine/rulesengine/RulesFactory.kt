@@ -355,6 +355,17 @@ constructor(
       }
     }
 
+    fun filterList(list: List<Resource>, fhirPathExpression: String, attribute: String): List<Any?> {
+      val result = ArrayList<Any?>()
+      list.filter {
+        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as BooleanType).value
+      }
+      list.filter {
+        result.add(getValue(it, attribute))
+      }
+      return result
+    }
+
     fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
       list.filter { getValue(it, attribute) == attributeValue }
 
