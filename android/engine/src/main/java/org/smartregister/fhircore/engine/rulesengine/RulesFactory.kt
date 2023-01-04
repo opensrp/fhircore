@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -359,9 +360,19 @@ constructor(
       list.filter { getValue(it, attribute) == attributeValue }
 
     private fun getValue(resource: Resource, attribute: String): Any? {
-      val property = (resource.javaClass).getDeclaredField(attribute)
-      property.isAccessible = true
-      return (property.get(resource) as? PrimitiveType<*>)?.value
+      val property = getDeclaredField(attribute, resource.javaClass)
+      property?.isAccessible = true
+      return (property?.get(resource) as? PrimitiveType<*>)?.value
+    }
+
+    private fun getDeclaredField(attribute: String, type: Class<*>): Field? {
+      return try {
+        type.getDeclaredField(attribute)
+      } catch (ex: Exception) {
+        if (type.superclass != null) {
+          getDeclaredField(attribute, type.superclass)
+        } else null
+      }
     }
   }
 
