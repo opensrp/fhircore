@@ -696,8 +696,8 @@ abstract class BaseRegisterActivity :
 
     val exceptions =
       when (state) {
-        is SyncJobStatus.Glitch -> state.exceptions
-        is SyncJobStatus.Failed -> state.exceptions
+        is SyncJobStatus.Glitch -> if (state.exceptions != null) state.exceptions else emptyList()
+        is SyncJobStatus.Failed -> if (state.exceptions != null) state.exceptions else emptyList()
         else -> listOf()
       }
 

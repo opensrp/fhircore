@@ -102,10 +102,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.w(
+          (if (state.exceptions != null) state.exceptions else emptyList()).joinToString {
+            it.exception.message.toString()
+          }
+        )
       }
       is SyncJobStatus.Failed -> {
-        if (state.exceptions.isNotEmpty() &&
+        if (!state.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
           showToast(state.exceptions.first().exception.message!!)
@@ -113,9 +117,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         }
         showToast(getString(R.string.sync_failed_text))
         val hasAuthError =
-          state.exceptions.any {
-            it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
+          state.exceptions != null &&
+            state.exceptions.any {
+              it.exception is HttpException && (it.exception as HttpException).code() == 401
+            }
         val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
         showToast(getString(message))
         appMainViewModel.onEvent(
@@ -131,7 +136,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent) }
           )
         }
-        Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
+        Timber.e(
+          (if (state.exceptions != null) state.exceptions else emptyList()).joinToString {
+            it.exception.message.toString()
+          }
+        )
         scheduleFhirTaskStatusUpdater()
       }
       is SyncJobStatus.Finished -> {
