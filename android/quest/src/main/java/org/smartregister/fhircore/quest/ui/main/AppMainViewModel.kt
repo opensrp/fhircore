@@ -28,7 +28,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +36,6 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -79,6 +77,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
 class AppMainViewModel
@@ -309,22 +308,23 @@ constructor(
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
-    workManager.enqueueUniquePeriodicWork(
-      FhirTaskPlanWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
-    )
+    workManager.run {
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE,
+      )
 
-    // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-    /* // Schedule job for generating measure report in the background
-     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-    */
+      schedulePeriodically<FhirTaskExpireWorker>(
+        workId = FhirTaskExpireWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.taskExpireJobRepeatIntervalMinutes,
+        existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE,
+      )
 
-    FhirTaskExpireWorker.schedule(
-      workManager,
-      sharedPreferencesHelper,
-      applicationConfiguration.taskExpireJobRepeatIntervalMinutes
-    )
+      // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+      /* // Schedule job for generating measure report in the background
+       MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+      */
+    }
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {

@@ -19,16 +19,10 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.concurrent.TimeUnit
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltWorker
 class FhirTaskExpireWorker
@@ -56,36 +50,6 @@ constructor(
   }
 
   companion object {
-    const val TAG = "FhirTaskExpire"
-
-    fun schedule(
-      workManager: WorkManager,
-      sharedPreferencesHelper: SharedPreferencesHelper,
-      durationInMins: Long,
-      version: Long = 1
-    ) {
-      val currVersion =
-        sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name, 0)
-      var existingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
-      if (currVersion != version) {
-        existingWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
-        sharedPreferencesHelper.write(
-          SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name,
-          version
-        )
-      }
-
-      val periodicWorkRequest =
-        PeriodicWorkRequestBuilder<FhirTaskExpireWorker>(
-            repeatInterval = durationInMins,
-            repeatIntervalTimeUnit = TimeUnit.MINUTES,
-            flexTimeInterval = 5,
-            flexTimeIntervalUnit = TimeUnit.MINUTES
-          )
-          .setInitialDelay(durationInMins, TimeUnit.MINUTES)
-          .build()
-
-      workManager.enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
-    }
+    const val WORK_ID = "FhirTaskExpire"
   }
 }

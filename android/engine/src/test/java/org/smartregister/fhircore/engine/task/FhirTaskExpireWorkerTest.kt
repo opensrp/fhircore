@@ -21,7 +21,6 @@ import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.ListenableWorker
-import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
@@ -42,7 +41,6 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -89,7 +87,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
-    assertEquals(androidx.work.ListenableWorker.Result.success(), result)
+    assertEquals(ListenableWorker.Result.success(), result)
 
     coVerify { fhirTaskExpireUtil.fetchOverdueTasks() }
     coVerify { fhirTaskExpireUtil.fetchOverdueTasks(from = date1) }
@@ -97,42 +95,6 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
     coVerify { fhirTaskExpireUtil.markTaskExpired(firstBatchTasks) }
     coVerify { fhirTaskExpireUtil.markTaskExpired(secondBatchTasks) }
-  }
-
-  @Test
-  fun scheduleShouldCallEnqueueWithReplaceWhenVersionIsNewer() {
-    // Schedule the first job of version 1
-    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
-
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
-
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 2)
-
-    val workInfo2 =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
-        .get()[0]
-
-    assertNotEquals(workInfo.id, workInfo2.id)
-  }
-
-  @Test
-  fun scheduleShouldCallEnqueueWithKeepWhenVersionIsSimilar() {
-    // Schedule the first job of version 1
-    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
-
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
-
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 1)
-
-    val workInfo2 =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
-        .get()[0]
-
-    assertEquals(workInfo.id, workInfo2.id)
   }
 
   private fun initializeWorkManager() {
