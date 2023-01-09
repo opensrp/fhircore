@@ -108,6 +108,7 @@ configurations {
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.work:work-testing:2.7.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -257,7 +258,7 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20220320'
 

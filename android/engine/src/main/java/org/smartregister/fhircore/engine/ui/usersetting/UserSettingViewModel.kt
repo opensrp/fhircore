@@ -112,7 +112,7 @@ constructor(
       fhirEngine.clearDatabase()
       sharedPreferencesHelper.resetSharedPrefs()
       secureSharedPreference.resetSharedPrefs()
-      accountAuthenticator.localLogout()
+      accountAuthenticator.invalidateSession()
       accountAuthenticator.launchScreen(AppSettingActivity::class.java)
     }
   }
