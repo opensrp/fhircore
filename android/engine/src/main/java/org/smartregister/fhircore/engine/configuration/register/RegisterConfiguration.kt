@@ -21,7 +21,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -30,7 +29,7 @@ data class RegisterConfiguration(
   val id: String,
   val registerTitle: String? = null,
   val fhirResource: FhirResourceConfig,
-  val secondaryResources: List<ResourceConfig>? = null,
+  val secondaryResources: List<FhirResourceConfig>? = null,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),

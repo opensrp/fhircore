@@ -27,29 +27,36 @@
       }
     ]
   },
-  "secondaryResources": [
+  "secondaryResources":[
     {
-      "resource": "Group",
-      "dataQueries": [
-        {
-          "id": "commoditiesQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "386452003"
+      "baseResource": {
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "id": "commoditiesQueryByCode",
+            "filterType": "TOKEN",
+            "key": "code",
+            "valueType": "CODEABLECONCEPT",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "386452003"
+            }
           }
-        }
-      ],
+        ]
+      },
       "relatedResources": [
         {
           "resource": "Observation",
           "searchParameter": "subject",
-          "sortConfigs": [
+          "dataQueries": [
             {
-              "paramName": "effectiveDateTime",
-              "dataType": "DATETIME"
+              "id": "filterLatestObservation",
+              "filterType": "TOKEN",
+              "key": "_tag",
+              "valueType": "CODING",
+              "valueCoding": {
+                "code": "latest"
+              }
             }
           ]
         }
