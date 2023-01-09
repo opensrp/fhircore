@@ -239,6 +239,17 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun shouldInputDateTimeStringWithExpectedFormat() {
+    val inputDateString = "2023-09-01T00:00:00.00Z"
+    val inputDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "01-09-2023",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+  }
+
+  @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
     val resources =
