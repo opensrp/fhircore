@@ -6,7 +6,6 @@
   "registerDate": "2020-10-27",
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
-  "taskExpireJobRepeatIntervalMinutes": "30",
   "languages": [
     "en"
   ],
@@ -34,5 +33,6 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "taskExpireJobDuration": "PT01H"
 }

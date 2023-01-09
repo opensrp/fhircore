@@ -37,6 +37,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -316,7 +318,7 @@ constructor(
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.taskExpireJobRepeatIntervalMinutes,
+        duration =    Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
         existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE,
       )
 

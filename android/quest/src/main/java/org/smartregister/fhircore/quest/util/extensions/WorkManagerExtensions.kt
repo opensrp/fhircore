@@ -21,19 +21,24 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 /** Schedule a periodic job that retry exponentially with initial backoff delay of 30 seconds */
 inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   workId: String,
   repeatInterval: Long = 15,
+  duration: Duration? = null,
   timeUnit: TimeUnit = TimeUnit.MINUTES,
   existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
 ) {
+  val workRequestBuilder =
+    if (duration == null) PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
+    else PeriodicWorkRequestBuilder<W>(duration)
   enqueueUniquePeriodicWork(
     workId,
     existingPeriodicWorkPolicy,
-    PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
+    workRequestBuilder
       .setInitialDelay(repeatInterval, timeUnit)
       .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
       .build()
