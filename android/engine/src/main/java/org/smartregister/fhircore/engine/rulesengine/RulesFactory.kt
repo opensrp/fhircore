@@ -21,7 +21,8 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.lang.reflect.Field
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
@@ -359,8 +360,8 @@ constructor(
       list.filter { getValue(it, attribute) == attributeValue }
 
     /**
-     * This function takes a [resource] as source class and a [attribute] as field name
-     * to find out the actual value by using the java reflection API.
+     * This function takes a [resource] as source class and a [attribute] as field name to find out
+     * the actual value by using the java reflection API.
      *
      * @return optional [Any] primitive type value
      */
