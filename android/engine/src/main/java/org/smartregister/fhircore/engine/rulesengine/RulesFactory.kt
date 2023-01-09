@@ -371,8 +371,9 @@ constructor(
     }
 
     /**
-     * This function takes a [attribute] as a field name and [type] as a source class to find out
-     * the actual field from full class hierarchy or return null in case of missing
+     * This function takes a [attribute] as a field name and [type] as a source class to find the
+     * actual field from full class hierarchy. If the field does not exist anywhere in the class
+     * hierarchy we return null.
      *
      * @return optional [Field]
      */
