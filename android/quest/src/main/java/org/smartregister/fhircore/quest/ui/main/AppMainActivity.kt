@@ -162,10 +162,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             else getString(R.string.syncing_failed)
           )
         )
-        if (hasAuthError) {
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(this))
-        }
-        Timber.e(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Finished -> {
         appMainViewModel.run {

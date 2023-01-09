@@ -37,8 +37,8 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -322,7 +323,10 @@ constructor(
     workManager.enqueueUniquePeriodicWork(
       FhirTaskPlanWorker.WORK_ID,
       ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(
+          Duration.tryParse(applicationConfiguration.taskUpdateInterval)
+        )
+        .build()
     )
 
     // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
