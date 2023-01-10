@@ -70,7 +70,8 @@ constructor(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "math" to Class.forName("java.lang.Math")
         )
       )
       .silent(false)

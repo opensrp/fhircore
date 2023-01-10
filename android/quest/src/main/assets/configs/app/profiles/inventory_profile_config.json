@@ -32,7 +32,7 @@
       "name": "quantity",
       "condition": "true",
       "actions": [
-        "var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Integer', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return x; } ; data.put('quantity', balance(Observation))"
+        "var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0.0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Double', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return math:round(x); } ; data.put('quantity', balance(Observation))"
       ]
     },
     {
