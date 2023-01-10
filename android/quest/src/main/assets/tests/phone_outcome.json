@@ -76,7 +76,7 @@
             },
             {
               "valueCoding": {
-                "code": "patient-refused-visit",
+                "code": "home-visit-request",
                 "display": "Requested home visit"
               }
             },
@@ -183,8 +183,8 @@
                   }
                 }
               ],
-              "linkId": "date-of-agreed-appointment",
-              "text": "<b>ENTER</b> Date of agreed clinic Appointment",
+              "linkId": "date-of-transfer",
+              "text": "<b>ENTER</b> Date of Transfer Out",
               "type": "date",
               "required": true
             },
@@ -743,14 +743,14 @@
           ]
         },
         {
-          "linkId": "refused-visit-group",
+          "linkId": "home-visit-group",
           "type": "group",
           "enableWhen": [
             {
               "question": "tracing-outcome",
               "operator": "=",
               "answerCoding": {
-                "code": "patient-refused-visit"
+                "code": "home-visit-request"
               }
             }
           ],
@@ -1078,6 +1078,99 @@
           "enableBehavior": "any"
         }
       ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.generalPractitioner.first().reference"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "practitioner-ref",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.where(resource.status != \"cancelled\" and resource.status != \"completed\").select(resource.identifier.value).toString()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "tracing-tasks",
+      "text": "",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [ {
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "check-box", "display": "Checkbox"
+            } ], "text": "Checkbox"
+          } },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.where(resource.status != \"cancelled\" and resource.status != \"completed\").select(resource)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+          "extension": [
+            {
+              "url": "path",
+              "valueString": "identifier.value"
+            },
+            {
+              "url": "label",
+              "valueString": "identifier.value"
+            },
+            {
+              "url": "forDisplay",
+              "valueBoolean": true
+            }
+          ]
+        }
+      ],
+      "linkId": "traciewewtasks",
+      "text": "Choose a Patient as Caregiver?",
+      "repeats": true,
+      "type": "reference"
     }
   ]
 }

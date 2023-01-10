@@ -1099,7 +1099,7 @@
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.select(resource.id).toString()"
+            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.select(\"[\" + resource.id + \"|\" + resource.status + \"]\" ).toString()"
           }
         }
       ],
