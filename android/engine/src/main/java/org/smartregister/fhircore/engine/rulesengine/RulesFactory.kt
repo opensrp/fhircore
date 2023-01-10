@@ -357,10 +357,10 @@ constructor(
 
     fun filterList(list: List<Resource>, fhirPathExpression: String, attribute: String): List<Any?> {
       val result = ArrayList<Any?>()
-      list.filter {
+      val filteredList = list.filter {
         (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as BooleanType).value
       }
-      list.filter {
+      filteredList.filter {
         result.add(getValue(it, attribute))
       }
       return result

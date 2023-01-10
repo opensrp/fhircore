@@ -275,6 +275,25 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun fetchDescriptionFromReadyTasks() {
+    val fhirPathExpression = "Task.status = 'ready'"
+    val list =
+      listOf(
+        Task().apply { status = TaskStatus.COMPLETED
+          description = "minus"},
+        Task().apply { status = TaskStatus.READY
+          description = "plus"},
+        Task().apply { status = TaskStatus.CANCELLED
+          description = "multiply"},
+        Task().apply { status = TaskStatus.COMPLETED
+          description = "minus five"},
+      )
+
+    val descriptionList = rulesEngineService.filterList(list, fhirPathExpression, "description")
+    Assert.assertTrue(descriptionList.first() == "plus")
+  }
+
+  @Test
   fun filterResourceListWithWrongExpression() {
     val fhirPathExpression = "Task.desc = 'ready'"
     val list =
