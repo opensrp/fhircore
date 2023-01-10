@@ -401,6 +401,22 @@ class RulesFactoryTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun testFilterListShouldReturnEmptyListWhenFieldNotFound() {
+
+    val listOfResources =
+      listOf(
+        Condition().apply {
+          id = "1"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
+        }
+      )
+
+    val result = rulesEngineService.filterList(listOfResources, "unknown_field", "1")
+
+    Assert.assertTrue(result.isEmpty())
+  }
+
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())
     val patientRelatedResource = mutableListOf(populateTestPatient())
