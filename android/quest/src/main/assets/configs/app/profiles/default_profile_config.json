@@ -313,17 +313,17 @@
                     ]
                   },
                   {
-                    "name": "taskExecutionEndDate",
+                    "name": "taskExecutionStartDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskExecutionEndDate', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
+                      "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
                     ]
                   },
                   {
-                    "name": "taskExecutionPeriodDueDate",
+                    "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskExecutionPeriodDueDate', service.prettifyDate(data.get('taskExecutionEndDate')))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd-MM-yyyy\"))"
                     ]
                   },
                   {
@@ -334,11 +334,11 @@
                     ]
                   },
                   {
-                    "name": "taskDescriptionDate",
+                    "name": "taskDescriptionWithStartDate",
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + '-' + ' ' + data.get('taskExecutionPeriodDueDate'))"
+                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + 'due' + ' ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -377,7 +377,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
-                          "title": "@{taskDescriptionDate}",
+                          "title": "@{taskDescription}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
