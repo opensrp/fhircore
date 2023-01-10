@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.WorkAround
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
@@ -108,8 +107,6 @@ constructor(
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
-
-  @WorkAround private var ignoreResource: Resource? = null
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -351,23 +348,20 @@ constructor(
     }
   }
 
-  @WorkAround
   suspend fun carePlanAndPatientMetaExtraction(source: Resource) {
     try {
       /** Get a FHIR [Resource] in the local storage. */
       var resource = fhirEngine.get(source.resourceType, source.id)
+      /** Increment [Resource.meta] versionId of [source]. */
+      val versionId = resource.meta.versionId.toInt().plus(1).toString()
       /** Append passed [Resource.meta] to the [source]. */
       resource.addTags(source.meta.tag)
-      /** Increment [Resource.meta] versionId of [source]. */
-      resource =
-        resource.copy().apply { meta.versionId = meta.versionId.toInt().plus(1).toString() }
+      /** Assign [Resource.meta] versionId of [source]. */
+      resource = resource.copy().apply { meta.versionId = versionId }
+      /** Delete a FHIR [source] in the local storage. */
+      fhirEngine.delete(resource.resourceType, resource.id)
       /** Recreate a FHIR [source] in the local storage. */
       fhirEngine.create(resource)
-      /**
-       * Assign the [ResourceType] to [ignoreResource] to skip the resource when a [saveResource] is
-       * extracting and saving [QuestionnaireResponse].
-       */
-      ignoreResource = source
     } catch (e: Exception) {
       Timber.e(e)
     }
@@ -481,12 +475,7 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry ->
-        @WorkAround
-        if (ignoreResource != bundleEntry.resource) {
-          defaultRepository.addOrUpdate(bundleEntry.resource)
-        }
-      }
+      bundle.entry.forEach { defaultRepository.addOrUpdate(it.resource) }
     }
   }
 
