@@ -136,4 +136,6 @@
     <string name="press_back_again">Please click BACK again to exit</string>
     <string name="unable_to_sync">Unable to sync. Connect to the internet and try again</string>
     <string name="appointment_date">Appointment Date</string>
+    <string name="new_visit_created_title">New Visit Created</string>
+    <string name="new_visit_created_message">A new visit for the patient has been successfully created.</string>
 </resources>
