@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -359,10 +360,33 @@ constructor(
     fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
       list.filter { getValue(it, attribute) == attributeValue }
 
+    /**
+     * This function takes a [resource] as source class and a [attribute] as field name to find out
+     * the actual value by using the java reflection API.
+     *
+     * @return optional [Any] primitive type value
+     */
     private fun getValue(resource: Resource, attribute: String): Any? {
-      val property = (resource.javaClass).getDeclaredField(attribute)
-      property.isAccessible = true
-      return (property.get(resource) as? PrimitiveType<*>)?.value
+      val property = getDeclaredField(attribute, resource.javaClass)
+      property?.isAccessible = true
+      return (property?.get(resource) as? PrimitiveType<*>)?.value
+    }
+
+    /**
+     * This function takes a [attribute] as a field name and [type] as a source class to find the
+     * actual field from full class hierarchy. If the field does not exist anywhere in the class
+     * hierarchy we return null.
+     *
+     * @return optional [Field]
+     */
+    private fun getDeclaredField(attribute: String, type: Class<*>): Field? {
+      return try {
+        type.getDeclaredField(attribute)
+      } catch (ex: NoSuchFieldException) {
+        if (type.superclass != null) {
+          getDeclaredField(attribute, type.superclass)
+        } else null
+      }
     }
   }
 
