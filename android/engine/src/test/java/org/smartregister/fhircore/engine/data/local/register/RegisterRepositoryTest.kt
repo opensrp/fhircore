@@ -150,7 +150,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val listResourceData = registerRepository.loadRegisterData(1, "householdRegister")
       val resourceData = listResourceData.first()
 
-      Assert.assertEquals(1, listResourceData.size)
+      Assert.assertEquals(2, listResourceData.size)
 
       Assert.assertEquals(ResourceType.Group, resourceData.baseResourceType)
 
