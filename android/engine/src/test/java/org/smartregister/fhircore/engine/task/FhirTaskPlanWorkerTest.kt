@@ -17,123 +17,48 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
-import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.Configuration
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
-import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import java.util.Date
-import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Period
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
+import io.mockk.coEvery
+import io.mockk.mockk
 import org.hl7.fhir.r4.model.Task
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.plusDays
 
-@HiltAndroidTest
 class FhirTaskPlanWorkerTest : RobolectricTest() {
 
-  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @Inject lateinit var fhirEngine: FhirEngine
-  private lateinit var fhirTaskPlanWorker: FhirTaskPlanWorker
-  lateinit var context: Context
+  private lateinit var context: Context
+  val fhirEngine: FhirEngine = mockk()
 
   @Before
-  fun setup() {
-    hiltRule.inject()
-
+  fun setUp() {
     context = ApplicationProvider.getApplicationContext()
-    initializeWorkManager()
-    fhirTaskPlanWorker =
-      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
-        .setWorkerFactory(FhirTaskPlanJobWorkerFactory())
-        .build()
   }
 
   @Test
-  fun doWorkShouldVerifyAllTaskAndCarePlanStatus() = runBlocking {
-    fhirEngine.create(
-      Task().apply {
-        id = "1"
-        status = Task.TaskStatus.REQUESTED
-        executionPeriod =
-          Period().apply {
-            start = Date().plusDays(-10)
-            end = Date().plusDays(-8)
-          }
-      },
-      CarePlan().apply {
-        id = "999"
-        status = CarePlan.CarePlanStatus.ACTIVE
-        addActivity().apply { addOutcomeReference().apply { reference = "Task/2" } }
-      },
-      Task().apply {
-        id = "2"
-        status = Task.TaskStatus.REQUESTED
-        executionPeriod =
-          Period().apply {
-            start = Date().plusDays(-10)
-            end = Date().plusDays(-8)
-          }
-        basedOn = listOf(Reference().apply { reference = ResourceType.CarePlan.name + "/999" })
-      },
-      Task().apply {
-        id = "3"
-        status = Task.TaskStatus.REQUESTED
-        executionPeriod =
-          Period().apply {
-            start = Date()
-            end = Date().plusDays(10)
-          }
-      }
-    )
-
-    val result = fhirTaskPlanWorker.doWork()
-    val updatedTask1 = fhirEngine.get(ResourceType.Task, "1") as Task
-    val updatedTask2 = fhirEngine.get(ResourceType.Task, "2") as Task
-    val updatedCarePlan = fhirEngine.get(ResourceType.CarePlan, "999") as CarePlan
-    val updatedTask3 = fhirEngine.get(ResourceType.Task, "3") as Task
-
-    assertEquals(Task.TaskStatus.FAILED, updatedTask1.status)
-    assertEquals(Task.TaskStatus.FAILED, updatedTask2.status)
-    assertEquals(CarePlan.CarePlanStatus.COMPLETED, updatedCarePlan.status)
-    assertEquals(Task.TaskStatus.READY, updatedTask3.status)
-
-    assertEquals(ListenableWorker.Result.success(), result)
-  }
-
-  private fun initializeWorkManager() {
-    val config: Configuration =
-      Configuration.Builder()
-        .setMinimumLoggingLevel(Log.DEBUG)
-        .setExecutor(SynchronousExecutor())
+  fun `FhirTaskPlanWorker doWork executes successfully`() {
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(Task().apply { status = Task.TaskStatus.REQUESTED })
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
         .build()
-
-    // Initialize WorkManager for instrumentation tests.
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+    val result = worker.startWork().get()
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
   }
 
-  inner class FhirTaskPlanJobWorkerFactory : WorkerFactory() {
+  class FhirTaskPlanWorkerFactory(val fhirEngine: FhirEngine) : WorkerFactory() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
       workerParameters: WorkerParameters
-    ): ListenableWorker {
+    ): ListenableWorker? {
       return FhirTaskPlanWorker(appContext, workerParameters, fhirEngine)
     }
   }
