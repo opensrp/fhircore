@@ -160,7 +160,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
         )
-        Timber.w(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
+        Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
       }
       is SyncJobStatus.Failed -> {
         appMainViewModel.onEvent(

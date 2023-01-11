@@ -200,14 +200,15 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
         // Show error message in snackBar message
+        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         val hasAuthError =
-          syncJobStatus.exceptions.any {
+          syncJobStatus.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        if (hasAuthError) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
-        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+        if (hasAuthError == true) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
         val messageResourceId =
-          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+          if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
