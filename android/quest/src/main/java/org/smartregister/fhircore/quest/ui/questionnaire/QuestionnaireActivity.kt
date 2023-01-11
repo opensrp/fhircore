@@ -22,6 +22,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
@@ -155,15 +156,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setOnClickListener(this@QuestionnaireActivity)
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).apply {
-      setOnClickListener(this@QuestionnaireActivity)
+    findViewById<Button>(R.id.submit_questionnaire).apply {
+      layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+
       if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireConfig.type.isEditMode()) {
         // setting the save button text from Questionnaire Config
-        text =
-          questionnaireConfig.saveButtonText
-            ?: getString(R.string.questionnaire_alert_submit_button_title)
+        text = questionnaireConfig.saveButtonText ?: getString(R.string.str_save)
       }
     }
 
@@ -226,13 +226,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onClick(view: View) {
-    if (view.id == R.id.btn_save_client_info) {
-      if (questionnaireConfig.type.isReadOnly()) {
-        finish()
-      } else {
-        showFormSubmissionConfirmAlert()
-      }
-    } else if (view.id == R.id.btn_edit_qr) {
+    if (view.id == R.id.btn_edit_qr) {
       questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
@@ -253,25 +247,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     } else {
       showToast(getString(R.string.error_saving_form))
     }
-  }
-
-  open fun showFormSubmissionConfirmAlert() {
-    if (questionnaire.experimental)
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_test_only_message,
-        title = R.string.questionnaire_alert_test_only_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
-      )
-    else
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_submit_message,
-        title = R.string.questionnaire_alert_submit_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_submit_button_title
-      )
   }
 
   fun getQuestionnaireResponse(): QuestionnaireResponse {
@@ -481,6 +456,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
+
+  fun getQuestionnaireObject() = questionnaire
+  fun getQuestionnaireConfig() = questionnaireConfig
 
   companion object {
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"

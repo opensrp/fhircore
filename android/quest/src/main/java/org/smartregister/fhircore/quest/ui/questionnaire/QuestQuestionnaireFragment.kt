@@ -16,11 +16,26 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.os.Bundle
+import androidx.fragment.app.setFragmentResultListener
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
 
 class QuestQuestionnaireFragment : QuestionnaireFragment() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setFragmentResultListener(SUBMIT_REQUEST_KEY) { _, _ ->
+      if ((activity as QuestionnaireActivity).getQuestionnaireConfig().type.isReadOnly() ||
+          (activity as QuestionnaireActivity).getQuestionnaireObject().experimental
+      ) { // Experimental questionnaires should not be submitted
+        (activity as QuestionnaireActivity).finish()
+      } else {
+        (activity as QuestionnaireActivity).handleQuestionnaireSubmit()
+      }
+    }
+  }
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {
