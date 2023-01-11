@@ -245,10 +245,32 @@
                     ]
                   },
                   {
+                    "name": "taskExecutionStartDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+                    ]
+                  },
+                  {
+                    "name": "taskPeriodDueDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd-MM-yyyy\"))"
+                    ]
+                  },
+                  {
                     "name": "taskDescription",
                     "condition": "true",
                     "actions": [
                       "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskDescriptionWithStartDate",
+                    "condition": "true",
+                    "priority": 2,
+                    "actions": [
+                      "data.put('taskDescriptionDate', data.get('taskDescription') + ' ' + 'due' + ' ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -277,7 +299,7 @@
                   {
                     "viewType": "BUTTON",
                     "smallSized": "true",
-                    "text": "@{taskDescription}",
+                    "text": "@{taskDescriptionDate}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
                     "enabled": "@{patientActive}",
