@@ -77,7 +77,7 @@ class PatientRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
+  val syncBroadcaster: SyncBroadcaster,
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,

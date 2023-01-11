@@ -45,6 +45,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,6 +53,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DecimalType
@@ -86,6 +88,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -1087,5 +1090,28 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
       Assert.assertNotNull(familyGroup2.managingEntity)
     }
+  }
+
+  @Test
+  fun `test carePlanAndPatientMetaExtraction`() = runTest {
+    val carePlan =
+      CarePlan().copy().apply {
+        id = "12345"
+        meta.versionId = 1.toString()
+      }
+    val tags = emptyList<Coding>()
+    carePlan.addTags(tags)
+
+    coEvery { fhirEngine.create(carePlan) } answers { listOf(carePlan.id) }
+    coEvery { fhirEngine.get<CarePlan>("12345") } returns carePlan
+
+    questionnaireViewModel.carePlanAndPatientMetaExtraction(carePlan)
+
+    val resource = fhirEngine.get(carePlan.resourceType, carePlan.id) as CarePlan
+
+    Assert.assertTrue(resource.meta.tag.isEmpty())
+    Assert.assertEquals(1.toString(), resource.meta.versionId)
+
+    Assert.assertNull(resource.status)
   }
 }
