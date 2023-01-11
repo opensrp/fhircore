@@ -23,18 +23,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
-import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import java.util.Locale
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
@@ -46,11 +43,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -66,51 +60,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
-  @BindValue lateinit var appMainViewModel: AppMainViewModel
-
-  val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-
-  val secureSharedPreference: SecureSharedPreference = mockk()
-
   lateinit var appMainActivity: AppMainActivity
-
-  val workManager: WorkManager = mockk()
-
-  val registerRepository: RegisterRepository = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "") } returns "AppId.Test"
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-    } returns ""
-    every { secureSharedPreference.retrieveSessionUsername() } returns "testUser"
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-    } returns ""
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name, 0)
-    } returns 1
-    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
-    coEvery { registerRepository.countRegisterData(any()) } returns 2
-
-    appMainViewModel =
-      spyk(
-        AppMainViewModel(
-          accountAuthenticator = mockk(),
-          syncBroadcaster = mockk(),
-          secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
-          configurationRegistry = configurationRegistry,
-          registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          workManager = workManager,
-          fhirCarePlanGenerator = fhirCarePlanGenerator
-        )
-      )
-
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
   }
