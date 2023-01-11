@@ -51,6 +51,7 @@ import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
+import org.joda.time.Period
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
@@ -492,7 +493,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun extractAge() {
     val dateFormatter: DateTimeFormatter? = DateTimeFormat.forPattern("yyyy-MM-dd")
     val period =
-      org.joda.time.Period(
+      Period(
         LocalDate.parse("2005-01-01", dateFormatter),
         LocalDate.parse(LocalDate.now().toString(), dateFormatter)
       )
