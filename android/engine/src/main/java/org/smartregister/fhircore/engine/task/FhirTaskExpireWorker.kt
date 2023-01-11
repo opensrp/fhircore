@@ -23,6 +23,11 @@ import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 
 @HiltWorker
 class FhirTaskExpireWorker
@@ -31,14 +36,29 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val fhirTaskExpireUtil: FhirTaskExpireUtil
+  val fhirTaskExpireUtil: FhirTaskExpireUtil,
+  val sharedPreferences: SharedPreferencesHelper
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
-    var tasks = fhirTaskExpireUtil.expireOverdueTasks()
+    val lastAuthoredOnDate =
+      sharedPreferences
+        .read(SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name, null)
+        ?.parseDate(SDF_YYYY_MM_DD)
+
+    var (maxDate, tasks) =
+      fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = lastAuthoredOnDate)
+
     while (tasks.isNotEmpty()) {
-      tasks = fhirTaskExpireUtil.expireOverdueTasks()
+      val resultPair = fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = maxDate)
+      maxDate = resultPair.first
+      tasks = resultPair.second
     }
+
+    sharedPreferences.write(
+      SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name,
+      maxDate?.formatDate(SDF_YYYY_MM_DD)
+    )
     return Result.success()
   }
 

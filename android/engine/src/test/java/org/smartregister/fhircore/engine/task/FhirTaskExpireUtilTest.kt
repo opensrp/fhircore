@@ -58,13 +58,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     hiltAndroidRule.inject()
     mockFhirEngine = mockk()
     fhirTaskExpireUtil =
-      spyk(
-        FhirTaskExpireUtil(
-          ApplicationProvider.getApplicationContext(),
-          mockFhirEngine,
-          sharedPreferenceHelper
-        )
-      )
+      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), mockFhirEngine))
   }
 
   @Test
@@ -106,12 +100,14 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     coEvery { mockFhirEngine.search<Task>(any()) } returns taskList
     coEvery { mockFhirEngine.update(any()) } just runs
 
-    val resultTasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
+    val (maxDate, tasks) =
+      runBlocking { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = null) }
 
-    assertEquals(4, resultTasks.size)
+    assertEquals(4, tasks.size)
+    assertEquals(maxDate, tasks.lastOrNull()?.authoredOn)
 
     taskList.forEach { verify { it.isPastExpiry() } }
-    resultTasks.forEach {
+    tasks.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
       coVerify { mockFhirEngine.update(it) }
     }

@@ -32,12 +32,20 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Task
+import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.plusDays
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
@@ -45,6 +53,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
 
@@ -60,8 +69,27 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @Test
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
+    val taskDate = Date()
 
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks() } returns emptyList()
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = null) } returns
+      Pair(
+        taskDate,
+        listOf(
+          Task().apply {
+            id = UUID.randomUUID().toString()
+            status = Task.TaskStatus.CANCELLED
+            authoredOn = taskDate
+            restriction =
+              Task.TaskRestrictionComponent().apply {
+                period = Period().apply { end = DateTime().plusDays(2).toDate() }
+              }
+          }
+        )
+      )
+
+    // End the job successfully when an empty list is returned
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = taskDate) } returns
+      Pair(taskDate.plusDays(3), emptyList())
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
@@ -88,7 +116,13 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       workerClassName: String,
       workerParameters: WorkerParameters
     ): ListenableWorker {
-      return FhirTaskExpireWorker(appContext, workerParameters, fhirEngine, fhirTaskExpireUtil)
+      return FhirTaskExpireWorker(
+        context = appContext,
+        workerParams = workerParameters,
+        fhirEngine = fhirEngine,
+        fhirTaskExpireUtil = fhirTaskExpireUtil,
+        sharedPreferences = sharedPreferencesHelper
+      )
     }
   }
 }
