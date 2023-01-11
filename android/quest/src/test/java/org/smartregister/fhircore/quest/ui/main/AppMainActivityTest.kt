@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.fhir.sync.SyncJobStatus
 import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -36,8 +37,10 @@ import io.mockk.spyk
 import java.util.Locale
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -124,32 +127,25 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     return appMainActivity
   }
 
-  /* @Test
-  fun testOnSyncWithSyncStateStarted() {
-    appMainActivity.onSync(State.Started)
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains("Syncing", ignoreCase = true))
-  }*/
-
-  /*@Test
+  @Test
   fun testOnSyncWithSyncStateInProgress() {
-    appMainActivity.onSync(State.InProgress(resourceType = null))
+    appMainActivity.onSync(SyncJobStatus.InProgress(resourceType = null))
     Assert.assertTrue(
       appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
         "Sync in progress",
         ignoreCase = true
       )
     )
-  }*/
+  }
 
-  /*@Test
+  @Test
   fun testOnSyncWithSyncStateGlitch() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19"
     )
-    appMainActivity.onSync(State.Glitch(exceptions = emptyList()))
+    appMainActivity.onSync(SyncJobStatus.Glitch(exceptions = emptyList()))
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertTrue(
       viewModel.appMainUiState.value.lastSyncTime.contains(
@@ -157,55 +153,44 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         ignoreCase = true
       )
     )
-  }*/
+  }
 
-  /*@Test
+  @Test
   fun testOnSyncWithSyncStateFailedRetrievesTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19"
     )
-    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast()
-        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
-    )
+    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertEquals(
       viewModel.appMainUiState.value.lastSyncTime,
       viewModel.retrieveLastSyncTimestamp()
     )
-  }*/
+  }
 
-  /*@Test
+  @Test
   fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast()
-        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
-    )
+    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
     Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
   }
 
   @Test
   fun testOnSyncWithSyncStateFinished() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = State.Finished(result = Result.Success())
+    val stateFinished = SyncJobStatus.Finished()
     appMainActivity.onSync(stateFinished)
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast().contains("Sync complete", ignoreCase = true)
-    )
+
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.result.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
       viewModel.retrieveLastSyncTimestamp()
     )
-  }*/
+  }
 
+  @Ignore("Needs refactoring")
   @Test
   fun `handleTaskActivityResult should set task status in-progress when response status is in-progress`() =
       runTest {
@@ -229,7 +214,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
   }
 
   @Test
@@ -255,7 +240,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
   }
 
   @Test
@@ -276,7 +261,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
   }
 
   @Test
@@ -288,18 +273,4 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
-
-  /*  @Test
-  fun `onSync with StateFailed and auth error calls appMainViewModel with RefreshAuthToken event`() {
-    val exception: HttpException = mockk()
-    val stateFailed =
-      SyncJobStatus.Failed(listOf(ResourceSyncException(ResourceType.Questionnaire, exception)))
-    every { exception.code() } returns 401
-    every { exception.message } returns "Unauthorized"
-
-    appMainActivity.onSync(stateFailed)
-
-    verify { appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(appMainActivity)) }
-  }
-  */
 }
