@@ -22,38 +22,43 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
 class FhirTaskExpireUtil
 @Inject
-constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEngine) {
+constructor(
+  @ApplicationContext val appContext: Context,
+  val fhirEngine: FhirEngine,
+  val sharedPreferences: SharedPreferencesHelper
+) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
-   * "in-progress" and "received" and Task.restriction.period.end is <= today. It also returns the
-   * max(Task.authoredOn) date. The size of the tasks is between 0 to (tasksCount * 2). It is not
-   * guaranteed that the list of tasks returned will be of size tasksCount. The calling function
-   * should stop once the length of returned tasks is 0 meaning there are no more.
+   * "in-progress" and "received" and Task.restriction.period.end is <= today. It uses the maximum .
+   * The size of the tasks is between 0 to (tasksCount * 2). It is not guaranteed that the list of
+   * tasks returned will be of size [tasksCount].
    */
-  suspend fun fetchOverdueTasks(
-    tasksCount: Int = 20,
-    from: Date? = null
-  ): Pair<Date?, MutableList<Task>> {
-    Timber.i("Start fetching overdue tasks")
-
-    val tasksPastExpiry = mutableListOf<Task>()
-
-    while (tasksPastExpiry.size == 0 && tasksPastExpiry.size < tasksCount) {
-      val tasksResult =
-        fhirEngine.search<Task> {
+  suspend fun expireOverdueTasks(tasksCount: Int = 40): List<Task> {
+    Timber.i("Fetch and expire overdue tasks")
+    val lastAuthoredOnDate =
+      sharedPreferences
+        .read(SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name, null)
+        ?.parseDate(SDF_YYYY_MM_DD)
+    val tasksResult =
+      fhirEngine
+        .search<Task> {
           filter(
             Task.STATUS,
             { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
@@ -62,43 +67,29 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
             { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
-
-          if (from != null) {
+          if (lastAuthoredOnDate != null) {
             filter(
               Task.AUTHORED_ON,
               {
                 prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-                value = of(DateType(from))
+                value = of(DateType(lastAuthoredOnDate))
               }
             )
           }
           count = tasksCount
-
           sort(Task.AUTHORED_ON, Order.ASCENDING)
         }
-
-      if (tasksResult.isEmpty()) {
-        break
-      } else {
-        tasksPastExpiry.addAll(tasksResult.filter { it.isPastExpiry() })
-      }
-    }
-
-    val maxDate = tasksPastExpiry.maxOfOrNull { it.authoredOn }
-
-    Timber.i("Done fetching overdue tasks")
-    return Pair(maxDate, tasksPastExpiry)
-  }
-
-  suspend fun markTaskExpired(tasks: List<Task>) {
-
-    // This allows the Fhir Engine to index the values
-    tasks.forEach { task ->
-      task.setStatus(Task.TaskStatus.CANCELLED)
-
-      fhirEngine.update(task)
-    }
-
-    Timber.i("${tasks.size} tasks updated to cancelled")
+        .filter { it.isPastExpiry() }
+        .onEach { task ->
+          task.status = Task.TaskStatus.CANCELLED
+          fhirEngine.update(task)
+        }
+    val maxDate = tasksResult.maxOfOrNull { it.authoredOn }
+    sharedPreferences.write(
+      SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name,
+      maxDate?.formatDate(SDF_YYYY_MM_DD)
+    )
+    Timber.i("${tasksResult.size} FHIR Tasks status updated to CANCELLED (expired)")
+    return tasksResult
   }
 }

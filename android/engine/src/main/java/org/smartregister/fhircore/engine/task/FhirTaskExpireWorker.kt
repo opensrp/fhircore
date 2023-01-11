@@ -35,17 +35,10 @@ constructor(
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
-    var dateTasks = fhirTaskExpireUtil.fetchOverdueTasks()
-    var maxDate = dateTasks.first
-    var tasks = dateTasks.second
-
-    while (tasks.size > 0) {
-      fhirTaskExpireUtil.markTaskExpired(tasks)
-      dateTasks = fhirTaskExpireUtil.fetchOverdueTasks(from = maxDate)
-      maxDate = dateTasks.first
-      tasks = dateTasks.second
+    var tasks = fhirTaskExpireUtil.expireOverdueTasks()
+    while (tasks.isNotEmpty()) {
+      tasks = fhirTaskExpireUtil.expireOverdueTasks()
     }
-
     return Result.success()
   }
 

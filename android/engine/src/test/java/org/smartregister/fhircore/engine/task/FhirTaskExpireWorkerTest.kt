@@ -32,9 +32,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -78,23 +76,19 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     val firstBatchTasks = mutableListOf(Task())
     val secondBatchTasks = mutableListOf(Task())
 
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks() } returns Pair(date1, firstBatchTasks)
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks(from = date1) } returns
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks() } returns Pair(date1, firstBatchTasks)
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(startDate = date1) } returns
       Pair(date2, secondBatchTasks)
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks(from = date2) } returns
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(startDate = date2) } returns
       Pair(null, mutableListOf())
-    coEvery { fhirTaskExpireUtil.markTaskExpired(any()) } just runs
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
     assertEquals(ListenableWorker.Result.success(), result)
 
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks() }
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks(from = date1) }
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks(from = date2) }
-
-    coVerify { fhirTaskExpireUtil.markTaskExpired(firstBatchTasks) }
-    coVerify { fhirTaskExpireUtil.markTaskExpired(secondBatchTasks) }
+    coVerify { fhirTaskExpireUtil.expireOverdueTasks() }
+    coVerify { fhirTaskExpireUtil.expireOverdueTasks(startDate = date1) }
+    coVerify { fhirTaskExpireUtil.expireOverdueTasks(startDate = date2) }
   }
 
   private fun initializeWorkManager() {

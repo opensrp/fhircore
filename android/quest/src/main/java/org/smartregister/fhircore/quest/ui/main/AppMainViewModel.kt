@@ -27,7 +27,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -311,15 +310,11 @@ constructor(
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(
-        workId = FhirTaskPlanWorker.WORK_ID,
-        existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE,
-      )
+      schedulePeriodically<FhirTaskPlanWorker>(workId = FhirTaskPlanWorker.WORK_ID)
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
-        duration =    Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
-        existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE,
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration)
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.

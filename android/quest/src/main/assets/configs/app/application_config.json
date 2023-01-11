@@ -34,5 +34,5 @@
       "QuestionnaireResponse"
     ]
   },
-  "taskExpireJobDuration": "PT01H"
+  "taskExpireJobDuration": "PT15M"
 }

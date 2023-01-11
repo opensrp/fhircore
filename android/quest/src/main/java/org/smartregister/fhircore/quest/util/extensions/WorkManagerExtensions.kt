@@ -30,7 +30,7 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   repeatInterval: Long = 15,
   duration: Duration? = null,
   timeUnit: TimeUnit = TimeUnit.MINUTES,
-  existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
+  existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
 ) {
   val workRequestBuilder =
     if (duration == null) PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)

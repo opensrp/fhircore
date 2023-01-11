@@ -47,11 +47,9 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
 
   @Before
   fun setup() {
-    mockFhirEngine = mockk<FhirEngine>()
+    mockFhirEngine = mockk()
     fhirTaskExpireUtil =
-      spyk<FhirTaskExpireUtil>(
-        FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), mockFhirEngine)
-      )
+      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), mockFhirEngine))
   }
 
   @Test
@@ -80,6 +78,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
           Task().apply {
             id = UUID.randomUUID().toString()
             status = TaskStatus.INPROGRESS
+            authoredOn = Date()
             restriction =
               Task.TaskRestrictionComponent().apply {
                 period = Period().apply { end = twoDaysFromToday.toDate() }
@@ -90,34 +89,14 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     }
 
     coEvery { mockFhirEngine.search<Task>(any()) } returns taskList
+    coEvery { mockFhirEngine.update(any()) } just runs
 
-    val resultTasks = runBlocking { fhirTaskExpireUtil.fetchOverdueTasks() }
+    val resultTasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
 
-    assertEquals(4, resultTasks.second.size)
+    assertEquals(12, resultTasks.second.size)
 
     taskList.forEach { verify { it.isPastExpiry() } }
     coVerify { mockFhirEngine.search<Task>(any()) }
-  }
-
-  @Test
-  fun markTaskExpired() {
-    val taskList = mutableListOf<Task>()
-
-    for (i in 1..5) {
-      taskList.add(
-        Task().apply {
-          id = UUID.randomUUID().toString()
-          status = TaskStatus.INPROGRESS
-          restriction =
-            Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
-        }
-      )
-    }
-
-    coEvery { mockFhirEngine.update(any<Task>()) } just runs
-
-    runBlocking { fhirTaskExpireUtil.markTaskExpired(taskList) }
-
     taskList.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
       coVerify { mockFhirEngine.update(it) }
