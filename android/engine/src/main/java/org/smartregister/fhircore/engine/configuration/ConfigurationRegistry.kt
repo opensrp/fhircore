@@ -281,9 +281,13 @@ constructor(
 
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
+  /**
+   * Reads supported files from asset/config/* directory recursively,
+   * populates all sub directory in a queue then reads all the nested files for each.
+   *
+   * @return A list of strings of config files.
+   */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    // Reads supported files from asset/config/* directory recursively
-    // Populates all sub directory in a queue then reads all the nested files for each
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
