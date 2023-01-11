@@ -1,5 +1,8 @@
 codecov:
-  disable_default_path_fixes: true
+  disable_default_path_fixes: yes
+  notify:
+    after_n_builds: 3
+    wait_for_ci: yes
 
 coverage:
   status:
@@ -19,15 +22,12 @@ comment:
   behavior: default
 
 flags:
-  eir:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/eir"
-  anc:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/anc"
   engine:
     paths:
       - "/home/runner/work/fhircore/fhircore/android/engine"
+  geowidget:
+    paths:
+      - "/home/runner/work/fhircore/fhircore/android/geowidget"
   quest:
     paths:
       - "/home/runner/work/fhircore/fhircore/android/quest"

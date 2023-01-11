@@ -108,6 +108,7 @@ configurations {
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.work:work-testing:2.7.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -140,7 +141,6 @@ dependencies {
     def cqlEvaluatorVersion = '2.1.0'
     implementation "org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"
     implementation "org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"
-    implementation "org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"
     implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion")
 
     // Hilt - Dependency Injection
@@ -154,7 +154,7 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.6.1-UI-REVAMP-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.1-BUG-FIXES-SNAPSHOT')
 
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
@@ -183,7 +183,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
     
-    api('org.smartregister:data-capture:0.1.0-beta05-preview6-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta06-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
@@ -191,7 +191,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:workflow:0.1.0-alpha02-preview3-SNAPSHOT') {
+    api('org.smartregister:workflow:0.1.0-alpha02-preview5-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -230,9 +230,6 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
-    // Easy rules dependency
-    api 'org.jeasy:easy-rules-core:4.1.0'
-
     // JEXL
     api ('org.jeasy:easy-rules-jexl:4.1.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
@@ -257,7 +254,7 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20220320'
 

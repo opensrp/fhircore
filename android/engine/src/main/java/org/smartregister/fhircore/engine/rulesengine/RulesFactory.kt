@@ -19,12 +19,14 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
@@ -69,7 +71,8 @@ constructor(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "Math" to Class.forName("java.lang.Math")
         )
       )
       .silent(false)
@@ -348,13 +351,42 @@ constructor(
       return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
     }
 
+    fun filterList(list: List<Resource>, fhirPathExpression: String): List<Resource> {
+      return list.filter {
+        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as BooleanType).value
+      }
+    }
+
     fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
       list.filter { getValue(it, attribute) == attributeValue }
 
+    /**
+     * This function takes a [resource] as source class and a [attribute] as field name to find out
+     * the actual value by using the java reflection API.
+     *
+     * @return optional [Any] primitive type value
+     */
     private fun getValue(resource: Resource, attribute: String): Any? {
-      val property = (resource.javaClass).getDeclaredField(attribute)
-      property.isAccessible = true
-      return (property.get(resource) as? PrimitiveType<*>)?.value
+      val property = getDeclaredField(attribute, resource.javaClass)
+      property?.isAccessible = true
+      return (property?.get(resource) as? PrimitiveType<*>)?.value
+    }
+
+    /**
+     * This function takes a [attribute] as a field name and [type] as a source class to find the
+     * actual field from full class hierarchy. If the field does not exist anywhere in the class
+     * hierarchy we return null.
+     *
+     * @return optional [Field]
+     */
+    private fun getDeclaredField(attribute: String, type: Class<*>): Field? {
+      return try {
+        type.getDeclaredField(attribute)
+      } catch (ex: NoSuchFieldException) {
+        if (type.superclass != null) {
+          getDeclaredField(attribute, type.superclass)
+        } else null
+      }
     }
   }
 

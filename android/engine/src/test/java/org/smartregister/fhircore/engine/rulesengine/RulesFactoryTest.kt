@@ -33,6 +33,9 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
@@ -239,6 +242,17 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun shouldInputDateTimeStringWithExpectedFormat() {
+    val inputDateString = "2023-09-01T00:00:00.00Z"
+    val inputDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    val expectedFormat = "dd-MM-yyyy"
+    Assert.assertEquals(
+      "01-09-2023",
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+    )
+  }
+
+  @Test
   fun mapResourcesToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
     val resources =
@@ -263,7 +277,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val attributeName = "status"
+    val fhirPathExpression = "Task.status = 'ready'"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -271,14 +285,12 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertTrue(
-      rulesEngineService.filterList(list, attributeName, TaskStatus.READY).size == 1
-    )
+    Assert.assertTrue(rulesEngineService.filterList(list, fhirPathExpression).size == 1)
   }
 
   @Test
-  fun filterResourceListWithWrongAttributeName() {
-    val attributeName = "desc"
+  fun filterResourceListWithWrongExpression() {
+    val fhirPathExpression = "Task.desc = 'ready'"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -286,15 +298,14 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertThrows(NoSuchFieldException::class.java) {
-      runBlocking { rulesEngineService.filterList(list, attributeName, TaskStatus.READY) }
+    Assert.assertThrows(NoSuchElementException::class.java) {
+      runBlocking { rulesEngineService.filterList(list, fhirPathExpression) }
     }
   }
 
   @Test
   fun filterResourceListWithWrongAttributeValue() {
-    val attributeName = "status"
-    val attributeValue = "CANCELLED"
+    val fhirPathExpression = "Task.status = 'not ready'"
     val list =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -302,10 +313,7 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertEquals(
-      emptyList<Task>(),
-      rulesEngineService.filterList(list, attributeName, attributeValue)
-    )
+    Assert.assertEquals(emptyList<Task>(), rulesEngineService.filterList(list, fhirPathExpression))
   }
 
   @Test
@@ -366,6 +374,47 @@ class RulesFactoryTest : RobolectricTest() {
   fun testGenerateRandomNumberOfLengthSix() {
     val generatedNumber = rulesEngineService.generateRandomSixDigitInt()
     Assert.assertEquals(generatedNumber.toString().length, 6)
+  }
+
+  @Test
+  fun testFilterListShouldReturnMatchingResource() {
+
+    val listOfResources =
+      listOf(
+        Condition().apply {
+          id = "1"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
+        },
+        Condition().apply {
+          id = "2"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "family-planning"))
+        }
+      )
+
+    val result = rulesEngineService.filterList(listOfResources, "id", "2")
+
+    Assert.assertTrue(result.size == 1)
+    with(result.first() as Condition) {
+      Assert.assertEquals("2", id)
+      Assert.assertEquals("0002", clinicalStatus.codingFirstRep.code)
+      Assert.assertEquals("family-planning", clinicalStatus.codingFirstRep.display)
+    }
+  }
+
+  @Test
+  fun testFilterListShouldReturnEmptyListWhenFieldNotFound() {
+
+    val listOfResources =
+      listOf(
+        Condition().apply {
+          id = "1"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
+        }
+      )
+
+    val result = rulesEngineService.filterList(listOfResources, "unknown_field", "1")
+
+    Assert.assertTrue(result.isEmpty())
   }
 
   private fun populateFactsWithResources() {

@@ -434,18 +434,18 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onResponse(mockk(), mockk { every { isSuccessful } returns true })
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 1) { accountAuthenticatorSpy.localLogout() }
+    verify(exactly = 1) { accountAuthenticatorSpy.invalidateSession() }
     verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
-  fun testLogoutShouldNotSuccessfullyLogout() {
+  fun userIsLoggedOutOfAppWhenKeycloakLogoutFails() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -459,7 +459,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onResponse(
@@ -471,12 +471,12 @@ class AccountAuthenticatorTest : RobolectricTest() {
     )
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
-  fun testLogoutShouldFailureLogout() {
+  fun testLogoutFailureLogoutsUser() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -490,14 +490,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onFailure(mockk(), RuntimeException())
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
@@ -585,7 +585,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
     every { tokenManagerService.getLocalSessionToken() } returns "my-token"
 
-    accountAuthenticator.localLogout()
+    accountAuthenticator.invalidateSession()
 
     verify { tokenManagerService.getLocalSessionToken() }
     verify { accountManager.invalidateAuthToken(any(), any()) }
@@ -597,7 +597,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
     every { tokenManagerService.getLocalSessionToken() } returns "my-token"
 
-    accountAuthenticator.localLogout()
+    accountAuthenticator.invalidateSession()
 
     verify { tokenManagerService.getLocalSessionToken() }
     verify { secureSharedPreference.deleteSessionTokens() }
