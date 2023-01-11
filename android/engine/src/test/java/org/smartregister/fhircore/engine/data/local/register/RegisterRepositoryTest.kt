@@ -92,7 +92,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   @Test
   fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
     coEvery {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 20, from = 20))
+      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
 
     runBlocking {
@@ -114,7 +114,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     verify { registerRepository.retrieveRegisterConfiguration("patientRegister") }
 
     coVerify {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 20, from = 20))
+      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     }
 
     coVerify { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) }
@@ -131,7 +131,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       }
 
     coEvery {
-      fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20))
+      fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 10, from = 10))
     } returns listOf(group)
 
     every { fhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
@@ -159,7 +159,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     verify { registerRepository.retrieveRegisterConfiguration("householdRegister") }
 
-    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20)) }
+    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 10, from = 10)) }
 
     verify { fhirPathDataExtractor.extractData(group, "Group.member.entity") }
 
