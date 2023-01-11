@@ -18,13 +18,15 @@ Although not required, we highly recommend replicating your transactional health
 
 ### Google Cloud Healthcare API and Big Query
 
-The simplest way to do this is to replicate your data to the Cloud Healthcare API and then connect this data to Big Query.
+A simple way and efficient way to move FHIR data from a transaction system into an analytics system is to replicate your data to the Cloud Healthcare API and then connect this data to Big Query.
 
 ### Parquet and Spark SQL
 
-For on premise implementations the
+For on premise implementations the [FHIR Data Pipes](https://github.com/google/fhir-data-pipes) library
 
 ## Identity Management
+
+
 
 ### Keycloak
 
