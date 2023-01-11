@@ -31,64 +31,41 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Task
-import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
 class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  @Inject lateinit var fhirEngine: FhirEngine
+  private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
-  lateinit var context: Context
 
   @Before
   fun setup() {
     hiltRule.inject()
-
-    context = ApplicationProvider.getApplicationContext()
     initializeWorkManager()
     fhirTaskExpireWorker =
-      TestListenableWorkerBuilder<FhirTaskExpireWorker>(context)
+      TestListenableWorkerBuilder<FhirTaskExpireWorker>(ApplicationProvider.getApplicationContext())
         .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
         .build()
   }
 
   @Test
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
-    val date1 = DateTime().minusDays(4).toDate()
-    val date2 = Date()
-    val firstBatchTasks = mutableListOf(Task())
-    val secondBatchTasks = mutableListOf(Task())
 
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks() } returns Pair(date1, firstBatchTasks)
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(startDate = date1) } returns
-      Pair(date2, secondBatchTasks)
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(startDate = date2) } returns
-      Pair(null, mutableListOf())
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks() } returns emptyList()
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
     assertEquals(ListenableWorker.Result.success(), result)
-
-    coVerify { fhirTaskExpireUtil.expireOverdueTasks() }
-    coVerify { fhirTaskExpireUtil.expireOverdueTasks(startDate = date1) }
-    coVerify { fhirTaskExpireUtil.expireOverdueTasks(startDate = date2) }
   }
 
   private fun initializeWorkManager() {
@@ -99,7 +76,10 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         .build()
 
     // Initialize WorkManager for instrumentation tests.
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+    WorkManagerTestInitHelper.initializeTestWorkManager(
+      ApplicationProvider.getApplicationContext(),
+      config
+    )
   }
 
   inner class FhirTaskExpireJobWorkerFactory : WorkerFactory() {

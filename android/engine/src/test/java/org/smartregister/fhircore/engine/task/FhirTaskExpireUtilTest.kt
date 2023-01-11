@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.task
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -27,6 +29,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
@@ -34,22 +37,34 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.today
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-11-2022. */
+@HiltAndroidTest
 class FhirTaskExpireUtilTest : RobolectricTest() {
 
-  lateinit var fhirTaskExpireUtil: FhirTaskExpireUtil
-  lateinit var mockFhirEngine: FhirEngine
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private lateinit var fhirTaskExpireUtil: FhirTaskExpireUtil
+  private lateinit var mockFhirEngine: FhirEngine
 
   @Before
   fun setup() {
+    hiltAndroidRule.inject()
     mockFhirEngine = mockk()
     fhirTaskExpireUtil =
-      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), mockFhirEngine))
+      spyk(
+        FhirTaskExpireUtil(
+          ApplicationProvider.getApplicationContext(),
+          mockFhirEngine,
+          sharedPreferenceHelper
+        )
+      )
   }
 
   @Test
@@ -93,11 +108,10 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
 
     val resultTasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
 
-    assertEquals(12, resultTasks.second.size)
+    assertEquals(4, resultTasks.size)
 
     taskList.forEach { verify { it.isPastExpiry() } }
-    coVerify { mockFhirEngine.search<Task>(any()) }
-    taskList.forEach {
+    resultTasks.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
       coVerify { mockFhirEngine.update(it) }
     }
