@@ -431,6 +431,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
+    const val SELECTED_TRACING_TASK_ID = "selected_tracing_task_id"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -443,14 +444,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
-      populationResources: ArrayList<out Resource> = ArrayList()
+      populationResources: ArrayList<out Resource> = ArrayList(),
+      selectedTracingTask: String? = null
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),
+      Pair(SELECTED_TRACING_TASK_ID, selectedTracingTask)
       )
         .apply {
           questionnaireResponse?.let {

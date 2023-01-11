@@ -23,6 +23,8 @@ import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingUtil
 
 @Singleton
 class HomeTracingRegisterDao
@@ -31,8 +33,9 @@ constructor(
   fhirEngine: FhirEngine,
   defaultRepository: DefaultRepository,
   configurationRegistry: ConfigurationRegistry,
-  dispatcherProvider: DefaultDispatcherProvider
-) : TracingRegisterDao(fhirEngine, defaultRepository, configurationRegistry, dispatcherProvider) {
+  dispatcherProvider: DefaultDispatcherProvider,
+  tracingUtil: TracingUtil
+) : TracingRegisterDao(fhirEngine, defaultRepository, configurationRegistry, dispatcherProvider, tracingUtil) {
 
   override val tracingCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")
 }

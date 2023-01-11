@@ -42,7 +42,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -54,9 +70,8 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.*
-import org.smartregister.fhircore.engine.util.*
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
@@ -115,7 +130,7 @@ constructor(
     )
   }
 
-  private var currentFormName = "";
+  private var currentFormName = ""
 
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
@@ -204,9 +219,9 @@ constructor(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = if (currentFormName.contains(".json"))
-        readStructureMapFromAssets("tests/map/${this}.json")
-       else defaultRepository.loadResource(this)
+      structureMap =
+        if (currentFormName.contains(".json")) readStructureMapFromAssets("tests/map/$this.json")
+        else defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -277,82 +292,82 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         Timber.e(jsonParser.encodeResourceToString(bundle))
-//        bundle.entry.forEach { bundleEntry ->
-//          // add organization to entities representing individuals in registration questionnaire
-//          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-//            if (questionnaireConfig.setOrganizationDetails) {
-//              appendOrganizationInfo(bundleEntry.resource)
-//            }
-//            // if it is new registration set response subject
-//            if (resourceId == null)
-//              questionnaireResponse.subject = bundleEntry.resource.asReference()
-//          }
-//          if (questionnaireConfig.setPractitionerDetails) {
-//            appendPractitionerInfo(bundleEntry.resource)
-//          }
-//
-//          if (questionnaireType != QuestionnaireType.EDIT &&
-//            bundleEntry.resource.resourceType.isIn(
-//              ResourceType.Patient,
-//              ResourceType.RelatedPerson
-//            )
-//          ) {
-//            groupResourceId?.let {
-//              appendPatientsAndRelatedPersonsToGroups(
-//                resource = bundleEntry.resource,
-//                groupResourceId = it
-//              )
-//            }
-//          }
-//
-//          // response MUST have subject by far otherwise flow has issues
-//          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
-//
-//          // TODO https://github.com/opensrp/fhircore/issues/900
-//          // for edit mode replace client and resource subject ids.
-//          // Ideally ResourceMapper should allow this internally via structure-map
-//          if (questionnaireType.isEditMode()) {
-//            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
-//              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
-//            else {
-//              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
-//              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
-//            }
-//          }
-//          questionnaireResponse.contained.add(bundleEntry.resource)
-//
-//          if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
-//        }
-//
-//        if (questionnaire.experimental) {
-//          Timber.w(
-//            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
-//          )
-//        } else saveBundleResources(bundle)
-//
-//        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
-//          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
-//        }
-//
-//        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-//        questionnaireResponseLiveData.postValue(questionnaireResponse)
-//        // TODO https://github.com/opensrp/fhircore/issues/900
-//        // reassess following i.e. deleting/updating older resources because one resource
-//        // might have generated other flow in subsequent followups
-//        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
-//          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
-//        }
-//
-//        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-//        extractCarePlan(questionnaireResponse, bundle)
+        bundle.entry.forEach { bundleEntry ->
+          // add organization to entities representing individuals in registration questionnaire
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+            if (questionnaireConfig.setOrganizationDetails) {
+              appendOrganizationInfo(bundleEntry.resource)
+            }
+            // if it is new registration set response subject
+            if (resourceId == null)
+              questionnaireResponse.subject = bundleEntry.resource.asReference()
+          }
+          if (questionnaireConfig.setPractitionerDetails) {
+            appendPractitionerInfo(bundleEntry.resource)
+          }
+
+          if (questionnaireType != QuestionnaireType.EDIT &&
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
+          ) {
+            groupResourceId?.let {
+              appendPatientsAndRelatedPersonsToGroups(
+                resource = bundleEntry.resource,
+                groupResourceId = it
+              )
+            }
+          }
+
+          // response MUST have subject by far otherwise flow has issues
+          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
+
+          // TODO https://github.com/opensrp/fhircore/issues/900
+          // for edit mode replace client and resource subject ids.
+          // Ideally ResourceMapper should allow this internally via structure-map
+          if (questionnaireType.isEditMode()) {
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
+            else {
+              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
+            }
+          }
+          questionnaireResponse.contained.add(bundleEntry.resource)
+
+          if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
+        }
+
+        if (questionnaire.experimental) {
+          Timber.w(
+            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+          )
+        } else saveBundleResources(bundle)
+
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
+        }
+
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        questionnaireResponseLiveData.postValue(questionnaireResponse)
+        // TODO https://github.com/opensrp/fhircore/issues/900
+        // reassess following i.e. deleting/updating older resources because one resource
+        // might have generated other flow in subsequent followups
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
+        }
+
+        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle)
       } else {
-//        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-//        extractCqlOutput(questionnaire, questionnaireResponse, null)
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
 
-//      viewModelScope.launch(Dispatchers.Main) {
-//        extractionProgress.postValue(ExtractionProgress.Success(extras))
-//      }
+      viewModelScope.launch(Dispatchers.Main) {
+        extractionProgress.postValue(ExtractionProgress.Success(extras))
+      }
     }
   }
 
@@ -487,31 +502,33 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
-  suspend fun loadTracing(patientId: String): List<Task> {
-    val tasks = fhirEngine.search<Task> {
-      filter(Task.SUBJECT, { value = "Patient/${patientId}" })
-      filter(
-        TokenClientParam("code"),
-        {
-          value =
-            of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
-        }
-      )
-      filter(
-        Task.STATUS,
-        { value = of(Task.TaskStatus.READY.toCode()) },
-        { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-        operation = Operation.OR
-      )
-      filter(
-        Task.PERIOD,
-        {
-          value = of(DateTimeType.now())
-          prefix = ParamPrefixEnum.GREATERTHAN
-        }
-      )
-    }
-    return tasks
+  suspend fun loadTracing(intent: Intent, patientId: String): List<Task> {
+    val tasks =
+      fhirEngine.search<Task> {
+        filter(Task.SUBJECT, { value = "Patient/$patientId" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
+          }
+        )
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          operation = Operation.OR
+        )
+        filter(
+          Task.PERIOD,
+          {
+            value = of(DateTimeType.now())
+            prefix = ParamPrefixEnum.GREATERTHAN
+          }
+        )
+      }
+    val selectedTaskId = intent.getStringExtra(QuestionnaireActivity.SELECTED_TRACING_TASK_ID)
+    return if (selectedTaskId != null) tasks.filter { it.logicalId.equals(selectedTaskId, true) } else tasks
   }
 
   fun saveResource(resource: Resource) {
@@ -550,11 +567,13 @@ constructor(
           val currentBundle = resourcesList[bundleIndex] as Bundle
           val bundle = Bundle()
           bundle.id = TracingHelpers.tracingBundleId
-          val tasks = loadTracing(patientId)
-          tasks.forEach {
-            bundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
-          }
-          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(bundle).apply { id = TracingHelpers.tracingBundleId })
+          val tasks = loadTracing(intent, patientId)
+          tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+          currentBundle.addEntry(
+            Bundle.BundleEntryComponent().setResource(bundle).apply {
+              id = TracingHelpers.tracingBundleId
+            }
+          )
           resourcesList[bundleIndex] = currentBundle
         }
       }

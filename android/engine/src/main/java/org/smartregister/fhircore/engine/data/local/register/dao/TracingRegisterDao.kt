@@ -22,11 +22,19 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Date
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -35,9 +43,21 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
+import org.smartregister.fhircore.engine.domain.repository.TracingTaskDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.*
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingUtil
+import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
+import org.smartregister.fhircore.engine.util.extension.extractAddressState
+import org.smartregister.fhircore.engine.util.extension.extractAddressText
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
+import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
+import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import timber.log.Timber
 
 abstract class TracingRegisterDao
@@ -45,8 +65,9 @@ constructor(
   open val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
-) : RegisterDao {
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val tracingUtil: TracingUtil
+) : RegisterDao, TracingTaskDao {
   protected abstract val tracingCoding: Coding
 
   private fun Search.validTasksFilters() {
@@ -92,9 +113,10 @@ constructor(
     return patient?.let {
       val metaCodingSystemTag =
         configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-          AppConfigClassification.APPLICATION
-        ).patientTypeFilterTagViaMetaCodingSystem
-      val tasks = validTasks(patient)
+            AppConfigClassification.APPLICATION
+          )
+          .patientTypeFilterTagViaMetaCodingSystem
+      val tasks = loadValidTracingTasks(patient)
       ProfileData.TracingProfileData(
         logicalId = patient.logicalId,
         birthdate = patient.birthDate,
@@ -121,12 +143,11 @@ constructor(
 
   suspend fun Patient.activeCarePlans() =
     defaultRepository.searchResourceFor<CarePlan>(
-      subjectId = this.logicalId,
-      subjectType = ResourceType.Patient,
-      subjectParam = CarePlan.SUBJECT
-    ).filter { carePlan ->
-      carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE)
-    }
+        subjectId = this.logicalId,
+        subjectType = ResourceType.Patient,
+        subjectParam = CarePlan.SUBJECT
+      )
+      .filter { carePlan -> carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE) }
 
   suspend fun Patient.activeConditions() =
     defaultRepository.patientConditions(this.logicalId).filter { condition ->
@@ -164,25 +185,25 @@ constructor(
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     val patients = fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }
-    return patients.count { validTasks(it).any() }.toLong()
+    return patients.count { loadValidTracingTasks(it).any() }.toLong()
   }
 
   private fun applicationConfiguration(): ApplicationConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
-  private suspend fun validTasks(patient: Patient): List<Task> {
+  override suspend fun loadValidTracingTasks(patient: Patient): List<Task> {
     val patientTasks =
       fhirEngine.search<Task> {
         validTasksFilters()
         filter(Task.SUBJECT, { value = patient.referenceValue() })
       }
     return patientTasks.filter {
-      it.executionPeriod.hasStart() && it.executionPeriod.start.before(Date())
+      it.executionPeriod.hasStart() && it.executionPeriod.start.before(tracingUtil.getUpperLimitDate())
     }
   }
 
   private suspend fun Patient.toTracingRegisterData(): RegisterData.TracingRegisterData {
-    val tasks = validTasks(this)
+    val tasks = loadValidTracingTasks(this)
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
     val taskAttempts =
       tasks
@@ -202,24 +223,24 @@ constructor(
       logicalId = this.logicalId,
       name = this.extractName(),
       identifier =
-      this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value,
+        this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value,
       gender = this.gender,
       familyName = this.extractFamilyName(),
       healthStatus =
-      this.extractHealthStatusFromMeta(
-        applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-      ),
+        this.extractHealthStatusFromMeta(
+          applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+        ),
       isPregnant = defaultRepository.isPatientPregnant(this),
       isBreastfeeding = defaultRepository.isPatientBreastfeeding(this),
       attempts = taskAttempts.size,
       lastAttemptDate = taskAttempts.maxOfOrNull { it.authored },
       firstAdded = oldestTaskDate,
       reasons =
-      tasks.flatMap { task ->
-        task.reasonCode.coding.map { it.display ?: it.code }.ifEmpty {
-          listOf(task.reasonCode.text)
+        tasks.flatMap { task ->
+          task.reasonCode.coding.map { it.display ?: it.code }.ifEmpty {
+            listOf(task.reasonCode.text)
+          }
         }
-      }
     )
   }
 }
