@@ -51,6 +51,8 @@ import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -470,5 +472,33 @@ class RulesFactoryTest : RobolectricTest() {
         subject = Reference().apply { reference = "Patient/patient-1" }
       }
     return carePlan
+  }
+
+  @Test
+  fun testPrettifyDateReturnXDaysAgo() {
+    val inputDateString = "2023-01-10"
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDateString)
+    Assert.assertEquals("2 days ago", expected)
+  }
+
+  @Test
+  fun testPrettifyDateWithDateAsInput() {
+    val inputDate = Date()
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDate)
+    Assert.assertEquals("", expected)
+  }
+
+  @Test
+  fun extractAge() {
+    val dateFormatter: DateTimeFormatter? = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val period =
+      org.joda.time.Period(
+        LocalDate.parse("2005-01-01", dateFormatter),
+        LocalDate.parse(LocalDate.now().toString(), dateFormatter)
+      )
+    Assert.assertEquals(
+      period.years.toString() + "y",
+      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate()))
+    )
   }
 }
