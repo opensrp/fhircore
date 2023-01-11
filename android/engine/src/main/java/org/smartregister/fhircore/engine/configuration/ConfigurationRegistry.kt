@@ -282,8 +282,8 @@ constructor(
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
   /**
-   * Reads supported files from asset/config/* directory recursively,
-   * populates all sub directory in a queue then reads all the nested files for each.
+   * Reads supported files from the asset/config directory recursively,
+   * populates all sub directory in a queue, then reads all the nested files for each.
    *
    * @return A list of strings of config files.
    */
