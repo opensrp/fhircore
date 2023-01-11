@@ -217,7 +217,7 @@ android {
 ext.abiCodes = ['armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a': 3, mips: 4, 'x86': 5, 'x86_64': 6]
 
 // For each APK output variant, override versionCode with a combination of
-// ext.abiCodes * 1000 + variant.versionCode. In this example, variant.versionCode
+// ext.abiCodes * 10000 + variant.versionCode. In this example, variant.versionCode
 // is equal to defaultConfig.versionCode. If you configure product flavors that
 // define their own versionCode, variant.versionCode uses that value instead.
 android.applicationVariants.all { variant ->
