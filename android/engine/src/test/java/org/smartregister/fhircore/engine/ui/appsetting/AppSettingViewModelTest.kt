@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.ui.appsetting
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
+import com.google.gson.GsonBuilder
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -27,6 +29,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Base64
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -45,15 +48,22 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
-  private val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+  private val sharedPreferencesHelper =
+    SharedPreferencesHelper(
+      ApplicationProvider.getApplicationContext(),
+      GsonBuilder().setLenient().create()
+    )
+
   private val configService = mockk<ConfigService>()
   private val appSettingViewModel =
     spyk(
@@ -201,7 +211,33 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
-    appSettingViewModel.appId.value = ""
+    appSettingViewModel.appId.value = null
     Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
+  }
+
+  @Test
+  fun testFetchConfigurationsShouldVerifyPostValue() = runBlocking {
+    appSettingViewModel.fetchConfigurations(true)
+    Assert.assertTrue(appSettingViewModel.fetchConfigs.value!!)
+
+    appSettingViewModel.fetchConfigurations(false)
+    Assert.assertFalse(appSettingViewModel.fetchConfigs.value!!)
+  }
+
+  @Test
+  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
+    val resourceType =
+      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
+
+    appSettingViewModel.saveSyncSharedPreferences(resourceType)
+
+    val result =
+      sharedPreferencesHelper.read<List<ResourceType>>(
+        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name
+      )!!
+
+    Assert.assertEquals(2, result.size)
+    Assert.assertEquals(ResourceType.Task.name, result.first())
+    Assert.assertEquals(ResourceType.Patient.name, result.last())
   }
 }

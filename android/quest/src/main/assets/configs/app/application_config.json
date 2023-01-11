@@ -34,5 +34,6 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "taskUpdateInterval": "PT01H"
 }

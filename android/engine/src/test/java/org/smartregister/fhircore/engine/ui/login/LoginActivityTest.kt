@@ -39,6 +39,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -100,6 +102,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
+    coEvery { accountAuthenticator.hasActiveSession() } returns
+      false andThen
+      false andThen
+      true // to test this specific scenario
     every { loginViewModel.isPinEnabled() } returns false
     initLoginActivity()
     loginViewModel.navigateToHome()
@@ -116,8 +122,13 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
+    coEvery { accountAuthenticator.hasActiveSession() } returns
+      false andThen
+      false andThen
+      true // to test this specific scenario
     coEvery { accountAuthenticator.hasActivePin() } returns false
     every { loginViewModel.isPinEnabled() } returns false
+
     initLoginActivity()
     loginViewModel.navigateToHome()
 
@@ -131,6 +142,28 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun `navigate to screen shows PIN activity if PIN is enabled and active`() {
+    coEvery { accountAuthenticator.hasActivePin() } returns true
+    every { loginViewModel.isPinEnabled() } returns true
+    initLoginActivity()
+    verify { loginService.navigateToPinLogin(false) }
+  }
+
+  @Test
+  fun testLaunchDialPadShouldStartActionDialActivity() {
+    initLoginActivity()
+    ReflectionHelpers.callInstanceMethod<Unit>(
+      loginActivity,
+      "launchDialPad",
+      ReflectionHelpers.ClassParameter.from(String::class.java, "1234567")
+    )
+
+    val resultIntent = shadowOf(application).nextStartedActivity
+    Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
+    Assert.assertEquals("1234567", resultIntent.data.toString())
   }
 
   override fun getActivity(): Activity {
