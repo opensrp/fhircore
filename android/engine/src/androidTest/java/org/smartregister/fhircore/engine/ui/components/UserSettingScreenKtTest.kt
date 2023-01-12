@@ -21,6 +21,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
 import org.junit.After
@@ -138,10 +139,12 @@ class UserSettingScreenKtTest {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          onEvent = {},
-          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
           showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
-          isDebugVariant = isDebugVariant
+          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
+          isDebugVariant = isDebugVariant,
+          onEvent = {},
+          mainNavController = rememberNavController(),
+          email = userSettingViewModel.retrieveEmail()
         )
       }
 

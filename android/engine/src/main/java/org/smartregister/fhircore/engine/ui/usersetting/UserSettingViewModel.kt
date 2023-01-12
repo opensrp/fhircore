@@ -67,6 +67,8 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
+  fun retrieveEmail(): String? = secureSharedPreference.retrieveEmail()
+
   fun allowSwitchingLanguages() = languages.size > 1
 
   fun loadSelectedLanguage(): String =

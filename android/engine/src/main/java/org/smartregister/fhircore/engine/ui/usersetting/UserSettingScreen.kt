@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,13 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
@@ -58,8 +53,11 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -70,6 +68,7 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingScreen(
   modifier: Modifier = Modifier,
@@ -81,43 +80,59 @@ fun UserSettingScreen(
   progressBarState: Pair<Boolean, Int>,
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
+  mainNavController: NavController,
+  email: String?,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
   var expanded by remember { mutableStateOf(false) }
 
-  Column(modifier = modifier.padding(vertical = 20.dp)) {
-    if (!username.isNullOrEmpty()) {
-      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
-        Box(
-          modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-          contentAlignment = Alignment.Center
-        ) {
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text(text = stringResource(R.string.settings)) },
+        navigationIcon = {
+          IconButton(onClick = { mainNavController.popBackStack() }) {
+            Icon(Icons.Filled.ArrowBack, null)
+          }
+        },
+        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primary
+      )
+    }
+  ) {
+    Column(modifier = modifier.padding(vertical = 20.dp)) {
+      if (!username.isNullOrEmpty()) {
+        Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+          Box(
+            modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = username.first().uppercase(),
+              textAlign = TextAlign.Center,
+              fontWeight = FontWeight.Bold,
+              fontSize = 28.sp,
+              color = WarningColor
+            )
+          }
           Text(
-            text = username.first().uppercase(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            color = BlueTextColor
+            text = username.capitalize(Locale.current),
+            fontSize = 22.sp,
+            modifier = modifier.padding(vertical = 22.dp),
+            fontWeight = FontWeight.Bold
           )
         }
-        Text(
-          text = username.capitalize(Locale.current),
-          fontSize = 22.sp,
-          modifier = modifier.padding(vertical = 22.dp),
-          fontWeight = FontWeight.Bold
-        )
       }
-    }
-    Divider(color = DividerColor)
+      Divider(color = DividerColor)
 
-    // TODO temporary disabled the sync functionality and will be enabled in future
-    /*UserSettingRow(
-      icon = Icons.Rounded.Sync,
-      text = stringResource(id = R.string.sync),
-      clickListener = { onEvent(UserSettingsEvent.SyncData) },
-      modifier = modifier
-    )*/
+      // TODO temporary disabled the sync functionality and will be enabled in future
+      /*UserSettingRow(
+        icon = Icons.Rounded.Sync,
+        text = stringResource(id = R.string.sync),
+        clickListener = { onEvent(UserSettingsEvent.SyncData) },
+        modifier = modifier
+      )*/
 
     // Language option
     if (allowSwitchingLanguages) {
@@ -191,14 +206,14 @@ fun UserSettingScreen(
       )
     }
 
-    UserSettingRow(
-      icon = Icons.Rounded.Logout,
-      text = stringResource(id = R.string.logout),
-      clickListener = { onEvent(UserSettingsEvent.Logout) },
-      modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
-    )
+      UserSettingRow(
+        icon = Icons.Rounded.Logout,
+        text = stringResource(id = R.string.logout),
+        clickListener = { onEvent(UserSettingsEvent.Logout) },
+        modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
+      )
+    }
   }
-}
 
 @Composable
 fun UserSettingRow(
@@ -267,5 +282,22 @@ fun ConfirmClearDatabaseDialog(
       }
     },
     modifier = Modifier.testTag(RESET_DATABASE_DIALOG)
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+fun UserSettingPreview() {
+  UserSettingScreen(
+    username = "Jam",
+    allowSwitchingLanguages = true,
+    selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
+    languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+    showDatabaseResetConfirmation = false,
+    progressBarState = Pair(false, R.string.resetting_app),
+    isDebugVariant = true,
+    onEvent = {},
+    mainNavController = rememberNavController(),
+    email = userSettingViewModel.retrieveEmail()
   )
 }

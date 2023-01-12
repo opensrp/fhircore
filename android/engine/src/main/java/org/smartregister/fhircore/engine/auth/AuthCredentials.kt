@@ -23,5 +23,6 @@ data class AuthCredentials(
   val username: String,
   val password: String,
   var sessionToken: String? = null,
-  var refreshToken: String? = null
+  var refreshToken: String? = null,
+  var email: String? = ""
 )
