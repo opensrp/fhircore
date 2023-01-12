@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.quest.ui.profile.bottomSheet
 
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
 class ProfileBottomSheetFragmentTest {
