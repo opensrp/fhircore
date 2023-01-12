@@ -89,6 +89,6 @@ constructor(
     this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
 
   companion object {
-    const val WORK_ID = "fhirTaskPlanWorker"
+    const val WORK_ID = "FhirTaskPlanWorker"
   }
 }
