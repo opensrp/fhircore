@@ -75,6 +75,9 @@ constructor(
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
 
+  suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
+    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
+
   suspend fun loadResource(reference: Reference) =
     withContext(dispatcherProvider.io()) {
       IdType(reference.reference).let {

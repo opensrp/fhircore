@@ -17,14 +17,19 @@
 package org.smartregister.fhircore.engine.configuration.profile
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
+import org.hl7.fhir.r4.model.ResourceType
 
 /**
- * @property infoFhirPathExpression FHIRPath expression used to extract content from the managing
- * entity resource e.g. the names of the Patient who can be a managing entity
- * @property fhirPathResource config for indicating the type of resource used for the ManagingEntity
- * and the FHIR path expression for filtering the resources eligible for being ManagingEntities e.g.
- * patients of a particular age
+ * @property nameFhirPathExpression FHIRPath expression used to extract the name of the
+ * managingEntity Example: An expression to extract the given name from the Patient resource (
+ *
+ * @property eligibilityCriteriaFhirPathExpression A conditional FHIRPath expression used to
+ * determine the criteria for being a managing entity
+ *
+ * Example: An expression for checking whether the age of birth is greater than or equal to 18
+ * (Patient.active and (Patient.birthDate <= today() - 18 'years')
+ *
+ * @property resourceType config for indicating the type of resource used for the ManagingEntity
  * @property dialogTitle The dialog title for selecting managing entity (can be regular or
  * translatable string)
  * @property dialogWarningMessage A warning message displayed on the view for selecting managing
@@ -35,9 +40,11 @@ import org.smartregister.fhircore.engine.domain.model.ExtractedResource
  */
 @Serializable
 data class ManagingEntityConfig(
-  val infoFhirPathExpression: String,
-  val fhirPathResource: ExtractedResource,
+  val nameFhirPathExpression: String,
+  val eligibilityCriteriaFhirPathExpression: String,
+  val resourceType: ResourceType,
   val dialogTitle: String? = null,
   val dialogWarningMessage: String? = null,
-  val dialogContentMessage: String? = null
+  val dialogContentMessage: String? = null,
+  val noMembersErrorMessage: String = ""
 )

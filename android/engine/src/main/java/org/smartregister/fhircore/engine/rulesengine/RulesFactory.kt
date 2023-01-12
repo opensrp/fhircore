@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -120,7 +121,7 @@ constructor(
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
-    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+    relatedResourcesMap: Map<ResourceType, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values and init facts
     computedValuesMap.clear()
@@ -148,7 +149,7 @@ constructor(
 
     // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
     facts.put(baseResource.resourceType.name, baseResource)
-    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
+    relatedResourcesMap.forEach { facts.put(it.key.name, it.value) }
 
     rulesEngine.fire(Rules(customRules), facts)
 
@@ -183,14 +184,14 @@ constructor(
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
-      relatedResourceType: String,
+      relatedResourceType: ResourceType,
       fhirPathExpression: String,
-      relatedResourcesMap: Map<String, List<Resource>>? = null
+      relatedResourcesMap: Map<ResourceType, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceType)
-          ?: if (facts.getFact(relatedResourceType) != null)
-            facts.getFact(relatedResourceType).value as List<Resource>
+          ?: if (facts.getFact(relatedResourceType.name) != null)
+            facts.getFact(relatedResourceType.name).value as List<Resource>
           else emptyList()
 
       return value.filter {

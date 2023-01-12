@@ -171,7 +171,7 @@ constructor(
    */
   private fun computeListRules(
     views: List<ViewProperties>,
-    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
+    relatedResourcesMap: MutableMap<ResourceType, MutableList<Resource>>,
     computedValuesMap: Map<String, Any>
   ) =
     views.retrieveListProperties().associate { viewProperties ->
@@ -258,12 +258,12 @@ constructor(
    * as key and value as list of [Resource] s in the map.
    */
   private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
-    MutableMap<String, MutableList<Resource>> {
-    val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
+    MutableMap<ResourceType, MutableList<Resource>> {
+    val relatedResourcesMap = mutableMapOf<ResourceType, MutableList<Resource>>()
     while (this.isNotEmpty()) {
       val relatedResourceData = this.removeFirst()
       relatedResourcesMap
-        .getOrPut(relatedResourceData.resource.resourceType.name) { mutableListOf() }
+        .getOrPut(relatedResourceData.resource.resourceType) { mutableListOf() }
         .add(relatedResourceData.resource)
       relatedResourceData.relatedResources.forEach { this.addLast(it) }
     }
