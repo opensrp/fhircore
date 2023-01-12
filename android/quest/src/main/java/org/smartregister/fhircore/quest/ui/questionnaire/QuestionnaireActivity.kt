@@ -156,8 +156,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setOnClickListener(this@QuestionnaireActivity)
     }
 
-    findViewById<Button>(R.id.submit_questionnaire).apply {
-      layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+    findViewById<Button>(R.id.submit_questionnaire)?.apply {
+      layoutParams.width =
+        ViewGroup.LayoutParams
+          .MATCH_PARENT // Override by Styles xml does not seem to work for this layout param
 
       if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
