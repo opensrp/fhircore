@@ -33,6 +33,9 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
@@ -398,6 +401,47 @@ class RulesFactoryTest : RobolectricTest() {
   fun testGenerateRandomNumberOfLengthSix() {
     val generatedNumber = rulesEngineService.generateRandomSixDigitInt()
     Assert.assertEquals(generatedNumber.toString().length, 6)
+  }
+
+  @Test
+  fun testFilterListShouldReturnMatchingResource() {
+
+    val listOfResources =
+      listOf(
+        Condition().apply {
+          id = "1"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
+        },
+        Condition().apply {
+          id = "2"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "family-planning"))
+        }
+      )
+
+    val result = rulesEngineService.filterList(listOfResources, "id", "2")
+
+    Assert.assertTrue(result.size == 1)
+    with(result.first() as Condition) {
+      Assert.assertEquals("2", id)
+      Assert.assertEquals("0002", clinicalStatus.codingFirstRep.code)
+      Assert.assertEquals("family-planning", clinicalStatus.codingFirstRep.display)
+    }
+  }
+
+  @Test
+  fun testFilterListShouldReturnEmptyListWhenFieldNotFound() {
+
+    val listOfResources =
+      listOf(
+        Condition().apply {
+          id = "1"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
+        }
+      )
+
+    val result = rulesEngineService.filterList(listOfResources, "unknown_field", "1")
+
+    Assert.assertTrue(result.isEmpty())
   }
 
   private fun populateFactsWithResources() {
