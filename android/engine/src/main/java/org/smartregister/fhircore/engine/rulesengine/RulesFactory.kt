@@ -265,8 +265,7 @@ constructor(
     ): String? =
       resources
         ?.mapNotNull {
-          if (
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+          if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             }
           )
