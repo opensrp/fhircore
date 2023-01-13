@@ -27,6 +27,8 @@ sealed class AppMainEvent {
 
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
 
+  data class RefreshAuthToken(val context: Context) : AppMainEvent()
+
   data class OpenRegistersBottomSheet(
     val navController: NavController,
     val registersList: List<NavigationMenuConfig>?
@@ -51,6 +53,4 @@ sealed class AppMainEvent {
   object Logout : AppMainEvent()
 
   object SyncData : AppMainEvent()
-
-  object RefreshAuthToken : AppMainEvent()
 }
