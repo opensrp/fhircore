@@ -31,7 +31,8 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
 
   /**
    * Function to extract value based on the provided FHIR path [expression] on the given [base].
-   * Returns the value of the first item in the returned list of [Base] as String, empty otherwise
+   * 
+   * @return the value of the first item in the returned list of [Base] as String, empty otherwise.
    */
   fun extractValue(base: Base?, expression: String): String {
     if (base == null) return ""
@@ -40,7 +41,8 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
 
   /**
    * Function to extract value for the [base] using the on the provided FHIR path [expression].
-   * Returns a list of [Base]
+   * 
+   * @return a list of [Base].
    */
   fun extractData(base: Base, expression: String): List<Base> {
     return try {
