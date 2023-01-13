@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -105,7 +106,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
 
     val baseResource = populateTestPatient()
-    val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+    val relatedResourcesMap: Map<ResourceType, List<Resource>> = emptyMap()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -147,7 +148,7 @@ class RulesFactoryTest : RobolectricTest() {
     val result =
       rulesEngineService.retrieveRelatedResources(
         resource = populateTestPatient(),
-        relatedResourceType = "CarePlan",
+        relatedResourceType = ResourceType.CarePlan,
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
