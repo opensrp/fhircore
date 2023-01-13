@@ -195,7 +195,7 @@ constructor(
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.first().family
+        name = relatedPerson.name.firstOrNull()?.family
       }
     fhirEngine.update(group)
   }

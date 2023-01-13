@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -149,7 +150,20 @@ constructor(
       }
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)
+          registerRepository.changeManagingEntity(
+            event.eligibleManagingEntity.logicalId,
+            event.eligibleManagingEntity.groupId
+          )
+          withContext(dispatcherProvider.main()) {
+            emitSnackBarState(
+              snackBarMessageConfig =
+                SnackBarMessageConfig(
+                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                      ?: event.context.getString(R.string.reassigned_managing_entity),
+                  actionLabel = event.context.getString(R.string.ok)
+                )
+            )
+          }
         }
       }
     }
@@ -168,35 +182,38 @@ constructor(
     }
     viewModelScope.launch {
       val group = registerRepository.loadResource<Group>(event.resourceData.baseResourceId)
-      val managingEntity = event.managingEntity
       val eligibleManagingEntities: List<EligibleManagingEntity> =
         group
           ?.member
           ?.map {
-            registerRepository.loadResource(it.entity.extractId(), managingEntity.resourceType)
+            registerRepository.loadResource(
+              it.entity.extractId(),
+              event.managingEntity.resourceType
+            )
           }
           ?.filter { managingEntityResource ->
-            "true".equals(
-              fhirPathDataExtractor.extractValue(
+            fhirPathDataExtractor
+              .extractValue(
                 base = managingEntityResource,
-                expression = managingEntity.eligibilityCriteriaFhirPathExpression
-              ),
-              ignoreCase = true
-            )
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+              )
+              .toBoolean()
           }
           ?.map {
             EligibleManagingEntity(
               groupId = event.resourceData.baseResourceId,
               logicalId = it.logicalId.extractLogicalIdUuid(),
               memberInfo =
-                fhirPathDataExtractor.extractValue(it, managingEntity.nameFhirPathExpression)
+                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
             )
           }
           ?: emptyList()
 
       // Show error message when no group members are found
       if (eligibleManagingEntities.isEmpty()) {
-        emitSnackBarState(SnackBarMessageConfig(message = managingEntity.noMembersErrorMessage))
+        emitSnackBarState(
+          SnackBarMessageConfig(message = event.managingEntity.noMembersErrorMessage)
+        )
       } else {
         (event.navController.context.getActivity())?.let { activity ->
           ProfileBottomSheetFragment(
@@ -204,12 +221,13 @@ constructor(
               onSaveClick = {
                 onEvent(
                   ProfileEvent.OnChangeManagingEntity(
-                    newManagingEntityId = it.logicalId,
-                    groupId = it.groupId
+                    context = activity,
+                    eligibleManagingEntity = it,
+                    managingEntityConfig = event.managingEntity
                   )
                 )
               },
-              managingEntity = managingEntity
+              managingEntity = event.managingEntity
             )
             .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
         }

@@ -46,5 +46,6 @@ data class ManagingEntityConfig(
   val dialogTitle: String? = null,
   val dialogWarningMessage: String? = null,
   val dialogContentMessage: String? = null,
-  val noMembersErrorMessage: String = ""
+  val noMembersErrorMessage: String = "",
+  val managingEntityReassignedMessage: String = ""
 )

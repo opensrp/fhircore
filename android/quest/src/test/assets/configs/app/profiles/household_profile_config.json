@@ -249,9 +249,9 @@
             "nameFhirPathExpression": "Patient.name.given",
             "resourceType": "Patient",
             "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
-            "dialogTitle": "{{ assign.new.family.head }}",
-            "dialogWarningMessage": "{{ abort.operation.question }}",
-            "dialogContentMessage": "{{ select.new.family.head }}",
+            "dialogTitle": "{{ assign.household.head.title }}",
+            "dialogWarningMessage": "{{ assign.household.head.warning }}",
+            "dialogContentMessage": "{{ select.new.household.head }}",
             "noMembersErrorMessage": "{{ no.members.error.message }}"
           }
         }
