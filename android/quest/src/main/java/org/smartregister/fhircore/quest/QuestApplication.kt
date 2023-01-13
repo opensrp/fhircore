@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
@@ -49,7 +50,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   override fun getWorkManagerConfiguration(): Configuration =
     Configuration.Builder()
-      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(workerFactory)
       .build()
 }

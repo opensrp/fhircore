@@ -29,7 +29,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
@@ -277,43 +276,78 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val fhirPathExpression = "Task.status = 'ready'"
-    val list =
+    val fhirPathExpression = "Task.status"
+    val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
         Task().apply { status = TaskStatus.READY },
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertTrue(rulesEngineService.filterList(list, fhirPathExpression).size == 1)
+    Assert.assertTrue(
+      rulesEngineService.filterResources(
+          resources = resources,
+          fhirPathExpression = fhirPathExpression,
+          value = "ready"
+        )
+        .size == 1
+    )
+  }
+
+  @Test
+  fun fetchDescriptionFromReadyTasks() {
+    val fhirPathExpression = "Task.status"
+    val resources =
+      listOf(
+        Task().apply {
+          status = TaskStatus.COMPLETED
+          description = "minus"
+        },
+        Task().apply {
+          status = TaskStatus.READY
+          description = "plus"
+        },
+        Task().apply {
+          status = TaskStatus.CANCELLED
+          description = "multiply"
+        },
+        Task().apply {
+          status = TaskStatus.COMPLETED
+          description = "minus five"
+        },
+      )
+
+    val descriptionList = rulesEngineService.filterResources(resources, fhirPathExpression, "ready")
+    Assert.assertTrue((descriptionList.first() as Task).description == "plus")
   }
 
   @Test
   fun filterResourceListWithWrongExpression() {
-    val fhirPathExpression = "Task.desc = 'ready'"
-    val list =
+    val fhirPathExpression = "Task.status"
+    val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
-        Task().apply { status = TaskStatus.READY },
+        Task().apply { status = TaskStatus.REQUESTED },
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertThrows(NoSuchElementException::class.java) {
-      runBlocking { rulesEngineService.filterList(list, fhirPathExpression) }
-    }
+    val results = rulesEngineService.filterResources(resources, fhirPathExpression, "ready")
+    Assert.assertTrue(results.isEmpty())
   }
 
   @Test
   fun filterResourceListWithWrongAttributeValue() {
-    val fhirPathExpression = "Task.status = 'not ready'"
-    val list =
+    val fhirPathExpression = "Task.status"
+    val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
         Task().apply { status = TaskStatus.READY },
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertEquals(emptyList<Task>(), rulesEngineService.filterList(list, fhirPathExpression))
+    Assert.assertTrue(
+      rulesEngineService.filterResources(resources, fhirPathExpression, "not ready").isEmpty()
+    )
   }
 
   @Test
@@ -391,7 +425,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterList(listOfResources, "id", "2")
+    val result = rulesEngineService.filterResources(listOfResources, "id", "2")
 
     Assert.assertTrue(result.size == 1)
     with(result.first() as Condition) {
@@ -412,7 +446,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterList(listOfResources, "unknown_field", "1")
+    val result = rulesEngineService.filterResources(listOfResources, "unknown_field", "1")
 
     Assert.assertTrue(result.isEmpty())
   }
