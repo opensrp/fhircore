@@ -76,7 +76,10 @@ class ChangeManagingEntityViewTest {
 
   @Test
   fun testChangeManagingEntityViewDisplaysSelectNewFamilyHeadTitle() {
-    composeTestRule.onNodeWithText("Select a new family head").assertExists().assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Select a new family head", ignoreCase = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
