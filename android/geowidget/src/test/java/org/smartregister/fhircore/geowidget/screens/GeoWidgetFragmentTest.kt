@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
+import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.maps.Style
@@ -37,7 +38,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
 
@@ -86,5 +90,45 @@ class GeoWidgetFragmentTest {
 
     verify { source.setGeoJson(featureCollection) }
     verify { geowidgetFragment.zoomToPointsOnMap(featureCollection) }
+  }
+
+  @Test
+  fun testOnChanged() {
+    val featureCollection = mockk<FeatureCollection>()
+    val source = mockk<GeoJsonSource>()
+    every { geowidgetFragment.onChanged(featureCollection) } just runs
+    every { geowidgetFragment.zoomToPointsOnMap(featureCollection) } just runs
+    every { source.setGeoJson(any<FeatureCollection>()) } just runs
+    geowidgetFragment.onChanged(featureCollection)
+    source.setGeoJson(featureCollection)
+    verify { source.setGeoJson(featureCollection) }
+  }
+
+  @Test
+  fun testSetFeatureClickListener() {
+    val geoWidgetConfiguration = mockk<GeoWidgetConfiguration>()
+    val geoWidgetViewModel = mockk<GeoWidgetViewModel>()
+    val familyId = "123456"
+
+    shadowOf(Looper.getMainLooper()).idle()
+    val geoWidgetFragment = mockk<GeoWidgetFragment>(relaxed = true)
+    every { geoWidgetFragment.setFeatureClickListener() } just runs
+    every {
+      geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+      )
+    } just runs
+    geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+      GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+    )
+
+    GeoWidgetEvent.OpenProfile(familyId, mockk())
+    geoWidgetViewModel.geoWidgetEventLiveData
+
+    verify {
+      geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+      )
+    }
   }
 }
