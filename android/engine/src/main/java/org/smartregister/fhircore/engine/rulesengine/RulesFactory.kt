@@ -311,7 +311,7 @@ constructor(
      * 2022-02 or 2022
      */
     fun prettifyDate(inputDateString: String): String {
-      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
+      return PrettyTime().format(DateTime(inputDateString).toDate())
     }
 
     /**
