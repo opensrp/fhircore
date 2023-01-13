@@ -61,12 +61,6 @@
     <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
     <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
-    <string name="questionnaire_alert_submit_message">Please confirm that you have all details filled in before submission</string>
-    <string name="questionnaire_alert_submit_title">Submit details</string>
-    <string name="questionnaire_alert_submit_button_title">Save</string>
-    <string name="questionnaire_alert_test_only_message">Confirm that you are finished filling out the data. Note this is test only form and does not save any data</string>
-    <string name="questionnaire_alert_test_only_title">Process form data</string>
-    <string name="questionnaire_alert_test_only_button_title">Process</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
