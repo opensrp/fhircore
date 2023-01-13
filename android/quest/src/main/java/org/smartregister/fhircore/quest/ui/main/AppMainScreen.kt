@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.appointment.register.AppointmentRegisterScreen
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
@@ -156,15 +157,14 @@ private fun AppMainNavigationGraph(
                 ?: stringResource(R.string.all_clients)
 
             val healthModule: HealthModule =
-              stackEntry.arguments?.getSerializable(
-                NavigationArg.HEALTH_MODULE,
-                HealthModule::class.java
-              )
+              stackEntry.arguments?.getSerializable(NavigationArg.HEALTH_MODULE) as HealthModule?
                 ?: HealthModule.HIV
             if (healthModule == HealthModule.HOME_TRACING ||
                 healthModule == HealthModule.PHONE_TRACING
             ) {
               TracingRegisterScreen(navController = navController, screenTitle = screenTitle)
+            } else if (healthModule == HealthModule.APPOINTMENT) {
+              AppointmentRegisterScreen(screenTitle = screenTitle, navController = navController)
             } else {
               PatientRegisterScreen(
                 navController = navController,

@@ -123,13 +123,16 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               else -> null
             }
         )
-      is RegisterData.AppointmentRegisterData ->
+      is RegisterData.AppointmentRegisterData -> {
         RegisterViewData(
           logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
           subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
           registerType = RegisterData.AppointmentRegisterData::class
         )
+
+        TODO("Finish setup of the RegisterViewData for Appointments")
+      }
       is RegisterData.TracingRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
