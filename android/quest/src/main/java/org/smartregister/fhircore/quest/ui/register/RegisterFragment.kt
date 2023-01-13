@@ -205,7 +205,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           syncJobStatus.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        if (hasAuthError == true) appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        if (hasAuthError == true)
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(requireContext()))
         Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
         val messageResourceId =
           if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed

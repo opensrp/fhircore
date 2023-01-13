@@ -45,6 +45,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -245,19 +246,35 @@ class AppMainViewModelTest : RobolectricTest() {
     val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     // verify { syncBroadcaster.runSync() }
+    verify { appMainViewModel.retrieveAppMainUiState() }
   }
 
   @Test
   fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     verify { accountAuthenticator.logout() }
+  }
+
+  @Test
+  fun onRefreshAuthTokenShowsErrorMessageIfNetworkErrorEncountered() {
+    val errorMessage = "Check connectivity"
+    val bundle =
+      bundleOf(
+        Pair(AccountManager.KEY_ERROR_CODE, AccountManager.ERROR_CODE_NETWORK_ERROR),
+        Pair(AccountManager.KEY_ERROR_MESSAGE, errorMessage)
+      )
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
+
+    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains(errorMessage, ignoreCase = true))
   }
 }
