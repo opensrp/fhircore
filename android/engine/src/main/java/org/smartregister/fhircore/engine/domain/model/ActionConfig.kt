@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Bundle
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -31,6 +32,7 @@ data class ActionConfig(
   val display: String? = null,
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
+  val managingEntity: ManagingEntityConfig? = null,
   val params: List<ActionParameter> = emptyList(),
   val resourceConfig: FhirResourceConfig? = null,
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
