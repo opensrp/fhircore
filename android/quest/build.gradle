@@ -239,7 +239,8 @@ android.applicationVariants.all { variant ->
             // version code for only the output APK, not for the variant itself. Skipping
             // this step causes Gradle to use the value of variant.versionCode for the APK.
             output.versionCodeOverride =
-                    baseAbiVersionCode * 10000 + variant.versionCode
+                    baseAbi
+            VersionCode * 10000 + variant.versionCode
         }
     }
 }
@@ -313,6 +314,7 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.4.2'
 
     androidTestImplementation deps.mockk_android
+    androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
 
 //    debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'

@@ -27,12 +27,12 @@ class QuestQuestionnaireFragment : QuestionnaireFragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setFragmentResultListener(SUBMIT_REQUEST_KEY) { _, _ ->
-      if ((activity as QuestionnaireActivity).getQuestionnaireConfig().type.isReadOnly() ||
-          (activity as QuestionnaireActivity).getQuestionnaireObject().experimental
+      if (getQuestionnaireActivity().getQuestionnaireConfig().type.isReadOnly() ||
+          getQuestionnaireActivity().getQuestionnaireObject().experimental
       ) { // Experimental questionnaires should not be submitted
-        (activity as QuestionnaireActivity).finish()
+        getQuestionnaireActivity().finish()
       } else {
-        (activity as QuestionnaireActivity).handleQuestionnaireSubmit()
+        getQuestionnaireActivity().handleQuestionnaireSubmit()
       }
     }
   }
@@ -54,6 +54,8 @@ class QuestQuestionnaireFragment : QuestionnaireFragment() {
       }
     )
   }
+
+  fun getQuestionnaireActivity() = activity as QuestionnaireActivity
 
   companion object {
     const val BARCODE_URL = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"

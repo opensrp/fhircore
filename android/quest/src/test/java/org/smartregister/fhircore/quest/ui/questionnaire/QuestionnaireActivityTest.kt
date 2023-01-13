@@ -20,10 +20,12 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
+import androidx.fragment.app.setFragmentResult
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -583,6 +585,50 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
       }
     }
+  }
+
+  @Test
+  fun testFragmentQuestionnaireSubmitHandlesQuestionnaireSubmit() {
+
+    every { questionnaireFragment.getQuestionnaireActivity() } returns questionnaireActivity
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig() } returns
+      QuestionnaireConfig(id = "123")
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireObject() } returns
+      Questionnaire()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every { questionnaireFragment.getQuestionnaireActivity().handleQuestionnaireSubmit() } just runs
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().handleQuestionnaireSubmit() }
+  }
+
+  @Test
+  fun testFragmentQuestionnaireSubmitWithReadOnlyModeFinishesActivity() {
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every {
+      questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig().type.isReadOnly()
+    } returns true
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().finish() }
+  }
+  @Test
+  fun testFragmentQuestionnaireSubmitWithExperimentalModeFinishesActivity() {
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every {
+      questionnaireFragment.getQuestionnaireActivity().getQuestionnaireObject().experimental
+    } returns true
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig() } returns
+      QuestionnaireConfig(id = "123")
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().finish() }
   }
 
   override fun getActivity(): Activity {
