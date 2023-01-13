@@ -20,6 +20,9 @@ import android.os.Build
 import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.mapbox.geojson.FeatureCollection
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -129,6 +132,19 @@ class GeoWidgetFragmentTest {
       geoWidgetViewModel.geoWidgetEventLiveData.postValue(
         GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
       )
+    }
+  }
+
+  @Test
+  fun testZoomPointsToMapBy50() {
+    val featureCollection = mockk<FeatureCollection>()
+    val mapBox = mockk<MapboxMap>(relaxed = true)
+    every { geowidgetFragment.zoomToPointsOnMap(featureCollection) } just runs
+    geowidgetFragment.zoomToPointsOnMap(featureCollection)
+    verify { geowidgetFragment.zoomToPointsOnMap(featureCollection) }
+    mapBox.easeCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.from(10, 10, 10), 50))
+    verify {
+      mapBox.easeCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.from(10, 10, 10), 50))
     }
   }
 }
