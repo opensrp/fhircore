@@ -512,9 +512,10 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testPrettifyDateReturnXDaysAgo() {
-    val inputDateString = "2023-01-10"
+    val daysAgo = 2
+    val inputDateString = LocalDate.now().minusDays(daysAgo - 1).toString()
     val expected = rulesFactory.RulesEngineService().prettifyDate(inputDateString)
-    Assert.assertEquals("2 days ago", expected)
+    Assert.assertEquals("$daysAgo days ago", expected)
   }
 
   @Test
