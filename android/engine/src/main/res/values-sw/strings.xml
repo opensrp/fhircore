@@ -22,7 +22,8 @@
         <string name="username_input_hint">Ingiza jina la mtumiaji</string>
         <string name="password_input_hint">Ingiza neno la siri</string>
         <string name="login_call_fail_error_message">Hitalfu imetokea wakati wa kuingia server. Tafadhali jaribu tena</string>
-        <string name="userinfo_call_fail_error_message">Imeshindwa kupata maelezo ya mtumiaji. Angalia muunganisho wako wa mtandao</string>
+        <string name="userinfo_call_fail_error_message">Imeshindwa kupata maelezo ya mtumiaji. Tafadhali angalia muunganisho wako wa mtandao</string>
+        <string name="refresh_token_fail_error_message">Imeshindwa kupata vitambulisho kutoka kwa seva. Tafadhali angalia muunganisho wako wa mtandao</string>
         <string name="scan_bar_code">SOMA BARCODE</string>
         <string name="male">Kiume</string>
         <string name="female">Kike</string>
