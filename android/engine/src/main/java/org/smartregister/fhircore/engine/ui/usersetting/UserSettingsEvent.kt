@@ -23,7 +23,7 @@ sealed class UserSettingsEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : UserSettingsEvent()
   data class ShowResetDatabaseConfirmationDialog(val isShow: Boolean) : UserSettingsEvent()
   data class ResetDatabaseFlag(val isReset: Boolean) : UserSettingsEvent()
-  data class SyncData(val context: Context) : UserSettingsEvent()
+  object SyncData : UserSettingsEvent()
   object Logout : UserSettingsEvent()
   data class ShowLoaderView(val show: Boolean, val messageResourceId: Int) : UserSettingsEvent()
 }

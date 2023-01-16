@@ -17,24 +17,18 @@
 package org.smartregister.fhircore.engine.ui.usersetting
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -61,9 +57,13 @@ import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
+import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.p2p.utils.capitalize
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
@@ -81,12 +81,13 @@ fun UserSettingScreen(
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
-  email: String?,
+  appVersionPair: Pair<Int, String>? = null
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
   var expanded by remember { mutableStateOf(false) }
-
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
+  val contentColor = colorResource(id = R.color.grayText)
   Scaffold(
     topBar = {
       TopAppBar(
@@ -101,11 +102,18 @@ fun UserSettingScreen(
       )
     }
   ) {
-    Column(modifier = modifier.padding(vertical = 20.dp)) {
+    Column(modifier = modifier.background(Color.White)) {
       if (!username.isNullOrEmpty()) {
-        Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+        Column(modifier = modifier
+          .background(Color.White)
+          .padding(vertical = 24.dp)
+          .fillMaxWidth(),
+          horizontalAlignment = Alignment.CenterHorizontally) {
           Box(
-            modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
+            modifier = modifier
+              .clip(CircleShape)
+              .background(color = LighterBlue)
+              .size(80.dp),
             contentAlignment = Alignment.Center
           ) {
             Text(
@@ -113,98 +121,115 @@ fun UserSettingScreen(
               textAlign = TextAlign.Center,
               fontWeight = FontWeight.Bold,
               fontSize = 28.sp,
-              color = WarningColor
+              color = BlueTextColor
             )
           }
           Text(
             text = username.capitalize(Locale.current),
             fontSize = 22.sp,
-            modifier = modifier.padding(vertical = 22.dp),
+            modifier = modifier.padding(vertical = 12.dp),
             fontWeight = FontWeight.Bold
           )
         }
       }
+
+
+
+      Divider(color = DividerColor)
+      Column(modifier = modifier.background(color =  colorResource(id = R.color.backgroundGray))) {
+
+        Spacer(modifier = modifier
+          .padding(top = 16.dp)
+          .padding(bottom = 16.dp))
+        Row {
+          Text(modifier = modifier
+            .padding(top = 4.dp)
+            .padding(bottom = 8.dp)
+            .padding(start = 20.dp)
+            .fillMaxWidth(), text = stringResource(R.string.settings).uppercase(), fontSize = 18.sp, color = contentColor,  fontWeight = FontWeight.Medium)
+        }
+      }
+
       Divider(color = DividerColor)
 
-      // TODO temporary disabled the sync functionality and will be enabled in future
-      /*UserSettingRow(
-        icon = Icons.Rounded.Sync,
-        text = stringResource(id = R.string.sync),
-        clickListener = { onEvent(UserSettingsEvent.SyncData) },
-        modifier = modifier
-      )*/
+      UserSettingRow(
+      icon = Icons.Rounded.Sync,
+      text = stringResource(id = R.string.sync),
+      clickListener = { onEvent(UserSettingsEvent.SyncData) },
+      modifier = modifier
+    )
 
-    // Language option
-    if (allowSwitchingLanguages) {
-      Row(
-        modifier =
+      // Language option
+      if (allowSwitchingLanguages) {
+        Row(
+          modifier =
           modifier
             .fillMaxWidth()
             .clickable { expanded = true }
             .padding(vertical = 16.dp, horizontal = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-      ) {
-        Row(modifier = Modifier.align(Alignment.CenterVertically)) {
-          Icon(
-            painterResource(R.drawable.ic_language),
-            stringResource(R.string.language),
-            tint = BlueTextColor,
-            modifier = Modifier.size(26.dp)
-          )
-          Spacer(modifier = modifier.width(20.dp))
-          Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
-        }
-        Box(contentAlignment = Alignment.CenterEnd) {
-          Text(
-            text = selectedLanguage,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier.wrapContentWidth(Alignment.End)
-          )
-          DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = modifier.wrapContentWidth(Alignment.End)
-          ) {
-            for (language in languages) {
-              DropdownMenuItem(
-                onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
-              ) { Text(text = language.displayName, fontSize = 18.sp) }
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Row(modifier = Modifier.align(Alignment.CenterVertically)) {
+            Icon(
+              painterResource(R.drawable.ic_language),
+              stringResource(R.string.language),
+              tint = BlueTextColor,
+              modifier = Modifier.size(26.dp)
+            )
+            Spacer(modifier = modifier.width(20.dp))
+            Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
+          }
+          Box(contentAlignment = Alignment.CenterEnd) {
+            Text(
+              text = selectedLanguage,
+              fontSize = 18.sp,
+              fontWeight = FontWeight.Bold,
+              modifier = modifier.wrapContentWidth(Alignment.End)
+            )
+            DropdownMenu(
+              expanded = expanded,
+              onDismissRequest = { expanded = false },
+              modifier = modifier.wrapContentWidth(Alignment.End)
+            ) {
+              for (language in languages) {
+                DropdownMenuItem(
+                  onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
+                ) { Text(text = language.displayName, fontSize = 18.sp) }
+              }
             }
           }
+          Icon(
+            imageVector = Icons.Rounded.ChevronRight,
+            "",
+            tint = Color.LightGray,
+            modifier = modifier.wrapContentWidth(Alignment.End)
+          )
         }
-        Icon(
-          imageVector = Icons.Rounded.ChevronRight,
-          "",
-          tint = Color.LightGray,
-          modifier = modifier.wrapContentWidth(Alignment.End)
+        Divider(color = DividerColor)
+      }
+
+      if (showProgressBar) {
+        LoaderDialog(modifier = modifier, stringResource(messageResource))
+      }
+
+      if (showDatabaseResetConfirmation) {
+        ConfirmClearDatabaseDialog(
+          permanentResetDatabase = {
+            onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
+            onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
+          },
+          onDismissDialog = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false)) }
         )
       }
-      Divider(color = DividerColor)
-    }
 
-    if (showProgressBar) {
-      LoaderDialog(modifier = modifier, stringResource(messageResource))
-    }
-
-    if (showDatabaseResetConfirmation) {
-      ConfirmClearDatabaseDialog(
-        permanentResetDatabase = {
-          onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
-          onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
-        },
-        onDismissDialog = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false)) }
-      )
-    }
-
-    if (isDebugVariant) {
-      UserSettingRow(
-        icon = Icons.Rounded.DeleteForever,
-        text = stringResource(id = R.string.clear_database),
-        clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
-        modifier = modifier
-      )
-    }
+      if (isDebugVariant) {
+        UserSettingRow(
+          icon = Icons.Rounded.DeleteForever,
+          text = stringResource(id = R.string.clear_database),
+          clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
+          modifier = modifier
+        )
+      }
 
       UserSettingRow(
         icon = Icons.Rounded.Logout,
@@ -212,8 +237,30 @@ fun UserSettingScreen(
         clickListener = { onEvent(UserSettingsEvent.Logout) },
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
       )
+
+
+
+      Column(modifier = modifier.background(color =  colorResource(id = R.color.backgroundGray)).fillMaxWidth()) {
+        Spacer(modifier = Modifier.weight(1f))
+
+        Image(painterResource(R.drawable.logo_fhir_core),"content description",
+          modifier = modifier
+            .requiredHeight(40.dp)
+            .align(Alignment.CenterHorizontally),
+          contentScale = ContentScale.Fit)
+
+        Text(
+          color = contentColor,
+          fontSize = 16.sp,
+          text = stringResource(id = R.string.app_version, versionCode, versionName),
+          modifier = modifier
+            .padding(16.dp)
+            .align(Alignment.CenterHorizontally)
+        )
+      }
     }
   }
+}
 
 @Composable
 fun UserSettingRow(
@@ -224,10 +271,11 @@ fun UserSettingRow(
 ) {
   Row(
     modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable { clickListener() }
-        .padding(vertical = 16.dp, horizontal = 20.dp),
+    modifier
+      .fillMaxWidth()
+      .clickable { clickListener() }
+      .padding(vertical = 16.dp, horizontal = 20.dp)
+      .background(Color.White),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {
@@ -263,18 +311,24 @@ fun ConfirmClearDatabaseDialog(
     text = { Text(text = stringResource(R.string.clear_database_message), fontSize = 16.sp) },
     buttons = {
       Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        modifier = modifier
+          .fillMaxWidth()
+          .padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.End
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier
+            .padding(horizontal = 10.dp)
+            .clickable { onDismissDialog() }
         )
         Text(
           color = MaterialTheme.colors.primary,
           text = stringResource(R.string.clear_database).uppercase(),
           modifier =
-            modifier.padding(horizontal = 10.dp).clickable {
+          modifier
+            .padding(horizontal = 10.dp)
+            .clickable {
               permanentResetDatabase()
               onDismissDialog()
             }
@@ -298,6 +352,6 @@ fun UserSettingPreview() {
     isDebugVariant = true,
     onEvent = {},
     mainNavController = rememberNavController(),
-    email = userSettingViewModel.retrieveEmail()
+    appVersionPair = Pair(1, "1.0.1")
   )
 }
