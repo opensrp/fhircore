@@ -30,7 +30,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -49,13 +48,13 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Group.GroupType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfigType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -67,8 +66,11 @@ import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.findPercentage
 import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
@@ -79,10 +81,12 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
+import org.smartregister.fhircore.engine.util.extension.valueCode
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -283,17 +287,17 @@ constructor(
           .runCatching {
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
-            measureReportConfigList.forEach {
+            measureReportConfigList.forEach { config ->
               val result =
                 retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
                   fhirEngine,
                   startDateFormatted,
                   endDateFormatted,
-                  it.url
+                  config.url
                 )
               if (result?.isEmpty() == true) {
                 withContext(dispatcherProvider.io()) {
-                  fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
+                  fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
                 }
                 if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation
                 ) {
@@ -301,7 +305,7 @@ constructor(
                     try {
                       withContext(dispatcherProvider.io()) {
                         fhirOperator.evaluateMeasure(
-                          measureUrl = it.url,
+                          measureUrl = config.url,
                           start = startDateFormatted,
                           end = endDateFormatted,
                           reportType = SUBJECT,
@@ -328,17 +332,17 @@ constructor(
                     !individualEvaluation
                 ) {
                   evaluatePopulationMeasure(
-                    it.url,
+                    config.url,
                     startDateFormatted,
                     endDateFormatted,
-                    it.title,
-                    it.type
+                    config.title,
+                    config.module
                   )
                 }
               } else {
-                result
-                  ?.let { it1 -> formatPopulationMeasureReports(it1, it.title, it.type) }
-                  ?.let { it2 -> _measureReportPopulationResultList.addAll(it2) }
+                result?.let { formatPopulationMeasureReports(it, config.title) }?.let {
+                  _measureReportPopulationResultList.addAll(it)
+                }
               }
             }
           }
@@ -364,45 +368,47 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     indicatorTitle: String,
-    type: MeasureReportConfigType
+    module: String
   ) {
-    val measureReport: List<MeasureReport> =
-      if (type == MeasureReportConfigType.STOCK) {
-        fhirEngine
-          .search<Group> {
-            filter(
-              Group.TYPE,
-              {
-                value =
-                  of(
-                    Coding(
-                      GroupType.MEDICATION.system,
-                      GroupType.MEDICATION.toCode(),
-                      GroupType.MEDICATION.display
+    withContext(dispatcherProvider.io()) {
+      val measureReport: List<MeasureReport> =
+        if (module.contains("Stock", true)) {
+          fhirEngine
+            .search<Group> {
+              filter(
+                Group.TYPE,
+                {
+                  value =
+                    of(
+                      Coding(
+                        GroupType.MEDICATION.system,
+                        GroupType.MEDICATION.toCode(),
+                        GroupType.MEDICATION.display
+                      )
                     )
-                  )
-              }
-            )
-          }
-          .map {
-            // TODO a hack to prevent missing subject in case of Stock (Group) report where
-            // MeasureEvaluator looks for Group members and skips the Group itself
-            if (!it.hasMember()) {
-              it.addMember(Group.GroupMemberComponent(it.asReference()))
-              fhirEngine.update(it)
+                }
+              )
             }
-            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
-          }
-      } else
-        listOfNotNull(
-          runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)
-        )
+            .map {
+              // TODO a hack to prevent missing subject in case of Stock (Group) report where
+              // MeasureEvaluator looks for Group members and skips the Group itself
+              if (!it.hasMember()) {
+                it.addMember(Group.GroupMemberComponent(it.asReference()))
+                fhirEngine.update(it)
+              }
+              runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
+            }
+        } else
+          listOfNotNull(
+            runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)
+          )
 
-    measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
+      measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
 
-    _measureReportPopulationResultList.addAll(
-      formatPopulationMeasureReports(measureReport, indicatorTitle, type)
-    )
+      _measureReportPopulationResultList.addAll(
+        formatPopulationMeasureReports(measureReport, indicatorTitle)
+      )
+    }
   }
 
   fun runMeasureReport(
@@ -433,30 +439,44 @@ constructor(
   suspend fun formatPopulationMeasureReports(
     measureReports: List<MeasureReport>,
     indicatorTitle: String = "",
-    type: MeasureReportConfigType
   ): List<MeasureReportPopulationResult> {
     val data = mutableListOf<MeasureReportPopulationResult>()
 
     measureReports.forEach {
       Timber.d(it.encodeResourceToString())
 
-      if (type == MeasureReportConfigType.STOCK) {
-        val group =
-          fhirEngine.get(ResourceType.Group, it.subject.reference.extractLogicalIdUuid()) as Group
+      if (it.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+        val subject =
+          fhirEngine.get(it.subject.extractType()!!, it.subject.extractId()).let {
+            when (it) {
+              is Patient -> it.nameFirstRep.nameAsSingleString
+              is Group -> it.name
+              else ->
+                throw UnsupportedOperationException(
+                  "${it.resourceType} as individual subject not allowed"
+                )
+            }
+          }
+        val indicator = formatSupplementalData(it.contained, it.type)
         data.add(
           MeasureReportPopulationResult(
-            title = group.name,
-            indicatorTitle = group.name,
+            title = subject,
+            indicatorTitle = subject,
+            measureReportDenominator =
+              if (indicator.size == 1) indicator.first().measureReportDenominator
+              else MEASURE_REPORT_DENOMINATOR_MISSING,
             dataList =
-              formatSupplementalData(it.contained, type).map {
-                MeasureReportIndividualResult(
-                  title = it.indicatorTitle,
-                  count = it.measureReportDenominator.toString()
-                )
-              }
+              if (indicator.size == 1) emptyList()
+              else
+                indicator.map {
+                  MeasureReportIndividualResult(
+                    title = it.indicatorTitle,
+                    count = it.measureReportDenominator.toString()
+                  )
+                }
           )
         )
-      } else data.addAll(formatSupplementalData(it.contained, type))
+      } else data.addAll(formatSupplementalData(it.contained, it.type))
 
       it
         .group
@@ -491,27 +511,24 @@ constructor(
 
   fun formatSupplementalData(
     list: List<Resource>,
-    type: MeasureReportConfigType
+    type: MeasureReport.MeasureReportType
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
-      .filter { it is Observation }
-      .map { it as Observation }
+      .filterIsInstance<Observation>()
       .let {
-        if (type == MeasureReportConfigType.STOCK)
-        // for stock or a specific subject it is key value map with exact value
-        it.map {
-            it.code.coding.find { it.code == POPULATION_OBS_URL }!!.display to
-              it.valueCodeableConcept.codingFirstRep.code
+        // the observations would have key as coding.code=populationId and value as codeableConcept
+        it
+          .groupBy { it.codingOf(POPULATION_OBS_URL)?.display }
+          .filter { it.key.isNullOrBlank().not() }
+          .map {
+            it.key!! to
+              if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
+              // for subject specific reports it is key value map with exact value
+              it.value.joinToString { it.valueCode() ?: "" }
+              // for multiple subjects it is a number for each which should be counted by entries
+              else it.value.count().toString()
           }
-        else
-        // for all it would be each subject outputting a value for given key which should be handled
-        // by the count
-        it.groupBy(
-              { it.code.coding.find { it.code == POPULATION_OBS_URL }!!.display },
-              { it.code.codingFirstRep.code }
-            )
-            .map { it.key to it.value.count().toString() }
       }
       .map {
         MeasureReportPopulationResult(

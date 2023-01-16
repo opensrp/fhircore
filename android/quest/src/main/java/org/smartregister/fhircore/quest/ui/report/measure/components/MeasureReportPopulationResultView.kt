@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 
@@ -75,7 +76,10 @@ private fun PopulationResultCard(
             textAlign = TextAlign.Start
           )
           Text(
-            text = resultItem.measureReportDenominator.let { if (it == -1) "" else it.toString() },
+            text =
+              resultItem.measureReportDenominator.let {
+                if (it == MEASURE_REPORT_DENOMINATOR_MISSING) "" else it.toString()
+              },
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),

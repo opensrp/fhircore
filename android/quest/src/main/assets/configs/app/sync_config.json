@@ -81,18 +81,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "_tag",
-        "base": [
-          "MeasureReport"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "count",
         "code": "_count",
         "base": [

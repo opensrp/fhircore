@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Observation
 
-@Serializable
-data class MeasureReportConfig(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = ""
-)
+fun Observation.codingOf(code: String) = this.code.coding.find { it.code == code }
+
+fun Observation.defaultCode() = this.code.codingFirstRep.code
+
+fun Observation.valueCode() =
+  if (this.hasValueCodeableConcept()) this.valueCodeableConcept.codingFirstRep.code else null
