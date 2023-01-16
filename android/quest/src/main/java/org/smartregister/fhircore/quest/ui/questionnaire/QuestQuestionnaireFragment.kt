@@ -16,11 +16,26 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.os.Bundle
+import androidx.fragment.app.setFragmentResultListener
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
 
 class QuestQuestionnaireFragment : QuestionnaireFragment() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setFragmentResultListener(SUBMIT_REQUEST_KEY) { _, _ ->
+      if (getQuestionnaireActivity().getQuestionnaireConfig().type.isReadOnly() ||
+          getQuestionnaireActivity().getQuestionnaireObject().experimental
+      ) { // Experimental questionnaires should not be submitted
+        getQuestionnaireActivity().finish()
+      } else {
+        getQuestionnaireActivity().handleQuestionnaireSubmit()
+      }
+    }
+  }
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {
@@ -39,6 +54,8 @@ class QuestQuestionnaireFragment : QuestionnaireFragment() {
       }
     )
   }
+
+  fun getQuestionnaireActivity() = activity as QuestionnaireActivity
 
   companion object {
     const val BARCODE_URL = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
