@@ -84,8 +84,7 @@
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
     <string name="application_id">Application ID</string>
-    <string name="enter_app_id">Enter Application ID</string>
-    <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
+    <string name="app_id_sample">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
     <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
