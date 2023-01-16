@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package org.smartregister.fhircore.engine.ui.login
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,7 +37,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -46,7 +52,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -56,11 +61,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,11 +81,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
-import org.smartregister.fhircore.engine.ui.theme.LoginBackgroundColor
-import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -129,24 +136,21 @@ fun LoginPage(
   appVersionPair: Pair<Int, String>? = null
 ) {
   var showPassword by remember { mutableStateOf(false) }
-  val backgroundColor =
-    if (applicationConfiguration.useDarkTheme) LoginBackgroundColor else Color.White
-  val contentColor = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor
-  val textFieldBackgroundColor =
-    if (applicationConfiguration.useDarkTheme) LoginFieldBackgroundColor else Color.Unspecified
-  val forgotPasswordColor =
-    if (applicationConfiguration.useDarkTheme) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
+
+  val coroutineScope = rememberCoroutineScope()
+  val bringIntoViewRequester = BringIntoViewRequester()
+  val focusManager = LocalFocusManager.current
 
   Surface(
     modifier =
       modifier
         .fillMaxSize()
         .scrollable(orientation = Orientation.Vertical, state = rememberScrollState()),
-    color = backgroundColor,
-    contentColor = contentColorFor(backgroundColor = contentColor)
+    color = Color.White,
+    contentColor = contentColorFor(backgroundColor = Color.DarkGray)
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
@@ -187,13 +191,8 @@ fun LoginPage(
               .testTag(APP_NAME_TEXT_TAG)
         )
         Spacer(modifier = modifier.height(40.dp))
-        Text(
-          text = stringResource(R.string.username),
-          color = contentColor,
-          modifier = modifier.padding(vertical = 8.dp)
-        )
+        Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
         OutlinedTextField(
-          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           value = username,
           onValueChange = onUsernameChanged,
           maxLines = 1,
@@ -201,26 +200,26 @@ fun LoginPage(
           placeholder = {
             Text(
               color = Color.LightGray,
-              text = stringResource(R.string.username_input_hint),
+              text = stringResource(R.string.username_sample),
             )
           },
           modifier =
             modifier
               .fillMaxWidth()
               .padding(vertical = 4.dp)
-              .background(color = textFieldBackgroundColor)
-              .testTag(USERNAME_FIELD_TAG)
+              .background(color = Color.Unspecified)
+              .testTag(USERNAME_FIELD_TAG),
+          keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
             text = stringResource(R.string.password),
-            color = contentColor,
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp)
+            modifier = modifier.wrapContentWidth().padding(vertical = 4.dp)
           )
           Text(
             text = stringResource(R.string.forgot_password),
-            color = forgotPasswordColor,
-            style = TextStyle(textDecoration = TextDecoration.Underline, color = contentColor),
+            color = MaterialTheme.colors.primary,
+            style = TextStyle(textDecoration = TextDecoration.Underline),
             modifier =
               modifier.wrapContentWidth().padding(vertical = 8.dp).clickable {
                 showForgotPasswordDialog = !showForgotPasswordDialog
@@ -229,14 +228,13 @@ fun LoginPage(
         }
         OutlinedTextField(
           value = password,
-          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           onValueChange = onPasswordChanged,
           maxLines = 1,
           singleLine = true,
           placeholder = {
             Text(
               color = Color.LightGray,
-              text = stringResource(R.string.password_input_hint),
+              text = "********",
             )
           },
           visualTransformation =
@@ -245,17 +243,22 @@ fun LoginPage(
           modifier =
             modifier
               .fillMaxWidth()
+              .onFocusEvent { event ->
+                if (event.isFocused) {
+                  coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                }
+              }
               .padding(vertical = 4.dp)
-              .background(color = textFieldBackgroundColor)
+              .background(color = Color.Unspecified)
               .testTag(PASSWORD_FIELD_TAG),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
-              Icon(imageVector = image, "", tint = contentColor)
+              Icon(imageVector = image, "", tint = Color.DarkGray)
             }
-          }
+          },
+          keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
-        Spacer(modifier = modifier.height(10.dp))
         Text(
           fontSize = 14.sp,
           color = MaterialTheme.colors.error,
@@ -281,29 +284,30 @@ fun LoginPage(
           modifier =
             modifier
               .wrapContentWidth()
-              .padding(0.dp)
+              .padding(vertical = 10.dp)
               .align(Alignment.Start)
               .testTag(LOGIN_ERROR_TEXT_TAG)
         )
-        Spacer(modifier = modifier.height(30.dp))
+        Spacer(modifier = modifier.height(0.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
           Button(
             enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
             colors =
               ButtonDefaults.buttonColors(
-                backgroundColor = LoginButtonColor,
-                disabledBackgroundColor =
+                backgroundColor = MaterialTheme.colors.primary,
+                disabledContentColor =
                   if (applicationConfiguration.useDarkTheme) LoginFieldBackgroundColor
-                  else Color.LightGray
+                  else Color.Gray,
+                contentColor = Color.White
               ),
             onClick = onLoginButtonClicked,
-            modifier = modifier.fillMaxWidth().testTag(LOGIN_BUTTON_TAG)
+            modifier =
+              modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(bringIntoViewRequester)
+                .testTag(LOGIN_BUTTON_TAG)
           ) {
-            Text(
-              color = Color.White,
-              text = stringResource(id = R.string.login_text),
-              modifier = modifier.padding(8.dp)
-            )
+            Text(text = stringResource(id = R.string.login_text), modifier = modifier.padding(8.dp))
           }
           if (showProgressBar) {
             CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
@@ -317,7 +321,6 @@ fun LoginPage(
       ) {
         Column {
           Text(
-            color = contentColor,
             text = stringResource(id = R.string.powered_by),
             modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
           )
@@ -329,7 +332,6 @@ fun LoginPage(
         }
 
         Text(
-          color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
           modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
