@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -50,6 +51,9 @@ import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
+import org.joda.time.Period
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -105,7 +109,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
 
     val baseResource = populateTestPatient()
-    val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+    val relatedResourcesMap: Map<ResourceType, List<Resource>> = emptyMap()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -147,7 +151,7 @@ class RulesFactoryTest : RobolectricTest() {
     val result =
       rulesEngineService.retrieveRelatedResources(
         resource = populateTestPatient(),
-        relatedResourceType = "CarePlan",
+        relatedResourceType = ResourceType.CarePlan,
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
@@ -504,5 +508,34 @@ class RulesFactoryTest : RobolectricTest() {
         subject = Reference().apply { reference = "Patient/patient-1" }
       }
     return carePlan
+  }
+
+  @Test
+  fun testPrettifyDateReturnXDaysAgo() {
+    val weeksAgo = 2
+    val inputDateString = LocalDate.now().minusWeeks(weeksAgo).toString()
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDateString)
+    Assert.assertEquals("$weeksAgo weeks ago", expected)
+  }
+
+  @Test
+  fun testPrettifyDateWithDateAsInput() {
+    val inputDate = Date()
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDate)
+    Assert.assertEquals("", expected)
+  }
+
+  @Test
+  fun extractAge() {
+    val dateFormatter: DateTimeFormatter? = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val period =
+      Period(
+        LocalDate.parse("2005-01-01", dateFormatter),
+        LocalDate.parse(LocalDate.now().toString(), dateFormatter)
+      )
+    Assert.assertEquals(
+      period.years.toString() + "y",
+      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate()))
+    )
   }
 }
