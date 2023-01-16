@@ -127,8 +127,7 @@ constructor(
   }
 
   fun isP2PSyncAvailable(): Boolean {
-    return (navigationConfiguration.staticMenu.find { it.id == "p2p_sync" })?.let {
-      true
-    } ?: false
+    val p2pMenu = (navigationConfiguration.staticMenu.find { it.id == "p2p_sync" })
+    return p2pMenu?.visible ?: false
   }
 }
