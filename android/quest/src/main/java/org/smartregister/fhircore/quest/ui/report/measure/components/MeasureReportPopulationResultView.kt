@@ -78,7 +78,7 @@ private fun PopulationResultCard(
           Text(
             text =
               resultItem.measureReportDenominator.let {
-                if (it == MEASURE_REPORT_DENOMINATOR_MISSING) "" else it.toString()
+                if (it == MEASURE_REPORT_DENOMINATOR_MISSING) "0" else it.toString()
               },
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
