@@ -144,7 +144,8 @@ class UserSettingScreenKtTest {
           isDebugVariant = isDebugVariant,
           onEvent = {},
           mainNavController = rememberNavController(),
-          email = userSettingViewModel.retrieveEmail()
+          allowP2PSync = true,
+          lastSyncTime =  "05:30 PM, Mar 3"
         )
       }
 
