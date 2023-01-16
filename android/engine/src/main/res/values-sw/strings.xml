@@ -50,6 +50,7 @@
         <string name="take_photo">Piga picha</string>
         <string name="app_logo">Nembo ya programu</string>
         <string name="powered_by">Inatumia</string>
+        <string name="transfer_data">Kuhamisha Data</string>
         <string name="already_fully_vaccinated">Hawezi kupokea dozi nyingine. Tayari amechanjwa kikamilifu</string>
         <string name="questionnaire_alert_back_pressed_message">Je, una uhakika unataka kurudi? Mabadiliko yaliyofanywa kwenye fomu yatapotea</string>
         <string name="questionnaire_in_progress_alert_back_pressed_message">Je, una uhakika unataka kutupa majibu?</string>

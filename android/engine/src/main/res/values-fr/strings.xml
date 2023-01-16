@@ -71,6 +71,7 @@
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
     <string name="visits"> Tâches</string>
+    <string name="transfer_data">Transférer des données</string>
     <string name="reports">Rapports</string>
     <string name="profile">Profil</string>
     <string name="settings">Paramètres</string>

@@ -80,6 +80,7 @@ import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
@@ -266,7 +267,9 @@ fun UserSettingScreen(
         icon = Icons.Rounded.Logout,
         text = stringResource(id = R.string.logout),
         clickListener = { onEvent(UserSettingsEvent.Logout) },
-        modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
+        modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT),
+        iconTint = colorResource(id = R.color.colorError),
+        textColor = colorResource(id = R.color.colorError)
       )
 
       Column(
@@ -307,7 +310,9 @@ fun UserSettingRow(
   text: String,
   clickListener: () -> Unit,
   modifier: Modifier = Modifier,
-  canSwitchToScreen: Boolean = false
+  canSwitchToScreen: Boolean = false,
+  iconTint: Color = BlueTextColor,
+  textColor: Color = LoginDarkColor
 ) {
   Row(
     modifier =
@@ -318,9 +323,9 @@ fun UserSettingRow(
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {
-      Icon(imageVector = icon, "", tint = BlueTextColor)
+      Icon(imageVector = icon, "", tint = iconTint)
       Spacer(modifier = modifier.width(20.dp))
-      Text(text = text, fontSize = 18.sp)
+      Text(text = text, fontSize = 18.sp, color = textColor)
     }
     if (canSwitchToScreen) {
       Icon(
