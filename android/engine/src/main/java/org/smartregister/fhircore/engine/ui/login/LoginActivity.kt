@@ -26,6 +26,7 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 
 @AndroidEntryPoint
 class LoginActivity : BaseMultiLanguageActivity() {
@@ -43,6 +44,8 @@ class LoginActivity : BaseMultiLanguageActivity() {
     navigateToScreen()
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+
+    this.applyWindowInsetListener()
   }
 
   fun navigateToScreen() {

@@ -28,6 +28,9 @@ import android.os.LocaleList
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import java.util.Locale
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -129,3 +132,16 @@ fun Context.getActivity(): AppCompatActivity? =
     is ContextWrapper -> baseContext.getActivity()
     else -> null
   }
+
+/**
+ * This is required to fix keyboard overlapping content in a Composable screen. This functionality
+ * is applied after the setContent function of the activity is called.
+ */
+fun Activity.applyWindowInsetListener() {
+  ViewCompat.setOnApplyWindowInsetsListener(this.findViewById(android.R.id.content)) { view, insets
+    ->
+    val bottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+    view.updatePadding(bottom = bottom)
+    insets
+  }
+}

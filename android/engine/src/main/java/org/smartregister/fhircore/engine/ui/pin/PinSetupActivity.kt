@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 
 @AndroidEntryPoint
 class PinSetupActivity : BaseMultiLanguageActivity() {
@@ -54,6 +55,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
       }
     }
     setContent { AppTheme { PinSetupScreen(pinViewModel) } }
+    this.applyWindowInsetListener()
   }
 
   private fun moveToSettings() {

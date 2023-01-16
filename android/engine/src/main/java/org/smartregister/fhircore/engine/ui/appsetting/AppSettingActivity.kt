@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
@@ -152,5 +153,6 @@ class AppSettingActivity : AppCompatActivity() {
           }
         }
       }
+    this.applyWindowInsetListener()
   }
 }

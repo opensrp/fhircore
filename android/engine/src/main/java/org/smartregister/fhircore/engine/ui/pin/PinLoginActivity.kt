@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 
 @AndroidEntryPoint
 class PinLoginActivity : BaseMultiLanguageActivity() {
@@ -50,6 +51,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
       navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
     }
     setContent { AppTheme { PinLoginScreen(pinViewModel) } }
+    this.applyWindowInsetListener()
   }
 
   private fun launchDialPad(phone: String) {
