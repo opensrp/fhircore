@@ -23,6 +23,7 @@
     <string name="syncing_initiated">Synchronisation initiée</string>
     <string name="sync_failed">Échec de la synchronisation. Vérifiez la connexion Internet ou réessayez plus tard.</string>
     <string name="sync_unauthorised">La synchronisation a échoué car il manque des identifiants d\'authentification valides</string>
+    <string name="refresh_token_fail_error_message">Impossible de récupérer les informations d\'identification du serveur. Vérifiez votre connection Internet.</string>
     <string name="try_again">Réessayez</string>
     <string name="status_vaccinated">Vacciné</string>
     <string name="status_overdue">En retard</string>
@@ -54,8 +55,6 @@
     <string name="questionnaire_alert_back_pressed_title">Abandonner les modifications</string>
     <string name="questionnaire_alert_back_pressed_button_title">Abandonner</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer le brouillon partiel</string>
-    <string name="questionnaire_alert_submit_message">Confirmez que vous avez terminé de remplir les détails du client. Vous pouvez modifier les informations du client plus tard</string>
-    <string name="questionnaire_alert_submit_title">Enregistrer les données du client</string>
     <string name="questionnaire_alert_neutral_button_title">Annuler</string>
     <string name="questionnaire_alert_confirm_button_title">Oui</string>
     <string name="questionnaire_alert_invalid_message">Les détails donnés ont des erreurs de validation. Résoudre les erreurs et soumettre à nouveau</string>
@@ -92,11 +91,7 @@
     <string name="no">Non</string>
     <string name="yes">Oui</string>
     <string name="required_constraint_validation_error_msg">Il n\'y a pas de réponse au champ obligatoire.</string>
-    <string name="questionnaire_alert_submit_button_title">Enregistrer</string>
     <string name="form_progress_message">Traitement de l\'information. S\'il vous plaît, attendez</string>
-    <string name="questionnaire_alert_test_only_title">Données de processus</string>
-    <string name="questionnaire_alert_test_only_button_title">Traiter</string>
-    <string name="questionnaire_alert_test_only_message">Confirm that you are finished filling out the data. Note this is test only form and does not save any data</string>
     <string name="set_pin">Définir la broche</string>
     <string name="set_pin_message">CHA utilisera cette broche pour se connecter</string>
     <string name="enter_login_pin">Saisissez le code PIN de l\'utilisateur</string>

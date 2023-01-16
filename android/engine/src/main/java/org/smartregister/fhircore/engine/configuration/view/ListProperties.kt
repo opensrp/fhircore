@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -33,7 +34,7 @@ data class ListProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   val id: String = "listId",
-  val baseResource: String,
+  val baseResource: ResourceType,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,

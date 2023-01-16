@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -43,6 +44,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -54,6 +56,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
@@ -299,7 +302,19 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testProfileEventOnChangeManagingEntity() {
-    profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
+    profileViewModel.onEvent(
+      ProfileEvent.OnChangeManagingEntity(
+        ApplicationProvider.getApplicationContext(),
+        eligibleManagingEntity =
+          EligibleManagingEntity("groupId", "newId", memberInfo = "James Doe"),
+        managingEntityConfig =
+          ManagingEntityConfig(
+            eligibilityCriteriaFhirPathExpression = "Patient.active",
+            resourceType = ResourceType.Patient,
+            nameFhirPathExpression = "Patient.name.given"
+          )
+      )
+    )
     coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
 }

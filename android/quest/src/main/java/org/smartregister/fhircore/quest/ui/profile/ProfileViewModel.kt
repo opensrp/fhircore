@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -41,8 +43,13 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
+import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import timber.log.Timber
@@ -136,65 +143,96 @@ constructor(
                 }
               }
             }
-            ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
-              if (event.managingEntity == null) return@forEach
-              if (event.resourceData?.baseResourceType != ResourceType.Group) {
-                Timber.w("Wrong resource type. Expecting Group resource")
-                return
-              }
-              changeManagingEntity(event = event)
-            }
+            ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> changeManagingEntity(event = event)
             else -> {}
           }
         }
       }
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)
+          registerRepository.changeManagingEntity(
+            event.eligibleManagingEntity.logicalId,
+            event.eligibleManagingEntity.groupId
+          )
+          withContext(dispatcherProvider.main()) {
+            emitSnackBarState(
+              snackBarMessageConfig =
+                SnackBarMessageConfig(
+                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                      ?: event.context.getString(R.string.reassigned_managing_entity),
+                  actionLabel = event.context.getString(R.string.ok)
+                )
+            )
+          }
         }
       }
     }
   }
 
+  /**
+   * This function launches a configurable dialog for selecting new managing entity from the list of
+   * [Group] resource members. This function only works when [Group] resource is the used as the
+   * main resource.
+   */
   private fun changeManagingEntity(event: ProfileEvent.OverflowMenuClick) {
-    // TODO Refactor implementation to use ResourceData
-    /*
-    val resourceTypeToFilter = event.managingEntity?.fhirPathResource?.resourceType
-    val eligibleManagingEntityList =
-       event.ResourceData
-         ?.relatedResourcesMap
-         ?.get(resourceTypeToFilter)
-         ?.filter {
-           fhirPathDataExtractor
-             .extractValue(it, event.managingEntity?.fhirPathResource?.fhirPathExpression ?: "")
-             .toBoolean()
-         }
-         ?.map {
-           EligibleManagingEntity(
-             groupId = event.ResourceData.baseResource.logicalId,
-             logicalId = it.logicalId,
-             memberInfo =
-               fhirPathDataExtractor.extractValue(
-                 it,
-                 event.managingEntity?.infoFhirPathExpression ?: ""
-               )
-           )
-         }
-     (event.navController.context.getActivity())?.let { activity ->
-       ProfileBottomSheetFragment(
-           eligibleManagingEntities = eligibleManagingEntityList!!,
-           onSaveClick = {
-             onEvent(
-               ProfileEvent.OnChangeManagingEntity(
-                 newManagingEntityId = it.logicalId,
-                 groupId = it.groupId
-               )
-             )
-           },
-           managingEntity = event.managingEntity
-         )
-         .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
-     }*/
+    if (event.managingEntity == null || event.resourceData?.baseResourceType != ResourceType.Group
+    ) {
+      Timber.w("ManagingEntityConfig required. Base resource should be Group")
+      return
+    }
+    viewModelScope.launch {
+      val group = registerRepository.loadResource<Group>(event.resourceData.baseResourceId)
+      val eligibleManagingEntities: List<EligibleManagingEntity> =
+        group
+          ?.member
+          ?.map {
+            registerRepository.loadResource(
+              it.entity.extractId(),
+              event.managingEntity.resourceType
+            )
+          }
+          ?.filter { managingEntityResource ->
+            fhirPathDataExtractor
+              .extractValue(
+                base = managingEntityResource,
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+              )
+              .toBoolean()
+          }
+          ?.map {
+            EligibleManagingEntity(
+              groupId = event.resourceData.baseResourceId,
+              logicalId = it.logicalId.extractLogicalIdUuid(),
+              memberInfo =
+                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
+            )
+          }
+          ?: emptyList()
+
+      // Show error message when no group members are found
+      if (eligibleManagingEntities.isEmpty()) {
+        emitSnackBarState(
+          SnackBarMessageConfig(message = event.managingEntity.noMembersErrorMessage)
+        )
+      } else {
+        (event.navController.context.getActivity())?.let { activity ->
+          ProfileBottomSheetFragment(
+              eligibleManagingEntities = eligibleManagingEntities,
+              onSaveClick = {
+                onEvent(
+                  ProfileEvent.OnChangeManagingEntity(
+                    context = activity,
+                    eligibleManagingEntity = it,
+                    managingEntityConfig = event.managingEntity
+                  )
+                )
+              },
+              managingEntity = event.managingEntity
+            )
+            .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+        }
+      }
+    }
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
