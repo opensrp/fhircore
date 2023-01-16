@@ -54,8 +54,6 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
 
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
-  fun retrieveEmail() = retrieveCredentials()?.email
-
   fun deleteSessionTokens() {
     retrieveCredentials()?.run {
       this.sessionToken = null

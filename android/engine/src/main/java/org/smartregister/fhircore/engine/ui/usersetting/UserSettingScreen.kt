@@ -274,8 +274,7 @@ fun UserSettingRow(
     modifier
       .fillMaxWidth()
       .clickable { clickListener() }
-      .padding(vertical = 16.dp, horizontal = 20.dp)
-      .background(Color.White),
+      .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {
