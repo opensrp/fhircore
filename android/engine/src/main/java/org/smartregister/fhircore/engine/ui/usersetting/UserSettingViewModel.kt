@@ -29,7 +29,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -40,6 +43,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
 class UserSettingViewModel
@@ -64,6 +68,10 @@ constructor(
   val progressBarState = MutableLiveData(Pair(false, 0))
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
+
+  val navigationConfiguration: NavigationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
@@ -96,6 +104,7 @@ constructor(
         if (event.isReset) this.resetDatabase(dispatcherProvider.io())
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
+      is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
     }
   }
 
@@ -115,5 +124,11 @@ constructor(
       accountAuthenticator.invalidateSession()
       accountAuthenticator.launchScreen(AppSettingActivity::class.java)
     }
+  }
+
+  fun isP2PSyncAvailable(): Boolean {
+    return (navigationConfiguration.staticMenu.find { it.id == "p2p_sync" })?.let {
+      true
+    } ?: false
   }
 }

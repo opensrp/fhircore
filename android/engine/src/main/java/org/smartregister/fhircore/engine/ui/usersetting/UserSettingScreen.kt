@@ -25,10 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.DeleteForever
-import androidx.compose.material.icons.rounded.Logout
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,13 +54,10 @@ import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
-import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
-import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.p2p.utils.capitalize
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
@@ -81,7 +75,8 @@ fun UserSettingScreen(
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
-  appVersionPair: Pair<Int, String>? = null
+  appVersionPair: Pair<Int, String>? = null,
+  allowP2PSync: Boolean
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -231,6 +226,15 @@ fun UserSettingScreen(
         )
       }
 
+      if (allowP2PSync) {
+        UserSettingRow(
+          icon = Icons.Rounded.Share,
+          text = stringResource(id = R.string.transfer_data),
+          clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
+          modifier = modifier
+        )
+      }
+
       UserSettingRow(
         icon = Icons.Rounded.Logout,
         text = stringResource(id = R.string.logout),
@@ -351,6 +355,7 @@ fun UserSettingPreview() {
     isDebugVariant = true,
     onEvent = {},
     mainNavController = rememberNavController(),
-    appVersionPair = Pair(1, "1.0.1")
+    appVersionPair = Pair(1, "1.0.1"),
+    allowP2PSync = true
   )
 }

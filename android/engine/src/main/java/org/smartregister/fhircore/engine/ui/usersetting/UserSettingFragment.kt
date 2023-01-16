@@ -48,6 +48,7 @@ class UserSettingFragment : Fragment() {
             username = userSettingViewModel.retrieveUsername(),
             allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+            allowP2PSync = userSettingViewModel.isP2PSyncAvailable(),
             languages = userSettingViewModel.languages,
             onEvent = userSettingViewModel::onEvent,
             showDatabaseResetConfirmation =
