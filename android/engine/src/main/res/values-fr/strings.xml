@@ -80,7 +80,6 @@
     <string name="clients">Clients</string>
     <string name="logout">Déconnexion</string>
     <string name="application_id">ID de l’application</string>
-    <string name="enter_app_id">Entrer l\'ID de l\'application</string>
     <string name="load_configurations">CHARGER LES CONFIGURATIONS</string>
     <string name="remember_app">Se souvenir de l\'application</string>
     <string name="done">Effectué</string>

@@ -82,7 +82,6 @@
         <string name="invalid_login_credentials">Jina la mtumiaji au nenosiri batili</string>
         <string name="load_configurations">PAKIA MIPANGILIO</string>
         <string name="edit">Hariri</string>
-        <string name="enter_app_id">Ingiza kitambulisho cha programu</string>
         <string name="clients">Wateja</string>
         <string name="application_id">Kitambulisho cha programu</string>
         <string name="application_not_supported">Programu %1$s haijapatikana</string>
