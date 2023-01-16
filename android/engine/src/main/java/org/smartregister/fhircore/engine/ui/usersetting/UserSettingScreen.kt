@@ -20,12 +20,35 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,7 +99,8 @@ fun UserSettingScreen(
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
-  allowP2PSync: Boolean
+  allowP2PSync: Boolean,
+  lastSyncTime: String?
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -99,16 +123,12 @@ fun UserSettingScreen(
   ) {
     Column(modifier = modifier.background(Color.White)) {
       if (!username.isNullOrEmpty()) {
-        Column(modifier = modifier
-          .background(Color.White)
-          .padding(vertical = 24.dp)
-          .fillMaxWidth(),
-          horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+          modifier = modifier.background(Color.White).padding(vertical = 24.dp).fillMaxWidth(),
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
           Box(
-            modifier = modifier
-              .clip(CircleShape)
-              .background(color = LighterBlue)
-              .size(80.dp),
+            modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
             contentAlignment = Alignment.Center
           ) {
             Text(
@@ -128,40 +148,42 @@ fun UserSettingScreen(
         }
       }
 
-
-
       Divider(color = DividerColor)
-      Column(modifier = modifier.background(color =  colorResource(id = R.color.backgroundGray))) {
-
-        Spacer(modifier = modifier
-          .padding(top = 16.dp)
-          .padding(bottom = 16.dp))
+      Column(modifier = modifier.background(color = colorResource(id = R.color.backgroundGray))) {
+        Spacer(modifier = modifier.padding(top = 16.dp).padding(bottom = 16.dp))
         Row {
-          Text(modifier = modifier
-            .padding(top = 4.dp)
-            .padding(bottom = 8.dp)
-            .padding(start = 20.dp)
-            .fillMaxWidth(), text = stringResource(R.string.settings).uppercase(), fontSize = 18.sp, color = contentColor,  fontWeight = FontWeight.Medium)
+          Text(
+            modifier =
+              modifier
+                .padding(top = 4.dp)
+                .padding(bottom = 8.dp)
+                .padding(start = 20.dp)
+                .fillMaxWidth(),
+            text = stringResource(R.string.settings).uppercase(),
+            fontSize = 18.sp,
+            color = contentColor,
+            fontWeight = FontWeight.Medium
+          )
         }
       }
 
       Divider(color = DividerColor)
 
       UserSettingRow(
-      icon = Icons.Rounded.Sync,
-      text = stringResource(id = R.string.sync),
-      clickListener = { onEvent(UserSettingsEvent.SyncData) },
-      modifier = modifier
-    )
+        icon = Icons.Rounded.Sync,
+        text = stringResource(id = R.string.sync),
+        clickListener = { onEvent(UserSettingsEvent.SyncData) },
+        modifier = modifier
+      )
 
       // Language option
       if (allowSwitchingLanguages) {
         Row(
           modifier =
-          modifier
-            .fillMaxWidth()
-            .clickable { expanded = true }
-            .padding(vertical = 16.dp, horizontal = 20.dp),
+            modifier
+              .fillMaxWidth()
+              .clickable { expanded = true }
+              .padding(vertical = 16.dp, horizontal = 20.dp),
           horizontalArrangement = Arrangement.SpaceBetween
         ) {
           Row(modifier = Modifier.align(Alignment.CenterVertically)) {
@@ -174,11 +196,13 @@ fun UserSettingScreen(
             Spacer(modifier = modifier.width(20.dp))
             Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
           }
+          Spacer(modifier = modifier.weight(1f))
           Box(contentAlignment = Alignment.CenterEnd) {
             Text(
               text = selectedLanguage,
               fontSize = 18.sp,
-              fontWeight = FontWeight.Bold,
+              fontWeight = FontWeight.Medium,
+              color = contentColor,
               modifier = modifier.wrapContentWidth(Alignment.End)
             )
             DropdownMenu(
@@ -213,7 +237,9 @@ fun UserSettingScreen(
             onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
             onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
           },
-          onDismissDialog = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false)) }
+          onDismissDialog = {
+            onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false))
+          }
         )
       }
 
@@ -231,7 +257,8 @@ fun UserSettingScreen(
           icon = Icons.Rounded.Share,
           text = stringResource(id = R.string.transfer_data),
           clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
-          modifier = modifier
+          modifier = modifier,
+          canSwitchToScreen = true
         )
       }
 
@@ -242,24 +269,32 @@ fun UserSettingScreen(
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
       )
 
-
-
-      Column(modifier = modifier.background(color =  colorResource(id = R.color.backgroundGray)).fillMaxWidth()) {
+      Column(
+        modifier =
+          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth()
+      ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        Image(painterResource(R.drawable.logo_fhir_core),"content description",
-          modifier = modifier
-            .requiredHeight(40.dp)
-            .align(Alignment.CenterHorizontally),
-          contentScale = ContentScale.Fit)
+        Image(
+          painterResource(R.drawable.logo_fhir_core),
+          "content description",
+          modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
+          contentScale = ContentScale.Fit
+        )
 
         Text(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier
-            .padding(16.dp)
-            .align(Alignment.CenterHorizontally)
+          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally)
+        )
+
+        Text(
+          color = contentColor,
+          fontSize = 16.sp,
+          text = lastSyncTime ?: "",
+          modifier =
+            modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally)
         )
       }
     }
@@ -271,14 +306,15 @@ fun UserSettingRow(
   icon: ImageVector,
   text: String,
   clickListener: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  canSwitchToScreen: Boolean = false
 ) {
   Row(
     modifier =
-    modifier
-      .fillMaxWidth()
-      .clickable { clickListener() }
-      .padding(vertical = 16.dp, horizontal = 20.dp),
+      modifier
+        .fillMaxWidth()
+        .clickable { clickListener() }
+        .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {
@@ -286,12 +322,14 @@ fun UserSettingRow(
       Spacer(modifier = modifier.width(20.dp))
       Text(text = text, fontSize = 18.sp)
     }
-    Icon(
-      imageVector = Icons.Rounded.ChevronRight,
-      "",
-      tint = Color.LightGray,
-      modifier = modifier.wrapContentWidth(Alignment.End)
-    )
+    if (canSwitchToScreen) {
+      Icon(
+        imageVector = Icons.Rounded.ChevronRight,
+        "",
+        tint = Color.LightGray,
+        modifier = modifier.wrapContentWidth(Alignment.End),
+      )
+    }
   }
   Divider(color = DividerColor)
 }
@@ -314,24 +352,18 @@ fun ConfirmClearDatabaseDialog(
     text = { Text(text = stringResource(R.string.clear_database_message), fontSize = 16.sp) },
     buttons = {
       Row(
-        modifier = modifier
-          .fillMaxWidth()
-          .padding(vertical = 20.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.End
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier
-            .padding(horizontal = 10.dp)
-            .clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
         )
         Text(
           color = MaterialTheme.colors.primary,
           text = stringResource(R.string.clear_database).uppercase(),
           modifier =
-          modifier
-            .padding(horizontal = 10.dp)
-            .clickable {
+            modifier.padding(horizontal = 10.dp).clickable {
               permanentResetDatabase()
               onDismissDialog()
             }
@@ -356,6 +388,7 @@ fun UserSettingPreview() {
     onEvent = {},
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
-    allowP2PSync = true
+    allowP2PSync = true,
+    lastSyncTime = "05:30 PM, Mar 3"
   )
 }

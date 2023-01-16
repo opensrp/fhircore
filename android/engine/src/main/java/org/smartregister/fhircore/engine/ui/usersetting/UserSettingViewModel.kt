@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -74,6 +73,9 @@ constructor(
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
