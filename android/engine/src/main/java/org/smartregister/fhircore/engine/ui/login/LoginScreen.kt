@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -46,6 +47,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -84,7 +86,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -305,12 +306,20 @@ fun LoginPage(
               modifier
                 .fillMaxWidth()
                 .bringIntoViewRequester(bringIntoViewRequester)
-                .testTag(LOGIN_BUTTON_TAG)
+                .testTag(LOGIN_BUTTON_TAG),
+            elevation = null
           ) {
-            Text(text = stringResource(id = R.string.login_text), modifier = modifier.padding(8.dp))
+            Text(
+              text = if (!showProgressBar) stringResource(id = R.string.login_text) else "",
+              modifier = modifier.padding(8.dp)
+            )
           }
           if (showProgressBar) {
-            CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
+            CircularProgressIndicator(
+              modifier = modifier.align(Alignment.Center).size(18.dp),
+              strokeWidth = 1.6.dp,
+              color = Color.White
+            )
           }
         }
       }

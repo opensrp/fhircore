@@ -106,7 +106,7 @@
     <string name="enter_pin_for_user">Enter pin for %1$s</string>
     <string name="incorrect_pin_please_retry">Incorrect pin, please try again</string>
     <string name="pin_menu_login">Login</string>
-    <string name="forgot_pin">Forgot pin?</string>
+    <string name="forgot_pin">Forgot PIN?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
