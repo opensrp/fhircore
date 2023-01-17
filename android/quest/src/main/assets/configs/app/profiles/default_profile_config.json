@@ -507,6 +507,8 @@
     {
       "title": "Remove this person",
       "titleColor": "#FF0000",
+      "backgroundColor": "dangerColor",
+      "confirmAction": true,
       "visible": "@{patientActive}",
       "enabled": "@{patientActive}",
       "showSeparator": "true",
