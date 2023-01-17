@@ -27,6 +27,8 @@ interface LoginService {
 
   fun navigateToHome()
 
+  fun fetchNonWorkflowConfigResources()
+
   fun navigateToPinLogin(launchSetup: Boolean = false) {
     loginActivity.run {
       startActivity(

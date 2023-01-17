@@ -43,6 +43,8 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     loginService.loginActivity = this
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
+    loginService.fetchNonWorkflowConfigResources()
+
     pinViewModel.apply {
       setPinUiState(isSetup = true)
       val pinSetupActivity = this@PinSetupActivity

@@ -120,10 +120,6 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
-  fun fetchNonWorkflowConfigResources() {
-    configurationRegistry.fetchNonWorkflowConfigResources()
-  }
-
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }

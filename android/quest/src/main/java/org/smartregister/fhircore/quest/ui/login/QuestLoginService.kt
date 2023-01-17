@@ -20,6 +20,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -33,6 +34,7 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val p2pSenderTransferDao: P2PSenderTransferDao,
   val p2pReceiverTransferDao: P2PReceiverTransferDao,
+  val configurationRegistry: ConfigurationRegistry,
 ) : LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
@@ -60,5 +62,9 @@ constructor(
       }
       finish()
     }
+  }
+
+  override fun fetchNonWorkflowConfigResources() {
+    configurationRegistry.fetchNonWorkflowConfigResources()
   }
 }

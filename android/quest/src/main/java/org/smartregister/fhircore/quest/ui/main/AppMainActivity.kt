@@ -28,8 +28,6 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -108,10 +106,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
-
-    CoroutineScope(dispatcherProvider.io()).launch {
-      appMainViewModel.fetchNonWorkflowConfigResources()
-    }
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {

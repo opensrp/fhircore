@@ -174,6 +174,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     override lateinit var loginActivity: AppCompatActivity
 
     override fun navigateToHome() {}
+    override fun fetchNonWorkflowConfigResources() {}
   }
 
   private fun initLoginActivity() {

@@ -25,4 +25,5 @@ import org.smartregister.fhircore.engine.ui.login.LoginService
 class FakeLoginService
 constructor(override var loginActivity: AppCompatActivity = mockk<LoginActivity>()) : LoginService {
   override fun navigateToHome() {}
+  override fun fetchNonWorkflowConfigResources() {}
 }

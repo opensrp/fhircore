@@ -27,4 +27,8 @@ class AppLoginService @Inject constructor() : LoginService {
   override fun navigateToHome() {
     // Do nothing
   }
+
+  override fun fetchNonWorkflowConfigResources() {
+    // Do nothing
+  }
 }
