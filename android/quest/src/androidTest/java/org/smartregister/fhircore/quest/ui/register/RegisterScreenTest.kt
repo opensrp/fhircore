@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -31,16 +29,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class RegisterScreenTest : RobolectricTest() {
+class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @get:Rule val composeRegisterTestRule = createComposeRule()
 
-  val searchText = mutableStateOf("Search text")
-  val currentPage: MutableState<Int> = mutableStateOf(0)
   private val noResults = NoResultsConfig()
 
   @Before
