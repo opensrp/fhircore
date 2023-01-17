@@ -174,7 +174,8 @@ fun PinSetupPage(
       Button(
         enabled = setPinEnabled,
         onClick = onPinConfirmed,
-        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(PIN_SET_PIN_CONFIRM_BUTTON)
+        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(PIN_SET_PIN_CONFIRM_BUTTON),
+        elevation = null
       ) {
         Text(
           color = Color.White,

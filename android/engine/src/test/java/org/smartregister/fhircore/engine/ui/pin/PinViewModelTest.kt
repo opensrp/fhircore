@@ -89,7 +89,6 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel =
       spyk(
         PinViewModel(
-          dispatcher = dispatcherProvider,
           sharedPreferences = sharedPreferencesHelper,
           secureSharedPreference = secureSharedPreference,
           configurationRegistry = configurationRegistry,

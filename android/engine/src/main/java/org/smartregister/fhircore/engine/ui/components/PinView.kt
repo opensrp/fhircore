@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -37,11 +36,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -63,7 +60,6 @@ const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
 const val PIN_VIEW_CELL = "pin_view_cell"
 const val PIN_VIEW_CELL_DOTTED = "pin_view_cell_dotted"
 const val PIN_VIEW_CELL_TEXT = "pin_view_cell_text"
-const val PIN_VIEW_ERROR = "pin_view_error"
 
 const val CURSOR_SYMBOL = "|"
 const val PIN_INPUT_MAX_THRESHOLD = 4
@@ -72,12 +68,12 @@ const val PIN_CURSOR_DELAY: Long = 350
 @ExperimentalComposeUiApi
 @Composable
 fun PinView(
+  modifier: Modifier = Modifier,
   pinInputLength: Int = PIN_INPUT_MAX_THRESHOLD,
   onPinChanged: (String) -> Unit = {},
   inputPin: String = "",
   isDotted: Boolean = false,
   showError: Boolean = false,
-  modifier: Modifier = Modifier
 ) {
   val (editValue, setEditValue) = remember { mutableStateOf(inputPin) }
   val pinLength = remember { pinInputLength }
@@ -97,11 +93,12 @@ fun PinView(
       }
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-    modifier = Modifier.size(0.dp).focusRequester(focusRequester).testTag(PIN_VIEW_INPUT_TEXT_FIELD)
+    modifier = modifier.size(0.dp).focusRequester(focusRequester).testTag(PIN_VIEW_INPUT_TEXT_FIELD)
   )
   Row(
     modifier =
-      Modifier.fillMaxWidth()
+      modifier
+        .fillMaxWidth()
         .testTag(PIN_VIEW)
         .background(color = colorResource(id = R.color.cardview_light_background)),
     horizontalArrangement = Arrangement.Center
@@ -109,7 +106,7 @@ fun PinView(
     (0 until pinLength).map { index ->
       PinCell(
         modifier =
-          Modifier.size(40.dp).clickable {
+          modifier.size(40.dp).clickable {
             focusRequester.requestFocus()
             keyboard?.show()
             // if error is being shown and user clicks on pin cell
@@ -126,7 +123,7 @@ fun PinView(
         showError = showError,
         focusRequester = focusRequester
       )
-      Spacer(modifier = Modifier.size(8.dp))
+      Spacer(modifier = modifier.size(8.dp))
     }
   }
 }
@@ -187,16 +184,17 @@ fun PinCell(
       cardRoundedCornerRadius = 15.dp
     }
     Card(
-      modifier = Modifier.size(30.dp).align(Alignment.Center).testTag(cardTestTag),
+      modifier = modifier.size(30.dp).align(Alignment.Center).testTag(cardTestTag),
       elevation = 1.dp,
       shape = RoundedCornerShape(cardRoundedCornerRadius),
       border = BorderStroke(width = 1.dp, color = borderColor),
       backgroundColor = backgroundColor
     ) {
-      var iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
+      var iModifier = modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
       if (indexValue.isEmpty() && isCursorVisible) {
         iModifier =
-          Modifier.wrapContentSize()
+          modifier
+            .wrapContentSize()
             .align(Alignment.Center)
             .testTag(textTestTag)
             .focusRequester(focusRequester)
@@ -208,7 +206,7 @@ fun PinCell(
         modifier = iModifier
       )
       if (indexValue.isEmpty() && isCursorVisible) {
-        LaunchedEffect(indexValue.isEmpty() && isCursorVisible) { focusRequester.requestFocus() }
+        LaunchedEffect(indexValue.isEmpty()) { focusRequester.requestFocus() }
       }
     }
   }
