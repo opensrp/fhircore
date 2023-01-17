@@ -111,7 +111,6 @@ class UserSettingScreenKtTest {
 
   @Test
   fun testWhenShowP2POption() {
-
     initComposable(isP2PAvailable = true)
     composeRule.onNodeWithText(activity.getString(R.string.transfer_data)).assertExists()
   }
