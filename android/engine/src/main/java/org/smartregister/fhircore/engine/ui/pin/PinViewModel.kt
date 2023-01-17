@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -40,7 +41,6 @@ constructor(
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
-  val app: Application
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -77,7 +77,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun setPinUiState(isSetup: Boolean = false) {
+  fun setPinUiState(isSetup: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =
       PinUiState(
@@ -86,8 +86,8 @@ constructor(
         savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
         isSetupPage = isSetup,
         enterUserLoginMessage =
-          if (username.isNullOrEmpty()) app.getString(R.string.enter_login_pin)
-          else app.getString(R.string.enter_pin_for_user, username)
+          if (username.isNullOrEmpty()) context.getString(R.string.enter_login_pin)
+          else context.getString(R.string.enter_pin_for_user, username)
       )
   }
 

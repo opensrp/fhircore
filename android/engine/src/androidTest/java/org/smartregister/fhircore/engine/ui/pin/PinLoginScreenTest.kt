@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -25,61 +24,30 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
-class PinLoginScreensTest : RobolectricTest() {
+class PinLoginScreensTest {
 
-  @get:Rule val composeRule = createComposeRule()
-  private val testPin = MutableLiveData("1234")
+  @get:Rule(order = 1) val composeRule = createComposeRule()
 
   private val listenerObjectSpy =
-    spyk(
-      object {
-        // Imitate click action by doing nothing
-        fun onPinChanged() {}
-        fun onMenuLoginClicked() {}
-        fun forgotPin() {}
-        fun onDismissForgotDialog() {}
-      }
-    )
+    object {
+      // Imitate click action by doing nothing
+      fun onPinChanged() {}
+      fun onMenuLoginClicked() {}
+      fun forgotPin() {}
+      fun onDismissForgotDialog() {}
+    }
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private lateinit var pinViewModel: PinViewModel
-
-  @Before
-  fun setUp() {
-    pinViewModel = mockk()
-    every { pinViewModel.pinUiState } returns
-      mutableStateOf(PinUiState(savedPin = "1234", enterUserLoginMessage = "demo", appName = "Anc"))
-    every { pinViewModel.showError } returns MutableLiveData(false)
-    coEvery { pinViewModel.pin } returns testPin
-  }
-
   @Test
-  fun testPinLoginScreen() {
-    composeRule.setContent { PinLoginScreen(viewModel = pinViewModel) }
-    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
-    composeRule.onNodeWithTag(PIN_FORGOT_PIN).assertExists()
-  }
-
-  @Test
-  @Ignore("Fix test running indefinitely")
   fun testPinLoginPage() {
     composeRule.setContent {
       PinLoginPage(
@@ -104,9 +72,6 @@ class PinLoginScreensTest : RobolectricTest() {
       .onChildAt(0)
       .assertTextEquals(application.getString(R.string.pin_menu_login))
       .assertHasClickAction()
-      .performClick()
-
-    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test

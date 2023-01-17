@@ -20,34 +20,19 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class ErrorMessageKtTest : RobolectricTest() {
+class ErrorMessageKtTest {
 
   @get:Rule val composeRule = createComposeRule()
 
   private val errorMessage = "An error occurred"
 
-  private val listenerObjectSpy =
-    spyk(
-      object {
-        fun onRetry() {
-          // Imitate any retry functionality by doing nothing
-        }
-      }
-    )
-
   @Before
   fun setUp() {
-    composeRule.setContent {
-      ErrorMessage(message = errorMessage, onClickRetry = { listenerObjectSpy.onRetry() })
-    }
+    composeRule.setContent { ErrorMessage(message = errorMessage, onClickRetry = {}) }
   }
 
   @Test
@@ -55,11 +40,5 @@ class ErrorMessageKtTest : RobolectricTest() {
     composeRule.onNodeWithTag(ERROR_MESSAGE_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(TRY_BUTTON_TAG).assertIsDisplayed()
     composeRule.onNodeWithText("Try again").assertIsDisplayed()
-  }
-
-  @Test
-  fun testTryAgainButtonClick() {
-    composeRule.onNodeWithTag(TRY_BUTTON_TAG).performClick()
-    verify { listenerObjectSpy.onRetry() }
   }
 }

@@ -20,9 +20,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-internal class CircularPercentageIndicatorKtTest : RobolectricTest() {
+internal class CircularPercentageIndicatorKtTest {
 
   private val textPercentage = "25"
 

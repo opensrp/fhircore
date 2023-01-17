@@ -92,7 +92,6 @@ internal class PinViewModelTest : RobolectricTest() {
           sharedPreferences = sharedPreferencesHelper,
           secureSharedPreference = secureSharedPreference,
           configurationRegistry = configurationRegistry,
-          app = application
         )
       )
 
@@ -137,7 +136,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadData() {
-    pinViewModel.setPinUiState(isSetup = true)
+    pinViewModel.setPinUiState(isSetup = true, context = application)
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals(pinUiState.isSetupPage, true)
     Assert.assertNotNull(pinUiState.savedPin)
@@ -146,7 +145,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadDataForLoginScreen() {
-    pinViewModel.setPinUiState(isSetup = false)
+    pinViewModel.setPinUiState(isSetup = false, context = application)
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals(pinUiState.isSetupPage, true)
     Assert.assertNotNull(pinUiState.savedPin)
