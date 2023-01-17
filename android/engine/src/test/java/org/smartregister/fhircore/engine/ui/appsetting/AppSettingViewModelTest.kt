@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
@@ -23,14 +24,21 @@ import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
+import java.net.UnknownHostException
 import java.util.Base64
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
@@ -41,6 +49,9 @@ import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -50,6 +61,9 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.showToast
+import retrofit2.HttpException
+import retrofit2.Response
 
 @HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
@@ -170,8 +184,55 @@ class AppSettingViewModelTest : RobolectricTest() {
     )
   }
 
+  @Test(expected = HttpException::class)
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
+    val appId = "12345"
+    val context = mockk<Context>(relaxed = true)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      HttpException(
+        Response.error<ResponseBody>(
+          500,
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
+        )
+      )
+    fhirResourceDataSource.loadData(anyString())
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { fhirResourceDataSource.loadData(anyString()) }
+    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+  }
+
+  @Test(expected = UnknownHostException::class)
+  fun testFetchConfigurationsThrowsUnknowHostException() = runTest {
+    val appId = "12345"
+    val context = mockk<Context>(relaxed = true)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
+    every { context.getString(R.string.error_loading_config_no_internet) }
+    fhirResourceDataSource.loadData(anyString())
+    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
+  }
+
   @Test
-  fun `fetchComposition() should return composition resource`() = runBlockingTest {
+  fun testFetchConfigurationsThrowsException() = runTest {
+    val appId = "12345"
+    val context = mockk<Context>(relaxed = true)
+    coEvery { appSettingViewModel.fetchComposition(any(), any()) } throws
+      Exception("Connection timed out")
+    appSettingViewModel.fetchConfigurations(true)
+    verify { appSettingViewModel.fetchConfigurations(true) }
+    appSettingViewModel.fetchConfigurations(appId, mockk())
+    context.getString(anyInt())
+    verify { context.getString(anyInt()) }
+    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    verify { context.showToast(context.getString(anyInt())) }
+  }
+
+  @Test
+  fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply {
         addEntry().resource =
