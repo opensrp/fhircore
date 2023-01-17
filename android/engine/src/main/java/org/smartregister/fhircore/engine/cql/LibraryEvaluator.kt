@@ -137,7 +137,8 @@ class LibraryEvaluator @Inject constructor() {
           TranslatingLibraryLoader(
             ModelManager(),
             listOf(contentProvider),
-            CqlTranslatorOptions.defaultOptions()
+            CqlTranslatorOptions.defaultOptions(),
+            null
           ) {
           // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
           // By default, the LibraryLoader checks to ensure that the same translator options are
@@ -328,7 +329,8 @@ class LibraryEvaluator @Inject constructor() {
         TranslatingLibraryLoader(
           modelManager,
           listOf(libraryProvider),
-          CqlTranslatorOptions.defaultOptions()
+          CqlTranslatorOptions.defaultOptions(),
+          null
         ),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider,

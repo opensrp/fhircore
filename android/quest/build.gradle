@@ -208,6 +208,7 @@ tasks.withType(Test) {
 
 configurations {
     all*.exclude group: 'xpp3'
+    all*.exclude group: 'commons-logging'
 }
 
 dependencies {
@@ -224,7 +225,7 @@ dependencies {
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.6.1-UI-REVAMP-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.4.0'){
         exclude group: 'xpp3'
     }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
@@ -272,5 +273,5 @@ dependencies {
 //    debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
-    testImplementation 'info.cqframework:cql-to-elm:2.2.0'
+    testImplementation 'info.cqframework:cql-to-elm:2.4.0'
 }

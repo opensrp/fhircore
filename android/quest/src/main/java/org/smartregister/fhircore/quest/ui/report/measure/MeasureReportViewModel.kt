@@ -483,16 +483,20 @@ constructor(
         .map { group ->
           val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
           group to
-            group.stratifier.flatMap { it.stratum }.map { stratifier ->
-              stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
-                MeasureReportIndividualResult(
-                  title = stratifier.value.text,
-                  percentage = stratifier.findPercentage(denominator!!).toString(),
-                  count = stratifier.findRatio(denominator),
-                  description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                )
+            group
+              .stratifier
+              .flatMap { it.stratum }
+              .filter { it.hasValue() && it.value.hasText() }
+              .map { stratifier ->
+                stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
+                  MeasureReportIndividualResult(
+                    title = stratifier.value.text,
+                    percentage = stratifier.findPercentage(denominator!!).toString(),
+                    count = stratifier.findRatio(denominator),
+                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                  )
+                }
               }
-            }
         }
         .mapNotNull {
           it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
