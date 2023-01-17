@@ -46,5 +46,6 @@ data class ResourceData(
 @Stable
 data class RelatedResourceData(
   val resource: Resource,
-  val relatedResources: LinkedList<RelatedResourceData> = LinkedList()
+  val relatedResources: LinkedList<RelatedResourceData> = LinkedList(),
+  val resourceConfigId: String? = null
 )

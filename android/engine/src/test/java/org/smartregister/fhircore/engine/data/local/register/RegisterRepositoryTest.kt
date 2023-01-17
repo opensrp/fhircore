@@ -150,7 +150,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val listResourceData = registerRepository.loadRegisterData(1, "householdRegister")
       val resourceData = listResourceData.first()
 
-      Assert.assertEquals(2, listResourceData.size)
+      Assert.assertEquals(1, listResourceData.size)
 
       Assert.assertEquals(ResourceType.Group, resourceData.baseResourceType)
 
@@ -199,7 +199,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       listOf(Observation())
 
     coEvery {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 20, from = 20))
+      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
 
     runBlocking {

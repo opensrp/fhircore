@@ -112,6 +112,8 @@ constructor(
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
     baseResources.map { baseResource: Resource ->
+      val currentRelatedResources = LinkedList<RelatedResourceData>()
+
       relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
@@ -122,29 +124,28 @@ constructor(
               fhirPathExpression = resourceConfig.fhirPathExpression
             )
           }
-
-        // Include secondary resourceData in each row if secondaryResources are configured
-        relatedResources.addAll(secondaryResourceData)
-
-        val currentResourceData =
-          processResourceData(
-            relatedResources = relatedResources,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            views = registerConfiguration.registerCard.views,
-            rules = registerConfiguration.registerCard.rules
-          )
-
-        resourceData.add(currentResourceData)
+        currentRelatedResources.addAll(relatedResources)
       }
+
+      // Include secondary resourceData in each row if secondaryResources are configured
+      currentRelatedResources.addAll(secondaryResourceData)
+
+      val currentResourceData =
+        processResourceData(
+          relatedResources = currentRelatedResources,
+          baseResource = baseResource,
+          views = registerConfiguration.registerCard.views,
+          rules = registerConfiguration.registerCard.rules
+        )
+
+      resourceData.add(currentResourceData)
     }
 
     return resourceData
   }
 
-  private suspend fun processResourceData(
+  private fun processResourceData(
     relatedResources: LinkedList<RelatedResourceData>,
-    baseResourceType: ResourceType,
     baseResource: Resource,
     rules: List<RuleConfig>,
     views: List<ViewProperties>
@@ -251,7 +252,7 @@ constructor(
 
   /**
    *
-   * This function creates a map of resource type against [Resource] from a list of nested
+   * This function creates a map of resource config Id ( or resource type if the id is not configured) against [Resource] from a list of nested
    * [RelatedResourceData].
    *
    * Example: A list of [RelatedResourceData] with Patient as its base resource and two nested
@@ -265,7 +266,7 @@ constructor(
    * }
    * ```
    *
-   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource type
+   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource config Id ( or resource type if the id is not configured)
    * as key and value as list of [Resource] s in the map.
    */
   private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
@@ -274,7 +275,7 @@ constructor(
     while (this.isNotEmpty()) {
       val relatedResourceData = this.removeFirst()
       relatedResourcesMap
-        .getOrPut(relatedResourceData.resource.resourceType.name) { mutableListOf() }
+        .getOrPut(relatedResourceData.resourceConfigId ?: relatedResourceData.resource.resourceType.name ) { mutableListOf() }
         .add(relatedResourceData.resource)
       relatedResourceData.relatedResources.forEach { this.addLast(it) }
     }
@@ -302,7 +303,7 @@ constructor(
           sort(resourceConfig.sortConfigs)
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(RelatedResourceData(resource = resource))
+        relatedResourcesData.addLast(RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id))
       }
     } else {
       fhirPathDataExtractor
@@ -321,7 +322,7 @@ constructor(
           }
         }
         .forEach { resource ->
-          relatedResourcesData.addLast(RelatedResourceData(resource = resource))
+          relatedResourcesData.addLast(RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id))
         }
     }
     relatedResourcesData.forEach { resourceData: RelatedResourceData ->
@@ -438,7 +439,6 @@ constructor(
 
     return processResourceData(
       relatedResources = relatedResources,
-      baseResourceType = baseResourceType,
       baseResource = baseResource,
       views = profileConfiguration.views,
       rules = profileConfiguration.rules
