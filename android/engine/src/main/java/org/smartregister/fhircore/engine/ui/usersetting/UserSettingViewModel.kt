@@ -44,6 +44,8 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.p2p.utils.startP2PScreen
 
+const val NAVIGATION_KEY_P2P = "p2p_sync"
+
 @HiltViewModel
 class UserSettingViewModel
 @Inject
@@ -129,7 +131,7 @@ constructor(
   }
 
   fun isP2PSyncAvailable(): Boolean {
-    val p2pMenu = (navigationConfiguration.staticMenu.find { it.id == "p2p_sync" })
+    val p2pMenu = (navigationConfiguration.staticMenu.find { it.id == NAVIGATION_KEY_P2P })
     return p2pMenu?.visible ?: false
   }
 }

@@ -85,6 +85,9 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
+const val USER_SETTING_ROW_RESET_DATA = "userSettingRowResetData"
+const val USER_SETTING_ROW_P2P = "userSettingRowP2P"
+const val USER_SETTING_ROW_LANGUAGE = "userSettingRowLanguage"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -249,7 +252,7 @@ fun UserSettingScreen(
           icon = Icons.Rounded.DeleteForever,
           text = stringResource(id = R.string.clear_database),
           clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
-          modifier = modifier
+          modifier = modifier.testTag(USER_SETTING_ROW_RESET_DATA)
         )
       }
 
@@ -258,7 +261,7 @@ fun UserSettingScreen(
           icon = Icons.Rounded.Share,
           text = stringResource(id = R.string.transfer_data),
           clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
-          modifier = modifier,
+          modifier = modifier.testTag(USER_SETTING_ROW_P2P),
           canSwitchToScreen = true
         )
       }

@@ -57,8 +57,7 @@ class UserSettingScreenKtTest {
       .onNodeWithText(activity.getString(R.string.clear_database_message))
       .assertDoesNotExist()
 
-    // TODO temporary disabled the sync functionality and will be enabled in future
-    // composeRule.onNodeWithText("Sync").assertExists()
+    composeRule.onNodeWithText("Sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
@@ -111,6 +110,13 @@ class UserSettingScreenKtTest {
   }
 
   @Test
+  fun testWhenShowP2POption() {
+
+    initComposable(isP2PAvailable = true)
+    composeRule.onNodeWithText(activity.getString(R.string.transfer_data)).assertExists()
+  }
+
+  @Test
   fun testWhenShowDatabaseResetConfirmationTrueRendersConfirmationDialog() {
 
     initComposable(isShowDatabaseResetConfirmation = true)
@@ -130,7 +136,8 @@ class UserSettingScreenKtTest {
     allowMainClockAutoAdvance: Boolean = false,
     isShowProgressBar: Boolean = false,
     isShowDatabaseResetConfirmation: Boolean = false,
-    isDebugVariant: Boolean = false
+    isDebugVariant: Boolean = false,
+    isP2PAvailable: Boolean = false
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -144,8 +151,8 @@ class UserSettingScreenKtTest {
           isDebugVariant = isDebugVariant,
           onEvent = {},
           mainNavController = rememberNavController(),
-          allowP2PSync = true,
-          lastSyncTime =  "05:30 PM, Mar 3"
+          allowP2PSync = isP2PAvailable,
+          lastSyncTime = "05:30 PM, Mar 3"
         )
       }
 
