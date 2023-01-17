@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package org.smartregister.fhircore.engine.ui.appsetting
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +28,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -42,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -60,6 +68,8 @@ fun AppSettingScreen(
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
+  val coroutineScope = rememberCoroutineScope()
+  val bringIntoViewRequester = BringIntoViewRequester()
 
   Column(modifier = modifier.fillMaxSize()) {
     Column(
@@ -89,11 +99,21 @@ fun AppSettingScreen(
             text = stringResource(R.string.app_id_sample),
           )
         },
-        modifier = modifier.testTag(APP_ID_TEXT_INPUT_TAG).fillMaxWidth().padding(vertical = 2.dp)
+        modifier =
+          modifier
+            .testTag(APP_ID_TEXT_INPUT_TAG)
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .onFocusEvent { event ->
+              if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+            }
       )
 
       Spacer(modifier = modifier.height(30.dp))
-      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+      Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.bringIntoViewRequester(bringIntoViewRequester).fillMaxWidth()
+      ) {
         Button(
           onClick = { onLoadConfigurations(true) },
           enabled = !showProgressBar && appId.isNotEmpty(),
