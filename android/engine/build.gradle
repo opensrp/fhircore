@@ -266,4 +266,5 @@ dependencies {
 
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutineVersion")
     testImplementation "androidx.work:work-testing:2.7.1"
+    androidTestImplementation deps.mockk_android
 }
