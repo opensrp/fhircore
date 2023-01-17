@@ -43,9 +43,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Group.GroupType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -336,7 +334,8 @@ constructor(
                     startDateFormatted,
                     endDateFormatted,
                     config.title,
-                    config.module
+                    config.module,
+                    config.subjectXFhirQuery
                   )
                 }
               } else {
@@ -368,36 +367,21 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     indicatorTitle: String,
-    module: String
+    module: String,
+    subjectXFhirQuery: String?
   ) {
     withContext(dispatcherProvider.io()) {
       val measureReport: List<MeasureReport> =
-        if (module.contains("Stock", true)) {
-          fhirEngine
-            .search<Group> {
-              filter(
-                Group.TYPE,
-                {
-                  value =
-                    of(
-                      Coding(
-                        GroupType.MEDICATION.system,
-                        GroupType.MEDICATION.toCode(),
-                        GroupType.MEDICATION.display
-                      )
-                    )
-                }
-              )
+        if (subjectXFhirQuery?.isNotEmpty() == true) {
+          fhirEngine.search(subjectXFhirQuery).map {
+            // TODO a hack to prevent missing subject in case of Group based reports where
+            // MeasureEvaluator looks for Group members and skips the Group itself
+            if (it is Group && !it.hasMember()) {
+              it.addMember(Group.GroupMemberComponent(it.asReference()))
+              fhirEngine.update(it)
             }
-            .map {
-              // TODO a hack to prevent missing subject in case of Stock (Group) report where
-              // MeasureEvaluator looks for Group members and skips the Group itself
-              if (!it.hasMember()) {
-                it.addMember(Group.GroupMemberComponent(it.asReference()))
-                fhirEngine.update(it)
-              }
-              runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
-            }
+            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
+          }
         } else
           listOfNotNull(
             runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)

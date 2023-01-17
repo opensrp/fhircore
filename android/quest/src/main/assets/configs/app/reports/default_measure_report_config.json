@@ -82,31 +82,36 @@
       "title": "Stock Consumption",
       "description": "Stock Consumption Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND01",
-      "module": "Stock Consumption"
+      "module": "Stock Consumption",
+      "subjectXFhirQuery": "Group?type=medication"
     },
     {
       "title": "Stock Consumption Monthly Average (AMC)",
       "description": "Stock Consumption Monthly Average Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND02",
-      "module": "Stock Consumption Monthly Average"
+      "module": "Stock Consumption Monthly Average",
+      "subjectXFhirQuery": "Group?type=medication"
     },
     {
       "title": "Stock out Days",
       "description": "Stock out Days Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND03",
-      "module": "Stock Out Days"
+      "module": "Stock Out Days",
+      "subjectXFhirQuery": "Group?type=medication"
     },
     {
       "title": "Stock on Hand",
       "description": "Stock on Hand Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND04",
-      "module": "Stock On Hand"
+      "module": "Stock On Hand",
+      "subjectXFhirQuery": "Group?type=medication"
     },
     {
       "title": "Months of Stock (MOS)",
       "description": "Months of Stock Report",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND05",
-      "module": "Stock Months"
+      "module": "Stock Months",
+      "subjectXFhirQuery": "Group?type=medication"
     }
   ]
 }

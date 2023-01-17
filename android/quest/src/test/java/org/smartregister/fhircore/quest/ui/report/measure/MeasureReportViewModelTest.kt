@@ -54,7 +54,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfigType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -69,6 +68,7 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
@@ -284,12 +284,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatPopulationMeasureReport() = runTest {
-    val result =
-      measureReportViewModel.formatPopulationMeasureReports(
-        listOf(measureReport),
-        "IND",
-        MeasureReportConfigType.PATIENT
-      )
+    measureReport.type = MeasureReportType.SUMMARY
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "IND")
 
     assertEquals(1, result.size)
     assertEquals("report group 1", result.first().title)
@@ -344,6 +340,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatMeasureReportsForPatient() = runTest {
+    measureReport.type = MeasureReportType.SUMMARY
     measureReport.contained.clear()
     measureReport.contained.add(
       Observation().apply {
@@ -365,11 +362,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     )
 
     val result =
-      measureReportViewModel.formatPopulationMeasureReports(
-        listOf(measureReport),
-        "Test Indicator",
-        MeasureReportConfigType.PATIENT
-      )
+      measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "Test Indicator")
 
     assertEquals(2, result.size)
 
@@ -386,6 +379,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatMeasureReportsStock() = runTest {
+    measureReport.type = MeasureReportType.INDIVIDUAL
     measureReport.contained.clear()
     measureReport.contained.add(
       Observation().apply {
@@ -412,18 +406,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
       Group().apply { name = "Commodity 1" }
 
     val result =
-      measureReportViewModel.formatPopulationMeasureReports(
-        listOf(measureReport),
-        "Test Indicator",
-        MeasureReportConfigType.STOCK
-      )
+      measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "Test Indicator")
 
     assertEquals(2, result.size)
 
     assertEquals("", result.first().count)
     assertEquals(3, result.first().dataList.size)
     assertEquals("Commodity 1", result.first().indicatorTitle)
-    assertEquals(-1, result.first().measureReportDenominator)
+    assertEquals(MEASURE_REPORT_DENOMINATOR_MISSING, result.first().measureReportDenominator)
 
     assertEquals("Test Code 1", result.first().dataList.elementAt(0).title)
     assertEquals("2", result.first().dataList.elementAt(0).count)
