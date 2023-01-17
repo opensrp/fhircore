@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.XFhirQueryResolver
+import com.google.android.fhir.search.search
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Resource
 
-/**
- * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
- * [State].
- */
-interface OnSyncListener {
-  /** Callback method invoked to handle sync [state] */
-  fun onSync(state: SyncJobStatus)
+@Singleton
+class FhirXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
+  override suspend fun resolve(xFhirQuery: String): List<Resource> {
+    return fhirEngine.search(xFhirQuery)
+  }
 }

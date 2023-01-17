@@ -16,13 +16,24 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.sync.SyncJobStatus
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.AppConfigService
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 @ExperimentalCoroutinesApi
 class SyncBroadcasterTest : RobolectricTest() {
@@ -30,12 +41,35 @@ class SyncBroadcasterTest : RobolectricTest() {
   private lateinit var syncBroadcaster: SyncBroadcaster
 
   @Test
-  fun runSync() {
-    runBlockingTest {
-      syncBroadcaster = mockk()
-      every { syncBroadcaster.runSync() } returns Unit
-      syncBroadcaster.runSync()
-      verify { syncBroadcaster.runSync() }
-    }
+  fun runSync() = runTest {
+    syncBroadcaster = mockk()
+    every { syncBroadcaster.runSync() } returns Unit
+    syncBroadcaster.runSync()
+    verify { syncBroadcaster.runSync() }
+  }
+
+  @Test
+  fun runSyncWhenNetworkStateFalseEmitsSyncFailed() = runTest {
+    val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+    val configService = AppConfigService(context = context)
+    val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry,
+        configService,
+        fhirEngine = mockk(),
+        sharedSyncStatus,
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        appContext = context
+      )
+    val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
+    val job =
+      launch(UnconfinedTestDispatcher(testScheduler)) {
+        sharedSyncStatus.toList(collectedSyncStatusList)
+      }
+    syncBroadcaster.runSync { false }
+    Assert.assertTrue(collectedSyncStatusList.first() is SyncJobStatus.Failed)
+    job.cancel()
   }
 }

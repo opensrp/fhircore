@@ -20,24 +20,32 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirXFhirQueryResolver
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifecycleObserver {
+class QuestApplication :
+  Application(), DataCaptureConfig.Provider, DefaultLifecycleObserver, Configuration.Provider {
+
+  @Inject lateinit var workerFactory: HiltWorkerFactory
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @Inject lateinit var xFhirQueryResolver: FhirXFhirQueryResolver
 
   var onInActivityListener: OnInActivityListener? = null
 
@@ -90,7 +98,11 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
     configuration =
-      configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+      configuration
+        ?: DataCaptureConfig(
+          attachmentResolver = referenceAttachmentResolver,
+          xFhirQueryResolver = xFhirQueryResolver
+        )
     return configuration as DataCaptureConfig
   }
 
@@ -112,4 +124,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, DefaultLifec
       )
     }
   }
+
+  override fun getWorkManagerConfiguration(): Configuration =
+    Configuration.Builder()
+      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setWorkerFactory(workerFactory)
+      .build()
 }

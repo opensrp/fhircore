@@ -140,4 +140,5 @@ accompanist.swiperefresh = "com.google.accompanist:accompanist-swiperefresh:$ver
 deps.accompanist = accompanist
 
 ext.deps = deps
-ext.hiltVersion = "2.41"
+ext.hiltVersion = "2.42"
+ext.hiltWorkerVersion ="1.0.0"

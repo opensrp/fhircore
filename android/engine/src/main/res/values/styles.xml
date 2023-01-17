@@ -24,9 +24,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
     <style name="AppCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardElevation">8dp</item>
@@ -57,5 +57,10 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
+        <item name="questionnaireSubmitButtonStyle">@style/AppTheme.HiddenSubmitButtonStyle</item>
+    </style>
+
+    <style name="AppTheme.HiddenSubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
+        <item name="android:visibility">gone</item>
     </style>
 </resources>

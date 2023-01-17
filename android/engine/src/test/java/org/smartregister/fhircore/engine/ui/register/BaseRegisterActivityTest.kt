@@ -33,8 +33,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.ResourceSyncException
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -48,6 +47,7 @@ import io.mockk.verify
 import java.io.InterruptedIOException
 import java.net.UnknownHostException
 import java.time.OffsetDateTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -80,6 +80,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asString
 import retrofit2.HttpException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
@@ -371,7 +372,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSync_with_syncStatus_started() {
     // Status Sync Started
-    testRegisterActivity.onSync(State.Started)
+    testRegisterActivity.onSync(SyncJobStatus.Started())
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(
@@ -395,7 +396,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSync_with_syncStatus_inProgress() {
     // Status Sync InProgress
-    testRegisterActivity.onSync(State.InProgress(ResourceType.Patient))
+    testRegisterActivity.onSync(SyncJobStatus.InProgress(ResourceType.Patient))
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(
@@ -410,9 +411,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnSync_with_syncStatus_finished() {
     // Status Sync Finished
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
-    val result = spyk(Result.Success())
     val currentDateTime = OffsetDateTime.now()
-    every { result.timestamp } returns currentDateTime
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {
         if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
@@ -422,7 +421,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         }
       }
 
-    testRegisterActivity.onSync(State.Finished(result))
+    testRegisterActivity.onSync(SyncJobStatus.Finished())
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
@@ -437,14 +436,9 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnSync_with_syncStatus_failed() {
     // Status Sync Failed
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
-    val result =
-      spyk(
-        Result.Error(
-          listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
-        )
-      )
+    val exceptions =
+      listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
     val lastDateTimestamp = OffsetDateTime.now()
-    every { result.timestamp } returns lastDateTimestamp
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {
         if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
@@ -453,7 +447,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
           ""
         }
       }
-    testRegisterActivity.onSync(State.Failed(result))
+    testRegisterActivity.onSync(SyncJobStatus.Failed(exceptions))
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
@@ -467,7 +461,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnSync_with_syncStatus_glitch() {
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     testRegisterActivity.onSync(
-      State.Glitch(
+      SyncJobStatus.Glitch(
         listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
       )
     )
@@ -601,7 +595,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     every { accountAuthenticator.logout() } returns Unit
 
     val glitchState =
-      State.Glitch(
+      SyncJobStatus.Glitch(
         listOf(
           mockk {
             every { exception } returns mockk<HttpException> { every { code() } returns 401 }
@@ -613,13 +607,11 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     verify(exactly = 1) { accountAuthenticator.logout() }
 
     val failedState =
-      State.Failed(
-        Result.Error(
-          listOf(
-            mockk {
-              every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-            }
-          )
+      SyncJobStatus.Failed(
+        listOf(
+          mockk {
+            every { exception } returns mockk<HttpException> { every { code() } returns 401 }
+          }
         )
       )
 
@@ -627,7 +619,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
 
     val glitchStateInterruptedIOException =
-      State.Glitch(
+      SyncJobStatus.Glitch(
         listOf(
           mockk {
             every { exception } returns
@@ -648,7 +640,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     )
 
     val glitchStateUnknownHostException =
-      State.Glitch(
+      SyncJobStatus.Glitch(
         listOf(
           mockk {
             every { exception } returns
@@ -669,7 +661,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       testRegisterActivity.registerActivityBinding.containerProgressSync.background
     )
 
-    handleSyncFailed(State.Glitch(listOf()))
+    handleSyncFailed(SyncJobStatus.Glitch(listOf()))
     Assert.assertFalse(
       testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
     )
@@ -685,11 +677,11 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     )
   }
 
-  private fun handleSyncFailed(state: State) {
+  private fun handleSyncFailed(state: SyncJobStatus) {
     ReflectionHelpers.callInstanceMethod<Any>(
       testRegisterActivity,
       "handleSyncFailed",
-      ReflectionHelpers.ClassParameter(State::class.java, state)
+      ReflectionHelpers.ClassParameter(SyncJobStatus::class.java, state)
     )
   }
 

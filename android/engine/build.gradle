@@ -115,7 +115,7 @@ dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
-    implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
+    implementation 'org.smartregister:fhir-common-utils:0.0.3-SNAPSHOT'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation "androidx.cardview:cardview:1.0.0"
@@ -150,6 +150,8 @@ dependencies {
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    api "androidx.hilt:hilt-work:$hiltWorkerVersion"
+    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     api 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
@@ -174,6 +176,7 @@ dependencies {
     api("androidx.activity:activity-compose:1.4.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     api("androidx.work:work-runtime-ktx:2.7.1")
+    testImplementation 'androidx.work:work-testing:2.7.1'
 
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -183,7 +186,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-    api('org.smartregister:data-capture:0.1.0-beta05-preview4-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta06-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -197,7 +200,7 @@ dependencies {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview4-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview9-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
