@@ -89,7 +89,7 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 fun Context.appVersion(): Pair<Int, String> =
   Pair(
     this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
-    this.packageManager.getPackageInfo(this.packageName, 0).versionName.substringBefore("-")
+    this.packageManager.getPackageInfo(this.packageName, 0).versionName?.substringBefore("-") ?: ""
   )
 
 fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {
