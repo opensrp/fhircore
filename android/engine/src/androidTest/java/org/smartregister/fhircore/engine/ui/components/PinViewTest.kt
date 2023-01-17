@@ -23,9 +23,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class PinViewTest : RobolectricTest() {
+class PinViewTest {
 
   @get:Rule val composeRule = createComposeRule()
 

@@ -261,7 +261,6 @@ dependencies {
     testImplementation group: 'org.json', name: 'json', version: '20220320'
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"

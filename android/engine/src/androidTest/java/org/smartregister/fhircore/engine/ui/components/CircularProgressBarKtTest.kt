@@ -22,9 +22,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-internal class CircularProgressBarKtTest : RobolectricTest() {
+internal class CircularProgressBarKtTest {
 
   private val textSyncing = "Syncing"
 
