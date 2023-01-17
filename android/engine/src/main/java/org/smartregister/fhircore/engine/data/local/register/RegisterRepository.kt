@@ -252,8 +252,8 @@ constructor(
 
   /**
    *
-   * This function creates a map of resource config Id ( or resource type if the id is not configured) against [Resource] from a list of nested
-   * [RelatedResourceData].
+   * This function creates a map of resource config Id ( or resource type if the id is not
+   * configured) against [Resource] from a list of nested [RelatedResourceData].
    *
    * Example: A list of [RelatedResourceData] with Patient as its base resource and two nested
    * [RelatedResourceData] of resource type Condition & CarePlan returns:
@@ -266,8 +266,9 @@ constructor(
    * }
    * ```
    *
-   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource config Id ( or resource type if the id is not configured)
-   * as key and value as list of [Resource] s in the map.
+   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource
+   * config Id ( or resource type if the id is not configured) as key and value as list of
+   * [Resource] s in the map.
    */
   private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
     MutableMap<String, MutableList<Resource>> {
@@ -275,7 +276,9 @@ constructor(
     while (this.isNotEmpty()) {
       val relatedResourceData = this.removeFirst()
       relatedResourcesMap
-        .getOrPut(relatedResourceData.resourceConfigId ?: relatedResourceData.resource.resourceType.name ) { mutableListOf() }
+        .getOrPut(
+          relatedResourceData.resourceConfigId ?: relatedResourceData.resource.resourceType.name
+        ) { mutableListOf() }
         .add(relatedResourceData.resource)
       relatedResourceData.relatedResources.forEach { this.addLast(it) }
     }
@@ -303,7 +306,9 @@ constructor(
           sort(resourceConfig.sortConfigs)
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id))
+        relatedResourcesData.addLast(
+          RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+        )
       }
     } else {
       fhirPathDataExtractor
@@ -322,7 +327,9 @@ constructor(
           }
         }
         .forEach { resource ->
-          relatedResourcesData.addLast(RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id))
+          relatedResourcesData.addLast(
+            RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+          )
         }
     }
     relatedResourcesData.forEach { resourceData: RelatedResourceData ->
