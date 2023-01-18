@@ -61,18 +61,18 @@ import org.junit.Test
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
+import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
+import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -95,7 +95,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  private lateinit var accountAuthenticator: AccountAuthenticator
+  private lateinit var accountAuthenticator:
+    org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -112,7 +113,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator =
       spyk(
-        AccountAuthenticator(
+        org.smartregister.fhircore.quest.ui.login.AccountAuthenticator(
           context = context,
           accountManager = accountManager,
           oAuthService = oAuthService,
@@ -231,7 +232,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val accountAuthenticator =
       spyk(
-        AccountAuthenticator(
+        org.smartregister.fhircore.quest.ui.login.AccountAuthenticator(
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
@@ -287,7 +288,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val accountAuthenticator =
       spyk(
-        AccountAuthenticator(
+        org.smartregister.fhircore.quest.ui.login.AccountAuthenticator(
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
@@ -434,7 +435,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify(exactly = 1) { onLogout.invoke() }
     verify(exactly = 1) { accountAuthenticatorSpy.invalidateSession() }
-    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 1) {
+      accountAuthenticatorSpy.launchScreen(
+        any<Class<org.smartregister.fhircore.quest.ui.login.LoginActivity>>()
+      )
+    }
   }
 
   @Test
@@ -465,7 +470,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify(exactly = 1) { onLogout.invoke() }
     verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
-    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 1) {
+      accountAuthenticatorSpy.launchScreen(
+        any<Class<org.smartregister.fhircore.quest.ui.login.LoginActivity>>()
+      )
+    }
   }
 
   @Test
@@ -490,7 +499,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify(exactly = 1) { onLogout.invoke() }
     verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
-    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 1) {
+      accountAuthenticatorSpy.launchScreen(
+        any<Class<org.smartregister.fhircore.quest.ui.login.LoginActivity>>()
+      )
+    }
   }
 
   @Test
@@ -552,11 +565,16 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testLaunchLoginScreenShouldStartLoginActivity() {
-    accountAuthenticator.launchScreen(LoginActivity::class.java)
+    accountAuthenticator.launchScreen(
+      org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java
+    )
     val startedIntent: Intent =
       shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-    Assert.assertEquals(LoginActivity::class.java, shadowIntent.intentClass)
+    Assert.assertEquals(
+      org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java,
+      shadowIntent.intentClass
+    )
   }
 
   @Test

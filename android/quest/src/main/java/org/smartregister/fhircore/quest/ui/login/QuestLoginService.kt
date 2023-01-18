@@ -22,7 +22,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
-import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.p2p.P2PLibrary

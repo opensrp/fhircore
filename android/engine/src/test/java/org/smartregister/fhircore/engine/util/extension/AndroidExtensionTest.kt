@@ -32,13 +32,13 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -50,7 +50,7 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Test
   fun `Activity#refresh() should call startActivity and finish()`() {
-    val activity = spyk(LoginActivity())
+    val activity = spyk(org.smartregister.fhircore.quest.ui.login.LoginActivity())
     val intentCapture = slot<Intent>()
 
     every { activity.packageName } returns "package-name"

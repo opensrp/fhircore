@@ -20,7 +20,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
-import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.quest.ui.login.LoginService
 import org.smartregister.fhircore.quest.ui.login.QuestLoginService
 
 @InstallIn(ActivityComponent::class)

@@ -64,7 +64,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -161,7 +160,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @After
   fun cleanup() {
     unmockkObject(SharedPreferencesHelper)
-    unmockkObject(AssetUtil)
   }
 
   @Test
