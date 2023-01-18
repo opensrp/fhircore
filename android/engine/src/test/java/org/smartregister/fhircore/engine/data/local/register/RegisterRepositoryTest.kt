@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
@@ -99,9 +100,11 @@ class RegisterRepositoryTest : RobolectricTest() {
       val resourceData = listResourceData.first()
 
       Assert.assertEquals(1, listResourceData.size)
+
       Assert.assertEquals(ResourceType.Patient, resourceData.baseResourceType)
 
       Assert.assertEquals("Nelson Mandela", resourceData.computedValuesMap["patientName"])
+
       Assert.assertEquals(
         Enumerations.AdministrativeGender.MALE.name.lowercase(),
         (resourceData.computedValuesMap["patientGender"] as String).lowercase()
@@ -148,6 +151,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val resourceData = listResourceData.first()
 
       Assert.assertEquals(1, listResourceData.size)
+
       Assert.assertEquals(ResourceType.Group, resourceData.baseResourceType)
 
       Assert.assertEquals("Snow", resourceData.computedValuesMap["familyName"])
@@ -177,6 +181,74 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Nelson Mandela", profileData.computedValuesMap[PATIENT_NAME])
       Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_ID))
       Assert.assertEquals("12345", profileData.computedValuesMap[PATIENT_ID])
+    }
+  }
+
+  @Test
+  fun loadRegisterDataGivenSecondaryResourcesAreConfigured() {
+    val group =
+      Group().apply {
+        id = "1234567"
+        name = "Paracetamol"
+        active = true
+      }
+
+    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(group)
+
+    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+      listOf(Observation())
+
+    coEvery {
+      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
+    } returns listOf(patient)
+
+    runBlocking {
+      val listResourceData = registerRepository.loadRegisterData(1, "patientRegisterSecondary")
+    }
+
+    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
+
+    coVerify { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) }
+  }
+
+  @Test
+  fun loadProfileDataGivenSecondaryResourcesAreConfigured() {
+    val group =
+      Group().apply {
+        id = "1234567"
+        name = "Paracetamol"
+        active = true
+      }
+
+    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(group)
+
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
+
+    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+      listOf(Observation())
+
+    runBlocking {
+      val profileData =
+        registerRepository.loadProfileData(
+          profileId = "patientProfileSecondary",
+          resourceId = "12345"
+        )
+      Assert.assertNotNull(profileData)
+    }
+
+    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
+
+    coVerify { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) }
+  }
+
+  @Test
+  fun countRegisterDataReturnsCorrectCount() {
+    coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
+
+    runBlocking {
+      val recordsCount = registerRepository.countRegisterData("patientRegister")
+
+      Assert.assertEquals(20, recordsCount)
     }
   }
 
