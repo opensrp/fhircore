@@ -16,6 +16,7 @@
   "secondaryResources": [
     {
       "baseResource": {
+        "id": "commodities",
         "resource": "Group",
         "dataQueries": [
           {
@@ -32,6 +33,7 @@
       },
       "relatedResources": [
         {
+          "id": "latestObservations",
           "resource": "Observation",
           "searchParameter": "subject",
           "dataQueries": [
