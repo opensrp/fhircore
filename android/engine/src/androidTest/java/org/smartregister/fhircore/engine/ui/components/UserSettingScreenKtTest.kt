@@ -21,6 +21,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
 import org.junit.After
@@ -56,8 +57,7 @@ class UserSettingScreenKtTest {
       .onNodeWithText(activity.getString(R.string.clear_database_message))
       .assertDoesNotExist()
 
-    // TODO temporary disabled the sync functionality and will be enabled in future
-    // composeRule.onNodeWithText("Sync").assertExists()
+    composeRule.onNodeWithText("Sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
@@ -110,6 +110,12 @@ class UserSettingScreenKtTest {
   }
 
   @Test
+  fun testWhenShowP2POption() {
+    initComposable(isP2PAvailable = true)
+    composeRule.onNodeWithText(activity.getString(R.string.transfer_data)).assertExists()
+  }
+
+  @Test
   fun testWhenShowDatabaseResetConfirmationTrueRendersConfirmationDialog() {
 
     initComposable(isShowDatabaseResetConfirmation = true)
@@ -129,7 +135,8 @@ class UserSettingScreenKtTest {
     allowMainClockAutoAdvance: Boolean = false,
     isShowProgressBar: Boolean = false,
     isShowDatabaseResetConfirmation: Boolean = false,
-    isDebugVariant: Boolean = false
+    isDebugVariant: Boolean = false,
+    isP2PAvailable: Boolean = false
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -138,10 +145,13 @@ class UserSettingScreenKtTest {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          onEvent = {},
-          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
           showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
-          isDebugVariant = isDebugVariant
+          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
+          isDebugVariant = isDebugVariant,
+          onEvent = {},
+          mainNavController = rememberNavController(),
+          allowP2PSync = isP2PAvailable,
+          lastSyncTime = "05:30 PM, Mar 3"
         )
       }
 
