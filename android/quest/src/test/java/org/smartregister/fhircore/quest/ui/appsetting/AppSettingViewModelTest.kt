@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.gson.GsonBuilder
@@ -61,6 +60,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
 
