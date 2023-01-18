@@ -11,6 +11,7 @@
     <string name="app_logo">Logo de l’application</string>
     <string name="powered_by">Alimenté par</string>
     <string name="app_version">Version de l\'application %1$d (%2$s)</string>
+    <string name="last_sync">Dernière synchronisation %1$s</string>
     <string name="login_text">Connexion</string>
     <string name="username_input_hint">Saisir le nom d\'utilisateur</string>
     <string name="password_input_hint">Saisir le mot de passe</string>

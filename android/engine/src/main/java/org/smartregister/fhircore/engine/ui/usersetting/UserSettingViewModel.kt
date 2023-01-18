@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
@@ -70,8 +71,8 @@ constructor(
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
-  val navigationConfiguration: NavigationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  val appConfig: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
@@ -131,7 +132,6 @@ constructor(
   }
 
   fun isP2PSyncAvailable(): Boolean {
-    val p2pMenu = (navigationConfiguration.staticMenu.find { it.id == NAVIGATION_KEY_P2P })
-    return p2pMenu?.visible ?: false
+    return appConfig.deviceToDeviceSync != null
   }
 }

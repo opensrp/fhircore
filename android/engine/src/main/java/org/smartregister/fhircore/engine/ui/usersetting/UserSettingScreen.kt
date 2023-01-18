@@ -298,7 +298,7 @@ fun UserSettingScreen(
         Text(
           color = contentColor,
           fontSize = 16.sp,
-          text = lastSyncTime ?: "",
+          text = stringResource(id = R.string.last_sync, lastSyncTime ?: ""),
           modifier =
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally)
         )
