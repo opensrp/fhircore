@@ -47,8 +47,8 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -285,65 +285,30 @@ constructor(
           .runCatching {
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
-            measureReportConfigList.forEach { config ->
-              val result =
+            val result =
+              measureReportConfigList.flatMap {
                 retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
                   fhirEngine,
                   startDateFormatted,
                   endDateFormatted,
-                  config.url
+                  it.url
                 )
-              if (result?.isEmpty() == true) {
-                withContext(dispatcherProvider.io()) {
-                  fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
-                }
-                if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation
-                ) {
-                  val measureReport: MeasureReport? =
-                    try {
-                      withContext(dispatcherProvider.io()) {
-                        fhirOperator.evaluateMeasure(
-                          measureUrl = config.url,
-                          start = startDateFormatted,
-                          end = endDateFormatted,
-                          reportType = SUBJECT,
-                          subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                          practitioner =
-                            practitionerId?.asReference(ResourceType.Practitioner)?.reference,
-                          lastReceivedOn = null // Non-null value not supported yet
-                        )
-                      }
-                    } catch (exception: IllegalArgumentException) {
-                      Timber.e(exception)
-                      null
+                  .ifEmpty {
+                    withContext(dispatcherProvider.io()) {
+                      fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
                     }
-
-                  if (measureReport?.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
-                    val population: MeasureReport.MeasureReportGroupPopulationComponent? =
-                      measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
-                    measureReportIndividualResult.value =
-                      MeasureReportIndividualResult(
-                        status = if (population != null && population.count > 0) "True" else "False"
-                      )
+                    evaluatePopulationMeasure(
+                      it.url,
+                      startDateFormatted,
+                      endDateFormatted,
+                      it.subjectXFhirQuery
+                    )
                   }
-                } else if (reportTypeSelectorUiState.value.patientViewData == null &&
-                    !individualEvaluation
-                ) {
-                  evaluatePopulationMeasure(
-                    config.url,
-                    startDateFormatted,
-                    endDateFormatted,
-                    config.title,
-                    config.module,
-                    config.subjectXFhirQuery
-                  )
-                }
-              } else {
-                result?.let { formatPopulationMeasureReports(it, config.title) }?.let {
-                  _measureReportPopulationResultList.addAll(it)
-                }
               }
-            }
+
+            _measureReportPopulationResultList.addAll(
+              formatPopulationMeasureReports(result, measureReportConfigList)
+            )
           }
           .onSuccess {
             measureReportPopulationResults.value = _measureReportPopulationResultList
@@ -366,14 +331,14 @@ constructor(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String,
-    indicatorTitle: String,
-    module: String,
     subjectXFhirQuery: String?
-  ) {
+  ): List<MeasureReport> {
+    val measureReport = mutableListOf<MeasureReport>()
     withContext(dispatcherProvider.io()) {
-      val measureReport: List<MeasureReport> =
-        if (subjectXFhirQuery?.isNotEmpty() == true) {
-          fhirEngine.search(subjectXFhirQuery).map {
+      if (subjectXFhirQuery?.isNotEmpty() == true) {
+        fhirEngine
+          .search(subjectXFhirQuery)
+          .map {
             // TODO a hack to prevent missing subject in case of Group based reports where
             // MeasureEvaluator looks for Group members and skips the Group itself
             if (it is Group && !it.hasMember()) {
@@ -382,17 +347,15 @@ constructor(
             }
             runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
           }
-        } else
-          listOfNotNull(
-            runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null)
-          )
+          .forEach { measureReport.add(it) }
+      } else
+        runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null).also {
+          measureReport.add(it)
+        }
 
       measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
-
-      _measureReportPopulationResultList.addAll(
-        formatPopulationMeasureReports(measureReport, indicatorTitle)
-      )
     }
+    return measureReport
   }
 
   fun runMeasureReport(
@@ -422,16 +385,21 @@ constructor(
 
   suspend fun formatPopulationMeasureReports(
     measureReports: List<MeasureReport>,
-    indicatorTitle: String = "",
+    indicators: List<MeasureReportConfig> = listOf(),
   ): List<MeasureReportPopulationResult> {
     val data = mutableListOf<MeasureReportPopulationResult>()
 
-    measureReports.forEach {
-      Timber.d(it.encodeResourceToString())
+    require(measureReports.distinctBy { it.type }.size <= 1) {
+      "All Measure Reports in module should have same type"
+    }
 
-      if (it.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+    measureReports
+      .takeIf { it.all { it.type == MeasureReport.MeasureReportType.INDIVIDUAL } }
+      ?.groupBy { it.subject.reference }
+      ?.forEach {
+        val reference = Reference().apply { reference = it.key }
         val subject =
-          fhirEngine.get(it.subject.extractType()!!, it.subject.extractId()).let {
+          fhirEngine.get(reference.extractType()!!, reference.extractId()).let {
             when (it) {
               is Patient -> it.nameFirstRep.nameAsSingleString
               is Group -> it.name
@@ -441,58 +409,67 @@ constructor(
                 )
             }
           }
-        val indicator = formatSupplementalData(it.contained, it.type)
         data.add(
           MeasureReportPopulationResult(
             title = subject,
             indicatorTitle = subject,
-            measureReportDenominator =
-              if (indicator.size == 1) indicator.first().measureReportDenominator
-              else MEASURE_REPORT_DENOMINATOR_MISSING,
+            measureReportDenominator = MEASURE_REPORT_DENOMINATOR_MISSING,
             dataList =
-              if (indicator.size == 1) emptyList()
-              else
-                indicator.map {
-                  MeasureReportIndividualResult(
-                    title = it.indicatorTitle,
-                    count = it.measureReportDenominator.toString()
-                  )
-                }
+              it.value.flatMap { report ->
+                val title = indicators.find { it.url == report.measure }?.title ?: ""
+                val formatted = formatSupplementalData(report.contained, report.type)
+                if (formatted.isEmpty())
+                  listOf(MeasureReportIndividualResult(title = title, count = "0"))
+                else
+                  formatted.map {
+                    MeasureReportIndividualResult(
+                      title = it.title,
+                      count = it.measureReportDenominator.toString()
+                    )
+                  }
+              }
           )
         )
-      } else data.addAll(formatSupplementalData(it.contained, it.type))
+      }
 
-      it
-        .group
-        .map { group ->
-          val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
-          group to
-            group
-              .stratifier
-              .flatMap { it.stratum }
-              .filter { it.hasValue() && it.value.hasText() }
-              .map { stratifier ->
-                stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
-                  MeasureReportIndividualResult(
-                    title = stratifier.value.text,
-                    percentage = stratifier.findPercentage(denominator!!).toString(),
-                    count = stratifier.findRatio(denominator),
-                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                  )
+    measureReports
+      .takeIf { it.all { it.type != MeasureReport.MeasureReportType.INDIVIDUAL } }
+      ?.forEach { report ->
+        Timber.d(report.encodeResourceToString())
+
+        data.addAll(formatSupplementalData(report.contained, report.type))
+
+        report
+          .group
+          .map { group ->
+            val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
+            group to
+              group
+                .stratifier
+                .flatMap { it.stratum }
+                .filter { it.hasValue() && it.value.hasText() }
+                .map { stratifier ->
+                  stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
+                    MeasureReportIndividualResult(
+                      title = stratifier.value.text,
+                      percentage = stratifier.findPercentage(denominator!!).toString(),
+                      count = stratifier.findRatio(denominator),
+                      description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                    )
+                  }
                 }
-              }
-        }
-        .mapNotNull {
-          it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
-            MeasureReportPopulationResult(
-              title = it.first.id.replace("-", " "),
-              indicatorTitle = indicatorTitle,
-              measureReportDenominator = count.count
-            )
           }
-        }
-        .forEach { data.add(it) }
-    }
+          .mapNotNull {
+            it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
+              MeasureReportPopulationResult(
+                title = it.first.id.replace("-", " "),
+                indicatorTitle = indicators.find { it.url == report.measure }?.title ?: "",
+                measureReportDenominator = count.count
+              )
+            }
+          }
+          .forEach { data.add(it) }
+      }
 
     return data
   }

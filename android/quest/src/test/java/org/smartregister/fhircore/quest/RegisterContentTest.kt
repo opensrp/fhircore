@@ -16,26 +16,66 @@
 
 package org.smartregister.fhircore.quest
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class RegisterContentTest : RobolectricTest() {
 
+  val context = ApplicationProvider.getApplicationContext<Context>()
+  val worker =
+    SimpleWorkerContext().apply {
+      this.setExpansionProfile(Parameters())
+      this.isCanRunWithoutTerminology = true
+    }
+  val transformSupportServices = TransformSupportServices(worker)
+
+  fun buildStructureMapExtractionContext(
+    structureMapString: String,
+    sourceGroup: String
+  ): StructureMapExtractionContext {
+    return StructureMapExtractionContext(
+      context = context,
+      transformSupportServices = transformSupportServices,
+      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+        StructureMapUtilities(worker, transformSupportServices)
+          .parse(structureMapString, sourceGroup)
+      }
+    )
+  }
+
   @Test
-  fun testG6pdTestResultsExtraction() {
+  fun testG6pdTestResultsExtraction() = runTest {
     val structureMap = "test-results-questionnaire/structure-map.txt".readFile()
     val response = "test-results-questionnaire/questionnaire-response.json".readFile()
+    val questionnaire = "test-results-questionnaire/questionnaire.json".readFile()
 
-    val scu = buildStructureMapUtils()
-    val targetResource = transform(scu, structureMap, response, "TestResults")
+    val targetResource =
+      ResourceMapper.extract(
+          questionnaire.decodeResourceFromString(),
+          response.decodeResourceFromString(),
+          buildStructureMapExtractionContext(structureMap, "TestResults")
+        )
+        .also { println(it.encodeResourceToString()) }
 
     Assert.assertEquals(4, targetResource.entry.size)
 
@@ -82,12 +122,18 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  fun testG6pdPatientRegistrationExtraction() {
+  fun testG6pdPatientRegistrationExtraction() = runTest {
     val structureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
     val response = "patient-registration-questionnaire/questionnaire-response.json".readFile()
+    val questionnaire = "patient-registration-questionnaire/questionnaire.json".readFile()
 
-    val scu = buildStructureMapUtils()
-    val targetResource = transform(scu, structureMap, response, "PatientRegistration")
+    val targetResource =
+      ResourceMapper.extract(
+          questionnaire.decodeResourceFromString(),
+          response.decodeResourceFromString(),
+          buildStructureMapExtractionContext(structureMap, "PatientRegistration")
+        )
+        .also { println(it.encodeResourceToString()) }
 
     Assert.assertEquals(2, targetResource.entry.size)
 

@@ -100,7 +100,7 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
   endDateFormatted: String,
   measureUrl: String,
   queryOperation: Operation = Operation.AND
-): List<MeasureReport>? {
+): List<MeasureReport> {
   return fhirEngine
     .search<MeasureReport> {
       filter(
@@ -117,5 +117,5 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
       filter(MeasureReport.MEASURE, { value = measureUrl })
       operation = queryOperation
     }
-    ?.filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+    .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
 }
