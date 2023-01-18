@@ -237,13 +237,6 @@
                     ]
                   },
                   {
-                    "name": "patientInactive",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientInactive', !data.get('patientActive'))"
-                    ]
-                  },
-                  {
                     "name": "patientTextColor",
                     "condition": "true",
                     "actions": [
@@ -408,7 +401,7 @@
                     "name": "removalReasonPatient",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReasonPatient', data.get('patientInactive') ? data.get('removalReason'): '')"
+                      "data.put('removalReasonPatient', !data.get('patientActive') ? data.get('removalReason'): '')"
                     ]
                   },
                   {
