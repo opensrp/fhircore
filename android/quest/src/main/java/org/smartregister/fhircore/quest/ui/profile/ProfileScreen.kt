@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -132,7 +133,13 @@ fun ProfileScreen(
                       navController = navController,
                       resourceData = profileUiState.resourceData,
                       overflowMenuItemConfig = it,
-                      managingEntity = profileUiState.profileConfiguration.managingEntity
+                      managingEntity =
+                        it.actions
+                          .find { actionConfig ->
+                            actionConfig.managingEntity != null &&
+                              actionConfig.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+                          }
+                          ?.managingEntity
                     )
                   )
                 },

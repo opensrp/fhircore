@@ -190,11 +190,11 @@ constructor(
 
       // Retrieve baseResource for LIST, then the related resources then fire rules
       val resourceDataList =
-        relatedResourcesMap[viewProperties.baseResource]?.map { resource ->
+        relatedResourcesMap[viewProperties.baseResource.name]?.map { resource ->
           val newRelatedResources =
             viewProperties.relatedResources.associate {
               Pair(
-                it.resourceType,
+                it.resourceType.name,
                 rulesFactory.rulesEngineService.retrieveRelatedResources(
                   resource = resource,
                   relatedResourceType = it.resourceType,
@@ -481,7 +481,13 @@ constructor(
             }
           baseRelatedResourceList.addAll(currentRelatedResources)
         }
-        relatedResourceData.add(RelatedResourceData(baseResource, baseRelatedResourceList))
+        relatedResourceData.add(
+          RelatedResourceData(
+            baseResource,
+            baseRelatedResourceList,
+            fhirResourceConfig.baseResource.id
+          )
+        )
       }
     }
 

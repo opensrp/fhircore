@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.result.ActivityResult
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
@@ -203,7 +204,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
-        -1,
+        AppCompatActivity.RESULT_OK,
         Intent().apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, QuestionnaireResponse())
           putExtra(

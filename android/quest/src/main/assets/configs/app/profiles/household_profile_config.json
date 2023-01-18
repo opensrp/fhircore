@@ -118,16 +118,6 @@
       }
     ]
   },
-  "managingEntity": {
-    "infoFhirPathExpression": "Patient.name.given",
-    "fhirPathResource": {
-      "resourceType": "Patient",
-      "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
-    },
-    "dialogTitle": "{{ assign.new.family.head }}",
-    "dialogWarningMessage": "{{ abort.operation.question }}",
-    "dialogContentMessage": "{{ select.new.family.head }}"
-  },
   "fabActions": [
     {
       "id": "ActionButton",
@@ -439,7 +429,8 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"                    ]
+                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"
+                    ]
                   },
                   {
                     "name": "statuses",
@@ -535,7 +526,17 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "CHANGE_MANAGING_ENTITY"
+          "workflow": "CHANGE_MANAGING_ENTITY",
+          "managingEntity": {
+            "nameFhirPathExpression": "Patient.name.given + ' ' + Patient.name.family | Patient.name.given",
+            "resourceType": "Patient",
+            "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
+            "dialogTitle": "{{ assign.household.head.title }}",
+            "dialogWarningMessage": "{{ assign.household.head.warning }}",
+            "dialogContentMessage": "{{ select.new.household.head }}",
+            "noMembersErrorMessage": "{{ no.members.error.message }}",
+            "managingEntityReassignedMessage": "Household head reassigned successfully"
+          }
         }
       ]
     },

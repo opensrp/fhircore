@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.task
 
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -99,17 +101,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     hiltRule.inject()
 
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
+    val workManager = mockk<WorkManager>()
 
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
         transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
-        defaultRepository = defaultRepository
+        defaultRepository = defaultRepository,
+        workManager = workManager
       )
 
     mockkStatic(DateTimeType::class)
     every { DateTimeType.now() } returns now
+    every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
   }
 
   @After
