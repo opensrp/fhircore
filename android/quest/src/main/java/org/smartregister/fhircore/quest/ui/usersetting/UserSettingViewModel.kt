@@ -28,7 +28,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -40,6 +42,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
+import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
 class UserSettingViewModel
@@ -63,7 +66,14 @@ constructor(
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
+  val appConfig: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
@@ -89,19 +99,16 @@ constructor(
         }
       }
       is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
-        showResetDatabaseConfirmationDialogFlag(event.isShow)
+        showDBResetConfirmationDialog.postValue(event.isShow)
       is UserSettingsEvent.ResetDatabaseFlag ->
         if (event.isReset) this.resetDatabase(dispatcherProvider.io())
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
+      is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
     }
   }
 
-  fun showResetDatabaseConfirmationDialogFlag(isClearDatabase: Boolean) {
-    showDBResetConfirmationDialog.postValue(isClearDatabase)
-  }
-
-  fun updateProgressBarState(isShown: Boolean, messageResourceId: Int) {
+  private fun updateProgressBarState(isShown: Boolean, messageResourceId: Int) {
     progressBarState.postValue(Pair(isShown, messageResourceId))
   }
 
@@ -115,4 +122,6 @@ constructor(
       }
     }
   }
+
+  fun enabledDeviceToDeviceSync(): Boolean = appConfig.deviceToDeviceSync != null
 }

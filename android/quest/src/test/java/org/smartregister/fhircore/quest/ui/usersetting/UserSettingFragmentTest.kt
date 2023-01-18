@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -60,6 +61,8 @@ class UserSettingFragmentTest : RobolectricTest() {
   var sharedPreferencesHelper: SharedPreferencesHelper
 
   private var configService: ConfigService
+
+  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -105,16 +108,16 @@ class UserSettingFragmentTest : RobolectricTest() {
 
   @Test
   fun assertGetUserSettingViewModelReturnsCorrectViewModelInstance() {
-    launchFragmentInHiltContainer<UserSettingFragment>(Bundle(), R.style.AppTheme) {
+    launchFragmentInHiltContainer<UserSettingFragment>(Bundle(), R.style.AppTheme, navController) {
       Assert.assertNotNull(this)
       Assert.assertNotNull((this as UserSettingFragment).userSettingViewModel)
-      Assert.assertEquals(UserTestingFragmentTest@ userSettingViewModel, userSettingViewModel)
+      Assert.assertEquals(userSettingViewModel, userSettingViewModel)
     }
   }
 
   @Test
   fun testOnCreateViewRendersUserSettingFragmentCorrectly() {
-    launchFragmentInHiltContainer<UserSettingFragment>(Bundle(), R.style.AppTheme) {
+    launchFragmentInHiltContainer<UserSettingFragment>(Bundle(), R.style.AppTheme, navController) {
       this.view!!.findViewWithTag<View>(USER_SETTING_ROW_LOGOUT)?.let {
         Assert.assertTrue(it.isVisible)
         Assert.assertTrue(it.isShown)

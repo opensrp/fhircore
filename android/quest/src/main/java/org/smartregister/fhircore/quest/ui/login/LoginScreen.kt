@@ -398,7 +398,11 @@ fun ForgotPasswordDialog(
 fun LoginScreenPreview() {
   LoginPage(
     applicationConfiguration =
-      ApplicationConfiguration(appId = "appId", configType = "application"),
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App"
+      ),
     username = "",
     onUsernameChanged = {},
     password = "",
@@ -415,7 +419,11 @@ fun LoginScreenPreview() {
 fun LoginScreenPreviewDarkMode() {
   LoginPage(
     applicationConfiguration =
-      ApplicationConfiguration(appId = "appId", configType = "application"),
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App"
+      ),
     username = "",
     onUsernameChanged = {},
     password = "",

@@ -11,6 +11,7 @@
     <string name="app_logo">Logo de l’application</string>
     <string name="powered_by">Alimenté par</string>
     <string name="app_version">Version de l\'application %1$d (%2$s)</string>
+    <string name="last_sync">Dernière synchronisation %1$s</string>
     <string name="login_text">Connexion</string>
     <string name="login_call_fail_error_message">Impossible de vérifier les informations d’identification à partir du serveur. Vérifiez votre connexion Internet</string>
     <string name="userinfo_call_fail_error_message">Impossible d’obtenir les informations de l\'utilisateur à partir du serveur. Vérifiez votre connexion Internet</string>
@@ -68,6 +69,7 @@
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
     <string name="visits"> Tâches</string>
+    <string name="transfer_data">Transférer des données</string>
     <string name="reports">Rapports</string>
     <string name="profile">Profil</string>
     <string name="settings">Paramètres</string>
