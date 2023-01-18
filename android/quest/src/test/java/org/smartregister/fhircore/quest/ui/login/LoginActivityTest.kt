@@ -20,7 +20,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -28,7 +28,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,17 +39,21 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowIntent
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.fhircore.quest.ui.pin.PinSetupActivity
+import org.smartregister.p2p.P2PLibrary
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -59,6 +65,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @BindValue val repository: DefaultRepository = mockk()
 
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
@@ -68,8 +76,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
-
-  private lateinit var loginService: LoginService
 
   @Before
   fun setUp() {
@@ -101,16 +107,16 @@ class LoginActivityTest : ActivityRobolectricTest() {
       true // to test this specific scenario
     every { loginViewModel.isPinEnabled() } returns false
     initLoginActivity()
-    loginViewModel.navigateToHome()
-    verify { loginService.navigateToHome() }
+    loginViewModel.updateNavigateHome()
+    verify { loginActivity.navigateToHome() }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
     initLoginActivity()
     coEvery { accountAuthenticator.hasActivePin() } returns true
-    loginViewModel.navigateToHome()
-    verify { loginService.navigateToPinLogin(false) }
+    loginViewModel.updateNavigateHome()
+    verify { loginActivity.navigateToPinLogin(false) }
   }
 
   @Test
@@ -123,17 +129,17 @@ class LoginActivityTest : ActivityRobolectricTest() {
     every { loginViewModel.isPinEnabled() } returns false
 
     initLoginActivity()
-    loginViewModel.navigateToHome()
+    loginViewModel.updateNavigateHome()
 
-    verify { loginService.navigateToHome() }
+    verify { loginActivity.navigateToHome() }
   }
 
   @Test
   fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
     initLoginActivity()
-    loginViewModel.navigateToHome()
+    loginViewModel.updateNavigateHome()
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
-    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    val actualIntent = shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
@@ -142,7 +148,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     coEvery { accountAuthenticator.hasActivePin() } returns true
     every { loginViewModel.isPinEnabled() } returns true
     initLoginActivity()
-    verify { loginService.navigateToPinLogin(false) }
+    verify { loginActivity.navigateToPinLogin(false) }
   }
 
   @Test
@@ -163,18 +169,43 @@ class LoginActivityTest : ActivityRobolectricTest() {
     return loginActivity
   }
 
-  class TestLoginService : LoginService {
-    override lateinit var loginActivity: AppCompatActivity
-
-    override fun navigateToHome() {}
-  }
-
   private fun initLoginActivity() {
     val controller = Robolectric.buildActivity(LoginActivity::class.java)
-    loginActivity = controller.create().resume().get()
+    loginActivity = spyk(controller.create().resume().get())
 
     loginActivity.configurationRegistry = configurationRegistry
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
-    loginService = loginActivity.loginService
+  }
+
+  @Test
+  fun testNavigateToPinLoginNavigateToPinLoginScreen() {
+    loginActivity.navigateToPinLogin()
+    val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
+    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
+    Assert.assertEquals(PinLoginActivity::class.java, shadowIntent.intentClass)
+  }
+
+  @Test
+  fun testNavigateToPinSetupNavigateToPinSetupScreen() {
+    loginActivity.navigateToPinLogin(launchSetup = true)
+    val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
+    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
+    Assert.assertEquals(PinSetupActivity::class.java, shadowIntent.intentClass)
+  }
+
+  @OptIn(ExperimentalMaterialApi::class)
+  @Test
+  fun testNavigateHomeShouldDirectToAppMainActivity() {
+    mockkObject(P2PLibrary)
+    every { P2PLibrary.init(any()) } returns mockk()
+
+    secureSharedPreference.saveCredentials(Faker.authCredentials)
+    loginActivity.navigateToHome()
+
+    val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
+    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
+    Assert.assertEquals(AppMainActivity::class.java, shadowIntent.intentClass)
+
+    unmockkObject(P2PLibrary)
   }
 }

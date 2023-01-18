@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.robolectric
+package org.smartregister.fhircore.quest
 
 import io.mockk.clearAllMocks
 import org.junit.AfterClass
 import org.junit.BeforeClass
-import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
+import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 
 abstract class BaseUnitTest {
 

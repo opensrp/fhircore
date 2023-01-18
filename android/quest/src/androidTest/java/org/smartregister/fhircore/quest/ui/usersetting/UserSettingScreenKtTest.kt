@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.quest.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,7 +30,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen
 
 class UserSettingScreenKtTest {
 
@@ -140,7 +139,7 @@ class UserSettingScreenKtTest {
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
-        org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen(
+        UserSettingScreen(
           username = "Johndoe",
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),

@@ -275,7 +275,7 @@ constructor(
   }
 
   @TestOnly
-  fun navigateToHome(navigateHome: Boolean = true) {
+  fun updateNavigateHome(navigateHome: Boolean = true) {
     _navigateToHome.postValue(navigateHome)
   }
 

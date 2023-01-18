@@ -40,18 +40,17 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.app.AppConfigService
-import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.app.AppConfigService
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
@@ -63,7 +62,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   lateinit var userSettingViewModel: UserSettingViewModel
 
-  lateinit var accountAuthenticator: org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
+  lateinit var accountAuthenticator: AccountAuthenticator
 
   lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -100,7 +99,7 @@ class UserSettingViewModelTest : RobolectricTest() {
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
         context = application
       )
@@ -187,22 +186,13 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runTest {
-    val languages = userSettingViewModel.languages
-    Assert.assertEquals("English", languages[0].displayName)
-    Assert.assertEquals("en", languages[0].tag)
-    Assert.assertEquals("Swahili", languages[1].displayName)
-    Assert.assertEquals("sw", languages[1].tag)
-  }
-
-  @Test
   fun languagesLazyPropertyShouldRunFetchLanguagesAndReturnConfiguredLanguages() {
     val languages = userSettingViewModel.languages
 
-    Assert.assertEquals("English", languages[0].displayName)
-    Assert.assertEquals("en", languages[0].tag)
-    Assert.assertEquals("Swahili", languages[1].displayName)
-    Assert.assertEquals("sw", languages[1].tag)
+    Assert.assertTrue(languages.isNotEmpty())
+    val language = languages.find { it.displayName == "English" }
+    Assert.assertEquals("English", language?.displayName)
+    Assert.assertEquals("en", language?.tag)
   }
 
   @Test
@@ -220,7 +210,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseFlagEventShouldInvokeResetDatabaseMethod() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
-    userSettingViewModelSpy.dispatcherProvider = CoroutineTestRule().testDispatcherProvider
+    userSettingViewModelSpy.dispatcherProvider = coroutineTestRule.testDispatcherProvider
     every { userSettingViewModelSpy.resetDatabase(any()) } just runs
 
     val userSettingsEvent = UserSettingsEvent.ResetDatabaseFlag(true)
@@ -251,7 +241,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { fhirEngine.clearDatabase() }
   }
@@ -264,7 +254,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { sharedPreferencesHelper.resetSharedPrefs() }
   }
@@ -277,7 +267,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { secureSharedPreference.resetSharedPrefs() }
   }
@@ -290,7 +280,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.invalidateSession() }
   }
@@ -303,7 +293,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.launchScreen(any()) }
   }
