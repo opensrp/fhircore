@@ -42,7 +42,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -55,8 +68,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.*
-import org.smartregister.fhircore.engine.util.*
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
@@ -301,6 +313,12 @@ constructor(
           questionnaireResponse.contained.add(bundleEntry.resource)
 
           if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
+
+          if ((bundleEntry.resource is CarePlan || bundleEntry.resource is Patient) &&
+              bundleEntry.resource.meta.tag.isNotEmpty()
+          ) {
+            carePlanAndPatientMetaExtraction(bundleEntry.resource)
+          }
         }
 
         if (questionnaire.experimental) {
@@ -332,6 +350,25 @@ constructor(
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
+    }
+  }
+
+  suspend fun carePlanAndPatientMetaExtraction(source: Resource) {
+    try {
+      /** Get a FHIR [Resource] in the local storage. */
+      var resource = fhirEngine.get(source.resourceType, source.id)
+      /** Increment [Resource.meta] versionId of [source]. */
+      val versionId = resource.meta.versionId.toInt().plus(1).toString()
+      /** Append passed [Resource.meta] to the [source]. */
+      resource.addTags(source.meta.tag)
+      /** Assign [Resource.meta] versionId of [source]. */
+      resource = resource.copy().apply { meta.versionId = versionId }
+      /** Delete a FHIR [source] in the local storage. */
+      fhirEngine.delete(resource.resourceType, resource.id)
+      /** Recreate a FHIR [source] in the local storage. */
+      fhirEngine.create(resource)
+    } catch (e: Exception) {
+      Timber.e(e)
     }
   }
 
@@ -443,7 +480,7 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
+      bundle.entry.forEach { defaultRepository.addOrUpdate(it.resource) }
     }
   }
 

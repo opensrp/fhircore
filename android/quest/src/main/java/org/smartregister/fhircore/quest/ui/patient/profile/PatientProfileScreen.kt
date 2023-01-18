@@ -173,7 +173,9 @@ fun PatientProfileScreen(
                   modifier = Modifier.weight(1f),
                   horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                  Text(text = stringResource(R.string.clinic_visit).uppercase(Locale.getDefault()))
+                  Text(
+                    text = stringResource(R.string.appointment_date).uppercase(Locale.getDefault())
+                  )
                   if (appointmentDate != null) Text(text = appointmentDate.asDdMmmYyyy())
                 }
               },
@@ -267,9 +269,10 @@ fun PatientProfileScreen(
           shape = RectangleShape,
           onClick = {
             patientProfileViewModel.onEvent(
-              PatientProfileEvent.LoadQuestionnaire(
-                PatientProfileViewModel.PATIENT_FINISH_VISIT,
-                context
+              PatientProfileEvent.OpenTaskForm(
+                context = context,
+                taskFormId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
+                taskId = PatientProfileViewModel.PATIENT_FINISH_VISIT
               )
             )
           },

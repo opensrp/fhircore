@@ -23,7 +23,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -51,7 +50,6 @@ class RegisterViewModel
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
-  val syncJob: SyncJob,
   val fhirResourceDataSource: FhirResourceDataSource,
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,

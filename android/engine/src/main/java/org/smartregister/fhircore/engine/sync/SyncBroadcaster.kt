@@ -18,12 +18,11 @@ package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ResourceSyncException
-import com.google.android.fhir.sync.Result.Error
-import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.SyncJob
-import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import com.google.android.fhir.sync.Sync
+import com.google.android.fhir.sync.SyncJobStatus
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -31,67 +30,44 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import timber.log.Timber
 
 /**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received
  * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered
  */
-class SyncBroadcaster(
+class SyncBroadcaster
+@Inject
+constructor(
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
-  val syncJob: SyncJob,
   val fhirEngine: FhirEngine,
-  val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
+  val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow(),
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
+  @ApplicationContext val appContext: Context
 ) {
   fun runSync(networkState: (Context) -> Boolean = { NetworkState(it).invoke() }) {
+    Timber.i("Running one-time sync...")
     CoroutineScope(dispatcherProvider.io()).launch {
-      networkState(sharedPreferencesHelper.context).apply {
-        if (this) onRunSync()
+      networkState(appContext).apply {
+        if (this) Sync.oneTimeSync<AppSyncWorker>(appContext).collect { sharedSyncStatus.emit(it) }
         else {
-          val message = sharedPreferencesHelper.context.getString(R.string.unable_to_sync)
+          val message = appContext.getString(R.string.unable_to_sync)
           val resourceSyncException =
             listOf(ResourceSyncException(ResourceType.Flag, java.lang.Exception(message)))
-          sharedSyncStatus.emit(State.Failed(Error(resourceSyncException)))
+          sharedSyncStatus.emit(SyncJobStatus.Failed(resourceSyncException))
         }
       }
     }
   }
 
-  private suspend fun onRunSync() {
-    try {
-      syncJob.run(
-        fhirEngine = fhirEngine,
-        downloadManager =
-          ResourceParamsBasedDownloadWorkManager(
-            syncParams =
-              configService
-                .loadRegistrySyncParams(
-                  configurationRegistry,
-                  sharedPreferencesHelper
-                    .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-                    ?.decodeJson<UserInfo>()
-                )
-                .toMap()
-          ),
-        subscribeTo = sharedSyncStatus,
-        resolver = AcceptLocalConflictResolver
-      )
-    } catch (exception: Exception) {
-      Timber.e("Error syncing data")
-      Timber.e(exception)
-    }
-  }
-
   fun registerSyncListener(onSyncListener: OnSyncListener, scope: CoroutineScope) {
     scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
+  }
+
+  companion object {
+    const val DEFAULT_SYNC_INTERVAL: Long = 15
   }
 }
