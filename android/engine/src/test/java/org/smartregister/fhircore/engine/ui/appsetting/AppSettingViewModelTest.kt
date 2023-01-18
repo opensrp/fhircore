@@ -95,7 +95,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   fun testOnApplicationIdChanged() {
     appSettingViewModel.onApplicationIdChanged("appId")
     Assert.assertNotNull(appSettingViewModel.appId.value)
-    Assert.assertEquals("appId", appSettingViewModel.appId.value)
+    assertEquals("appId", appSettingViewModel.appId.value)
   }
 
   @Test
@@ -106,7 +106,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
-    Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
+    assertEquals(true, appSettingViewModel.loadConfigs.value)
   }
 
   @Test
@@ -180,7 +180,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
-    Assert.assertEquals(
+    assertEquals(
       listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
       slot.captured
     )
@@ -271,7 +271,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { fhirResourceDataSource.loadData(any()) }
 
-    Assert.assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
+    assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }
 
   @Test
@@ -313,8 +313,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name
       )!!
 
-    Assert.assertEquals(2, result.size)
-    Assert.assertEquals(ResourceType.Task.name, result.first())
-    Assert.assertEquals(ResourceType.Patient.name, result.last())
+    assertEquals(2, result.size)
+    assertEquals(ResourceType.Task.name, result.first())
+    assertEquals(ResourceType.Patient.name, result.last())
   }
 }
