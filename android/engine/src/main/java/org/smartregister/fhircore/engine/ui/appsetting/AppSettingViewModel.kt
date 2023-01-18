@@ -146,7 +146,7 @@ constructor(
       showProgressBar.postValue(false)
     }
       .onFailure {
-        Timber.i("Failed to load configs: Error [${it.localizedMessage}]")
+        Timber.e("Failed to load configs: Error [${it.localizedMessage}]")
         showProgressBar.postValue(false)
         when (it) {
           is HttpException -> {
