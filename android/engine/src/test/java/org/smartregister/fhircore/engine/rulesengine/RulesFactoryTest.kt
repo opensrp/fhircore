@@ -109,7 +109,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
 
     val baseResource = populateTestPatient()
-    val relatedResourcesMap: Map<ResourceType, List<Resource>> = emptyMap()
+    val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
