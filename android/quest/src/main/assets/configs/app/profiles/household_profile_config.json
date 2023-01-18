@@ -232,6 +232,10 @@
                 {
                   "resourceType": "Task",
                   "fhirPathExpression": "Task.for.reference"
+                },
+                {
+                  "resourceType": "Observation",
+                  "fhirPathExpression": "Observation.subject.reference"
                 }
               ],
               "registerCard": {
@@ -429,14 +433,21 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"
+                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code', '11112222').get(0), 'Observation.value.text'))"
+                    ]
+                  },
+                  {
+                    "name": "removalReasonPatient",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('removalReasonPatient', !data.get('patientActive') ? data.get('removalReason'): '')"
                     ]
                   },
                   {
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReason')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
+                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
                     ]
                   }
                 ],
