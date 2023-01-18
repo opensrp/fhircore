@@ -1,0 +1,122 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "patientRegisterSecondary",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Immunization",
+        "searchParameter": "patient"
+      }
+    ]
+  },
+  "secondaryResources": [
+    {
+      "baseResource": {
+        "id": "commodities",
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "id": "commoditiesQueryByCode",
+            "filterType": "TOKEN",
+            "key": "code",
+            "valueType": "CODEABLECONCEPT",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "386452003"
+            }
+          }
+        ]
+      },
+      "relatedResources": [
+        {
+          "id": "latestObservations",
+          "resource": "Observation",
+          "searchParameter": "subject",
+          "dataQueries": [
+            {
+              "id": "filterLatestObservation",
+              "filterType": "TOKEN",
+              "key": "_tag",
+              "valueType": "CODING",
+              "valueCoding": {
+                "code": "latest"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "filter": {
+    "visible": true,
+    "display": "Show overdue",
+    "rules": [
+      {
+        "name": "filter",
+        "condition": "",
+        "actions": [
+          ""
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search name or ID",
+    "computedRules": [
+      "patientName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given') + ' ' + fhirPath.extractValue(Patient, 'Patient.name.family'))"
+        ]
+      },
+      {
+        "name": "patientGender",
+        "condition": "true",
+        "actions": [
+          "data.put('patientGender', fhirPath.extractValue(Patient, 'Patient.gender'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientGender}",
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceButton": {
+              "visible": true,
+              "text": "1",
+              "status": "OVERDUE",
+              "smallSized": false
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
