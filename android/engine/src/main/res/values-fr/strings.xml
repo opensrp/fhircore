@@ -112,7 +112,6 @@
     <string name="service_card">CARTE DE SERVICES</string>
     <string name="dob">DDN</string>
     <string name="invalid_form_id">ID de formulaire joint non valide</string>
-    <string name="error_loading_config">Erreur lors du chargement de la configuration. Descriptif : %$1s</string>
     <string name="date_last_visited">Dernière visite %1$s</string>
     <string name="clear_database">Réinitialiser</string>
     <string name="other_patients">Autres malades</string>
@@ -129,4 +128,7 @@
     <string name="year">An</string>
     <string name="weeks">Semaines</string>
     <string name="days">Journées</string>
+    <string name="error_loading_config_no_internet">Impossible de charger la configuration. S\'il vous plait, vérifiez votre connexion internet</string>
+    <string name="error_loading_config_general">Erreur de connexion au serveur. Veuillez contacter l\'administrateur système</string>
+    <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>
 </resources>
