@@ -12,6 +12,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
@@ -125,6 +126,7 @@
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
     <string name="please_wait">Please wait…</string>
     <string name="clear_database">Reset data</string>
+    <string name="transfer_data">Transfer Data</string>
     <string name="clear_database_title">Reset Database!</string>
     <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
     <string name="resetting_app">Resetting Application...</string>
