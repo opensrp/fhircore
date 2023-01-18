@@ -46,9 +46,11 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -186,7 +188,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test(expected = HttpException::class)
   fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
-    val appId = "12345"
+    val appId = "app_id"
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.loadData(anyString()) } throws
@@ -201,12 +203,17 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { fhirResourceDataSource.loadData(anyString()) }
     coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test(expected = UnknownHostException::class)
   fun testFetchConfigurationsThrowsUnknowHostException() = runTest {
-    val appId = "12345"
-    val context = mockk<Context>(relaxed = true)
+    val appId = "app_id"
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.loadData(anyString()) } throws
       UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
@@ -214,19 +221,30 @@ class AppSettingViewModelTest : RobolectricTest() {
     fhirResourceDataSource.loadData(anyString())
     coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_no_internet),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test(expected = Exception::class)
   fun testFetchConfigurationsThrowsException() = runTest {
-    val appId = "12345"
     val context = mockk<Context>(relaxed = true)
+    val appId = "app_id"
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.loadData(anyString()) } throws
       Exception(context.getString(R.string.error_loading_config_general))
+    coEvery { appSettingViewModel.fetchConfigurations(appId, context) } just runs
+    appSettingViewModel.fetchConfigurations(appId, any(Context::class.java))
     every { context.getString(R.string.error_loading_config_general) }
-    fhirResourceDataSource.loadData(anyString())
-    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
-    verify { context.showToast(context.getString(R.string.error_loading_config_general)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_no_internet),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test
