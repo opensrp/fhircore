@@ -21,26 +21,33 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material.ExperimentalMaterialApi
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
+import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
+import org.smartregister.fhircore.quest.ui.pin.PinSetupActivity
+import org.smartregister.p2p.P2PLibrary
 
 @AndroidEntryPoint
 class LoginActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var loginService: LoginService
-
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+  @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
+  @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    loginService.loginActivity = this
-
     navigateToScreen()
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
@@ -48,29 +55,58 @@ class LoginActivity : BaseMultiLanguageActivity() {
     this.applyWindowInsetListener()
   }
 
-  fun navigateToScreen() {
+  private fun navigateToScreen() {
     loginViewModel.apply {
+      val loginActivity = this@LoginActivity
       val isPinEnabled = isPinEnabled()
       // Run sync and navigate directly to home screen if session is active and pin is not enabled
       if (isPinEnabled && accountAuthenticator.hasActivePin()) {
-        loginService.navigateToPinLogin(false)
+        navigateToPinLogin(false)
       }
-
-      navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
+      navigateToHome.observe(loginActivity) { launchHomeScreen ->
         when {
-          launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
-            loginService.navigateToPinLogin(false)
-          }
-          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() -> {
-            loginService.navigateToPinLogin(true)
-          }
-          launchHomeScreen && !isPinEnabled -> {
-            loginService.navigateToHome()
-          }
+          launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() ->
+            navigateToPinLogin(false)
+          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() ->
+            navigateToPinLogin(true)
+          launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
         }
       }
-      launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      launchDialPad.observe(loginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
+  }
+
+  @OptIn(ExperimentalMaterialApi::class)
+  fun navigateToHome() {
+    this.run {
+      startActivity(
+        Intent(this, AppMainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+      )
+      // Initialize P2P after login only when username is provided then finish activity
+      val username = secureSharedPreference.retrieveSessionUsername()
+      if (!username.isNullOrEmpty()) {
+        P2PLibrary.init(
+          P2PLibrary.Options(
+            context = applicationContext,
+            dbPassphrase = username,
+            username = username,
+            senderTransferDao = p2pSenderTransferDao,
+            receiverTransferDao = p2pReceiverTransferDao
+          )
+        )
+      }
+      finish()
+    }
+  }
+
+  fun navigateToPinLogin(launchSetup: Boolean = false) {
+
+    startActivity(
+      if (launchSetup) Intent(this, PinSetupActivity::class.java)
+      else
+        Intent(this, PinLoginActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+    )
+    finish()
   }
 
   private fun launchDialPad(phone: String) {

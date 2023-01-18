@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.quest.ui.login
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.BaseUnitTest
+import org.smartregister.fhircore.quest.BaseUnitTest
 
 class AuthAndroidServiceTest : BaseUnitTest() {
 
-  private val authAndroidService: org.smartregister.fhircore.quest.ui.login.AuthAndroidService =
-    spyk(org.smartregister.fhircore.quest.ui.login.AuthAndroidService())
+  private val authAndroidService: AuthAndroidService = spyk(AuthAndroidService())
 
-  private val accountAuthenticator: org.smartregister.fhircore.quest.ui.login.AccountAuthenticator =
-    mockk(relaxed = true)
+  private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
   @Test
   fun testOnBindFunctionShouldCallAuthenticatorBinder() {

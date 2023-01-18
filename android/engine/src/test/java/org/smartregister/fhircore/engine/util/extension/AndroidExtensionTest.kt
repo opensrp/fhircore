@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
@@ -38,19 +39,18 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
-import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
 
   @Before
   fun setup() {
-    context = ApplicationProvider.getApplicationContext<Application>()
+    context = ApplicationProvider.getApplicationContext()
   }
 
   @Test
   fun `Activity#refresh() should call startActivity and finish()`() {
-    val activity = spyk(org.smartregister.fhircore.quest.ui.login.LoginActivity())
+    val activity = spyk(AppCompatActivity())
     val intentCapture = slot<Intent>()
 
     every { activity.packageName } returns "package-name"
