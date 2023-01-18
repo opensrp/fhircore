@@ -4,7 +4,6 @@
   "id": "householdProfile",
   "fhirResource": {
     "baseResource": {
-      "id": "households",
       "resource": "Group",
       "dataQueries": [
         {
@@ -29,44 +28,6 @@
         }
       ]
     },
-    "secondaryResources":[
-      {
-        "baseResource": {
-          "id": "commodities",
-          "resource": "Group",
-          "dataQueries": [
-            {
-              "id": "commoditiesQueryByCode",
-              "filterType": "TOKEN",
-              "key": "code",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://snomed.info/sct",
-                "code": "386452003"
-              }
-            }
-          ]
-        },
-        "relatedResources": [
-          {
-            "id": "latestObservations",
-            "resource": "Observation",
-            "searchParameter": "subject",
-            "dataQueries": [
-              {
-                "id": "filterLatestObservation",
-                "filterType": "TOKEN",
-                "key": "_tag",
-                "valueType": "CODING",
-                "valueCoding": {
-                  "code": "latest"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ],
     "relatedResources": [
       {
         "resource": "Patient",
@@ -140,8 +101,7 @@
               "memberResourceType": "Patient"
             },
             "planDefinitions": [
-              "9fac39bd-9750-4c1d-b355-1961de4e37f3",
-              "e994ab6f-30a5-4450-9a90-691c8199f379"
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
             ],
             "snackBarMessage": {
               "message": "Household member has been added",
