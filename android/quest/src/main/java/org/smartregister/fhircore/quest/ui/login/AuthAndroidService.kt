@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app.di.module
+package org.smartregister.fhircore.quest.ui.login
 
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
-import io.mockk.spyk
-import org.smartregister.fhircore.quest.ui.login.LoginActivityTest
-import org.smartregister.fhircore.quest.ui.login.LoginService
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-@InstallIn(ActivityComponent::class)
-@Module
-object LoginServiceModule {
+@AndroidEntryPoint
+class AuthAndroidService : Service() {
 
-  @Provides
-  fun bindLoginService(): org.smartregister.fhircore.quest.ui.login.LoginService =
-    spyk(org.smartregister.fhircore.quest.ui.login.LoginActivityTest.TestLoginService())
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  override fun onBind(intent: Intent?): IBinder {
+    return accountAuthenticator.iBinder
+  }
 }

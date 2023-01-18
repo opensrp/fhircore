@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app
+package org.smartregister.fhircore.quest.ui.login
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
-import javax.inject.Inject
-import org.smartregister.fhircore.quest.ui.login.LoginService
+import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
+import org.smartregister.fhircore.quest.ui.pin.PinSetupActivity
 
-class AppLoginService @Inject constructor() :
-  org.smartregister.fhircore.quest.ui.login.LoginService {
+interface LoginService {
 
-  override lateinit var loginActivity: AppCompatActivity
+  var loginActivity: AppCompatActivity
 
-  override fun navigateToHome() {
-    // Do nothing
+  fun navigateToHome()
+
+  fun navigateToPinLogin(launchSetup: Boolean = false) {
+    loginActivity.run {
+      startActivity(
+        if (launchSetup) Intent(loginActivity, PinSetupActivity::class.java)
+        else
+          Intent(loginActivity, PinLoginActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          }
+      )
+      finish()
+    }
   }
 }

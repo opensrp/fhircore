@@ -25,9 +25,11 @@ import org.smartregister.fhircore.engine.robolectric.BaseUnitTest
 
 class AuthAndroidServiceTest : BaseUnitTest() {
 
-  private val authAndroidService: AuthAndroidService = spyk(AuthAndroidService())
+  private val authAndroidService: org.smartregister.fhircore.quest.ui.login.AuthAndroidService =
+    spyk(org.smartregister.fhircore.quest.ui.login.AuthAndroidService())
 
-  private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
+  private val accountAuthenticator: org.smartregister.fhircore.quest.ui.login.AccountAuthenticator =
+    mockk(relaxed = true)
 
   @Test
   fun testOnBindFunctionShouldCallAuthenticatorBinder() {

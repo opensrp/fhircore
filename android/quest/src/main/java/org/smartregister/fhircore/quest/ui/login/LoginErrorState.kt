@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app.di.module
+package org.smartregister.fhircore.quest.ui.login
 
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
-import io.mockk.spyk
-import org.smartregister.fhircore.quest.ui.login.LoginActivityTest
-import org.smartregister.fhircore.quest.ui.login.LoginService
-
-@InstallIn(ActivityComponent::class)
-@Module
-object LoginServiceModule {
-
-  @Provides
-  fun bindLoginService(): org.smartregister.fhircore.quest.ui.login.LoginService =
-    spyk(org.smartregister.fhircore.quest.ui.login.LoginActivityTest.TestLoginService())
+enum class LoginErrorState {
+  UNKNOWN_HOST,
+  INVALID_CREDENTIALS,
+  MULTI_USER_LOGIN_ATTEMPT,
 }

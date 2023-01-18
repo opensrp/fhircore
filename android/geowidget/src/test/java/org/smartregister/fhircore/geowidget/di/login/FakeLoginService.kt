@@ -18,11 +18,14 @@ package org.smartregister.fhircore.geowidget.di.login
 
 import androidx.appcompat.app.AppCompatActivity
 import io.mockk.mockk
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.ui.login.LoginService
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 22-08-2022. */
 class FakeLoginService
-constructor(override var loginActivity: AppCompatActivity = mockk<LoginActivity>()) : LoginService {
+constructor(
+  override var loginActivity: AppCompatActivity =
+    mockk<org.smartregister.fhircore.quest.ui.login.LoginActivity>()
+) : org.smartregister.fhircore.quest.ui.login.LoginService {
   override fun navigateToHome() {}
 }

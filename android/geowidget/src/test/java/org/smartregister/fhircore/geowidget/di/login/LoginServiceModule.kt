@@ -20,14 +20,14 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
-import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.quest.ui.login.LoginService
 
 @InstallIn(ActivityComponent::class)
 @Module
 object LoginServiceModule {
 
   @Provides
-  fun bindLoginService(): LoginService {
+  fun bindLoginService(): org.smartregister.fhircore.quest.ui.login.LoginService {
     return FakeLoginService()
   }
 }
