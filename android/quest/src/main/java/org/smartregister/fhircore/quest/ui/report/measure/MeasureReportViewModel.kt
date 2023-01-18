@@ -409,25 +409,37 @@ constructor(
                 )
             }
           }
+
+        val indicators =
+          it.value.flatMap { report ->
+            val title = indicators.find { it.url == report.measure }?.title ?: ""
+            val formatted = formatSupplementalData(report.contained, report.type)
+            if (formatted.isEmpty())
+              listOf(MeasureReportIndividualResult(title = title, count = "0"))
+            else if (formatted.size == 1)
+              listOf(
+                MeasureReportIndividualResult(
+                  title = title,
+                  count = formatted.first().measureReportDenominator.toString()
+                )
+              )
+            else
+              formatted.map {
+                MeasureReportIndividualResult(
+                  title = it.title,
+                  count = it.measureReportDenominator.toString()
+                )
+              }
+          }
+
         data.add(
           MeasureReportPopulationResult(
             title = subject,
             indicatorTitle = subject,
-            measureReportDenominator = MEASURE_REPORT_DENOMINATOR_MISSING,
-            dataList =
-              it.value.flatMap { report ->
-                val title = indicators.find { it.url == report.measure }?.title ?: ""
-                val formatted = formatSupplementalData(report.contained, report.type)
-                if (formatted.isEmpty())
-                  listOf(MeasureReportIndividualResult(title = title, count = "0"))
-                else
-                  formatted.map {
-                    MeasureReportIndividualResult(
-                      title = it.title,
-                      count = it.measureReportDenominator.toString()
-                    )
-                  }
-              }
+            measureReportDenominator =
+              if (indicators.size == 1) indicators.first().count.toInt()
+              else MEASURE_REPORT_DENOMINATOR_MISSING,
+            dataList = if (indicators.size > 1) indicators else emptyList()
           )
         )
       }
