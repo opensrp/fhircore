@@ -49,7 +49,7 @@ data class FhirResourceConfig(
 @Serializable
 @Parcelize
 data class ResourceConfig(
-  val name: String? = null,
+  val id: String? = null,
   val resource: String,
   val searchParameter: String? = null,
   val fhirPathExpression: String? = null,
