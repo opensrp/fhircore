@@ -11,6 +11,7 @@
     <string name="app_logo">Logo de l’application</string>
     <string name="powered_by">Alimenté par</string>
     <string name="app_version">Version de l\'application %1$d (%2$s)</string>
+    <string name="last_sync">Dernière synchronisation %1$s</string>
     <string name="login_text">Connexion</string>
     <string name="username_input_hint">Saisir le nom d\'utilisateur</string>
     <string name="password_input_hint">Saisir le mot de passe</string>
@@ -70,6 +71,7 @@
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
     <string name="visits"> Tâches</string>
+    <string name="transfer_data">Transférer des données</string>
     <string name="reports">Rapports</string>
     <string name="profile">Profil</string>
     <string name="settings">Paramètres</string>

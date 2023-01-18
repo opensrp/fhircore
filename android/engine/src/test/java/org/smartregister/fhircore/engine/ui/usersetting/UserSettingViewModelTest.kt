@@ -119,7 +119,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.onEvent(UserSettingsEvent.SyncData(application))
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
   }
 
   @Test

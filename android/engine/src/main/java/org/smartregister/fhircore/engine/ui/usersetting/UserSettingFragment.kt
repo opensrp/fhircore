@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -47,13 +48,16 @@ class UserSettingFragment : Fragment() {
             username = userSettingViewModel.retrieveUsername(),
             allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+            allowP2PSync = userSettingViewModel.isP2PSyncAvailable(),
             languages = userSettingViewModel.languages,
             onEvent = userSettingViewModel::onEvent,
             showDatabaseResetConfirmation =
               userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
             progressBarState =
               userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
-            isDebugVariant = BuildConfig.DEBUG
+            isDebugVariant = BuildConfig.DEBUG,
+            mainNavController = findNavController(),
+            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp()
           )
         }
       }
