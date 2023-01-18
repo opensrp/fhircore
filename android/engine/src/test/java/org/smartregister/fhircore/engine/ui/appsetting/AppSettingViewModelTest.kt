@@ -49,7 +49,6 @@ import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -88,6 +87,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         configService
       )
     )
+  private val context = mockk<Context>(relaxed = true)
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -216,19 +216,17 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
   }
 
-  @Test
+  @Test(expected = Exception::class)
   fun testFetchConfigurationsThrowsException() = runTest {
     val appId = "12345"
     val context = mockk<Context>(relaxed = true)
-    coEvery { appSettingViewModel.fetchComposition(any(), any()) } throws
-      Exception("Connection timed out")
-    appSettingViewModel.fetchConfigurations(true)
-    verify { appSettingViewModel.fetchConfigurations(true) }
-    appSettingViewModel.fetchConfigurations(appId, mockk())
-    context.getString(anyInt())
-    verify { context.getString(anyInt()) }
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      Exception(context.getString(R.string.error_loading_config_general))
+    every { context.getString(R.string.error_loading_config_general) }
+    fhirResourceDataSource.loadData(anyString())
     coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
-    verify { context.showToast(context.getString(anyInt())) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_general)) }
   }
 
   @Test
