@@ -1889,18 +1889,55 @@
           "type": "string"
         },
         {
-          "text": "Get Task",
-          "type": "string",
-          "linkId": "1.1.0",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
               "valueExpression": {
-                "expression": "Task?code=http://snomed.info/sct|225368008&subject={{Patient.id}}",
-                "language": "application/x-fhir-query"
+                "language": "text/fhirpath",
+                "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'detectable-vl').select(identifier.value + ',' + executionPeriod.start.toString())"
               }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
             }
-          ]
+          ],
+          "linkId": "tracing-task-detectable-vl",
+          "type": "string"
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'hvl').select(identifier.value + ',' + executionPeriod.start.toString())"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "tracing-task-high-vl",
+          "type": "string"
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "CarePlan.activity.where(detail.code.coding.code = 'art-client-index-case-testing').select(detail.status + ',' + outcomeReference.reference).toString()"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "ict-status",
+          "type": "string"
         }
       ]
     }

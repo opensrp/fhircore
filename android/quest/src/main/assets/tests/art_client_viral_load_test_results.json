@@ -2,9 +2,9 @@
   "resourceType": "Questionnaire",
   "id": "art-client-viral-load-test-results",
   "meta": {
-    "versionId": "86",
-    "lastUpdated": "2022-11-14T16:16:02.160+03:00",
-    "source": "#a33M777dzu0RuHTv"
+    "versionId": "84",
+    "lastUpdated": "2022-10-31T23:49:52.558+03:00",
+    "source": "#6ZxyD3HCzBw4LL4S"
   },
   "language": "en",
   "extension": [
@@ -611,6 +611,7 @@
       "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
       "type": "string"
     },
+
     {
       "extension": [
         {
@@ -1091,34 +1092,6 @@
       ],
       "linkId": "has-phonenumber",
       "text": "Has Phone",
-      "type": "boolean"
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.select(\"[\" + resource.id + \"|\" + resource.status + \"]\" ).toString()"
-          }
-        }
-      ],
-      "linkId": "jdjjdd",
-      "text": "Tests",
-      "type": "string"
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Bundle.entry.where(id = \"tracing\").resource.entry.empty().not()"
-          }
-        }
-      ],
-      "linkId": "isOnTracing",
-      "text": "On Tracing",
       "type": "boolean"
     }
   ]
