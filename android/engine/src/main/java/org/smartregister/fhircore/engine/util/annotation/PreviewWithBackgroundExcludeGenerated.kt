@@ -20,4 +20,4 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-annotation class PreviewExcludeWithBackgroundFromJacocoGeneratedReport
+annotation class PreviewWithBackgroundExcludeGenerated
