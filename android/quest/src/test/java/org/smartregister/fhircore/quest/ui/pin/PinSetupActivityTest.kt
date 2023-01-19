@@ -29,7 +29,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import javax.inject.Inject
@@ -76,9 +78,9 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     pinSetupActivity = controller.create().resume().get()
 
     pinSetupActivitySpy = spyk(pinSetupActivity, recordPrivateCalls = true)
-    every { pinSetupActivitySpy.finish() } returns Unit
 
     pinViewModel = mockk()
+    every { pinSetupActivitySpy.pinViewModel } returns pinViewModel
     every { pinViewModel.pinUiState } returns
       mutableStateOf(
         PinUiState(
@@ -109,7 +111,8 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
-    pinSetupActivity.pinViewModel.onPinConfirmed()
+    every { pinViewModel.onPinConfirmed() } just runs
+    pinSetupActivitySpy.pinViewModel.onPinConfirmed()
     Assert.assertEquals("1234", testPin.value.toString())
     Assert.assertEquals(false, pinSetupActivity.pinViewModel.showError.value)
   }

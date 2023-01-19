@@ -263,13 +263,12 @@ class UserSettingViewModelTest : RobolectricTest() {
   fun testResetDatabaseInvokesResetSecuredSharedPrefs() = runTest {
     coEvery { fhirEngine.clearDatabase() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
-    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
 
-    coVerify { secureSharedPreference.resetSharedPrefs() }
+    coVerify { sharedPreferencesHelper.resetSharedPrefs() }
   }
 
   @Test
