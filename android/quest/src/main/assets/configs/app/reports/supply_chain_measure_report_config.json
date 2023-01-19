@@ -3,7 +3,7 @@
   "configType": "measureReport",
   "registerDate": "2020-10-27",
   "showFixedRangeSelection": true,
-  "id": "defaultMeasureReport",
+  "id": "supplyChainMeasureReport",
   "registerId": "patientRegister",
   "reports": [
     {

@@ -254,7 +254,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Household Reports",
+      "display": "Service Delivery Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -263,14 +263,14 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "householdMeasureReport"
+          "id": "serviceDeliveryMeasureReport"
         }
       ]
     },
     {
       "id": "otherReports",
       "visible": true,
-      "display": "Other Reports",
+      "display": "Supply Chain Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -279,7 +279,7 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "defaultMeasureReport"
+          "id": "supplyChainMeasureReport"
         }
       ]
     },

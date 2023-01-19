@@ -54,21 +54,21 @@
       "mode": "working",
       "section": [
         {
-          "title": "Household Measure Report",
+          "title": "Service Delivery Measure Report",
           "focus": {
             "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
             "identifier": {
-              "value": "householdMeasureReport"
+              "value": "serviceDeliveryMeasureReport"
             }
           },
           "mode": "working"
         },
         {
-          "title": "Default Measure Report",
+          "title": "Supply Chain Measure Report",
           "focus": {
             "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
             "identifier": {
-              "value": "defaultMeasureReport"
+              "value": "supplyChainMeasureReport"
             }
           },
           "mode": "working"

@@ -101,7 +101,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  private val reportId = "defaultMeasureReport"
+  private val reportId = "supplyChainMeasureReport"
 
   @Before
   fun setUp() {
@@ -331,7 +331,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetReportGenerationRange() {
-    val result = measureReportViewModel.getReportGenerationRange("defaultMeasureReport")
+    val result = measureReportViewModel.getReportGenerationRange("supplyChainMeasureReport")
     val currentMonth = Calendar.getInstance().time.formatDate(SDF_MMMM)
     val currentYear = Calendar.getInstance().time.formatDate(SDF_YYYY)
     assertEquals(currentYear, result.keys.first())
