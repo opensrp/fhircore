@@ -58,6 +58,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewExcludeGenerated
 
 const val PIN_VIEW = "pin_view"
 const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
@@ -215,50 +216,44 @@ fun PinCell(
   }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView() }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewValidatedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(inputPin = "1234") }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewDottedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true) }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewDottedValidatedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, inputPin = "1234") }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(showError = true) }
 }
 
-@Preview
+@PreviewExcludeGenerated
 @Composable
 @ExperimentalComposeUiApi
-@ExcludeFromJacocoGeneratedReport
 fun PinViewDottedErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, showError = true) }
 }

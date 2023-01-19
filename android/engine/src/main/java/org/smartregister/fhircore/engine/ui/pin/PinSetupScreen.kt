@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 @Composable
 fun PinSetupScreen(viewModel: PinViewModel) {
@@ -186,9 +187,8 @@ fun PinSetupPage(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun PinSetupPreview() {
   PinSetupPage(
     onPinChanged = {},
@@ -200,9 +200,8 @@ fun PinSetupPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun PinSetupFilledPreview() {
   PinSetupPage(
     onPinChanged = {},

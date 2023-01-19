@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 
@@ -47,9 +48,8 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun SearchHeaderPreview() {
   RegisterHeader(resultCount = 2)
 }

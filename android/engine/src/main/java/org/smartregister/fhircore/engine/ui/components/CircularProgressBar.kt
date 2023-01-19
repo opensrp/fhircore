@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val PROGRESS_MSG_TAG = "progressMsg"
 const val CIRCULAR_PROGRESS_BAR = "circularProgressBar"
@@ -50,9 +51,8 @@ fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun CircularProgressBarPreview() {
   CircularProgressBar()
 }

@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val REGISTER_BOTTOM_SHEET_LIST = "registerBottomSheetList"
 
@@ -124,9 +125,8 @@ fun RegisterListItem(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun RegisterListItemPreview() {
   RegisterListItem(
     navigationMenuConfig =
@@ -136,9 +136,8 @@ fun RegisterListItemPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun RegisterBottomSheetPreview() {
   RegisterBottomSheetView(
     navigationMenuConfigs =

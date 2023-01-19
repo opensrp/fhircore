@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 
 class SearchView
@@ -121,17 +122,15 @@ fun SearchHint(modifier: Modifier) {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 private fun SearchBarWithSearchStateTextPreview() {
   val searchTextState = remember { mutableStateOf(TextFieldValue(text = "Jack")) }
   SearchBar(onTextChanged = {}, onBackPress = {}, searchTextState = searchTextState)
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 private fun SearchBarWithEmptySearchTextStatePreview() {
   val searchTextState = remember { mutableStateOf(TextFieldValue(text = "")) }
   SearchBar(onTextChanged = {}, onBackPress = {}, searchTextState = searchTextState)

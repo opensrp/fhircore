@@ -81,6 +81,7 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
@@ -381,9 +382,8 @@ fun ForgotPasswordDialog(
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun LoginScreenPreview() {
   LoginPage(
     applicationConfiguration =
@@ -398,9 +398,8 @@ fun LoginScreenPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun LoginScreenPreviewDarkMode() {
   LoginPage(
     applicationConfiguration =

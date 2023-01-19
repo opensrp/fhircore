@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
-import org.smartregister.fhircore.engine.util.annotation.PreviewExcludeWithBackgroundFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
 
@@ -106,7 +106,7 @@ fun AppSettingScreen(
   }
 }
 
-@PreviewExcludeWithBackgroundFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun AppSettingScreenPreview() {
   AppSettingScreen(appId = "", onAppIdChanged = {}, onLoadConfigurations = {})

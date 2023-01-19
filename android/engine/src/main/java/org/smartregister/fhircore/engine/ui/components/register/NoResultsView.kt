@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 @Composable
 fun NoResults(modifier: Modifier = Modifier) {
@@ -53,9 +54,8 @@ fun NoResults(modifier: Modifier = Modifier) {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun NoResultsPreview() {
   NoResults(modifier = Modifier)
 }

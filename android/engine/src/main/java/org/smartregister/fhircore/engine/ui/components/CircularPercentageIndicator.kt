@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.ProgressBarBlueColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val CIRCULAR_PERCENTAGE_INDICATOR = "CIRCULAR_PERCENTAGE_INDICATOR"
 const val CIRCULAR_CANVAS_CIRCLE_TAG = "CIRCULAR_CANVAS_CIRCLE_TAG"
@@ -93,9 +94,8 @@ fun CircularPercentageIndicator(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun CircularPercentageIndicatorPreview() {
   CircularPercentageIndicator(percentage = "10")
 }

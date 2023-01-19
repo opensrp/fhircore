@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -138,9 +139,8 @@ fun TopScreenSection(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun TopScreenSectionPreview() {
   TopScreenSection(
     title = "All Clients",

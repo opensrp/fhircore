@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 
 const val MEASURE_ROW_TITLE_TEST_TAG = "measureRowTitleTestTag"
@@ -69,9 +70,8 @@ fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier =
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun MeasureReportRowPreview() {
   MeasureReportRow(title = "Module 1- ANC Contacts ", onRowClick = {})
 }

@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val PIN_TOOLBAR_MENU = "toolbarMenuTag"
 const val PIN_TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
@@ -252,9 +253,8 @@ fun ForgotPinDialog(
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
   PinLoginPage(
     onPinChanged = {},
@@ -265,9 +265,8 @@ fun PinLoginPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
   PinLoginPage(
     onPinChanged = {},

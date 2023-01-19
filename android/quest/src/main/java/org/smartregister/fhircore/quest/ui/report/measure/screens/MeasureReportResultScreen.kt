@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
@@ -141,10 +142,9 @@ fun MeasureReportResultPage(
     }
   }
 }
-//
-@Preview(showBackground = true)
+
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForIndividualPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
@@ -171,9 +171,8 @@ private fun MeasureReportResultScreenForIndividualPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForPopulationPreview() {
   val testResultItem1 =
     MeasureReportIndividualResult(title = "10 - 15 years", percentage = "10", count = "1/10")
