@@ -46,6 +46,7 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -972,8 +973,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG) }
   }
 
-  fun testPerformExtractionOnFailureShowsErrorToast() {
-
+  @Test
+  fun testPerformExtractionOnFailureShowsErrorToast() = runTest {
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
@@ -982,6 +983,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
+    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }

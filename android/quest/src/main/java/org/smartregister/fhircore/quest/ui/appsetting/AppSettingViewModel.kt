@@ -21,6 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
 import java.nio.charset.Charset
 import javax.inject.Inject
 import okio.ByteString.Companion.decodeBase64
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
+import retrofit2.HttpException
 import timber.log.Timber
 
 @HiltViewModel
@@ -144,9 +146,18 @@ constructor(
       showProgressBar.postValue(false)
     }
       .onFailure {
-        Timber.w(it)
+        Timber.e("Failed to load configs: Error [${it.localizedMessage}]")
         showProgressBar.postValue(false)
-        _error.postValue(it.localizedMessage)
+        when (it) {
+          is HttpException -> {
+            if ((400..503).contains(it.response()!!.code()))
+              _error.postValue(context.getString(R.string.error_loading_config_general))
+            else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+          }
+          is UnknownHostException ->
+            _error.postValue(context.getString(R.string.error_loading_config_no_internet))
+          else -> _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        }
       }
   }
 
