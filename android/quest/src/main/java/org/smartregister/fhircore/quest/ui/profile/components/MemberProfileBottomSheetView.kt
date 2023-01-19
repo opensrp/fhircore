@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -44,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -56,6 +53,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
@@ -70,7 +68,7 @@ fun MemberProfileBottomSheetView(
   navController: NavController,
   onViewProfile: () -> Unit
 ) {
-  Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+  Column {
 
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
@@ -130,7 +128,7 @@ fun MemberProfileBottomSheetView(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewPreview() {
   MemberProfileBottomSheetView(
@@ -144,7 +142,7 @@ private fun MemberProfileBottomSheetViewPreview() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewWithFormDataPreview() {
   MemberProfileBottomSheetView(

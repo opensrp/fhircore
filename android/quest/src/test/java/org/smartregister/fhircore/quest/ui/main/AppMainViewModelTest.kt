@@ -24,6 +24,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
+import com.google.android.fhir.sync.SyncJobStatus
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -36,6 +37,7 @@ import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -43,6 +45,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -142,15 +145,15 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
   }
 
-  /* @Test
+  @Test
   fun testOnEventSyncData() {
     val appMainEvent = AppMainEvent.SyncData
     appMainViewModel.onEvent(appMainEvent)
 
-    verify { appMainViewModel.retrieveAppMainUiState() }
-  }*/
+    verify { syncBroadcaster.runSync(any()) }
+  }
 
-  /* @Test
+  @Test
   fun testOnEventUpdateSyncStates() {
     val stateInProgress = mockk<SyncJobStatus.InProgress>()
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateInProgress, "Some timestamp"))
@@ -158,10 +161,9 @@ class AppMainViewModelTest : RobolectricTest() {
 
     // Simulate sync state Finished
     val timestamp = OffsetDateTime.now()
-    val success = spyk(Result.success())
-    every { success.timestamp } returns timestamp
+
     val stateFinished = mockk<SyncJobStatus.Finished>()
-    every { stateFinished.result } returns success
+    every { stateFinished.timestamp } returns timestamp
 
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
     Assert.assertEquals(
@@ -169,7 +171,7 @@ class AppMainViewModelTest : RobolectricTest() {
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
     )
     verify { appMainViewModel.retrieveAppMainUiState() }
-  }*/
+  }
 
   @Test
   fun testOnEventOpenProfile() {
@@ -244,19 +246,35 @@ class AppMainViewModelTest : RobolectricTest() {
     val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     // verify { syncBroadcaster.runSync() }
+    verify { appMainViewModel.retrieveAppMainUiState() }
   }
 
   @Test
   fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
     coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
 
     coVerify { accountAuthenticator.refreshSessionAuthToken() }
     verify { accountAuthenticator.logout() }
+  }
+
+  @Test
+  fun onRefreshAuthTokenShowsErrorMessageIfNetworkErrorEncountered() {
+    val errorMessage = "Check connectivity"
+    val bundle =
+      bundleOf(
+        Pair(AccountManager.KEY_ERROR_CODE, AccountManager.ERROR_CODE_NETWORK_ERROR),
+        Pair(AccountManager.KEY_ERROR_MESSAGE, errorMessage)
+      )
+    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
+
+    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains(errorMessage, ignoreCase = true))
   }
 }

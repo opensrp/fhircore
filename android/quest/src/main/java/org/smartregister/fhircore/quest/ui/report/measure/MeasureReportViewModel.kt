@@ -331,6 +331,7 @@ constructor(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String,
+<<<<<<< HEAD
     subjectXFhirQuery: String?
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
@@ -351,6 +352,59 @@ constructor(
       } else
         runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null).also {
           measureReport.add(it)
+=======
+    indicatorTitle: String
+  ) {
+    val measureReport: MeasureReport? =
+      withContext(dispatcherProvider.io()) {
+        try {
+          if (measureUrl.contains("Stock")) {
+            fhirEngine
+              .search<Group> {
+                filter(
+                  Group.TYPE,
+                  {
+                    value =
+                      of(
+                        Coding(
+                          GroupType.MEDICATION.system,
+                          GroupType.MEDICATION.toCode(),
+                          GroupType.MEDICATION.display
+                        )
+                      )
+                  }
+                )
+              }
+              .map {
+                fhirOperator.evaluateMeasure(
+                  measureUrl = measureUrl,
+                  start = startDateFormatted,
+                  end = endDateFormatted,
+                  reportType = POPULATION,
+                  subject = it.id,
+                  practitioner = null
+                  /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+                  practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+                  lastReceivedOn = null // Non-null value not supported yet
+                )
+              }
+              .first()
+          } else
+            fhirOperator.evaluateMeasure(
+              measureUrl = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = POPULATION,
+              subject = null,
+              practitioner = null
+              /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+              practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+              lastReceivedOn = null // Non-null value not supported yet
+            )
+        } catch (exception: IllegalArgumentException) {
+          Timber.e(exception)
+          null
+>>>>>>> e59238c3078c16119e9e6e495f9e22414c0b5576
         }
 
       measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
