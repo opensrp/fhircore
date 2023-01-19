@@ -84,7 +84,6 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatient
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -262,9 +261,6 @@ constructor(
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
     if (measureReportConfigList.isNotEmpty()) {
-
-      val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
-
       // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
         reportTypeSelectorUiState
@@ -412,15 +408,15 @@ constructor(
 
         val indicators =
           it.value.flatMap { report ->
-            val title = indicators.find { it.url == report.measure }?.title ?: ""
             val formatted = formatSupplementalData(report.contained, report.type)
+            val title = indicators.find { it.url == report.measure }?.title ?: ""
             if (formatted.isEmpty())
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             else if (formatted.size == 1)
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator.toString()
+                  count = formatted.first().measureReportDenominator?.toString() ?: "0"
                 )
               )
             else
@@ -437,8 +433,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (indicators.size == 1) indicators.first().count.toInt()
-              else MEASURE_REPORT_DENOMINATOR_MISSING,
+              if (indicators.size == 1) indicators.first().count.toInt() else null,
             dataList = if (indicators.size > 1) indicators else emptyList()
           )
         )
