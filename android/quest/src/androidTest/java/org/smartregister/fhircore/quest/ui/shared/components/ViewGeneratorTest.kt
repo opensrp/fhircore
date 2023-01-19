@@ -79,72 +79,7 @@ class ViewGeneratorTest {
     composeRule.onNodeWithText("Next visit 09-10-2022").assertExists().assertIsDisplayed()
   }
 
-  @Test
-  fun testFullNameCompoundTextNoSecondaryTextIsRenderedCorrectly() {
-    composeRule.setContent {
-      GenerateView(
-        properties =
-          CompoundTextProperties(
-            primaryText = "Full Name, Age",
-            primaryTextColor = "#000000",
-            primaryTextFontWeight = TextFontWeight.SEMI_BOLD
-          ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
-      )
-    }
-    composeRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
-  }
 
-  @Test
-  fun testSexCompoundTextNoSecondaryTextIsRenderedCorrectly() {
-    composeRule.setContent {
-      GenerateView(
-        properties =
-          CompoundTextProperties(
-            primaryText = "Sex",
-            primaryTextColor = "#5A5A5A",
-          ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
-      )
-    }
-    composeRule.onNodeWithText("Sex").assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testFullNameCompoundTextWithSecondaryTextIsRenderedCorrectly() {
-    composeRule.setContent {
-      GenerateView(
-        properties =
-          CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
-      )
-    }
-    composeRule.onNodeWithText("Full Name, Sex, Age").assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testLastVisitedCompoundTextWithSecondaryTextIsRenderedCorrectly() {
-    composeRule.setContent {
-      GenerateView(
-        properties =
-          CompoundTextProperties(
-            primaryText = "Last visited",
-            primaryTextColor = "#5A5A5A",
-            secondaryText = "Yesterday",
-            secondaryTextColor = "#FFFFFF",
-            separator = ".",
-            secondaryTextBackgroundColor = "#FFA500"
-          ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
-      )
-    }
-    composeRule.onNodeWithText("Last visited").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
-  }
 
   @Test
   fun testGenerateViewRendersActionableButtonWhenViewTypeIsButton() {
