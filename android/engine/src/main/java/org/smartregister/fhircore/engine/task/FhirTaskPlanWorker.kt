@@ -31,7 +31,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.hasStarted
+import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
@@ -75,7 +75,7 @@ constructor(
                 fhirEngine.update(carePlan)
               }
             }
-        } else if (task.hasStarted() && task.status == Task.TaskStatus.REQUESTED) {
+        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           task.status = Task.TaskStatus.READY
           fhirEngine.update(task)
         }
@@ -89,6 +89,6 @@ constructor(
     this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
 
   companion object {
-    const val WORK_ID = "fhirTaskPlanWorker"
+    const val WORK_ID = "FhirTaskPlanWorker"
   }
 }

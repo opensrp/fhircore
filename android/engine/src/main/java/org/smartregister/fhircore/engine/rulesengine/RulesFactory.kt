@@ -26,8 +26,8 @@ import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -69,7 +69,8 @@ constructor(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "Math" to Class.forName("java.lang.Math")
         )
       )
       .silent(false)
@@ -180,14 +181,14 @@ constructor(
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
-      relatedResourceType: String,
+      relatedResourceType: ResourceType,
       fhirPathExpression: String,
       relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        relatedResourcesMap?.get(relatedResourceType)
-          ?: if (facts.getFact(relatedResourceType) != null)
-            facts.getFact(relatedResourceType).value as List<Resource>
+        relatedResourcesMap?.get(relatedResourceType.name)
+          ?: if (facts.getFact(relatedResourceType.name) != null)
+            facts.getFact(relatedResourceType.name).value as List<Resource>
           else emptyList()
 
       return value.filter {
@@ -302,9 +303,7 @@ constructor(
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
      * months, 3 years etc)
      */
-    fun prettifyDate(inputDate: Date): String {
-      return inputDate.prettifyDate()
-    }
+    fun prettifyDate(inputDate: Date): String = inputDate.prettifyDate()
 
     /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
@@ -312,7 +311,7 @@ constructor(
      * 2022-02 or 2022
      */
     fun prettifyDate(inputDateString: String): String {
-      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
+      return PrettyTime().format(DateTime(inputDateString).toDate())
     }
 
     /**
@@ -325,18 +324,15 @@ constructor(
       inputDate: String,
       inputDateFormat: String,
       expectedFormat: String = "E, MMM dd yyyy"
-    ): String? {
-      return inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
-    }
+    ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
      * This function is responsible for formatting a date for whatever expectedFormat we need. It
      * takes an input a [date] as input and then it gives output in expected Format,
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
-    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
-      return date.formatDate(expectedFormat)
-    }
+    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String =
+      date.formatDate(expectedFormat)
 
     /**
      * This function generates a random 6-digit integer between a hard-coded range. It may generate
@@ -344,18 +340,21 @@ constructor(
      *
      * @return An Integer.
      */
-    fun generateRandomSixDigitInt(): Int {
-      return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
-    }
+    fun generateRandomSixDigitInt(): Int =
+      (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
-    fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
-      list.filter { getValue(it, attribute) == attributeValue }
-
-    private fun getValue(resource: Resource, attribute: String): Any? {
-      val property = (resource.javaClass).getDeclaredField(attribute)
-      property.isAccessible = true
-      return (property.get(resource) as? PrimitiveType<*>)?.value
-    }
+    /**
+     * This function filters resource if the [value] provided matches the result of the extracted
+     * [fhirPathExpression]
+     */
+    fun filterResources(
+      resources: List<Resource>,
+      fhirPathExpression: String,
+      value: String
+    ): List<Resource> =
+      resources.filter {
+        value.equals(fhirPathDataExtractor.extractValue(it, fhirPathExpression), ignoreCase = true)
+      }
   }
 
   companion object {

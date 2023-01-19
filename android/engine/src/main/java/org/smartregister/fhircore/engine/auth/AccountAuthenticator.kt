@@ -31,6 +31,7 @@ import android.os.Looper
 import androidx.core.os.bundleOf
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -181,12 +182,7 @@ constructor(
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken
-    return try {
-      oAuthService.fetchToken(data).execute().body()
-    } catch (exception: Exception) {
-      Timber.e("Failed to refresh token, refresh token may have expired", exception)
-      return null
-    }
+    return oAuthService.fetchToken(data).execute().body()
   }
 
   fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
@@ -306,13 +302,13 @@ constructor(
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if (response.isSuccessful) {
               onLogout()
-              localLogout()
-              launchScreen(LoginActivity::class.java)
+              invalidateSession()
             } else {
               onLogout()
               Timber.w(response.body()?.string())
               context.showToast(context.getString(R.string.cannot_logout_user))
             }
+            launchScreen(LoginActivity::class.java)
           }
 
           override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
@@ -321,6 +317,7 @@ constructor(
             context.showToast(
               context.getString(R.string.error_logging_out, throwable.localizedMessage)
             )
+            launchScreen(LoginActivity::class.java)
           }
         }
       )
@@ -346,9 +343,19 @@ constructor(
               }
             }
               .onFailure {
-                Timber.e("Refresh token expired before it was used", it.stackTraceToString())
+                bundle.putInt(
+                  AccountManager.KEY_ERROR_CODE,
+                  AccountManager.ERROR_CODE_NETWORK_ERROR
+                )
+                if (it is UnknownHostException) {
+                  bundle.putString(
+                    AccountManager.KEY_ERROR_MESSAGE,
+                    context.getString(R.string.refresh_token_fail_error_message)
+                  )
+                }
+                Timber.e("Failed to get the refresh token", it.stackTraceToString())
               }
-              .onSuccess { Timber.i("Got new accessToken") }
+              .onSuccess { Timber.i("Received new access token") }
           }
         }
       }
@@ -366,7 +373,7 @@ constructor(
     return bundle
   }
 
-  fun localLogout() {
+  fun invalidateSession() {
     accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
     secureSharedPreference.deleteSessionTokens()
   }

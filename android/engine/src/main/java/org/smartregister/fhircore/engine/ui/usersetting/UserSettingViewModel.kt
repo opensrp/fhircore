@@ -29,7 +29,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -40,6 +42,9 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.p2p.utils.startP2PScreen
+
+const val NAVIGATION_KEY_P2P = "p2p_sync"
 
 @HiltViewModel
 class UserSettingViewModel
@@ -65,7 +70,14 @@ constructor(
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
+  val appConfig: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
@@ -96,6 +108,7 @@ constructor(
         if (event.isReset) this.resetDatabase(dispatcherProvider.io())
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
+      is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
     }
   }
 
@@ -112,8 +125,12 @@ constructor(
       fhirEngine.clearDatabase()
       sharedPreferencesHelper.resetSharedPrefs()
       secureSharedPreference.resetSharedPrefs()
-      accountAuthenticator.localLogout()
+      accountAuthenticator.invalidateSession()
       accountAuthenticator.launchScreen(AppSettingActivity::class.java)
     }
+  }
+
+  fun isP2PSyncAvailable(): Boolean {
+    return appConfig.deviceToDeviceSync != null
   }
 }

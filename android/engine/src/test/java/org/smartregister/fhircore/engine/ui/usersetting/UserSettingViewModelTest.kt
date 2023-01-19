@@ -119,7 +119,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.onEvent(UserSettingsEvent.SyncData(application))
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
   }
 
   @Test
@@ -247,10 +247,10 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseInvokesClearDatabase() = runTest {
     coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
@@ -260,10 +260,10 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseInvokesResetSharedPrefs() = runTest {
     coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
@@ -273,10 +273,10 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseInvokesResetSecuredSharedPrefs() = runTest {
     coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
@@ -286,14 +286,14 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseInvokesAccountAuthenticatorLocalLogout() = runTest {
     coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 
-    coVerify { accountAuthenticator.localLogout() }
+    coVerify { accountAuthenticator.invalidateSession() }
   }
 
   @Test
@@ -302,7 +302,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { accountAuthenticator.launchScreen(any()) } just runs
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { accountAuthenticator.invalidateSession() } just runs
 
     userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
 

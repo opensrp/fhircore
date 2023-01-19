@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -40,8 +41,75 @@ class TaskExtensionTest {
     Assert.assertTrue(task.hasStarted())
 
     val anotherTask =
-      Task().apply { executionPeriod.end = Date(LocalDate.now().plusDays(8).toEpochDay()) }
+      Task().apply {
+        executionPeriod.end =
+          Date.from(LocalDate.now().plusDays(8).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
     Assert.assertFalse(anotherTask.hasStarted())
+  }
+
+  @Test
+  fun `task is ready if date today is between start and end dates`() {
+    val task1 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    task1.apply {
+      executionPeriod.end =
+        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+    }
+    Assert.assertTrue(task1.isReady())
+
+    val task2 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    Assert.assertTrue(task2.isReady())
+
+    val task3 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    Assert.assertFalse(task3.isReady())
+  }
+
+  @Test
+  fun `executionStartIsBeforeOrToday returns true if date is before or today`() {
+    val task1 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+
+    Assert.assertTrue(task1.executionStartIsBeforeOrToday())
+
+    task1.apply {
+      executionPeriod.start =
+        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+    }
+
+    Assert.assertFalse(task1.executionStartIsBeforeOrToday())
+  }
+
+  @Test
+  fun `executionEndIsAfterOrToday returns true if date is after or today`() {
+    val task1 =
+      Task().apply {
+        executionPeriod.end =
+          Date.from(LocalDate.now().plusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+
+    Assert.assertTrue(task1.executionEndIsAfterOrToday())
+
+    task1.apply {
+      executionPeriod.end =
+        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+    }
+
+    Assert.assertFalse(task1.executionEndIsAfterOrToday())
   }
 
   @Test

@@ -18,9 +18,12 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManager.ERROR_CODE_NETWORK_ERROR
 import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
+import android.accounts.AccountManager.KEY_ERROR_CODE
+import android.accounts.AccountManager.KEY_ERROR_MESSAGE
 import android.accounts.AccountManager.KEY_INTENT
 import android.accounts.AccountManagerCallback
 import android.content.Intent
@@ -44,6 +47,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -355,17 +359,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testRefreshTokenShouldReturnNull() {
-    val callMock = mockk<Call<OAuthResponse>>()
-    every { callMock.execute() } returns
-      mockk { every { body() } throws java.lang.RuntimeException() }
-
-    every { oAuthService.fetchToken(any()) } returns callMock
-    val token = accountAuthenticator.refreshToken(Faker.authCredentials.refreshToken!!)
-    Assert.assertNull(token)
-  }
-
-  @Test
   fun testGetPractitionerDetailsFromAssets() {
     val details = accountAuthenticator.getPractitionerDetailsFromAssets()
     Assert.assertNotNull(details)
@@ -434,18 +427,18 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onResponse(mockk(), mockk { every { isSuccessful } returns true })
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 1) { accountAuthenticatorSpy.localLogout() }
+    verify(exactly = 1) { accountAuthenticatorSpy.invalidateSession() }
     verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
-  fun testLogoutShouldNotSuccessfullyLogout() {
+  fun userIsLoggedOutOfAppWhenKeycloakLogoutFails() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -459,7 +452,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onResponse(
@@ -471,12 +464,12 @@ class AccountAuthenticatorTest : RobolectricTest() {
     )
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
-  fun testLogoutShouldFailureLogout() {
+  fun testLogoutFailureLogoutsUser() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
@@ -490,14 +483,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { onLogout.invoke() } returns Unit
 
     val accountAuthenticatorSpy = spyk(accountAuthenticator)
-    every { accountAuthenticatorSpy.localLogout() } returns Unit
+    every { accountAuthenticatorSpy.invalidateSession() } returns Unit
     accountAuthenticatorSpy.logout(onLogout)
 
     callbackSlot.captured.onFailure(mockk(), RuntimeException())
 
     verify(exactly = 1) { onLogout.invoke() }
-    verify(exactly = 0) { accountAuthenticatorSpy.localLogout() }
-    verify(exactly = 0) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
+    verify(exactly = 0) { accountAuthenticatorSpy.invalidateSession() }
+    verify(exactly = 1) { accountAuthenticatorSpy.launchScreen(any<Class<LoginActivity>>()) }
   }
 
   @Test
@@ -585,7 +578,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
     every { tokenManagerService.getLocalSessionToken() } returns "my-token"
 
-    accountAuthenticator.localLogout()
+    accountAuthenticator.invalidateSession()
 
     verify { tokenManagerService.getLocalSessionToken() }
     verify { accountManager.invalidateAuthToken(any(), any()) }
@@ -597,14 +590,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
     every { tokenManagerService.getLocalSessionToken() } returns "my-token"
 
-    accountAuthenticator.localLogout()
+    accountAuthenticator.invalidateSession()
 
     verify { tokenManagerService.getLocalSessionToken() }
     verify { secureSharedPreference.deleteSessionTokens() }
   }
 
   @Test
-  fun refreshExpiredAuthTokenReturnsBundleWithNewToken() {
+  fun `refresh expired auth token returns Bundle with new token`() {
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false andThen true
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -632,7 +625,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun refreshAuthTokenReturnsBundleWithoutTokenIfNotActive() {
+  fun `refresh auth token returns Bundle without token if not active`() {
     every { tokenManagerService.getActiveAccount() } returns mockk()
     every { tokenManagerService.isTokenActive(any()) } returns false
     every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
@@ -652,5 +645,23 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     Assert.assertNotNull(bundle)
     Assert.assertFalse(bundle.containsKey(KEY_AUTHTOKEN))
+  }
+
+  @Test
+  fun `refresh auth token returns bundle with network error if no connectivity`() {
+    every { tokenManagerService.getActiveAccount() } returns mockk()
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      mockk()
+    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
+    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.refreshToken(any()) } throws UnknownHostException("localhost")
+
+    val bundle = runBlocking { accountAuthenticator.refreshSessionAuthToken() }
+
+    Assert.assertNotNull(bundle)
+    Assert.assertFalse(bundle.containsKey(KEY_AUTHTOKEN))
+    Assert.assertTrue(bundle.containsKey(KEY_ERROR_MESSAGE))
+    Assert.assertEquals(bundle.getInt(KEY_ERROR_CODE), ERROR_CODE_NETWORK_ERROR)
   }
 }
