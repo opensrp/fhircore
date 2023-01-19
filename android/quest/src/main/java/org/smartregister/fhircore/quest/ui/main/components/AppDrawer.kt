@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -66,7 +65,7 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
@@ -392,8 +391,7 @@ private fun SideMenuItemText(title: String, textColor: Color) {
   )
 }
 
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 fun AppDrawerPreview() {
   AppDrawer(

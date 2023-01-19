@@ -22,9 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val VERTICAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
 const val HORIZONTAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
@@ -45,13 +45,13 @@ fun SpacerView(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun VerticalSpacerPreview() {
   SpacerView(spacerProperties = SpacerProperties(height = 16f, width = null))
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun HorizontalSpacerPreview() {
   SpacerView(spacerProperties = SpacerProperties(height = null, width = 16f))
