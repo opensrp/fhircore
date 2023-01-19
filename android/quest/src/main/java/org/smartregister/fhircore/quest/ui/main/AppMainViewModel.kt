@@ -27,8 +27,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -80,6 +79,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
 class AppMainViewModel
@@ -160,11 +160,20 @@ constructor(
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
+            bundle.getString(AccountManager.KEY_ERROR_MESSAGE)?.let { event.context.showToast(it) }
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
               // syncBroadcaster.runSync()
+              retrieveAppMainUiState()
               return@let
             }
-            accountAuthenticator.logout()
+            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE) &&
+                bundle.getInt(AccountManager.KEY_ERROR_CODE) ==
+                  AccountManager.ERROR_CODE_NETWORK_ERROR
+            ) {
+              return@let
+            } else {
+              accountAuthenticator.logout()
+            }
           }
         }
       }
@@ -310,25 +319,19 @@ constructor(
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
-    workManager.enqueueUniquePeriodicWork(
-      FhirTaskPlanWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(
-          Duration.tryParse(applicationConfiguration.taskUpdateInterval)
-        )
-        .build()
-    )
+    workManager.run {
+      schedulePeriodically<FhirTaskPlanWorker>(workId = FhirTaskPlanWorker.WORK_ID)
 
-    // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-    /* // Schedule job for generating measure report in the background
-     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-    */
+      schedulePeriodically<FhirTaskExpireWorker>(
+        workId = FhirTaskExpireWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration)
+      )
 
-    FhirTaskExpireWorker.schedule(
-      workManager,
-      sharedPreferencesHelper,
-      applicationConfiguration.taskExpireJobRepeatIntervalMinutes
-    )
+      // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+      /* // Schedule job for generating measure report in the background
+       MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+      */
+    }
   }
 
   suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {

@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
@@ -34,17 +36,22 @@ const val CIRCULAR_PROGRESS_BAR = "circularProgressBar"
 
 @Composable
 fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
-  Column(
-    modifier = modifier.testTag(CIRCULAR_PROGRESS_BAR).padding(8.dp),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
+  Box(
+    modifier = modifier.fillMaxWidth(),
+    contentAlignment = Alignment.Center,
   ) {
-    CircularProgressIndicator(
-      modifier = modifier.align(Alignment.CenterHorizontally).size(28.dp),
-      strokeWidth = 2.4.dp
-    )
-    if (text != null) {
-      Text(text = text, modifier = modifier.testTag(PROGRESS_MSG_TAG))
+    Column(
+      modifier = modifier.testTag(CIRCULAR_PROGRESS_BAR).padding(8.dp),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      CircularProgressIndicator(
+        modifier = modifier.align(Alignment.CenterHorizontally).size(28.dp),
+        strokeWidth = 2.4.dp
+      )
+      if (text != null) {
+        Text(text = text, modifier = modifier.testTag(PROGRESS_MSG_TAG))
+      }
     }
   }
 }
