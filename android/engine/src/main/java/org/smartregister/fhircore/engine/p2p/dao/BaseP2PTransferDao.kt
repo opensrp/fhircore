@@ -121,7 +121,7 @@ constructor(
             }
           )
 
-          // sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
           count = batchSize
         }
       fhirEngine.search(search)
