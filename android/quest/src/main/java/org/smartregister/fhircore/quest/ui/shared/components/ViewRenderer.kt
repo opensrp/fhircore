@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,6 +31,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -58,7 +58,7 @@ fun ViewRenderer(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewWeightedViewsInRow() {
   ViewRenderer(
@@ -91,7 +91,7 @@ private fun PreviewWeightedViewsInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewWrappedViewsInRow() {
   ViewRenderer(
@@ -146,7 +146,7 @@ private fun PreviewWrappedViewsInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewSameSizedViewInRow() {
   ViewRenderer(
@@ -183,7 +183,7 @@ private fun PreviewSameSizedViewInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewCardViewWithRows() {
   ViewRenderer(

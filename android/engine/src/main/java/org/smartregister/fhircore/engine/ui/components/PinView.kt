@@ -51,12 +51,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.annotation.PreviewExcludeGenerated
 
 const val PIN_VIEW = "pin_view"
 const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
@@ -214,44 +214,44 @@ fun PinCell(
   }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView() }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewValidatedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(inputPin = "1234") }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewDottedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true) }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewDottedValidatedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, inputPin = "1234") }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(showError = true) }
 }
 
-@ExperimentalComposeUiApi
-@Preview
+@PreviewExcludeGenerated
 @Composable
+@ExperimentalComposeUiApi
 fun PinViewDottedErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, showError = true) }
 }
