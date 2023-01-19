@@ -275,3 +275,7 @@ fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
   }
   return list
 }
+
+fun Resource.addTags(tags: List<Coding>) {
+  tags.forEach { this.meta.addTag(it) }
+}

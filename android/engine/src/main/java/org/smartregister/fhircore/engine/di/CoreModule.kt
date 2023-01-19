@@ -21,8 +21,6 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
-import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
@@ -38,30 +36,24 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
 class CoreModule {
-  @Singleton
-  @Provides
-  fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
   @Singleton
   @Provides
   fun provideSyncBroadcaster(
+    @ApplicationContext context: Context,
     configurationRegistry: ConfigurationRegistry,
-    sharedPreferencesHelper: SharedPreferencesHelper,
     configService: ConfigService,
-    syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
       configurationRegistry = configurationRegistry,
-      sharedPreferencesHelper = sharedPreferencesHelper,
       configService = configService,
       fhirEngine = fhirEngine,
-      syncJob = syncJob
+      appContext = context
     )
 
   @Singleton

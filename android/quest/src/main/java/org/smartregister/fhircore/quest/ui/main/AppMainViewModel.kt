@@ -23,7 +23,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -132,8 +132,8 @@ constructor(
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           // Update register count when sync completes
-          is State.Finished,
-          is State.Failed -> {
+          is SyncJobStatus.Finished,
+          is SyncJobStatus.Failed -> {
             // Notify subscribers to refresh views after sync
             updateRefreshState()
             appMainUiState.value =

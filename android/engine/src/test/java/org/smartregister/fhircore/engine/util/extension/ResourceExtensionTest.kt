@@ -706,4 +706,12 @@ class ResourceExtensionTest : RobolectricTest() {
       decodedCarePlans.get(1).careTeam.get(0).reference
     )
   }
+
+  @Test
+  fun `Resource#addTags() should return meta tags`() {
+    val meta = emptyList<Coding>()
+    val carePlan = CarePlan()
+    carePlan.addTags(meta)
+    Assert.assertTrue(carePlan.meta.tag.isEmpty())
+  }
 }

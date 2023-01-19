@@ -75,6 +75,7 @@ fun PatientRegisterScreen(
               ?.decodeResourceFromString<QuestionnaireResponse>()
           val patientId = questionnaireResponse?.subject?.extractId()
           if (patientId != null) {
+            patientRegisterViewModel.syncBroadcaster.runSync()
             patientRegisterViewModel.onEvent(
               PatientRegisterEvent.OpenProfile(patientId, navController)
             )

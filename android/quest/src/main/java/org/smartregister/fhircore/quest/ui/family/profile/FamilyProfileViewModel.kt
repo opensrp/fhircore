@@ -21,7 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -78,9 +78,9 @@ constructor(
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
-        override fun onSync(state: State) {
+        override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is State.Finished, is State.Failed -> {
+            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
               fetchFamilyProfileData()
             }
             else -> {}

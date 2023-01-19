@@ -29,7 +29,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -77,8 +77,8 @@ class PatientRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
   val registerRepository: AppRegisterRepository,
+  val syncBroadcaster: SyncBroadcaster,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val appFeatureManager: AppFeatureManager,
@@ -153,8 +153,8 @@ constructor(
 
     val syncStateListener =
       object : OnSyncListener {
-        override fun onSync(state: State) {
-          val isStateCompleted = state is State.Failed || state is State.Finished
+        override fun onSync(state: SyncJobStatus) {
+          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
           if (isStateCompleted) {
             refresh()
             _firstTimeSyncState.value = false

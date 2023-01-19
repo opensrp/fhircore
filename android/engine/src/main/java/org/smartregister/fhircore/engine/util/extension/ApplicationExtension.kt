@@ -27,18 +27,9 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
 import java.util.Locale
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
@@ -51,7 +42,6 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -155,22 +145,3 @@ fun ConfigurationRegistry.fetchLanguages() =
   this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
     .run { this.languages }
     .map { Language(it, Locale.forLanguageTag(it).displayName) }
-
-/**
- * Schedule periodic sync periodically as defined in the [configurationRegistry] application config
- * interval. The [syncBroadcaster] will broadcast the sync status to its listeners
- */
-fun SyncJob.schedulePeriodicSync(
-  configurationRegistry: ConfigurationRegistry, // TODO Obtain sync interval from app config
-  syncBroadcaster: SyncBroadcaster,
-  syncInterval: Long = 30
-) {
-  CoroutineScope(Dispatchers.Main).launch {
-    syncBroadcaster.sharedSyncStatus.emitAll(this@schedulePeriodicSync.stateFlow())
-  }
-  this.poll(
-    periodicSyncConfiguration =
-      PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
-    clazz = FhirSyncWorker::class.java
-  )
-}
