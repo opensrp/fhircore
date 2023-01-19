@@ -84,7 +84,6 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatient
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -158,8 +157,8 @@ constructor(
   fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
     val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
     return Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) {
-        MeasureReportRepository(measureReportConfiguration, registerRepository)
-      }
+      MeasureReportRepository(measureReportConfiguration, registerRepository)
+    }
       .flow
       .cachedIn(viewModelScope)
   }
@@ -180,9 +179,9 @@ constructor(
         }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
-            NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
-            )
+                  NavigationArg.bindArgumentsOf(
+                    Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
+                  )
         )
       }
       is MeasureReportEvent.GenerateReport -> {
@@ -229,7 +228,7 @@ constructor(
       {
         patientsData.value =
           retrievePatients(event.reportId).map {
-            pagingData: PagingData<MeasureReportPatientViewData> ->
+              pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
       }
@@ -245,14 +244,14 @@ constructor(
     val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
     patientsData.value =
       Pager(
-          config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
-          pagingSourceFactory = {
-            MeasureReportPatientsPagingSource(
-              MeasureReportRepository(measureReportConfig, registerRepository),
-              measureReportPatientViewDataMapper
-            )
-          }
-        )
+        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
+        pagingSourceFactory = {
+          MeasureReportPatientsPagingSource(
+            MeasureReportRepository(measureReportConfig, registerRepository),
+            measureReportPatientViewDataMapper
+          )
+        }
+      )
         .flow
         .cachedIn(viewModelScope)
     return patientsData.value
@@ -262,9 +261,6 @@ constructor(
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
     if (measureReportConfigList.isNotEmpty()) {
-
-      val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
-
       // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
         reportTypeSelectorUiState
@@ -331,7 +327,6 @@ constructor(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String,
-<<<<<<< HEAD
     subjectXFhirQuery: String?
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
@@ -352,59 +347,6 @@ constructor(
       } else
         runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null).also {
           measureReport.add(it)
-=======
-    indicatorTitle: String
-  ) {
-    val measureReport: MeasureReport? =
-      withContext(dispatcherProvider.io()) {
-        try {
-          if (measureUrl.contains("Stock")) {
-            fhirEngine
-              .search<Group> {
-                filter(
-                  Group.TYPE,
-                  {
-                    value =
-                      of(
-                        Coding(
-                          GroupType.MEDICATION.system,
-                          GroupType.MEDICATION.toCode(),
-                          GroupType.MEDICATION.display
-                        )
-                      )
-                  }
-                )
-              }
-              .map {
-                fhirOperator.evaluateMeasure(
-                  measureUrl = measureUrl,
-                  start = startDateFormatted,
-                  end = endDateFormatted,
-                  reportType = POPULATION,
-                  subject = it.id,
-                  practitioner = null
-                  /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-                  practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-                  lastReceivedOn = null // Non-null value not supported yet
-                )
-              }
-              .first()
-          } else
-            fhirOperator.evaluateMeasure(
-              measureUrl = measureUrl,
-              start = startDateFormatted,
-              end = endDateFormatted,
-              reportType = POPULATION,
-              subject = null,
-              practitioner = null
-              /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-              practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-              lastReceivedOn = null // Non-null value not supported yet
-            )
-        } catch (exception: IllegalArgumentException) {
-          Timber.e(exception)
-          null
->>>>>>> e59238c3078c16119e9e6e495f9e22414c0b5576
         }
 
       measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
@@ -466,15 +408,15 @@ constructor(
 
         val indicators =
           it.value.flatMap { report ->
-            val title = indicators.find { it.url == report.measure }?.title ?: ""
             val formatted = formatSupplementalData(report.contained, report.type)
+            val title = indicators.find { it.url == report.measure }?.title ?: ""
             if (formatted.isEmpty())
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             else if (formatted.size == 1)
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator.toString()
+                  count = formatted.first().measureReportDenominator?.toString() ?: "0"
                 )
               )
             else
@@ -491,8 +433,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (indicators.size == 1) indicators.first().count.toInt()
-              else MEASURE_REPORT_DENOMINATOR_MISSING,
+            if (indicators.size == 1) indicators.first().count.toInt() else null,
             dataList = if (indicators.size > 1) indicators else emptyList()
           )
         )
@@ -510,20 +451,20 @@ constructor(
           .map { group ->
             val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
             group to
-              group
-                .stratifier
-                .flatMap { it.stratum }
-                .filter { it.hasValue() && it.value.hasText() }
-                .map { stratifier ->
-                  stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
-                    MeasureReportIndividualResult(
-                      title = stratifier.value.text,
-                      percentage = stratifier.findPercentage(denominator!!).toString(),
-                      count = stratifier.findRatio(denominator),
-                      description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                    )
-                  }
-                }
+                    group
+                      .stratifier
+                      .flatMap { it.stratum }
+                      .filter { it.hasValue() && it.value.hasText() }
+                      .map { stratifier ->
+                        stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
+                          MeasureReportIndividualResult(
+                            title = stratifier.value.text,
+                            percentage = stratifier.findPercentage(denominator!!).toString(),
+                            count = stratifier.findRatio(denominator),
+                            description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                          )
+                        }
+                      }
           }
           .mapNotNull {
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
@@ -554,11 +495,11 @@ constructor(
           .filter { it.key.isNullOrBlank().not() }
           .map {
             it.key!! to
-              if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
-              // for subject specific reports it is key value map with exact value
-              it.value.joinToString { it.valueCode() ?: "" }
-              // for multiple subjects it is a number for each which should be counted by entries
-              else it.value.count().toString()
+                    if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
+                    // for subject specific reports it is key value map with exact value
+                      it.value.joinToString { it.valueCode() ?: "" }
+                    // for multiple subjects it is a number for each which should be counted by entries
+                    else it.value.count().toString()
           }
       }
       .map {
@@ -582,8 +523,8 @@ constructor(
     var lastDate = endDate?.firstDayOfMonth()
 
     while (lastDate!!.after(
-      startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
-    )) {
+        startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
+      )) {
       yearMonths.add(
         ReportRangeSelectionData(
           lastDate.formatDate(SDF_MMMM),

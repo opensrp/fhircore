@@ -68,7 +68,6 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.report.measure.models.MEASURE_REPORT_DENOMINATOR_MISSING
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
@@ -285,7 +284,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Test
   fun testFormatPopulationMeasureReport() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
-    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "IND")
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
 
     assertEquals(1, result.size)
     assertEquals("report group 1", result.first().title)
@@ -361,8 +360,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
       }
     )
 
-    val result =
-      measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "Test Indicator")
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
 
     assertEquals(2, result.size)
 
@@ -373,8 +371,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     assertEquals("", result.last().count)
     assertEquals(0, result.last().dataList.size)
-    assertEquals("Test Indicator", result.last().indicatorTitle)
-    assertEquals(3, result.last().measureReportDenominator)
   }
 
   @Test
@@ -405,15 +401,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Group, any()) } returns
       Group().apply { name = "Commodity 1" }
 
-    val result =
-      measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport), "Test Indicator")
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
 
-    assertEquals(2, result.size)
+    assertEquals(1, result.size)
 
     assertEquals("", result.first().count)
     assertEquals(3, result.first().dataList.size)
     assertEquals("Commodity 1", result.first().indicatorTitle)
-    assertEquals(MEASURE_REPORT_DENOMINATOR_MISSING, result.first().measureReportDenominator)
+    assertEquals(null, result.first().measureReportDenominator)
 
     assertEquals("Test Code 1", result.first().dataList.elementAt(0).title)
     assertEquals("2", result.first().dataList.elementAt(0).count)
@@ -423,8 +418,5 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     assertEquals("Test Code 3", result.first().dataList.elementAt(2).title)
     assertEquals("6", result.first().dataList.elementAt(2).count)
-
-    assertEquals("Test Indicator", result.last().indicatorTitle)
-    assertEquals(3, result.last().measureReportDenominator)
   }
 }

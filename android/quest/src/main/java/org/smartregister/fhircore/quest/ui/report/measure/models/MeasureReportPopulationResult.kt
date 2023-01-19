@@ -19,8 +19,6 @@ package org.smartregister.fhircore.quest.ui.report.measure.models
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 
-const val MEASURE_REPORT_DENOMINATOR_MISSING = -999999999
-
 @Stable
 @Serializable
 data class MeasureReportPopulationResult(
@@ -28,5 +26,5 @@ data class MeasureReportPopulationResult(
   val count: String = "",
   val dataList: List<MeasureReportIndividualResult> = emptyList(),
   val indicatorTitle: String = "",
-  val measureReportDenominator: Int = MEASURE_REPORT_DENOMINATOR_MISSING
+  val measureReportDenominator: Int? = null
 )
