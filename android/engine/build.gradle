@@ -72,6 +72,7 @@ android {
         exclude 'META-INF/LGPL-3.0.txt'
         exclude 'META-INF/sun-jaxb.episode'
         exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/INDEX.LIST")
     }
 
     testOptions {
@@ -108,6 +109,7 @@ configurations {
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.work:work-testing:2.7.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -166,7 +168,7 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.6.1-UI-REVAMP-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.1-BUG-FIXES-SNAPSHOT')
 
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
@@ -175,6 +177,7 @@ dependencies {
     api ("androidx.navigation:navigation-fragment-ktx:$navigationVersion")
     api ("androidx.navigation:navigation-ui-ktx:$navigationVersion")
     api("androidx.navigation:navigation-compose:$navigationVersion")
+    api("androidx.navigation:navigation-testing:$navigationVersion")
     api("androidx.compose.material:material-icons-extended:1.3.1")
     api("androidx.compose.material:material-icons-core:1.3.1")
     api("androidx.compose.foundation:foundation:1.3.1")
@@ -247,9 +250,6 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
-    // Easy rules dependency
-    api 'org.jeasy:easy-rules-core:4.1.0'
-
     // JEXL
     api ('org.jeasy:easy-rules-jexl:4.1.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
@@ -274,14 +274,14 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20220320'
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-
+    testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 

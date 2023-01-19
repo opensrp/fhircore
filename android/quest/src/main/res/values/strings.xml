@@ -95,7 +95,8 @@
     <string name="geo_widget_fragment_destination" translatable="false">GeoWidget Fragment Destination</string>
 
     <string name="structure_error_message">Failed to extract resources for %1$s</string>
-    <string name="structure_map_missing_message" >Missing resource for %1$s</string>
+    <string name="structure_map_missing_message">Missing resource for %1$s</string>
     <string name="structure_success">Successfully extracted resources for %1$s</string>
+    <string name="reassigned_managing_entity">Managing entity reassigned successfully</string>
 
 </resources>
