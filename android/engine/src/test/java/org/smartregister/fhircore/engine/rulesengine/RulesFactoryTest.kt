@@ -280,7 +280,8 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val fhirPathExpression = "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
+    val fhirPathExpression =
+      "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
     val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -321,8 +322,9 @@ class RulesFactoryTest : RobolectricTest() {
       )
 
     val filteredTask = rulesEngineService.filterResources(resources, fhirPathExpression)
-    val descriptionList = rulesEngineService.mapResourcesToExtractedValues(filteredTask, "Task.description")
-    Assert.assertTrue(descriptionList.first()== "plus")
+    val descriptionList =
+      rulesEngineService.mapResourcesToExtractedValues(filteredTask, "Task.description")
+    Assert.assertTrue(descriptionList.first() == "plus")
   }
 
   @Test
@@ -341,34 +343,58 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun pickNamesOfPatientFromCertainAge() {
-    val fhirPathExpression = "(Patient.birthDate <= today() - 2 'years') and (Patient.birthDate >= today() - 4 'years')"
+    val fhirPathExpression =
+      "(Patient.birthDate <= today() - 2 'years') and (Patient.birthDate >= today() - 4 'years')"
     val resources =
       listOf(
-        Patient().apply { birthDate = LocalDate.parse("2015-10-03").toDate()
-          addName().apply {
-            family = "alpha"
-          } },
-        Patient().apply { birthDate = LocalDate.parse("2017-10-03").toDate()
-          addName().apply {
-            family = "beta"
-          }},
-        Patient().apply { birthDate = LocalDate.parse("2018-10-03").toDate()
-          addName().apply {
-            family = "gamma"
-          }},
-        Patient().apply { birthDate = LocalDate.parse("2019-10-03").toDate()
-          addName().apply {
-            family = "rays"
-          }},
-        Patient().apply { birthDate = LocalDate.parse("2021-10-03").toDate()
-          addName().apply {
-            family = "light"
-          }},
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2019-10-03").toDate()
+          addName().apply { family = "rays" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2021-10-03").toDate()
+          addName().apply { family = "light" }
+        },
       )
 
     val patientsList = rulesEngineService.filterResources(resources, fhirPathExpression)
-    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family")
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family")
     Assert.assertTrue(names.isNotEmpty())
+  }
+
+  @Test
+  fun pickCodesFromCertainConditions() {
+    val resources =
+      listOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        }
+      )
+    val conditions =
+      rulesEngineService.filterResources(
+        resources,
+        "Condition.clinicalStatus.coding.display = 'Pregnant'"
+      )
+    val conditionIds = rulesEngineService.mapResourcesToExtractedValues(conditions, "Condition.id")
+    Assert.assertTrue(conditionIds.first() == "001")
   }
 
   @Test
