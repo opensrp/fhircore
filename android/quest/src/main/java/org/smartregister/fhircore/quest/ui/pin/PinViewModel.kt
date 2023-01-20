@@ -92,11 +92,14 @@ constructor(
       )
   }
 
-  fun onPinVerified(validPin: Boolean) =
+  fun onPinVerified(validPin: Boolean) {
     if (validPin) {
-      _showError.postValue(false)
+      onShowPinError(false)
       _navigateToHome.postValue(true)
-    } else _showError.postValue(true)
+    }
+  }
+
+  fun onShowPinError(showError: Boolean) = _showError.postValue(showError)
 
   fun onSetPin(newPin: String) {
     secureSharedPreference.saveSessionPin(newPin)

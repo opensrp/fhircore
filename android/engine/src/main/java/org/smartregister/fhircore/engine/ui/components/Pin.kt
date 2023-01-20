@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
@@ -63,7 +65,8 @@ fun PinInput(
   pinLength: Int,
   inputMode: Boolean = true,
   onPinSet: (String) -> Unit,
-  onPinVerified: (Boolean) -> Unit
+  onPinVerified: (Boolean) -> Unit,
+  onShowPinError: (Boolean) -> Unit,
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
@@ -71,7 +74,11 @@ fun PinInput(
   var nextCellIndex by remember { mutableStateOf(0) }
 
   // Launch keyboard and request focus on the hidden input field
-  LaunchedEffect(Unit) { focusRequester.requestFocus() }
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
+    delay(300)
+    keyboard?.show()
+  }
 
   // Hidden input field
   BasicTextField(
@@ -83,15 +90,24 @@ fun PinInput(
           nextCellIndex = enteredPin.length
           keyboard?.hide()
 
-          if (inputMode) onPinSet(enteredPin) else onPinVerified(enteredPin == actualPin)
+          if (inputMode) onPinSet(enteredPin)
+          else {
+            val validPin = enteredPin == actualPin
+            onPinVerified(validPin)
+            // Wrong pin, clear entered pin
+            if (!validPin) {
+              keyboard?.show()
+              onShowPinError(true)
+            }
+          }
         }
         it.length < pinLength -> {
           keyboard?.show()
           enteredPin = it
           nextCellIndex = enteredPin.length
           onPinSet(enteredPin)
+          onShowPinError(false)
         }
-        else -> keyboard?.hide()
       }
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -117,7 +133,11 @@ fun PinInput(
             else -> backgroundColor
           },
         number = enteredPin.getOrNull(index)?.toString() ?: "",
-        backgroundColor = backgroundColor
+        backgroundColor = backgroundColor,
+        onPinCellClick = {
+          enteredPin = ""
+          onShowPinError(false)
+        }
       )
     }
   }
@@ -129,7 +149,8 @@ fun PinCell(
   borderColor: Color = Color.LightGray,
   backgroundColor: Color = Color.LightGray,
   inputMode: Boolean = true,
-  number: String
+  number: String,
+  onPinCellClick: () -> Unit
 ) {
   Box(
     modifier =
@@ -143,7 +164,8 @@ fun PinCell(
           width = if (inputMode) 1.dp else 0.dp,
           color = borderColor,
           shape = RoundedCornerShape(8.dp)
-        ),
+        )
+        .clickable { onPinCellClick() },
     contentAlignment = Alignment.Center
   ) { if (inputMode) Text(text = number, textAlign = TextAlign.Center) }
 }
@@ -151,11 +173,18 @@ fun PinCell(
 @Composable
 @Preview(showBackground = true)
 private fun PinViewWithActiveInputModePreview() {
-  PinInput(pinLength = 4, inputMode = true, onPinSet = {}, onPinVerified = {})
+  PinInput(pinLength = 4, inputMode = true, onPinSet = {}, onPinVerified = {}, onShowPinError = {})
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PinViewWithInActiveInputModePreview() {
-  PinInput(pinLength = 4, inputMode = false, actualPin = "1234", onPinSet = {}, onPinVerified = {})
+  PinInput(
+    pinLength = 4,
+    inputMode = false,
+    actualPin = "1234",
+    onPinSet = {},
+    onPinVerified = {},
+    onShowPinError = {}
+  )
 }
