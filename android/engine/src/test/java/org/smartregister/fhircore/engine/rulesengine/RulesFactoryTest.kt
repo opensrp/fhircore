@@ -340,6 +340,38 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun pickNamesOfPatientFromCertainAge() {
+    val fhirPathExpression = "(Patient.birthDate <= today() - 2 'years') and (Patient.birthDate >= today() - 4 'years')"
+    val resources =
+      listOf(
+        Patient().apply { birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply {
+            family = "alpha"
+          } },
+        Patient().apply { birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply {
+            family = "beta"
+          }},
+        Patient().apply { birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply {
+            family = "gamma"
+          }},
+        Patient().apply { birthDate = LocalDate.parse("2019-10-03").toDate()
+          addName().apply {
+            family = "rays"
+          }},
+        Patient().apply { birthDate = LocalDate.parse("2021-10-03").toDate()
+          addName().apply {
+            family = "light"
+          }},
+      )
+
+    val patientsList = rulesEngineService.filterResources(resources, fhirPathExpression)
+    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family")
+    Assert.assertTrue(names.isNotEmpty())
+  }
+
+  @Test
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
     val fhirPathExpression = "Patient.active"
     val patients =
