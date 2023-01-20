@@ -349,13 +349,28 @@ constructor(
      */
     fun filterResources(
       resources: List<Resource>,
-      fhirPathExpression: String,
-      value: String
-    ): List<Resource> =
-      resources.filter {
-        value.equals(fhirPathDataExtractor.extractValue(it, fhirPathExpression), ignoreCase = true)
+      fhirPathExpression: String
+    ): List<Resource> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
+      }
+      return resources.filter {
+        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
   }
+
+  fun mapResourcesToExtractedValues(
+    resources: List<Resource>,
+    fhirPathExpression: String
+  ): List<Any> {
+    if (fhirPathExpression.isEmpty()) {
+      return emptyList()
+    }
+    return resources.map {
+      fhirPathDataExtractor.extractValue(it, fhirPathExpression)
+    }
+  }
+}
 
   companion object {
     private const val FHIR_PATH = "fhirPath"
