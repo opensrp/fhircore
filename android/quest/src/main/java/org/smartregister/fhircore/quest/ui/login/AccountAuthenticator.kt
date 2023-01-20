@@ -186,12 +186,6 @@ constructor(
     return oAuthService.fetchToken(data).execute().body()
   }
 
-  fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
-    val jsonPayload =
-      context.assets.open(PATH_PRACTITIONER_DETAILS_PAYLOAD).bufferedReader().use { it.readText() }
-    return parser.parseResource(jsonPayload) as org.hl7.fhir.r4.model.Bundle
-  }
-
   suspend fun getPractitionerDetails(keycloakUuid: String): org.hl7.fhir.r4.model.Bundle {
     return fhirResourceService.getResource(url = keycloakUuid.practitionerEndpointUrl())
   }
@@ -419,6 +413,5 @@ constructor(
     const val USERNAME = "username"
     const val PASSWORD = "password"
     const val REFRESH_TOKEN = "refresh_token"
-    const val PATH_PRACTITIONER_DETAILS_PAYLOAD = "sample_practitioner_payload.json"
   }
 }

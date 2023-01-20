@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.pin
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
@@ -47,7 +46,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     val pinSetup = intent.extras?.getBoolean(PIN_SETUP) ?: false
     pinViewModel.apply {
       val pinLoginActivity = this@PinLoginActivity
@@ -66,7 +64,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   }
 
   @OptIn(ExperimentalMaterialApi::class)
-  fun navigateToHome() {
+  private fun navigateToHome() {
     this.run {
       // Initialize P2P only when username is provided then launch main activity
       val username = secureSharedPreference.retrieveSessionUsername()

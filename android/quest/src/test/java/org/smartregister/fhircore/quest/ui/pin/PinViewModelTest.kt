@@ -17,156 +17,106 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.slot
+import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-@ExperimentalCoroutinesApi
 @HiltAndroidTest
-internal class PinViewModelTest : RobolectricTest() {
+class PinViewModelTest : RobolectricTest() {
 
-  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-
-  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  private val sharedPreferenceHelper: SharedPreferencesHelper = mockk(relaxUnitFun = true)
+  private var secureSharedPreference: SecureSharedPreference = mockk(relaxUnitFun = true)
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var pinViewModel: PinViewModel
-
-  private val testPin = MutableLiveData("1234")
 
   @Before
   fun setUp() {
-    hiltRule.inject()
-
-    coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(any(), true) } just runs
-    coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
-    coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
-    coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
-    coEvery {
-      secureSharedPreference.saveCredentials(
-        AuthCredentials("username", "password", "sessionToken", "refreshToken")
-      )
-    } returns Unit
-
+    hiltAndroidRule.inject()
     pinViewModel =
-      spyk(
-        PinViewModel(
-          sharedPreferences = sharedPreferencesHelper,
-          secureSharedPreference = secureSharedPreference,
-          configurationRegistry = configurationRegistry,
-        )
+      PinViewModel(
+        secureSharedPreference = secureSharedPreference,
+        sharedPreferences = sharedPreferenceHelper,
+        configurationRegistry = configurationRegistry,
       )
-
-    every { pinViewModel.pinUiState } returns
-      mutableStateOf(PinUiState(currentUserPin = "1234", setupPin = true, appName = "demo"))
-    every { pinViewModel.applicationConfiguration } returns
-      ApplicationConfiguration(appId = "appId", appTitle = "demo")
-    every { pinViewModel.showError } returns MutableLiveData(false)
-    every { pinViewModel.navigateToHome } returns MutableLiveData(true)
   }
 
   @Test
-  fun testOnPinChangeValidated() {
-    pinViewModel.pinUiState.value = PinUiState(currentUserPin = "1234", setupPin = false)
-
-    pinViewModel.onSetPin(testPin.value.toString())
-    Assert.assertEquals(pinViewModel.pinUiState.value.currentUserPin, testPin.value.toString())
-    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
+  fun testSetPinUiState() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    every { secureSharedPreference.retrieveSessionPin() } returns "1245"
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("1245", pinUiState.currentUserPin)
+    Assert.assertTrue(pinUiState.setupPin)
   }
 
   @Test
-  fun testOnPinConfirmed() {
-    pinViewModel.onPinVerified()
-    Assert.assertEquals(
-      pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
-      testPin.value.toString()
-    )
+  fun testOnPinVerified() {
+    pinViewModel.onPinVerified(true)
     Assert.assertEquals(false, pinViewModel.showError.value)
+    Assert.assertEquals(true, pinViewModel.navigateToHome.value)
+
+    pinViewModel.onPinVerified(false)
+    Assert.assertEquals(true, pinViewModel.showError.value)
   }
 
   @Test
-  fun testOnPinConfirmedValidated() {
-    pinViewModel.onPinVerified()
-    Assert.assertEquals(
-      pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
-      testPin.value.toString()
-    )
-    Assert.assertEquals(pinViewModel.showError.value, false)
+  fun testOnSetPin() {
+    pinViewModel.onSetPin("1990")
+
+    val newPinSlot = slot<String>()
+    verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
+
+    Assert.assertEquals("1990", newPinSlot.captured)
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
   @Test
-  fun testLoadData() {
-    pinViewModel.setPinUiState(setupPin = true, context = application)
-    val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(pinUiState.setupPin, true)
-    Assert.assertNotNull(pinUiState.currentUserPin)
-    Assert.assertNotNull(pinUiState.message)
-  }
-
-  @Test
-  fun testLoadDataForLoginScreen() {
-    pinViewModel.setPinUiState(setupPin = false, context = application)
-    val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(pinUiState.setupPin, true)
-    Assert.assertNotNull(pinUiState.currentUserPin)
-  }
-
-  @Test
-  fun testOnPinChangeError() {
-    pinViewModel.onSetPin("3232")
-    Assert.assertEquals(pinViewModel.showError.value, true)
-  }
-
-  @Ignore("reason : action dialer is disabled for now")
-  @Test
-  fun testOnForgotPin() {
-    pinViewModel.forgotPin()
-    Assert.assertEquals(pinViewModel.launchDialPad.value, "tel:XXXX")
-  }
-
-  @Test
-  fun testPinLoginOnMenuLoginClicked() {
-    every { secureSharedPreference.deleteSessionTokens() } just runs
-    every { secureSharedPreference.deleteSessionPin() } just runs
-    every { secureSharedPreference.deleteCredentials() } just runs
-    pinViewModel.onMenuItemClicked(false)
-    Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
-  }
-  @Test
-  fun testPinSetupOnMenuLoginClicked() {
-    every { secureSharedPreference.deleteSessionTokens() } just runs
-    every { secureSharedPreference.deleteSessionPin() } just runs
-    every { secureSharedPreference.deleteCredentials() } just runs
+  fun testOnMenuItemClickedWithLaunchAppSettingScreenSetTrue() {
     pinViewModel.onMenuItemClicked(true)
-    Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
+
+    // Session token pin and credentials reset
+    verifyOrder {
+      secureSharedPreference.deleteSessionTokens()
+      secureSharedPreference.deleteSessionPin()
+      secureSharedPreference.deleteCredentials()
+    }
+    verify { sharedPreferenceHelper.remove(SharedPreferenceKey.APP_ID.name) }
+    Assert.assertEquals(true, pinViewModel.navigateToSettings.value)
+  }
+
+  @Test
+  fun testOnMenuItemClickedWithLaunchAppSettingScreenSetFalse() {
+    pinViewModel.onMenuItemClicked(false)
+
+    // Session token pin and credentials reset
+    verifyOrder {
+      secureSharedPreference.deleteSessionTokens()
+      secureSharedPreference.deleteSessionPin()
+      secureSharedPreference.deleteCredentials()
+    }
+    Assert.assertEquals(true, pinViewModel.navigateToLogin.value)
+  }
+
+  @Test
+  fun testForgotPin() {
+    pinViewModel.forgotPin()
+    Assert.assertEquals("tel:####", pinViewModel.launchDialPad.value)
   }
 }

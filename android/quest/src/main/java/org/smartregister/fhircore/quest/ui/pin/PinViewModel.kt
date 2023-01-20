@@ -73,7 +73,7 @@ constructor(
       )
     )
 
-  val applicationConfiguration: ApplicationConfiguration by lazy {
+  private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
@@ -116,7 +116,7 @@ constructor(
   }
 
   fun forgotPin() {
-    //  plus load supervisor contact from config
+    // TODO use valid supervisor (Practitioner) telephone number
     _launchDialPad.value = "tel:####"
   }
 }

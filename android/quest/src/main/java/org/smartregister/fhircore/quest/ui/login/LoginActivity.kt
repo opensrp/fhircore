@@ -43,15 +43,12 @@ class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     navigateToScreen()
-
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-
     this.applyWindowInsetListener()
   }
 
@@ -78,7 +75,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
-    this.run {
+    run {
       startActivity(
         Intent(this, AppMainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
       )
@@ -99,7 +96,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  fun navigateToPinLogin(launchSetup: Boolean = false) {
+  private fun navigateToPinLogin(launchSetup: Boolean = false) {
     val intent =
       Intent(this, PinLoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

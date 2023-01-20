@@ -32,7 +32,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.ResourceType
-import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -96,7 +95,7 @@ constructor(
             }
             .onSuccess {
               _showProgressBar.postValue(false)
-              _navigateToHome.postValue(true)
+              updateNavigateHome(true)
             }
             .onFailure { throwable ->
               Timber.e("Error fetching practitioner details", throwable)
@@ -184,7 +183,7 @@ constructor(
       override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
         Timber.e(throwable.stackTraceToString())
         if (attemptLocalLogin()) {
-          _navigateToHome.value = true
+          updateNavigateHome(true)
           _showProgressBar.postValue(false)
           return
         }
@@ -238,7 +237,7 @@ constructor(
     val bundle = future?.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
       if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
-        _navigateToHome.postValue(true)
+        updateNavigateHome(true)
       }
     }
   }
@@ -254,7 +253,7 @@ constructor(
         if (validatePreviousLogin(trimmedUsername)) {
           if (accountAuthenticator.hasActiveSession()) {
             if (attemptLocalLogin()) {
-              _navigateToHome.value = true
+              updateNavigateHome(true)
               _showProgressBar.postValue(false)
               return@run
             }
@@ -274,7 +273,6 @@ constructor(
     _launchDialPad.value = "tel:0123456789"
   }
 
-  @TestOnly
   fun updateNavigateHome(navigateHome: Boolean = true) {
     _navigateToHome.postValue(navigateHome)
   }
@@ -284,11 +282,5 @@ constructor(
     else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
   }
 
-  fun isPinEnabled(): Boolean {
-    return applicationConfiguration.loginConfig.enablePin ?: false
-  }
-
-  companion object {
-    const val IDENTIFIER = "identifier"
-  }
+  fun isPinEnabled(): Boolean = applicationConfiguration.loginConfig.enablePin ?: false
 }

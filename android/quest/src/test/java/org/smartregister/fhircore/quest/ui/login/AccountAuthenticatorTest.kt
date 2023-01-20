@@ -351,12 +351,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetPractitionerDetailsFromAssets() {
-    val details = accountAuthenticator.getPractitionerDetailsFromAssets()
-    Assert.assertNotNull(details)
-  }
-
-  @Test
   fun testGetPractitionerDetailsShouldReturnBundle() {
     val uuidSlot = slot<String>()
     coEvery { fhirResourceService.getResource(capture(uuidSlot)) } returns mockk()
