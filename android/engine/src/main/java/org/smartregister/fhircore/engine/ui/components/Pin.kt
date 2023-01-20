@@ -44,6 +44,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+
+const val PIN_CELL_TEST_TAG = "pinCell"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -131,6 +134,7 @@ fun PinCell(
   Box(
     modifier =
       modifier
+        .testTag(PIN_CELL_TEST_TAG)
         .padding(4.dp)
         .size(width = if (inputMode) 48.dp else 18.dp, height = if (inputMode) 56.dp else 18.dp)
         .clip(if (inputMode) RoundedCornerShape(size = 6.dp) else CircleShape)

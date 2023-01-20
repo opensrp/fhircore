@@ -279,7 +279,7 @@ fun ForgotPinDialog(
 
 @Composable
 @PreviewWithBackgroundExcludeGenerated
-fun PinLoginPreview() {
+private fun PinSetupPreview() {
   PinLoginPage(
     onSetPin = {},
     showError = false,
@@ -300,7 +300,7 @@ fun PinLoginPreview() {
 
 @Composable
 @PreviewWithBackgroundExcludeGenerated
-fun PinLoginErrorPreview() {
+private fun PinLoginPreview() {
   PinLoginPage(
     onSetPin = {},
     showError = false,
