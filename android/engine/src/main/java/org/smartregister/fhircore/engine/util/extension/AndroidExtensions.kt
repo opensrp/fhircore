@@ -146,3 +146,23 @@ fun Activity.applyWindowInsetListener() {
     insets
   }
 }
+
+/**
+ * This function launches another [Activity] on top of the current. The current [Activity] is
+ * cleared from the back stack for launching the next activity then the current [Activity] is
+ * finished based on [finishLauncherActivity] condition.
+ */
+inline fun <reified A : Activity> Activity.launchAnotherActivity(
+  finishLauncherActivity: Boolean = true
+) {
+  startActivity(
+    Intent(this, A::class.java).apply {
+      addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+      addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      addCategory(Intent.CATEGORY_LAUNCHER)
+    }
+  )
+  if (finishLauncherActivity) finish()
+}

@@ -22,6 +22,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.os.bundleOf
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -33,7 +34,6 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
-import org.smartregister.fhircore.quest.ui.pin.PinSetupActivity
 import org.smartregister.p2p.P2PLibrary
 
 @AndroidEntryPoint
@@ -61,14 +61,14 @@ class LoginActivity : BaseMultiLanguageActivity() {
       val isPinEnabled = isPinEnabled()
       // Run sync and navigate directly to home screen if session is active and pin is not enabled
       if (isPinEnabled && accountAuthenticator.hasActivePin()) {
-        navigateToPinLogin(false)
+        navigateToPinLogin(launchSetup = false)
       }
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() ->
-            navigateToPinLogin(false)
+            navigateToPinLogin(launchSetup = false)
           launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() ->
-            navigateToPinLogin(true)
+            navigateToPinLogin(launchSetup = true)
           launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
         }
       }
@@ -100,12 +100,12 @@ class LoginActivity : BaseMultiLanguageActivity() {
   }
 
   fun navigateToPinLogin(launchSetup: Boolean = false) {
-
-    startActivity(
-      if (launchSetup) Intent(this, PinSetupActivity::class.java)
-      else
-        Intent(this, PinLoginActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-    )
+    val intent =
+      Intent(this, PinLoginActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        putExtras(bundleOf(Pair(PinLoginActivity.PIN_SETUP, launchSetup)))
+      }
+    startActivity(intent)
     finish()
   }
 

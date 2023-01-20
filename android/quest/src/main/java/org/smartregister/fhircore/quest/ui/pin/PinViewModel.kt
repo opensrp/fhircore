@@ -28,7 +28,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -58,83 +57,66 @@ constructor(
   val navigateToSettings: LiveData<Boolean>
     get() = _navigateToSettings
 
-  private val _pin = MutableLiveData<String>()
-  val pin: LiveData<String>
-    get() = _pin
-
   private val _showError = MutableLiveData(false)
   val showError
     get() = _showError
 
-  private val _enableSetPin = MutableLiveData(false)
-  val enableSetPin
-    get() = _enableSetPin
-
-  val pinUiState: MutableState<PinUiState> = mutableStateOf(PinUiState())
+  val pinUiState: MutableState<PinUiState> =
+    mutableStateOf(
+      PinUiState(
+        currentUserPin = "",
+        message = "",
+        appName = "",
+        setupPin = false,
+        pinLength = 0,
+        showLogo = false
+      )
+    )
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun setPinUiState(isSetup: Boolean = false, context: Context) {
+  fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =
       PinUiState(
-        appId = sharedPreferences.read(SharedPreferenceKey.APP_ID.name, "")!!,
         appName = applicationConfiguration.appTitle,
-        savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
-        isSetupPage = isSetup,
-        enterUserLoginMessage =
-          if (username.isNullOrEmpty()) context.getString(R.string.enter_login_pin)
-          else context.getString(R.string.enter_pin_for_user, username)
+        currentUserPin = secureSharedPreference.retrieveSessionPin() ?: "",
+        setupPin = setupPin,
+        message =
+          if (setupPin) context.getString(R.string.set_pin_message)
+          else context.getString(R.string.enter_pin_for_user, username),
+        pinLength = applicationConfiguration.loginConfig.pinLength,
+        showLogo = applicationConfiguration.showLogo
       )
   }
 
-  fun onPinConfirmed() {
-    val newPin = pin.value ?: ""
-
-    if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
+  fun onPinVerified(validPin: Boolean) =
+    if (validPin) {
       _showError.postValue(false)
-      secureSharedPreference.saveSessionPin(newPin)
       _navigateToHome.postValue(true)
-    } else {
-      _showError.postValue(true)
-    }
+    } else _showError.postValue(true)
+
+  fun onSetPin(newPin: String) {
+    secureSharedPreference.saveSessionPin(newPin)
+    _navigateToHome.postValue(true)
   }
 
-  fun onPinChanged(newPin: String) {
-    if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
-      val pinMatched = newPin == secureSharedPreference.retrieveSessionPin()
-      enableSetPin.value = true
-      showError.value = !pinMatched
-      _pin.postValue(newPin)
-      if (pinMatched && !pinUiState.value.isSetupPage) _navigateToHome.value = true
-    } else {
-      showError.value = false
-      enableSetPin.value = false
+  fun onMenuItemClicked(launchAppSettingScreen: Boolean) {
+    secureSharedPreference.run {
+      deleteSessionTokens()
+      deleteSessionPin()
+      deleteCredentials()
     }
-  }
-
-  fun onMenuLoginClicked(setupPin: Boolean) {
-    // reset user credentials...
-    if (setupPin) {
-      secureSharedPreference.run {
-        deleteSessionTokens()
-        deleteSessionPin()
-        deleteCredentials()
-      }
-    } else secureSharedPreference.deleteSessionPin()
-    _navigateToLogin.value = true
+    if (launchAppSettingScreen) {
+      sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
+      _navigateToSettings.value = true
+    } else _navigateToLogin.value = true
   }
 
   fun forgotPin() {
-    // Todo: disable dialer action for now
     //  plus load supervisor contact from config
     _launchDialPad.value = "tel:####"
-  }
-
-  fun onMenuSettingClicked() {
-    sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
-    _navigateToSettings.value = true
   }
 }

@@ -31,6 +31,8 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.launchAnotherActivity
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.p2p.P2PLibrary
@@ -45,15 +47,19 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
+    val pinSetup = intent.extras?.getBoolean(PIN_SETUP) ?: false
     pinViewModel.apply {
       val pinLoginActivity = this@PinLoginActivity
-      setPinUiState(isSetup = false, context = pinLoginActivity)
-      navigateToHome.observe(pinLoginActivity) { pinLoginActivity.navigateToHome() }
+      setPinUiState(setupPin = pinSetup, context = pinLoginActivity)
+      navigateToSettings.observe(pinLoginActivity) {
+        if (it) pinLoginActivity.launchAnotherActivity<AppSettingActivity>()
+      }
+      navigateToHome.observe(pinLoginActivity) { if (it) pinLoginActivity.navigateToHome() }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-      navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
+      navigateToLogin.observe(pinLoginActivity) {
+        if (it) pinLoginActivity.launchAnotherActivity<LoginActivity>()
+      }
     }
     setContent { AppTheme { PinLoginScreen(pinViewModel) } }
     this.applyWindowInsetListener()
@@ -62,10 +68,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
     this.run {
-      startActivity(
-        Intent(this, AppMainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-      )
-      // Initialize P2P after login only when username is provided then finish activity
+      // Initialize P2P only when username is provided then launch main activity
       val username = secureSharedPreference.retrieveSessionUsername()
       if (!username.isNullOrEmpty()) {
         P2PLibrary.init(
@@ -78,7 +81,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
           )
         )
       }
-      finish()
+      this.launchAnotherActivity<AppMainActivity>()
     }
   }
 
@@ -86,16 +89,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
-  private fun moveToLoginViaUsername() {
-    startActivity(
-      Intent(this, LoginActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        addCategory(Intent.CATEGORY_LAUNCHER)
-      }
-    )
-    finish()
+  companion object {
+    const val PIN_SETUP = "pinSetup"
   }
 }

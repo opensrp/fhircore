@@ -18,14 +18,14 @@
         tools:replace="android:theme">
 
         <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme" />
+            android:name=".ui.appsetting.AppSettingActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <activity
-            android:name=".ui.main.AppMainActivity"
-            android:exported="false"
-            android:launchMode="singleTop" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".ui.login.LoginActivity"
@@ -38,19 +38,14 @@
             android:launchMode="singleTop" />
 
         <activity
-            android:name=".ui.pin.PinSetupActivity"
+            android:name=".ui.main.AppMainActivity"
             android:exported="false"
             android:launchMode="singleTop" />
 
         <activity
-            android:name=".ui.appsetting.AppSettingActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:name=".ui.questionnaire.QuestionnaireActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
 
         <activity android:name=".HiltActivityForTest" />
 

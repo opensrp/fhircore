@@ -52,7 +52,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
-import org.smartregister.fhircore.quest.ui.pin.PinSetupActivity
 import org.smartregister.p2p.P2PLibrary
 
 @ExperimentalCoroutinesApi

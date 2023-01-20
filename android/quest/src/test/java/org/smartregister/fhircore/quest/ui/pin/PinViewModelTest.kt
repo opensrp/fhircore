@@ -86,7 +86,7 @@ internal class PinViewModelTest : RobolectricTest() {
       )
 
     every { pinViewModel.pinUiState } returns
-      mutableStateOf(PinUiState(savedPin = "1234", isSetupPage = true, appName = "demo"))
+      mutableStateOf(PinUiState(currentUserPin = "1234", setupPin = true, appName = "demo"))
     every { pinViewModel.applicationConfiguration } returns
       ApplicationConfiguration(appId = "appId", appTitle = "demo")
     every { pinViewModel.showError } returns MutableLiveData(false)
@@ -95,17 +95,16 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnPinChangeValidated() {
-    pinViewModel.pinUiState.value = PinUiState(savedPin = "1234", isSetupPage = false)
+    pinViewModel.pinUiState.value = PinUiState(currentUserPin = "1234", setupPin = false)
 
-    pinViewModel.onPinChanged(testPin.value.toString())
-    Assert.assertEquals(pinViewModel.pinUiState.value.savedPin, testPin.value.toString())
-    Assert.assertEquals(pinViewModel.enableSetPin.value, true)
+    pinViewModel.onSetPin(testPin.value.toString())
+    Assert.assertEquals(pinViewModel.pinUiState.value.currentUserPin, testPin.value.toString())
     Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
 
   @Test
   fun testOnPinConfirmed() {
-    pinViewModel.onPinConfirmed()
+    pinViewModel.onPinVerified()
     Assert.assertEquals(
       pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
@@ -115,7 +114,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnPinConfirmedValidated() {
-    pinViewModel.onPinConfirmed()
+    pinViewModel.onPinVerified()
     Assert.assertEquals(
       pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
@@ -126,32 +125,25 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadData() {
-    pinViewModel.setPinUiState(isSetup = true, context = application)
+    pinViewModel.setPinUiState(setupPin = true, context = application)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(pinUiState.isSetupPage, true)
-    Assert.assertNotNull(pinUiState.savedPin)
-    Assert.assertNotNull(pinUiState.enterUserLoginMessage)
+    Assert.assertEquals(pinUiState.setupPin, true)
+    Assert.assertNotNull(pinUiState.currentUserPin)
+    Assert.assertNotNull(pinUiState.message)
   }
 
   @Test
   fun testLoadDataForLoginScreen() {
-    pinViewModel.setPinUiState(isSetup = false, context = application)
+    pinViewModel.setPinUiState(setupPin = false, context = application)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(pinUiState.isSetupPage, true)
-    Assert.assertNotNull(pinUiState.savedPin)
+    Assert.assertEquals(pinUiState.setupPin, true)
+    Assert.assertNotNull(pinUiState.currentUserPin)
   }
 
   @Test
   fun testOnPinChangeError() {
-    pinViewModel.onPinChanged("3232")
+    pinViewModel.onSetPin("3232")
     Assert.assertEquals(pinViewModel.showError.value, true)
-  }
-
-  @Test
-  fun testOnPinChangeInvalid() {
-    pinViewModel.onPinChanged("32")
-    Assert.assertEquals(pinViewModel.showError.value, false)
-    Assert.assertEquals(pinViewModel.enableSetPin.value, false)
   }
 
   @Ignore("reason : action dialer is disabled for now")
@@ -166,7 +158,7 @@ internal class PinViewModelTest : RobolectricTest() {
     every { secureSharedPreference.deleteSessionTokens() } just runs
     every { secureSharedPreference.deleteSessionPin() } just runs
     every { secureSharedPreference.deleteCredentials() } just runs
-    pinViewModel.onMenuLoginClicked(false)
+    pinViewModel.onMenuItemClicked(false)
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
   @Test
@@ -174,13 +166,7 @@ internal class PinViewModelTest : RobolectricTest() {
     every { secureSharedPreference.deleteSessionTokens() } just runs
     every { secureSharedPreference.deleteSessionPin() } just runs
     every { secureSharedPreference.deleteCredentials() } just runs
-    pinViewModel.onMenuLoginClicked(true)
+    pinViewModel.onMenuItemClicked(true)
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
-  }
-
-  @Test
-  fun testOnMenuSettingsClicked() {
-    pinViewModel.onMenuSettingClicked()
-    Assert.assertEquals(pinViewModel.navigateToSettings.value, true)
   }
 }

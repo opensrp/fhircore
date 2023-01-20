@@ -16,200 +16,227 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
-import org.smartregister.fhircore.engine.ui.components.PinView
-import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
-import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.ui.components.PinInput
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.ui.login.APP_LOGO_TAG
-
-const val PIN_TOOLBAR_MENU = "toolbarMenuTag"
-const val PIN_TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
-const val PIN_TOOLBAR_TITLE = "toolbarTitle"
-const val PIN_TOOLBAR_MENU_ICON = "toolbarIcon"
-const val PIN_TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
-const val PIN_FORGOT_PIN = "forgotPin"
-const val PIN_FORGOT_DIALOG = "forgotPinDialog"
-const val PIN_TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
-const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
-
   val showError by viewModel.showError.observeAsState(initial = false)
   val pinUiState by remember { mutableStateOf(viewModel.pinUiState.value) }
 
   PinLoginPage(
-    onPinChanged = viewModel::onPinChanged,
     showError = showError,
-    enterUserPinMessage = pinUiState.enterUserLoginMessage,
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked(false) },
+    pinUiState = pinUiState,
+    onMenuLoginClicked = viewModel::onMenuItemClicked,
     forgotPin = viewModel::forgotPin,
-    appName = pinUiState.appName,
+    onSetPin = viewModel::onSetPin,
+    onPinVerified = viewModel::onPinVerified
   )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PinLoginPage(
   modifier: Modifier = Modifier,
-  onPinChanged: (String) -> Unit,
-  showError: Boolean = false,
+  showError: Boolean,
+  pinUiState: PinUiState,
+  onSetPin: (String) -> Unit,
+  onPinVerified: (Boolean) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
-  enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
-  appName: String = "",
 ) {
-
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
+  var newPin by remember { mutableStateOf("") }
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
-  Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
-    TopAppBar(
-      title = { Text(text = "", Modifier.testTag(PIN_TOOLBAR_TITLE)) },
-      navigationIcon = {
-        IconButton(onClick = {}) {
-          Icon(
-            Icons.Filled.ArrowBack,
-            contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
+  LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
+
+  Scaffold(
+    topBar = {
+      // Only show toolbar when entering pin
+      if (!pinUiState.setupPin) {
+        PinTopBar(
+          showMenu = showMenu,
+          onShowMenu = { showMenu = it },
+          onMenuLoginClicked = onMenuLoginClicked
+        )
+      }
+    }
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      if (showForgotPinDialog) {
+        ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+      }
+      Column {
+        Spacer(modifier = modifier.fillMaxHeight(0.25f))
+        Column(modifier = modifier.fillMaxWidth()) {
+          if (pinUiState.setupPin) {
+            PinLogoSection(showLogo = false, title = stringResource(id = R.string.set_pin))
+          } else {
+            PinLogoSection(showLogo = true, title = pinUiState.appName)
+          }
+          Text(
+            text = pinUiState.message,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Normal,
+            fontSize = 20.sp,
+            modifier =
+              modifier.padding(bottom = 12.dp, top = 20.dp).align(Alignment.CenterHorizontally)
           )
-        }
-      },
-      actions = {
-        IconButton(
-          onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
-        DropdownMenu(
-          expanded = showMenu,
-          onDismissRequest = { showMenu = false },
-          Modifier.testTag(PIN_TOOLBAR_MENU)
-        ) {
-          DropdownMenuItem(
-            onClick = {
-              showMenu = false
-              onMenuLoginClicked(false)
-            },
-            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
+
+          PinInput(
+            actualPin = pinUiState.currentUserPin,
+            inputMode = pinUiState.setupPin,
+            pinLength = pinUiState.pinLength,
+            onPinSet = { enteredPin -> newPin = enteredPin },
+            onPinVerified = onPinVerified
+          )
+
+          // Only show error message and forgot password when not setting the pin
+          if (!pinUiState.setupPin) {
+            if (showError) {
+              Text(
+                text = stringResource(R.string.incorrect_pin_please_retry),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                color = DangerColor,
+                modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+              )
+            }
+            Text(
+              text = stringResource(R.string.forgot_pin),
+              color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
+              fontSize = 16.sp,
+              modifier =
+                modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
+                  showForgotPinDialog = !showForgotPinDialog
+                }
+            )
+          } else {
+            // Enable button when a new pin of required length is entered
+            Button(
+              onClick = { onSetPin(newPin) },
+              enabled = newPin.length == pinUiState.pinLength,
+              modifier =
+                modifier
+                  .bringIntoViewRequester(bringIntoViewRequester)
+                  .padding(top = 32.dp, end = 16.dp, start = 16.dp)
+                  .fillMaxWidth(),
+              colors =
+                ButtonDefaults.buttonColors(
+                  disabledContentColor = Color.Gray,
+                  contentColor = Color.White
+                ),
+              elevation = null
+            ) {
+              Text(
+                text = stringResource(id = R.string.set_pin).uppercase(),
+                modifier = modifier.padding(8.dp)
+              )
+            }
+          }
         }
       }
-    )
-
-    if (showForgotPinDialog) {
-      ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
     }
+  }
+}
 
-    Column(
-      modifier =
-        Modifier.fillMaxSize()
-          .padding(horizontal = 16.dp, vertical = 70.dp)
-          .wrapContentWidth(Alignment.CenterHorizontally)
-    ) {
+@Composable
+private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, title: String) {
+  Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxWidth()) {
+    if (showLogo) {
       Image(
         painter = painterResource(id = R.drawable.ic_app_logo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
-          modifier
-            .padding(top = 16.dp)
-            .align(Alignment.CenterHorizontally)
-            .requiredHeight(120.dp)
-            .requiredWidth(140.dp)
-            .testTag(APP_LOGO_TAG)
-      )
-      Text(
-        text = appName,
-        textAlign = TextAlign.Center,
-        fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        modifier = modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
-      )
-
-      Text(
-        text = enterUserPinMessage,
-        textAlign = TextAlign.Center,
-        fontWeight = FontWeight.Normal,
-        fontSize = 20.sp,
-        modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
-      )
-
-      PinView(
-        pinInputLength = PIN_INPUT_MAX_THRESHOLD,
-        isDotted = true,
-        onPinChanged = onPinChanged,
-        showError = showError
-      )
-
-      if (showError)
-        Text(
-          text = stringResource(R.string.incorrect_pin_please_retry),
-          textAlign = TextAlign.Center,
-          fontWeight = FontWeight.Normal,
-          fontSize = 16.sp,
-          color = colorResource(id = R.color.colorError),
-          modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
-        )
-
-      Text(
-        text = stringResource(R.string.forgot_pin),
-        color = LoginButtonColor,
-        fontSize = 16.sp,
-        style = TextStyle(textDecoration = TextDecoration.Underline, color = LoginDarkColor),
-        modifier =
-          modifier
-            .padding(top = 24.dp)
-            .align(Alignment.CenterHorizontally)
-            .testTag(PIN_FORGOT_PIN)
-            .clickable { showForgotPinDialog = !showForgotPinDialog }
+          modifier.align(Alignment.CenterHorizontally).requiredHeight(120.dp).requiredWidth(140.dp)
       )
     }
+    Text(
+      text = title,
+      textAlign = TextAlign.Center,
+      fontWeight = FontWeight.Bold,
+      fontSize = 22.sp,
+      modifier = modifier.padding(8.dp)
+    )
   }
+}
+
+@Composable
+private fun PinTopBar(
+  showMenu: Boolean,
+  onShowMenu: (Boolean) -> Unit,
+  onMenuLoginClicked: (Boolean) -> Unit
+) {
+  TopAppBar(
+    title = { Text(text = "") },
+    actions = {
+      IconButton(onClick = { onShowMenu(true) }) {
+        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+      }
+      DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { onShowMenu(false) },
+      ) {
+        DropdownMenuItem(
+          onClick = { onMenuLoginClicked(false) },
+        ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
+
+        DropdownMenuItem(
+          onClick = { onMenuLoginClicked(true) },
+        ) { Text(text = stringResource(id = R.string.settings)) }
+      }
+    }
+  )
 }
 
 @Composable
@@ -224,7 +251,7 @@ fun ForgotPinDialog(
       Text(
         text = stringResource(R.string.forgot_pin),
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 20.sp
       )
     },
     text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
@@ -247,8 +274,7 @@ fun ForgotPinDialog(
             }
         )
       }
-    },
-    modifier = Modifier.testTag(PIN_FORGOT_DIALOG)
+    }
   )
 }
 
@@ -257,11 +283,20 @@ fun ForgotPinDialog(
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
   PinLoginPage(
-    onPinChanged = {},
+    onSetPin = {},
     showError = false,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "anc"
+    pinUiState =
+      PinUiState(
+        currentUserPin = "",
+        message = "CHA will use this PIN to login",
+        appName = "MOH eCBIS",
+        setupPin = true,
+        pinLength = 4,
+        showLogo = true
+      ),
+    onPinVerified = {}
   )
 }
 
@@ -270,10 +305,19 @@ fun PinLoginPreview() {
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
   PinLoginPage(
-    onPinChanged = {},
-    showError = true,
+    onSetPin = {},
+    showError = false,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "ecbis"
+    pinUiState =
+      PinUiState(
+        currentUserPin = "1234",
+        message = "Enter PIN for ecbis",
+        appName = "MOH eCBIS",
+        setupPin = false,
+        pinLength = 4,
+        showLogo = true
+      ),
+    onPinVerified = {}
   )
 }
