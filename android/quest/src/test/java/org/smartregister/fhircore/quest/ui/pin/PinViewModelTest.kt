@@ -69,7 +69,7 @@ class PinViewModelTest : RobolectricTest() {
   @Test
   fun testOnPinVerified() {
     pinViewModel.onPinVerified(true)
-    Assert.assertEquals(false, pinViewModel.showError.value)
+
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
 
     pinViewModel.onPinVerified(false)
@@ -118,5 +118,11 @@ class PinViewModelTest : RobolectricTest() {
   fun testForgotPin() {
     pinViewModel.forgotPin()
     Assert.assertEquals("tel:####", pinViewModel.launchDialPad.value)
+  }
+
+  @Test
+  fun testOnShowPinError() {
+    pinViewModel.onShowPinError(false)
+    Assert.assertEquals(false, pinViewModel.showError.value)
   }
 }

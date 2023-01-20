@@ -93,8 +93,8 @@ constructor(
   }
 
   fun onPinVerified(validPin: Boolean) {
+    onShowPinError(!validPin)
     if (validPin) {
-      onShowPinError(false)
       _navigateToHome.postValue(true)
     }
   }
