@@ -460,7 +460,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun testFilterListShouldReturnMatchingResource() {
 
-    val listOfResources =
+    val resources =
       listOf(
         Condition().apply {
           id = "1"
@@ -472,7 +472,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterResources(listOfResources, "id")
+    val result = rulesEngineService.filterResources(resources, "Condition.id = 2")
 
     Assert.assertTrue(result.size == 1)
     with(result.first() as Condition) {
