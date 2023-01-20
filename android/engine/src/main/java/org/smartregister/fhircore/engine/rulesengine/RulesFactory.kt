@@ -347,14 +347,24 @@ constructor(
      * This function filters resource if the [value] provided matches the result of the extracted
      * [fhirPathExpression]
      */
-    fun filterResources(
-      resources: List<Resource>,
-      fhirPathExpression: String,
-      value: String
-    ): List<Resource> =
-      resources.filter {
-        value.equals(fhirPathDataExtractor.extractValue(it, fhirPathExpression), ignoreCase = true)
+    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
       }
+      return resources.filter {
+        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
+      }
+    }
+
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>,
+      fhirPathExpression: String
+    ): List<Any> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
+      }
+      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+    }
   }
 
   companion object {
