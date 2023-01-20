@@ -81,7 +81,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
           )
         )
       }
-      this.launchAnotherActivity<AppMainActivity>()
+      startActivity(Intent(this, AppMainActivity::class.java))
     }
   }
 
