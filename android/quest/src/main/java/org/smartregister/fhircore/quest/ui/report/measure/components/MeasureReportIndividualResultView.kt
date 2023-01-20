@@ -38,12 +38,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
@@ -128,9 +127,8 @@ fun MeasureReportIndividualResultView(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportIndividualResultViewPreview() {
   MeasureReportIndividualResultView(
     patientViewData =

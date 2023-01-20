@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PinInput
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
@@ -279,8 +280,7 @@ fun ForgotPinDialog(
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 fun PinLoginPreview() {
   PinLoginPage(
     onSetPin = {},
@@ -301,8 +301,7 @@ fun PinLoginPreview() {
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 fun PinLoginErrorPreview() {
   PinLoginPage(
     onSetPin = {},
