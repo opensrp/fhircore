@@ -48,7 +48,8 @@ class PinLoginScreenKtTest {
             pinLength = 4,
             showLogo = true
           ),
-        onPinVerified = {}
+        onPinVerified = {},
+        onShowPinError = {}
       )
     }
 
@@ -78,7 +79,8 @@ class PinLoginScreenKtTest {
             pinLength = 4,
             showLogo = true
           ),
-        onPinVerified = {}
+        onPinVerified = {},
+        onShowPinError = {}
       )
     }
     composeRule.onNodeWithText("MOH eCBIS", ignoreCase = true).assertExists().assertIsDisplayed()
