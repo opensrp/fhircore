@@ -376,6 +376,45 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadQuestionnaireShouldMakeQuestionsEditableWithReadonlyAndAddInitialExpressionExtension() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
+    }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertFalse(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+  }
+
+  @Test
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
     val patient = samplePatient()
