@@ -35,12 +35,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
 
@@ -107,9 +106,8 @@ fun AppSettingScreen(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 private fun AppSettingScreenPreview() {
   AppSettingScreen(appId = "", onAppIdChanged = {}, onLoadConfigurations = {})
 }

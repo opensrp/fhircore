@@ -118,7 +118,7 @@ constructor(
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
-    relatedResourcesMap: Map<ResourceType, List<Resource>> = emptyMap(),
+    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values and init facts
     computedValuesMap.clear()
@@ -146,7 +146,7 @@ constructor(
 
     // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
     facts.put(baseResource.resourceType.name, baseResource)
-    relatedResourcesMap.forEach { facts.put(it.key.name, it.value) }
+    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
 
     rulesEngine.fire(Rules(customRules), facts)
 
@@ -183,10 +183,10 @@ constructor(
       resource: Resource,
       relatedResourceType: ResourceType,
       fhirPathExpression: String,
-      relatedResourcesMap: Map<ResourceType, List<Resource>>? = null
+      relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        relatedResourcesMap?.get(relatedResourceType)
+        relatedResourcesMap?.get(relatedResourceType.name)
           ?: if (facts.getFact(relatedResourceType.name) != null)
             facts.getFact(relatedResourceType.name).value as List<Resource>
           else emptyList()
@@ -347,14 +347,24 @@ constructor(
      * This function filters resource if the [value] provided matches the result of the extracted
      * [fhirPathExpression]
      */
-    fun filterResources(
-      resources: List<Resource>,
-      fhirPathExpression: String,
-      value: String
-    ): List<Resource> =
-      resources.filter {
-        value.equals(fhirPathDataExtractor.extractValue(it, fhirPathExpression), ignoreCase = true)
+    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
       }
+      return resources.filter {
+        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
+      }
+    }
+
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>,
+      fhirPathExpression: String
+    ): List<Any> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
+      }
+      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+    }
   }
 
   companion object {

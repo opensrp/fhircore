@@ -27,12 +27,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 
 const val BOTTOM_NAV_CONTAINER_TEST_TAG = "bottomNavContainerTestTag"
@@ -81,7 +81,7 @@ fun BottomScreenSection(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 fun BottomScreenSectionPreview() {
   val navController = rememberNavController()

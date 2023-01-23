@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -37,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -98,8 +98,8 @@ fun ExtendedFab(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
 fun PreviewDisabledExtendedFab() {
   ExtendedFab(
     fabActions =
@@ -115,8 +115,8 @@ fun PreviewDisabledExtendedFab() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
 fun PreviewExtendedFab() {
   ExtendedFab(
     fabActions =
@@ -131,8 +131,8 @@ fun PreviewExtendedFab() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
 fun PreviewExtendedFabJustIcon() {
   ExtendedFab(
     fabActions =
