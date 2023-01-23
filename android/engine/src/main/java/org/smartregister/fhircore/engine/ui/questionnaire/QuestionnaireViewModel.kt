@@ -250,7 +250,7 @@ constructor(
       val extras = mutableListOf<Resource>()
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-        questionnaireResponse.contained = listOf()
+        questionnaireResponse.contained = mutableListOf()
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
