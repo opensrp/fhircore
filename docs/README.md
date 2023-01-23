@@ -1,64 +1,42 @@
 ---
 sidebar_position: 1
 sidebar_label: Introduction
+description: >-
+  OpenSRP FHIR is the FHIR-native medical record system for health workers to
+  manage their patients for child health, maternal health and more.
 ---
 
 # What is OpenSRP FHIR?
 
-### Introduction
+OpenSRP FHIR has two parts: a mobile app for Android devices and a web-based Dashboard.
 
-FHIR Core is a Kotlin application for delivering configurable,offline-capable, mobile-first healthcare project implementations from local community to national and international scale using FHIR and the WHO Smart Guidelines on Android.
+#### OpenSRP Android app
 
-FHIR Core is architected as a FHIR native digital health platform powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/). FHIR Core users experience a module oriented design based on over a decade of real world experience implementing digital health projects with [OpenSRP](https://smartregister.org/). This repository contains the Android mobile application built to:
+The OpenSRP FHIR Android app is used by health workers to:
 
-* Load configuration data as FHIR resources
-* Support the WHO Smart Guidelines
-* Manage the identities of healthcare workers (HCWs), community health workers (CHWs), care teams, patients, and clients
-* Collect, view, and edit healthcare data with dynamic forms using FHIR's [Structured Data Capture](https://hl7.org/fhir/us/sdc/index.html) (SDC) implementation
-* Securely store healthcare data encrypted at rest and securely transmit healthcare data using TLS
-* Manage location hierarchies defined by community to national and international administrative boundaries
+1. Enroll community members to a medical record system
+2. Turn community members into patients by adding them to a care plan associated with their condition.&#x20;
+3. Set future appointments for patients
+4. Contact overdue patients to return them to care
+5. Track an individual facility's performance at controlling patients' BPs
 
-For remote data storage and login, the mobile application requires:
+[OpenSRP FHIR app features​](broken-reference)
 
-* A [Keycloak](https://www.keycloak.org/) server to manage identity, authentication, and authorization;
-* A [HAPI FHIR](https://hapifhir.io/) server to store operation and configuration data that includes the [HAPI FHIR to Keycloak integration](https://github.com/opensrp/hapi-fhir-keycloak).
+#### OpenSRP FHIR Dashboard
 
-FHIR Core also interoperates well with:
+1. Add, edit and remove health worker user accounts
+2. Manage health team organization structure such as locations, facilities,  and line of reporting.
+3. View patient information&#x20;
+4. View reporting at many aggregation levels, from system wide down to a single health worker.
 
-* [OpenSRP Web](https://github.com/OpenSRP/web) to access healthcare data from the same HAPI FHIR server.
+[OpenSRP FHIR dashboard features](broken-reference)
 
-![](<assets/fhircore (1).png>)
+#### **Technology**
 
-#### Programming Language
+Github: [https://github.com/opensrp/fhircore/](https://github.com/opensrp/fhircore/)
 
-Kotlin -[v1.7.10](https://kotlinlang.org/)
+The Android app is primarily written in Kotlin​, architected as a FHIR-native platform, and powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/).
 
-#### Android libraries used
+[Getting started for implementers](broken-reference)&#x20;
 
-1. [Hilt](https://developer.android.com/training/dependency-injection/hilt-multi-module)- for dependency injection
-2. [Jetpack Compose](https://developer.android.com/jetpack/compose/documentation) - for building sharable declarative Android UI
-3. [Jetpack Compose navigation](https://developer.android.com/jetpack/compose/navigation) - to navigate between compose screens
-4. [Android navigation component](https://developer.android.com/guide/navigation) - to navigate between activities and fragments
-5. Android Livedata and ViewModel
-
-#### Architecture
-
-The app is architectured in the following manner:
-
-1. The app is built around MVVM architecuture with the data layer implemented using the Repository pattern.
-2. The entry point of the application also follows Single-Activity architecture after the user is logged in.
-
-#### Data access
-
-The application uses FHIR Engine APIs from Google's [Android FHIR SDK](https://github.com/google/android-fhir) (which internally uses [Room](https://developer.android.com/jetpack/androidx/releases/room) libary) to access the local Sqlite database.
-
-#### Configurations
-
-The application syncs particular resources (conventionally, Composition and Binary) from the HAPI FHIR server to configure the app. The configurations control application workflows as well as the look and feel of the app.
-
-#### Tests
-
-This repository also includes:
-
-1. Unit tests
-2. UI and integration tests
+[Getting started for technologists](broken-reference)
