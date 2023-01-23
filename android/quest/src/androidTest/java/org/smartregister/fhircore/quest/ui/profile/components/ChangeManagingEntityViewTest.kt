@@ -83,7 +83,6 @@ class ChangeManagingEntityViewTest {
   }
 
   @Test
-  @Ignore("Flaky test to be fixed")
   fun testChangeManagingEntityViewDisplaysCancelAndSaveButtons() {
     composeTestRule.onNodeWithTag(TEST_TAG_CANCEL).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(TEST_TAG_SAVE).assertExists().assertIsDisplayed()
