@@ -178,7 +178,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly
+      item.readOnly = readOnly || item.readOnly
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
