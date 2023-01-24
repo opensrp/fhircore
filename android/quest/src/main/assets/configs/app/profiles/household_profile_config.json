@@ -409,7 +409,7 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code', '11112222').get(0), 'Observation.value.text'))"
+                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code=\"11112222\"').get(0), 'Observation.value.text'))"
                     ]
                   },
                   {
