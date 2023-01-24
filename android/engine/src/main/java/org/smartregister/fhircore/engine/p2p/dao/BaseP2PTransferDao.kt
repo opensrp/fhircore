@@ -86,6 +86,7 @@ constructor(
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
+    offset: Int,
     classType: Class<out Resource>
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
@@ -117,11 +118,12 @@ constructor(
             DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
             }
           )
 
           sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+          from = offset
           count = batchSize
         }
       fhirEngine.search(search)
