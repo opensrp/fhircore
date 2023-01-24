@@ -1,5 +1,6 @@
 <resources>
         <string name="app_version">Toleo %1$d(%2$s)</string>
+        <string name="last_sync">Usawazishaji wa mwisho %1$s</string>
         <string name="language">Lugha</string>
         <string name="empty_client_list_message_title">Hakuna Matokeo</string>
         <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
@@ -51,6 +52,7 @@
         <string name="take_photo">Piga picha</string>
         <string name="app_logo">Nembo ya programu</string>
         <string name="powered_by">Inatumia</string>
+        <string name="transfer_data">Kuhamisha Data</string>
         <string name="already_fully_vaccinated">Hawezi kupokea dozi nyingine. Tayari amechanjwa kikamilifu</string>
         <string name="questionnaire_alert_back_pressed_message">Je, una uhakika unataka kurudi? Mabadiliko yaliyofanywa kwenye fomu yatapotea</string>
         <string name="questionnaire_in_progress_alert_back_pressed_message">Je, una uhakika unataka kutupa majibu?</string>
@@ -110,14 +112,13 @@
         <string name="service_card">KADI YA HUDUMA</string>
         <string name="dob">Tarehe ya Kuzaliwa</string>
         <string name="invalid_form_id">ID ya fomu iliyoambatishwa si sahihi</string>
-        <string name="error_loading_config">Hitilafu katika kupakia usanidi. Maelezo: %1$s</string>
-        <string name="date_last_visited">Ziara ya mwisho %1$s</string>
+    <string name="date_last_visited">Ziara ya mwisho %1$s</string>
         <string name="clear_database">Futa yote</string>
         <string name="other_patients">Wagonjwa wengine</string>
         <string name="responses">MAJIBU (%1$s)</string>
         <string name="multi_user_login_attempt">Umejaribu kuingia na mtoa huduma tofauti</string>
         <string name="clear_database_title">Weka upya hifadhidata</string>
-        <string name="clear_database_message">Kuweka upya hifadhidata kutafuta rekodi zote kwenye kifaa chako. Kitendo hiki hakiwezi kutenduliwa.</string>
+        <string name="clear_database_message">Usanidi haukuweza kupatikana. Tafadhali wasiliana na msimamizi wa mfumo</string>
         <string name="resetting_app">Weka upya...</string>
         <string name="error_logging_out">Ujumbe wa hitilafu katika kuondoka: %1$s</string>
         <string name="cannot_logout_user">Imeshindwa kuondoka. Angalia ikiwa kifaa hakiko mtandaoni.</string>
@@ -127,4 +128,7 @@
         <string name="month">Mwezi</string>
         <string name="weeks">Wiki</string>
         <string name="days">Siku</string>
+    <string name="error_loading_config_no_internet">Haikuweza kupakia usanidi. Tafadhali angalia muunganisho wako wa intaneti</string>
+    <string name="error_loading_config_general">Hitilafu katika kuunganisha kwenye seva. Tafadhali wasiliana na msimamizi wa mfumo</string>
+    <string name="error_loading_config_http_error">Haikuweza kupakia usanidi. Tafadhali jaribu tena baadae</string>
 </resources>

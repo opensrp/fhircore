@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
@@ -23,14 +24,21 @@ import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
+import java.net.UnknownHostException
 import java.util.Base64
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
@@ -38,9 +46,13 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyString
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -50,6 +62,9 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.showToast
+import retrofit2.HttpException
+import retrofit2.Response
 
 @HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
@@ -74,12 +89,13 @@ class AppSettingViewModelTest : RobolectricTest() {
         configService
       )
     )
+  private val context = mockk<Context>(relaxed = true)
 
   @Test
   fun testOnApplicationIdChanged() {
     appSettingViewModel.onApplicationIdChanged("appId")
     Assert.assertNotNull(appSettingViewModel.appId.value)
-    Assert.assertEquals("appId", appSettingViewModel.appId.value)
+    assertEquals("appId", appSettingViewModel.appId.value)
   }
 
   @Test
@@ -90,7 +106,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
-    Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
+    assertEquals(true, appSettingViewModel.loadConfigs.value)
   }
 
   @Test
@@ -164,14 +180,75 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
-    Assert.assertEquals(
+    assertEquals(
       listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
       slot.captured
     )
   }
 
+  @Test(expected = HttpException::class)
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
+    val appId = "app_id"
+    val context = mockk<Context>(relaxed = true)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      HttpException(
+        Response.error<ResponseBody>(
+          500,
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
+        )
+      )
+    fhirResourceDataSource.loadData(anyString())
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { fhirResourceDataSource.loadData(anyString()) }
+    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
+  @Test(expected = UnknownHostException::class)
+  fun testFetchConfigurationsThrowsUnknowHostException() = runTest {
+    val appId = "app_id"
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
+    every { context.getString(R.string.error_loading_config_no_internet) }
+    fhirResourceDataSource.loadData(anyString())
+    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_no_internet),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
+  @Test(expected = Exception::class)
+  fun testFetchConfigurationsThrowsException() = runTest {
+    val context = mockk<Context>(relaxed = true)
+    val appId = "app_id"
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+      Exception(context.getString(R.string.error_loading_config_general))
+    coEvery { appSettingViewModel.fetchConfigurations(appId, context) } just runs
+    appSettingViewModel.fetchConfigurations(appId, any(Context::class.java))
+    every { context.getString(R.string.error_loading_config_general) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    assertEquals(
+      context.getString(R.string.error_loading_config_no_internet),
+      appSettingViewModel.error.value
+    )
+    assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
   @Test
-  fun `fetchComposition() should return composition resource`() = runBlockingTest {
+  fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply {
         addEntry().resource =
@@ -194,7 +271,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { fhirResourceDataSource.loadData(any()) }
 
-    Assert.assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
+    assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }
 
   @Test
@@ -236,8 +313,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name
       )!!
 
-    Assert.assertEquals(2, result.size)
-    Assert.assertEquals(ResourceType.Task.name, result.first())
-    Assert.assertEquals(ResourceType.Patient.name, result.last())
+    assertEquals(2, result.size)
+    assertEquals(ResourceType.Task.name, result.first())
+    assertEquals(ResourceType.Patient.name, result.last())
   }
 }

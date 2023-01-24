@@ -128,9 +128,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
 
-      error.observe(appSettingActivity) { error ->
-        if (!error.isNullOrEmpty()) showToast(getString(R.string.error_loading_config, error))
-      }
+      error.observe(appSettingActivity) { error -> if (!error.isNullOrEmpty()) showToast(error) }
     }
 
     val lastAppId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
