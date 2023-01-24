@@ -84,30 +84,30 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           conditions = inputModel.conditions,
           otherPatients = inputModel.otherPatients,
           viewChildText =
-          context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
+            context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
           observations = inputModel.observations,
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
-          inputModel.tasks.map {
-            PatientProfileRowItem(
-              id = it.logicalId,
-              actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
-              title = "", // it.description,
-              subtitle = "", // context.getString(R.string.due_on,
-              // it.executionPeriod.start.makeItReadable()),
-              profileViewSection = PatientProfileViewSection.TASKS,
-              actionButtonIcon =
-              if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-              else Icons.Filled.Add,
-              actionIconColor =
-              if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-              else it.status.retrieveColorCode(),
-              actionButtonColor = it.status.retrieveColorCode(),
-              actionButtonText = it.description,
-              subtitleStatus = it.status.name
-            )
-          },
+            inputModel.tasks.map {
+              PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
+                title = "", // it.description,
+                subtitle = "", // context.getString(R.string.due_on,
+                // it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description,
+                subtitleStatus = it.status.name
+              )
+            },
           practitioners = inputModel.practitioners
         )
       is ProfileData.DefaultProfileData ->
@@ -119,27 +119,27 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate.formatDob(),
           tasks =
-          inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
-            PatientProfileRowItem(
-              id = it.logicalId,
-              actionFormId =
-              if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                it.reasonReference.extractId()
-              else null,
-              title = it.description,
-              subtitle =
-              context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
-              profileViewSection = PatientProfileViewSection.TASKS,
-              actionButtonIcon =
-              if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-              else Icons.Filled.Add,
-              actionIconColor =
-              if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-              else it.status.retrieveColorCode(),
-              actionButtonColor = it.status.retrieveColorCode(),
-              actionButtonText = it.description,
-            )
-          },
+            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+              PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId =
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                    it.reasonReference.extractId()
+                  else null,
+                title = it.description,
+                subtitle =
+                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description,
+              )
+            },
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
@@ -148,53 +148,54 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           age = inputModel.age,
           familyMemberViewStates =
-          inputModel.members.map { memberProfileData ->
-            FamilyMemberViewState(
-              patientId = memberProfileData.id,
-              birthDate = memberProfileData.birthdate,
-              age = memberProfileData.age,
-              gender = memberProfileData.gender.translateGender(context),
-              name = memberProfileData.name,
-              memberTasks =
-              memberProfileData
-                .tasks
-                .filter { it.status == Task.TaskStatus.READY }
-                .take(DEFAULT_TASKS_COUNT)
-                .map {
-                  FamilyMemberTask(
-                    taskId = it.logicalId,
-                    task = it.description,
-                    taskStatus = it.status,
-                    colorCode = it.status.retrieveColorCode(),
-                    taskFormId =
-                    if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                      it.reasonReference.extractId()
-                    else null
-                  )
-                }
-            )
-          }
+            inputModel.members.map { memberProfileData ->
+              FamilyMemberViewState(
+                patientId = memberProfileData.id,
+                birthDate = memberProfileData.birthdate,
+                age = memberProfileData.age,
+                gender = memberProfileData.gender.translateGender(context),
+                name = memberProfileData.name,
+                memberTasks =
+                  memberProfileData
+                    .tasks
+                    .filter { it.status == Task.TaskStatus.READY }
+                    .take(DEFAULT_TASKS_COUNT)
+                    .map {
+                      FamilyMemberTask(
+                        taskId = it.logicalId,
+                        task = it.description,
+                        taskStatus = it.status,
+                        colorCode = it.status.retrieveColorCode(),
+                        taskFormId =
+                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                            it.reasonReference.extractId()
+                          else null
+                      )
+                    }
+              )
+            }
         )
-      is ProfileData.TracingProfileData -> ProfileViewData.TracingProfileData(
-        logicalId = inputModel.logicalId,
-        name = inputModel.name,
-        sex = inputModel.gender.translateGender(context),
-        age = inputModel.age,
-        isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
-        attempts = 0,
-        dueDate = "",
-        identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
-        showIdentifierInProfile = false,
-        addressDistrict = inputModel.addressDistrict,
-        addressTracingCatchment = inputModel.addressTracingCatchment,
-        addressPhysicalLocator = inputModel.addressPhysicalLocator,
-        carePlans = inputModel.services,
-        guardians = inputModel.guardians,
-        observations = inputModel.observations,
-        practitioners = inputModel.practitioners,
-        conditions = inputModel.conditions,
-        tracingTasks = inputModel.tasks
-      )
+      is ProfileData.TracingProfileData ->
+        ProfileViewData.TracingProfileData(
+          logicalId = inputModel.logicalId,
+          name = inputModel.name,
+          sex = inputModel.gender.translateGender(context),
+          age = inputModel.age,
+          isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
+          attempts = 0,
+          dueDate = "",
+          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
+          showIdentifierInProfile = false,
+          addressDistrict = inputModel.addressDistrict,
+          addressTracingCatchment = inputModel.addressTracingCatchment,
+          addressPhysicalLocator = inputModel.addressPhysicalLocator,
+          carePlans = inputModel.services,
+          guardians = inputModel.guardians,
+          observations = inputModel.observations,
+          practitioners = inputModel.practitioners,
+          conditions = inputModel.conditions,
+          tracingTasks = inputModel.tasks
+        )
     }
   }
 

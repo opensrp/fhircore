@@ -33,7 +33,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -42,7 +41,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -50,7 +66,12 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.*
+import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingHelpers
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
@@ -487,29 +508,30 @@ constructor(
   }
 
   suspend fun loadTracing(patientId: String): List<Task> {
-    val tasks = fhirEngine.search<Task> {
-      filter(Task.SUBJECT, { value = "Patient/${patientId}" })
-      filter(
-        TokenClientParam("code"),
-        {
-          value =
-            of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
-        }
-      )
-      filter(
-        Task.STATUS,
-        { value = of(Task.TaskStatus.READY.toCode()) },
-        { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-        operation = Operation.OR
-      )
-      filter(
-        Task.PERIOD,
-        {
-          value = of(DateTimeType.now())
-          prefix = ParamPrefixEnum.GREATERTHAN
-        }
-      )
-    }
+    val tasks =
+      fhirEngine.search<Task> {
+        filter(Task.SUBJECT, { value = "Patient/$patientId" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
+          }
+        )
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          operation = Operation.OR
+        )
+        filter(
+          Task.PERIOD,
+          {
+            value = of(DateTimeType.now())
+            prefix = ParamPrefixEnum.GREATERTHAN
+          }
+        )
+      }
     return tasks
   }
 
@@ -550,10 +572,12 @@ constructor(
           val bundle = Bundle()
           bundle.id = TracingHelpers.tracingBundleId
           val tasks = loadTracing(patientId)
-          tasks.forEach {
-            bundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
-          }
-          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(bundle).apply { id = TracingHelpers.tracingBundleId })
+          tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+          currentBundle.addEntry(
+            Bundle.BundleEntryComponent().setResource(bundle).apply {
+              id = TracingHelpers.tracingBundleId
+            }
+          )
           resourcesList[bundleIndex] = currentBundle
         }
       }
@@ -575,7 +599,7 @@ constructor(
     val resources = getPopulationResources(intent)
     val questResponse = ResourceMapper.populate(questionnaire, *resources)
     questResponse.contained = resources.toList()
-    return  questResponse
+    return questResponse
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
