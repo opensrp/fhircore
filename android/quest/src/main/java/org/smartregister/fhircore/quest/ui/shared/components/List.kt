@@ -20,18 +20,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.R
 
 @Composable
 fun List(
@@ -44,29 +52,44 @@ fun List(
 
   Column(
     modifier =
-      modifier
-        .background(
-          viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
-        )
-        .padding(
-          horizontal = viewProperties.padding.dp,
-          vertical = viewProperties.padding.div(4).dp
-        )
+    modifier
+      .background(
+        viewProperties.backgroundColor
+          ?.interpolate(resourceData.computedValuesMap)
+          .parseColor()
+      )
+      .padding(
+        horizontal = viewProperties.padding.dp,
+        vertical = viewProperties.padding.div(4).dp
+      )
   ) {
-    currentListResourceData?.forEachIndexed { index, listResourceData ->
-      Column {
-        Spacer(modifier = modifier.height(5.dp))
-        Box {
-          ViewRenderer(
-            viewProperties = viewProperties.registerCard.views,
-            resourceData = listResourceData,
-            navController = navController,
+
+      if(currentListResourceData.isNullOrEmpty() ) {
+        Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
+          Text(
+            text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
+            modifier = modifier.padding(8.dp).align(Alignment.Center),
+            color = DefaultColor,
+            fontStyle = FontStyle.Italic
           )
         }
-        Spacer(modifier = modifier.height(5.dp))
-        if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-          Divider(color = DividerColor, thickness = 0.5.dp)
+      }
+      else{
+        currentListResourceData.forEachIndexed { index, listResourceData ->
+          Column {
+            Spacer(modifier = modifier.height(5.dp))
+            Box {
+              ViewRenderer(
+                viewProperties = viewProperties.registerCard.views,
+                resourceData = listResourceData,
+                navController = navController,
+              )
+            }
+            Spacer(modifier = modifier.height(5.dp))
+            if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
+              Divider(color = DividerColor, thickness = 0.5.dp)
+          }
+        }
       }
     }
-  }
 }

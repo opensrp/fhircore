@@ -201,12 +201,13 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Sex",
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientGender}",
-                        "fontSize": 14,
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       }
                     },
@@ -214,18 +215,20 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Age",
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientAge}",
-                        "fontSize": 14,
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       }
                     },
                     {
                       "label": {
                         "viewType": "COMPOUND_TEXT",
+                        "fontSize": 13,
                         "primaryText": "DOB",
                         "primaryTextColor": "#000000"
                       },
@@ -253,7 +256,8 @@
             "viewType": "COMPOUND_TEXT",
             "primaryText": "VISITS",
             "primaryTextColor": "#6F7274",
-            "fontSize": 18.0,
+            "fontSize": 141,
+            "fontStyle": "normal",
             "padding": 16
           },
           "content": [
