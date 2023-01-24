@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
-import org.smartregister.fhircore.engine.util.extension.launchAnotherActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
@@ -51,12 +51,17 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
       val pinLoginActivity = this@PinLoginActivity
       setPinUiState(setupPin = pinSetup, context = pinLoginActivity)
       navigateToSettings.observe(pinLoginActivity) {
-        if (it) pinLoginActivity.launchAnotherActivity<AppSettingActivity>()
+        if (it) pinLoginActivity.launchActivityWithNoBackStackHistory<AppSettingActivity>()
+        finish()
       }
-      navigateToHome.observe(pinLoginActivity) { if (it) pinLoginActivity.navigateToHome() }
+      navigateToHome.observe(pinLoginActivity) {
+        if (it) pinLoginActivity.navigateToHome()
+        finish()
+      }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       navigateToLogin.observe(pinLoginActivity) {
-        if (it) pinLoginActivity.launchAnotherActivity<LoginActivity>()
+        if (it) pinLoginActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
+        finish()
       }
     }
     setContent { AppTheme { PinLoginScreen(pinViewModel) } }
@@ -65,22 +70,21 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   private fun navigateToHome() {
-    this.run {
-      // Initialize P2P only when username is provided then launch main activity
-      val username = secureSharedPreference.retrieveSessionUsername()
-      if (!username.isNullOrEmpty()) {
-        P2PLibrary.init(
-          P2PLibrary.Options(
-            context = applicationContext,
-            dbPassphrase = username,
-            username = username,
-            senderTransferDao = p2pSenderTransferDao,
-            receiverTransferDao = p2pReceiverTransferDao
-          )
+    startActivity(Intent(this, AppMainActivity::class.java))
+    // Initialize P2P only when username is provided then launch main activity
+    val username = secureSharedPreference.retrieveSessionUsername()
+    if (!username.isNullOrEmpty()) {
+      P2PLibrary.init(
+        P2PLibrary.Options(
+          context = applicationContext,
+          dbPassphrase = username,
+          username = username,
+          senderTransferDao = p2pSenderTransferDao,
+          receiverTransferDao = p2pReceiverTransferDao
         )
-      }
-      startActivity(Intent(this, AppMainActivity::class.java))
+      )
     }
+    finish()
   }
 
   private fun launchDialPad(phone: String) {

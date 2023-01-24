@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
@@ -75,35 +76,27 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
-    run {
-      startActivity(
-        Intent(this, AppMainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-      )
-      // Initialize P2P after login only when username is provided then finish activity
-      val username = secureSharedPreference.retrieveSessionUsername()
-      if (!username.isNullOrEmpty()) {
-        P2PLibrary.init(
-          P2PLibrary.Options(
-            context = applicationContext,
-            dbPassphrase = username,
-            username = username,
-            senderTransferDao = p2pSenderTransferDao,
-            receiverTransferDao = p2pReceiverTransferDao
-          )
+    startActivity(Intent(this, AppMainActivity::class.java))
+    // Initialize P2P after login only when username is provided then finish activity
+    val username = secureSharedPreference.retrieveSessionUsername()
+    if (!username.isNullOrEmpty()) {
+      P2PLibrary.init(
+        P2PLibrary.Options(
+          context = applicationContext,
+          dbPassphrase = username,
+          username = username,
+          senderTransferDao = p2pSenderTransferDao,
+          receiverTransferDao = p2pReceiverTransferDao
         )
-      }
-      finish()
+      )
     }
+    finish()
   }
 
   private fun navigateToPinLogin(launchSetup: Boolean = false) {
-    val intent =
-      Intent(this, PinLoginActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        putExtras(bundleOf(Pair(PinLoginActivity.PIN_SETUP, launchSetup)))
-      }
-    startActivity(intent)
-    finish()
+    this.launchActivityWithNoBackStackHistory<PinLoginActivity>(
+      bundle = bundleOf(Pair(PinLoginActivity.PIN_SETUP, launchSetup))
+    )
   }
 
   private fun launchDialPad(phone: String) {

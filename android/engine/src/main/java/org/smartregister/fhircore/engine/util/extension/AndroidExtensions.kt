@@ -24,10 +24,12 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Build
+import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -152,16 +154,16 @@ fun Activity.applyWindowInsetListener() {
  * cleared from the back stack for launching the next activity then the current [Activity] is
  * finished based on [finishLauncherActivity] condition.
  */
-inline fun <reified A : Activity> Activity.launchAnotherActivity(
-  finishLauncherActivity: Boolean = true
+inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
+  finishLauncherActivity: Boolean = true,
+  bundle: Bundle = bundleOf()
 ) {
   startActivity(
     Intent(this, A::class.java).apply {
       addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
       addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      addCategory(Intent.CATEGORY_LAUNCHER)
+      putExtras(bundle)
     }
   )
   if (finishLauncherActivity) finish()

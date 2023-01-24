@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -73,10 +72,10 @@ fun PinInput(
   var enteredPin by remember { mutableStateOf("") }
   var nextCellIndex by remember { mutableStateOf(0) }
 
-  // Launch keyboard and request focus on the hidden input field
+  // Launch keyboard and request focus on the hidden input field, delay of 300ms as workaround
   LaunchedEffect(Unit) {
-    focusRequester.requestFocus()
     delay(300)
+    focusRequester.requestFocus()
     keyboard?.show()
   }
 
@@ -112,7 +111,7 @@ fun PinInput(
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
     singleLine = true,
-    modifier = modifier.focusRequester(focusRequester).size(0.dp).wrapContentSize(),
+    modifier = modifier.focusRequester(focusRequester).size(0.dp),
   )
 
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -135,6 +134,8 @@ fun PinInput(
         number = enteredPin.getOrNull(index)?.toString() ?: "",
         backgroundColor = backgroundColor,
         onPinCellClick = {
+          focusRequester.requestFocus()
+          keyboard?.show()
           enteredPin = ""
           onShowPinError(false)
         }
