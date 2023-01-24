@@ -161,16 +161,16 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
   Column(modifier = Modifier.fillMaxWidth()) {
     CardView(
       viewProperties =
-      CardViewProperties(
-        viewType = ViewType.CARD,
-        content =
-        listOf(
-          CompoundTextProperties(
-            primaryText = "Richard Brown, M, 21",
-            primaryTextColor = "#000000",
-          )
+        CardViewProperties(
+          viewType = ViewType.CARD,
+          content =
+            listOf(
+              CompoundTextProperties(
+                primaryText = "Richard Brown, M, 21",
+                primaryTextColor = "#000000",
+              )
+            ),
         ),
-      ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )

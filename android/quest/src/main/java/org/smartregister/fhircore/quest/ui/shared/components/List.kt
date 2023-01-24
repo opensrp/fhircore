@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
@@ -52,44 +51,40 @@ fun List(
 
   Column(
     modifier =
-    modifier
-      .background(
-        viewProperties.backgroundColor
-          ?.interpolate(resourceData.computedValuesMap)
-          .parseColor()
-      )
-      .padding(
-        horizontal = viewProperties.padding.dp,
-        vertical = viewProperties.padding.div(4).dp
-      )
+      modifier
+        .background(
+          viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
+        )
+        .padding(
+          horizontal = viewProperties.padding.dp,
+          vertical = viewProperties.padding.div(4).dp
+        )
   ) {
-
-      if(currentListResourceData.isNullOrEmpty() ) {
-        Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
-          Text(
-            text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
-            modifier = modifier.padding(8.dp).align(Alignment.Center),
-            color = DefaultColor,
-            fontStyle = FontStyle.Italic
-          )
-        }
+    if (currentListResourceData.isNullOrEmpty()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
+        Text(
+          text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
+          modifier = modifier.padding(8.dp).align(Alignment.Center),
+          color = DefaultColor,
+          fontStyle = FontStyle.Italic
+        )
       }
-      else{
-        currentListResourceData.forEachIndexed { index, listResourceData ->
-          Column {
-            Spacer(modifier = modifier.height(5.dp))
-            Box {
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
-            }
-            Spacer(modifier = modifier.height(5.dp))
-            if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-              Divider(color = DividerColor, thickness = 0.5.dp)
+    } else {
+      currentListResourceData.forEachIndexed { index, listResourceData ->
+        Column {
+          Spacer(modifier = modifier.height(5.dp))
+          Box {
+            ViewRenderer(
+              viewProperties = viewProperties.registerCard.views,
+              resourceData = listResourceData,
+              navController = navController,
+            )
           }
+          Spacer(modifier = modifier.height(5.dp))
+          if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
+            Divider(color = DividerColor, thickness = 0.5.dp)
         }
       }
     }
+  }
 }
