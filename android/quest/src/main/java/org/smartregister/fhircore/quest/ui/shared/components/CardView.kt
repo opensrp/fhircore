@@ -52,8 +52,8 @@ fun CardView(
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
     Column(modifier = modifier.fillMaxWidth()) {
-      Spacer(modifier = modifier.height(8.dp))
       if (viewProperties.header != null) {
+        Spacer(modifier = modifier.height(8.dp))
         CompoundText(
           modifier = modifier.wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!,
@@ -61,8 +61,8 @@ fun CardView(
           navController = navController
         )
         // TODO Display viewAll action text
+        Spacer(modifier = modifier.height(8.dp))
       }
-      Spacer(modifier = modifier.height(8.dp))
     }
     // Card section
     Card(
@@ -149,6 +149,28 @@ private fun CardViewWithPaddingPreview() {
               padding = 16
             )
         ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun CardViewWithoutPaddingAndHeaderPreview() {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    CardView(
+      viewProperties =
+      CardViewProperties(
+        viewType = ViewType.CARD,
+        content =
+        listOf(
+          CompoundTextProperties(
+            primaryText = "Richard Brown, M, 21",
+            primaryTextColor = "#000000",
+          )
+        ),
+      ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
