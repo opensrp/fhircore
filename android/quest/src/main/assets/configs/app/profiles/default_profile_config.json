@@ -256,7 +256,7 @@
             "viewType": "COMPOUND_TEXT",
             "primaryText": "VISITS",
             "primaryTextColor": "#6F7274",
-            "fontSize": 141,
+            "fontSize": 14,
             "fontStyle": "normal",
             "padding": 16
           },
