@@ -28,11 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val ERROR_MESSAGE_TAG = "errorMessageTag"
 const val TRY_BUTTON_TAG = "tryButtonTag"
@@ -61,9 +60,8 @@ fun ErrorMessage(message: String, modifier: Modifier = Modifier, onClickRetry: (
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun ErrorMessagePreview() {
   ErrorMessage(
     message =

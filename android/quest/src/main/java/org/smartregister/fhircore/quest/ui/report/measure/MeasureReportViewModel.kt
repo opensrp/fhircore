@@ -157,8 +157,8 @@ constructor(
   fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
     val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
     return Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) {
-        MeasureReportRepository(measureReportConfiguration, registerRepository)
-      }
+      MeasureReportRepository(measureReportConfiguration, registerRepository)
+    }
       .flow
       .cachedIn(viewModelScope)
   }
@@ -179,9 +179,9 @@ constructor(
         }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
-            NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
-            )
+                  NavigationArg.bindArgumentsOf(
+                    Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
+                  )
         )
       }
       is MeasureReportEvent.GenerateReport -> {
@@ -228,7 +228,7 @@ constructor(
       {
         patientsData.value =
           retrievePatients(event.reportId).map {
-            pagingData: PagingData<MeasureReportPatientViewData> ->
+              pagingData: PagingData<MeasureReportPatientViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
       }
@@ -244,14 +244,14 @@ constructor(
     val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
     patientsData.value =
       Pager(
-          config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
-          pagingSourceFactory = {
-            MeasureReportPatientsPagingSource(
-              MeasureReportRepository(measureReportConfig, registerRepository),
-              measureReportPatientViewDataMapper
-            )
-          }
-        )
+        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
+        pagingSourceFactory = {
+          MeasureReportPatientsPagingSource(
+            MeasureReportRepository(measureReportConfig, registerRepository),
+            measureReportPatientViewDataMapper
+          )
+        }
+      )
         .flow
         .cachedIn(viewModelScope)
     return patientsData.value
@@ -433,7 +433,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (indicators.size == 1) indicators.first().count.toInt() else null,
+            if (indicators.size == 1) indicators.first().count.toInt() else null,
             dataList = if (indicators.size > 1) indicators else emptyList()
           )
         )
@@ -451,20 +451,20 @@ constructor(
           .map { group ->
             val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
             group to
-              group
-                .stratifier
-                .flatMap { it.stratum }
-                .filter { it.hasValue() && it.value.hasText() }
-                .map { stratifier ->
-                  stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
-                    MeasureReportIndividualResult(
-                      title = stratifier.value.text,
-                      percentage = stratifier.findPercentage(denominator!!).toString(),
-                      count = stratifier.findRatio(denominator),
-                      description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                    )
-                  }
-                }
+                    group
+                      .stratifier
+                      .flatMap { it.stratum }
+                      .filter { it.hasValue() && it.value.hasText() }
+                      .map { stratifier ->
+                        stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
+                          MeasureReportIndividualResult(
+                            title = stratifier.value.text,
+                            percentage = stratifier.findPercentage(denominator!!).toString(),
+                            count = stratifier.findRatio(denominator),
+                            description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                          )
+                        }
+                      }
           }
           .mapNotNull {
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
@@ -495,11 +495,11 @@ constructor(
           .filter { it.key.isNullOrBlank().not() }
           .map {
             it.key!! to
-              if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
-              // for subject specific reports it is key value map with exact value
-              it.value.joinToString { it.valueCode() ?: "" }
-              // for multiple subjects it is a number for each which should be counted by entries
-              else it.value.count().toString()
+                    if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
+                    // for subject specific reports it is key value map with exact value
+                      it.value.joinToString { it.valueCode() ?: "" }
+                    // for multiple subjects it is a number for each which should be counted by entries
+                    else it.value.count().toString()
           }
       }
       .map {
@@ -523,8 +523,8 @@ constructor(
     var lastDate = endDate?.firstDayOfMonth()
 
     while (lastDate!!.after(
-      startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
-    )) {
+        startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
+      )) {
       yearMonths.add(
         ReportRangeSelectionData(
           lastDate.formatDate(SDF_MMMM),
