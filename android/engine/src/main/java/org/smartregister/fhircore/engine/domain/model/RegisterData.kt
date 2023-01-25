@@ -90,16 +90,11 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val identifier: String? = null,
     val gender: Enumerations.AdministrativeGender,
     val age: String,
-    val address: String,
-    val familyName: String? = null,
-    val phoneContacts: List<String>? = null,
-    val practitioners: List<Reference>? = null,
-    val chwAssigned: String
-  ) : RegisterData(logicalId = logicalId, name = name) {
-    init {
-      TODO("Finish setup of the RegisterViewData for Appointments")
-    }
-  }
+    val healthStatus: HealthStatus,
+    val isPregnant: Boolean,
+    val isBreastfeeding: Boolean,
+    val reasons: List<String> = emptyList(),
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class TracingRegisterData(
     override val logicalId: String,

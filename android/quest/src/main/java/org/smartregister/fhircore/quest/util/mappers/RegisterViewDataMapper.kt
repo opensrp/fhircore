@@ -123,16 +123,30 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               else -> null
             }
         )
-      is RegisterData.AppointmentRegisterData -> {
+      is RegisterData.AppointmentRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
-          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
-          registerType = RegisterData.AppointmentRegisterData::class
+          title = inputModel.name,
+          subtitle = "${inputModel.reasons.joinToString()}, ${inputModel.age}",
+          registerType = RegisterData.AppointmentRegisterData::class,
+          identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
+              ?: "",
+          serviceButtonBackgroundColor =
+            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) MaleBlueColor
+            else FemalePinkColor,
+          serviceTextIcon =
+            when {
+              inputModel.isBreastfeeding -> R.drawable.ic_person_breastfeeding_solid
+              inputModel.isPregnant -> R.drawable.baseline_pregnant_woman_24
+              inputModel.healthStatus == HealthStatus.EXPOSED_INFANT ->
+                R.drawable.baseline_child_care_fill_48
+              inputModel.gender == Enumerations.AdministrativeGender.MALE ->
+                R.drawable.baseline_man_24
+              inputModel.gender == Enumerations.AdministrativeGender.FEMALE ->
+                R.drawable.baseline_woman_24
+              else -> null
+            }
         )
-
-        TODO("Finish setup of the RegisterViewData for Appointments")
-      }
       is RegisterData.TracingRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
