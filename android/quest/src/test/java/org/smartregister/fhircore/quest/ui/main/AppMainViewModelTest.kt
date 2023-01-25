@@ -47,7 +47,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -67,6 +66,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class AppMainViewModelTest : RobolectricTest() {
