@@ -13,8 +13,6 @@
     <string name="app_version">Version de l\'application %1$d (%2$s)</string>
     <string name="last_sync">Dernière synchronisation %1$s</string>
     <string name="login_text">Connexion</string>
-    <string name="username_input_hint">Saisir le nom d\'utilisateur</string>
-    <string name="password_input_hint">Saisir le mot de passe</string>
     <string name="login_call_fail_error_message">Impossible de vérifier les informations d’identification à partir du serveur. Vérifiez votre connexion Internet</string>
     <string name="userinfo_call_fail_error_message">Impossible d’obtenir les informations de l\'utilisateur à partir du serveur. Vérifiez votre connexion Internet</string>
     <string name="select_language">Sélectionner une langue</string>
@@ -80,7 +78,6 @@
     <string name="clients">Clients</string>
     <string name="logout">Déconnexion</string>
     <string name="application_id">ID de l’application</string>
-    <string name="enter_app_id">Entrer l\'ID de l\'application</string>
     <string name="load_configurations">CHARGER LES CONFIGURATIONS</string>
     <string name="remember_app">Se souvenir de l\'application</string>
     <string name="done">Effectué</string>
@@ -94,8 +91,7 @@
     <string name="required_constraint_validation_error_msg">Il n\'y a pas de réponse au champ obligatoire.</string>
     <string name="form_progress_message">Traitement de l\'information. S\'il vous plaît, attendez</string>
     <string name="set_pin">Définir la broche</string>
-    <string name="set_pin_message">CHA utilisera cette broche pour se connecter</string>
-    <string name="enter_login_pin">Saisissez le code PIN de l\'utilisateur</string>
+    <string name="set_pin_message">CHA utilisera ce code PIN pour se connecter</string>
     <string name="enter_pin_for_user">Entrez le code pour %1$s</string>
     <string name="incorrect_pin_please_retry">Broche incorrecte, Veuillez réessayer</string>
     <string name="pin_menu_login">Connexion</string>
