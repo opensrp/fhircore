@@ -87,6 +87,7 @@ android {
         exclude("META-INF/*.kotlin_module")
         exclude("META-INF/AL2.0")
         exclude("META-INF/LGPL2.1")
+        exclude("META-INF/INDEX.LIST")
     }
 
     compileOptions {
@@ -308,7 +309,6 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestUtil 'androidx.test:orchestrator:1.4.2'

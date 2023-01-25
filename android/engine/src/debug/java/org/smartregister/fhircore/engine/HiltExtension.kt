@@ -21,6 +21,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.StyleRes
 import androidx.fragment.app.Fragment
+import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 
@@ -40,6 +42,7 @@ import androidx.test.core.app.ApplicationProvider
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
   fragmentArgs: Bundle? = null,
   @StyleRes themeResId: Int = R.style.AppTheme,
+  navHostController: TestNavHostController? = null,
   crossinline action: Fragment.() -> Unit = {}
 ) {
   val startActivityIntent =
@@ -59,6 +62,16 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
           T::class.java.name
         )
       fragment.arguments = fragmentArgs
+
+      fragment.viewLifecycleOwnerLiveData.observeForever {
+        if (it != null) {
+          navHostController?.let { controller ->
+            controller.setGraph(R.navigation.nav_graph)
+            Navigation.setViewNavController(fragment.requireView(), controller)
+          }
+        }
+      }
+
       activity
         .supportFragmentManager
         .beginTransaction()

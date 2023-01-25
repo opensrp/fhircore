@@ -89,6 +89,14 @@ constructor(
     val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
+    val secondaryResourceConfig = registerConfiguration.secondaryResources
+    val secondaryResourceData = LinkedList<RelatedResourceData>()
+    val resourceData = mutableListOf<ResourceData>()
+
+    // retrieve secondary ResourceData if secondaryResources are configured
+    if (!secondaryResourceConfig.isNullOrEmpty()) {
+      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+    }
 
     val baseResources: List<Resource> =
       withContext(dispatcherProvider.io()) {
@@ -103,43 +111,47 @@ constructor(
 
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
-    val resourceData =
-      baseResources.map { baseResource: Resource ->
-        retrieveRelatedResources(
-          relatedResourcesConfig = relatedResourcesConfig,
-          baseResourceType = baseResourceType,
+    baseResources.map { baseResource: Resource ->
+      val currentRelatedResources = LinkedList<RelatedResourceData>()
+
+      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+        val relatedResources =
+          withContext(dispatcherProvider.io()) {
+            searchRelatedResources(
+              resourceConfig = resourceConfig,
+              baseResourceType = baseResourceType,
+              baseResource = baseResource,
+              fhirPathExpression = resourceConfig.fhirPathExpression
+            )
+          }
+        currentRelatedResources.addAll(relatedResources)
+      }
+
+      // Include secondary resourceData in each row if secondaryResources are configured
+      currentRelatedResources.addAll(secondaryResourceData)
+
+      val currentResourceData =
+        processResourceData(
+          relatedResources = currentRelatedResources,
           baseResource = baseResource,
           views = registerConfiguration.registerCard.views,
           rules = registerConfiguration.registerCard.rules
         )
-      }
+
+      resourceData.add(currentResourceData)
+    }
+
     return resourceData
   }
 
-  private suspend fun retrieveRelatedResources(
-    relatedResourcesConfig: List<ResourceConfig>,
-    baseResourceType: ResourceType,
+  private fun processResourceData(
+    relatedResources: LinkedList<RelatedResourceData>,
     baseResource: Resource,
     rules: List<RuleConfig>,
     views: List<ViewProperties>
   ): ResourceData {
-    val currentRelatedResources = LinkedList<RelatedResourceData>()
 
-    // Retrieve related resources recursively
-    relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
-      val relatedResources =
-        withContext(dispatcherProvider.io()) {
-          searchRelatedResources(
-            resourceConfig = resourceConfig,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            fhirPathExpression = resourceConfig.fhirPathExpression
-          )
-        }
-      currentRelatedResources.addAll(relatedResources)
-    }
-
-    val relatedResourcesMap = currentRelatedResources.createRelatedResourcesMap()
+    val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
     val computedValuesMap =
@@ -171,18 +183,18 @@ constructor(
    */
   private fun computeListRules(
     views: List<ViewProperties>,
-    relatedResourcesMap: MutableMap<ResourceType, MutableList<Resource>>,
+    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     computedValuesMap: Map<String, Any>
   ) =
     views.retrieveListProperties().associate { viewProperties ->
 
       // Retrieve baseResource for LIST, then the related resources then fire rules
       val resourceDataList =
-        relatedResourcesMap[viewProperties.baseResource]?.map { resource ->
+        relatedResourcesMap[viewProperties.baseResource.name]?.map { resource ->
           val newRelatedResources =
             viewProperties.relatedResources.associate {
               Pair(
-                it.resourceType,
+                it.resourceType.name,
                 rulesFactory.rulesEngineService.retrieveRelatedResources(
                   resource = resource,
                   relatedResourceType = it.resourceType,
@@ -240,8 +252,8 @@ constructor(
 
   /**
    *
-   * This function creates a map of resource type against [Resource] from a list of nested
-   * [RelatedResourceData].
+   * This function creates a map of resource config Id ( or resource type if the id is not
+   * configured) against [Resource] from a list of nested [RelatedResourceData].
    *
    * Example: A list of [RelatedResourceData] with Patient as its base resource and two nested
    * [RelatedResourceData] of resource type Condition & CarePlan returns:
@@ -254,16 +266,19 @@ constructor(
    * }
    * ```
    *
-   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource type
-   * as key and value as list of [Resource] s in the map.
+   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource
+   * config Id ( or resource type if the id is not configured) as key and value as list of
+   * [Resource] s in the map.
    */
   private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
-    MutableMap<ResourceType, MutableList<Resource>> {
-    val relatedResourcesMap = mutableMapOf<ResourceType, MutableList<Resource>>()
+    MutableMap<String, MutableList<Resource>> {
+    val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
     while (this.isNotEmpty()) {
       val relatedResourceData = this.removeFirst()
       relatedResourcesMap
-        .getOrPut(relatedResourceData.resource.resourceType) { mutableListOf() }
+        .getOrPut(
+          relatedResourceData.resourceConfigId ?: relatedResourceData.resource.resourceType.name
+        ) { mutableListOf() }
         .add(relatedResourceData.resource)
       relatedResourceData.relatedResources.forEach { this.addLast(it) }
     }
@@ -291,7 +306,9 @@ constructor(
           sort(resourceConfig.sortConfigs)
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(RelatedResourceData(resource = resource))
+        relatedResourcesData.addLast(
+          RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+        )
       }
     } else {
       fhirPathDataExtractor
@@ -310,7 +327,9 @@ constructor(
           }
         }
         .forEach { resource ->
-          relatedResourcesData.addLast(RelatedResourceData(resource = resource))
+          relatedResourcesData.addLast(
+            RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+          )
         }
     }
     relatedResourcesData.forEach { resourceData: RelatedResourceData ->
@@ -332,8 +351,8 @@ constructor(
     baseResourceClass: Class<out Resource>,
     dataQueries: List<DataQuery>?,
     sortConfigs: List<SortConfig>,
-    currentPage: Int,
-    pageSize: Int
+    currentPage: Int? = null,
+    pageSize: Int? = null
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
     val search =
@@ -344,8 +363,10 @@ constructor(
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
         sort(sortConfigs)
-        count = pageSize
-        from = currentPage * pageSize
+        if (currentPage != null && pageSize != null) {
+          count = pageSize
+          from = currentPage * pageSize
+        }
       }
     return fhirEngine.search(search)
   }
@@ -397,19 +418,80 @@ constructor(
     val relatedResourcesConfig = resourceConfig.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
+    val secondaryResourceConfig = profileConfiguration.secondaryResources
 
     val baseResource: Resource =
       withContext(dispatcherProvider.io()) {
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    return retrieveRelatedResources(
-      relatedResourcesConfig = relatedResourcesConfig,
-      baseResourceType = baseResourceType,
+    val relatedResources = LinkedList<RelatedResourceData>()
+
+    relatedResourcesConfig.forEach { config: ResourceConfig ->
+      val resources =
+        withContext(dispatcherProvider.io()) {
+          searchRelatedResources(
+            resourceConfig = config,
+            baseResourceType = baseResourceType,
+            baseResource = baseResource,
+            fhirPathExpression = config.fhirPathExpression
+          )
+        }
+      relatedResources.addAll(resources)
+    }
+
+    if (!secondaryResourceConfig.isNullOrEmpty()) {
+      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+    }
+
+    return processResourceData(
+      relatedResources = relatedResources,
       baseResource = baseResource,
       views = profileConfiguration.views,
       rules = profileConfiguration.rules
     )
+  }
+
+  private suspend fun retrieveSecondaryResources(
+    resourceConfigList: List<FhirResourceConfig>
+  ): LinkedList<RelatedResourceData> {
+    val relatedResourceData = LinkedList<RelatedResourceData>()
+
+    resourceConfigList.map { fhirResourceConfig: FhirResourceConfig ->
+      val baseResources: List<Resource> =
+        withContext(dispatcherProvider.io()) {
+          searchResource(
+            baseResourceClass = fhirResourceConfig.baseResource.resource.resourceClassType(),
+            dataQueries = fhirResourceConfig.baseResource.dataQueries,
+            sortConfigs = fhirResourceConfig.baseResource.sortConfigs
+          )
+        }
+
+      baseResources.map { baseResource: Resource ->
+        val baseRelatedResourceList = LinkedList<RelatedResourceData>()
+        fhirResourceConfig.relatedResources.forEach { resourceConfig: ResourceConfig ->
+          val currentRelatedResources =
+            withContext(dispatcherProvider.io()) {
+              searchRelatedResources(
+                resourceConfig = resourceConfig,
+                baseResourceType = baseResource.resourceType,
+                baseResource = baseResource,
+                fhirPathExpression = resourceConfig.fhirPathExpression
+              )
+            }
+          baseRelatedResourceList.addAll(currentRelatedResources)
+        }
+        relatedResourceData.add(
+          RelatedResourceData(
+            baseResource,
+            baseRelatedResourceList,
+            fhirResourceConfig.baseResource.id
+          )
+        )
+      }
+    }
+
+    return relatedResourceData
   }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration =

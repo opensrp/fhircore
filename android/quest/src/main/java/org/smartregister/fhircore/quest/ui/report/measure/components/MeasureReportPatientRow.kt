@@ -32,10 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
 const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
@@ -90,8 +90,8 @@ fun MeasureReportPatientRow(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
 private fun MeasureReportPatientRowPreview() {
   MeasureReportPatientRow(
     measureReportPatientViewData =

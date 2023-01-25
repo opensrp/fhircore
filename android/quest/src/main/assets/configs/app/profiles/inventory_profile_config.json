@@ -46,7 +46,7 @@
       "name": "lastUpdatedDate",
       "condition": "true",
       "actions": [
-        "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+        "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
       ]
     },
     {
