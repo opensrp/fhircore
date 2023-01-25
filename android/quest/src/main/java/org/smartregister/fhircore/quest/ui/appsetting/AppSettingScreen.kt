@@ -37,10 +37,13 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -51,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -71,6 +75,12 @@ fun AppSettingScreen(
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val coroutineScope = rememberCoroutineScope()
   val bringIntoViewRequester = BringIntoViewRequester()
+  val focusRequester = remember { FocusRequester() }
+
+  LaunchedEffect(Unit) {
+    delay(300)
+    focusRequester.requestFocus()
+  }
 
   Column(modifier = modifier.fillMaxSize()) {
     Column(
@@ -108,6 +118,7 @@ fun AppSettingScreen(
             .onFocusEvent { event ->
               if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
             }
+            .focusRequester(focusRequester)
       )
 
       Spacer(modifier = modifier.height(30.dp))

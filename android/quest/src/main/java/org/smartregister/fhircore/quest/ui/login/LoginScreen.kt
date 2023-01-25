@@ -59,6 +59,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +68,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -82,6 +85,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -143,6 +147,13 @@ fun LoginPage(
   val coroutineScope = rememberCoroutineScope()
   val bringIntoViewRequester = BringIntoViewRequester()
   val focusManager = LocalFocusManager.current
+  val usernameFocusRequester = remember { FocusRequester() }
+  val passwordFocusRequester = remember { FocusRequester() }
+
+  LaunchedEffect(Unit) {
+    delay(300)
+    usernameFocusRequester.requestFocus()
+  }
 
   Surface(
     modifier =
@@ -208,8 +219,9 @@ fun LoginPage(
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .background(color = Color.Unspecified)
-              .testTag(USERNAME_FIELD_TAG),
-          keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+              .testTag(USERNAME_FIELD_TAG)
+              .focusRequester(usernameFocusRequester),
+          keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() })
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
@@ -250,7 +262,8 @@ fun LoginPage(
               }
               .padding(vertical = 4.dp)
               .background(color = Color.Unspecified)
-              .testTag(PASSWORD_FIELD_TAG),
+              .testTag(PASSWORD_FIELD_TAG)
+              .focusRequester(passwordFocusRequester),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
