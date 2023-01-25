@@ -59,7 +59,7 @@
 
     <fragment
         android:id="@+id/userSettingFragment"
-        android:name="org.smartregister.fhircore.engine.ui.usersetting.UserSettingFragment" />
+        android:name="org.smartregister.fhircore.quest.ui.usersetting.UserSettingFragment" />
 
     <fragment
         android:id="@+id/measureReportFragment"
