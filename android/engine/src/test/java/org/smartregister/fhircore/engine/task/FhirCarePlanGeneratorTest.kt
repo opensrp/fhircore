@@ -561,7 +561,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testGenerateCarePlanForANCVisit() = runTest {
     val plandefinition =
-      "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
+      "plans/anc-visit/sample/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
 
     val patient =
       "plans/anc-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
@@ -711,6 +711,149 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               ) // 9th month
             }
           }
+      }
+  }
+
+  @Test
+  fun testGenerateCarePlanForFPVisit() = runTest {
+    val plandefinition =
+      "plans/fp-visit/sample/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/fp-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
+
+    val questionnaireResponse =
+      "plans/fp-visit/sample/questionnaire-response-register.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    /*// start of plan is lmp date | set lmp date to 4 months , and 15th of month
+    val lmp = Date().plusMonths(-4).apply { date = 15 }
+
+    questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
+      DateType(lmp)*/
+
+    val structureMapRegister =
+      structureMapUtilities.parse(
+        "plans/fp-visit/structure-map-register.txt".readFile(),
+        "eCBIS Family Palnning Routine Visit"
+      )
+        .also { println(it.encodeResourceToString()) }
+
+    val structureMapReferral =
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+        .also { println(it.encodeResourceToString()) }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+      plandefinition,
+      patient,
+      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+    )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("FP Visit", carePlan.title)
+        Assert.assertEquals(
+          "This is a visit for the family planning program.",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        Assert.assertEquals(
+          5,
+          carePlan.activityFirstRep.outcomeReference.size
+        ) // 5 visits as 4th month is passing (15th day) as per lmp
+
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+
+        val careplan = resourcesSlot.first() as CarePlan
+
+        /*resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { Assert.assertEquals(7, it.size) } // 6 for visit, 1 for referral
+          .also {
+            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+          }
+          .also { tasks ->
+            tasks.take(6).run {
+              Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+              Assert.assertTrue(
+                this.all {
+                  it.executionPeriod.end.asYyyyMmDd() ==
+                          it.executionPeriod.start.lastDayOfMonth().asYyyyMmDd()
+                }
+              )
+              Assert.assertTrue(
+                this.all { it.basedOn.first().reference == careplan.asReference().reference }
+              )
+            }
+          }
+          .also {
+            it.last().let { task ->
+              Assert.assertTrue(task.reasonReference.reference == "Questionnaire/132049")
+              Assert.assertTrue(
+                task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd()
+              )
+            }
+          }
+          .also {
+            it.elementAt(0).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() ==
+                        Date().asYyyyMmDd() // first task is today | 4th month
+              )
+            }
+            it.elementAt(1).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() ==
+                        lmp.plusMonths(5, true).asYyyyMmDd() // 5th month
+              )
+            }
+            it.elementAt(2).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() ==
+                        lmp.plusMonths(6, true).asYyyyMmDd() // 6th month
+              )
+            }
+            it.elementAt(3).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(7, true).asYyyyMmDd()
+              ) // 7th month
+            }
+            it.elementAt(4).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(8, true).asYyyyMmDd()
+              ) // 8th month
+            }
+            it.elementAt(5).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(9, true).asYyyyMmDd()
+              ) // 9th month
+            }
+          }*/
       }
   }
 }

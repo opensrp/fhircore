@@ -1,0 +1,187 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "d6ddd1ab-58d9-4dd7-b648-520fb12079e3",
+  "meta": {
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS Family Planning Registration"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/4acc8776-32b0-4440-a1b1-a11a12d79acb",
+  "subject": {
+    "reference": "Patient/daa50de9-ca10-467c-a4a6-42f22675de28"
+  },
+  "authored": "2023-01-25T13:38:31+05:00",
+  "item": [
+    {
+      "linkId": "3781fe54-d06e-4edc-a6f6-11929db203af",
+      "text": "Client finding active or passive case finding?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "1bc51f91-ca4c-459b-8024-70466f1fdb93",
+            "system": "urn:uuid:7e55ce7c-c31f-42d3-8031-e9dd31d78331",
+            "code": "passive",
+            "display": "Passive"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b8b28702-0739-497c-8689-2bc8100dff25",
+      "text": "Already using a FP method? ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "860e404b-0b92-418e-86f5-a709aaed6af5",
+            "system": "urn:uuid:77c9767d-52ab-40e3-a249-4f04239dc2d9",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3e44010d-699c-4def-8985-18741b1b208a",
+      "text": "Interested in starting family planning?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "fffcf57e-4eb7-4364-8073-3a8a5eab8548",
+            "system": "urn:uuid:9b6d22c6-b22e-44ea-d21f-1ca8ea6790d9",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "c765c021-4a9a-4791-a922-772beafd7999",
+      "text": "Is woman pregnant?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "208a4fe8-a22d-4ac2-8a5e-d1acb75dc9c4",
+            "system": "urn:uuid:9e4758ec-1893-46c7-82f1-62c90eb8f053",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "1dd8fc5d-67c4-4034-8fa7-d871900b57d7",
+      "text": "Has woman had period within the last 7 days? ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "abc8dc79-d5cc-4a23-8a5a-d43a1b30da17",
+            "system": "urn:uuid:54710614-f0bd-413e-e30c-976eb2cf60a1",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bb81b858-12a6-43b5-d963-4549a1e917ee",
+      "text": "Has woman had a baby for the last 6 weeks?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "687b1280-585c-46d9-810d-4bef9eda424c",
+            "system": "urn:uuid:4f713762-0f41-47f6-8c27-37bf327949fe",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8124caa6-3d16-4801-85d4-7121715e709a",
+      "text": "Has woman abstained from sex since her last period or delivery?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "43aaed65-a174-4621-8b50-ee9f90efd426",
+            "system": "urn:uuid:7ac0ee7d-27e8-4015-91a8-b4a8a176e005",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ec623a65-1d67-47c3-e5ae-497097054e87",
+      "text": "If birthed in 6 months, has woman been breastfeeding with no period? ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "82c3a5ea-fb48-4f2a-9f4d-19deb4edca77",
+            "system": "urn:uuid:7d3680c3-a06d-42ca-d025-63f5ab5bec13",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a9646dd4-1b59-43da-8e14-3dabb514e433",
+      "text": "Did woman have a miscarriage or abortion in the past 7 days? ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "f886019a-577a-495e-822c-32245baee7f8",
+            "system": "urn:uuid:6cc0ddc6-cee0-49c2-8377-9328a357d5cd",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "55b1164d-7492-4635-9b83-0806fbed77d3",
+      "text": "Which method is the client interested in?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "6c3b8bf6-f8f5-4108-def0-eebd8bb3138b",
+            "system": "urn:uuid:e94d6a17-6239-405d-8bf5-804392bbf8c0",
+            "code": "implant",
+            "display": "Implant"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "d67585d7-ae6b-4ede-83c1-80980bc9481f",
+      "text": "Any risk factors for method selected?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "30618366-8188-4951-9029-5f4f62b75c4d",
+            "system": "urn:uuid:8c1e52f8-b570-4f26-cd3c-6107a60e7340",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "fcb635b8-a7bc-47db-81bd-f4fe84649429",
+      "text": "Referred to facility. ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "1f9e114c-0f08-4ad8-b63c-a3be39b00c87",
+            "system": "urn:uuid:0123e4d2-8d52-499a-9077-a03a3a829734",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    }
+  ]
+}

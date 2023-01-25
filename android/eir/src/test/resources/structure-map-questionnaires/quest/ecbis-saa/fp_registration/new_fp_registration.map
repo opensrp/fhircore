@@ -5,12 +5,12 @@ uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
 group newFpRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.type = "collection" "r_bundle_type";
-    src.item as selectFpMethod where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and (answer.value.code != 'withdrawal' or answer.value.code != 'abstinence')) then {
+    src.item as selectFpMethod where(linkId = '55b1164d-7492-4635-9b83-0806fbed77d3' and answer.value.exists() and (answer.value.code != 'withdrawal' and answer.value.code != 'abstinence')) then {
         src.item as pregnancyCheck where(linkId = 'c765c021-4a9a-4791-a922-772beafd7999' and answer.value.exists() and answer.value.code = 'no') then {
             src -> evaluate(src, $this.subject) as refPatient then extractFPCondition(src, bundle, refPatient) "r_bundle_entries";
         } "rule_pregnancy_check";
     } "r_fp_ext";
-    src.item as currentFpMethod where(linkId = '7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec' and answer.value.exists() and (answer.value.code != 'withdrawal' or answer.value.code != 'abstinence')) then {
+    src.item as currentFpMethod where(linkId = '7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec' and answer.value.exists() and (answer.value.code != 'withdrawal' and answer.value.code != 'abstinence')) then {
         src -> evaluate(src, $this.subject) as refPatient then extractFPCondition(src, bundle, refPatient) "r_bundle_entries";
     } "rule_current_fp_method_check";
     src -> evaluate(src, $this.subject) as refPatient then extractObservation(src, bundle, refPatient) "r_obs_entry";
@@ -123,27 +123,27 @@ group ExtractSpecificObservation(source src : QuestionnaireResponse, target bund
 group ExtractReference(source src: QuestionnaireResponse, target ref: Reference) {
 
     // male condom
-    src.item where((linkId ='e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51' or linkId='13c0c688-3d05-44e6-8d34-16f5ed9b2eb7') and answer.value.code = 'yes') then {
+    src.item where(linkId = 'e8719a2f-a31f-4ce5-d3f9-62aacf3c4b51' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
     } "r_male_condom_type_check";
 
     // female condom
-    src.item where((linkId ='ae2b3afe-68bc-46d9-fdb9-9c3322efd277' or linkId='41c5dbca-27d3-4716-8377-05f983ac96f9') and answer.value.code = 'yes') then {
+    src.item where(linkId = 'ae2b3afe-68bc-46d9-fdb9-9c3322efd277' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc' "r_female_condom_ref";
     } "r_female_condom_type_check";
 
     // microlut
-    src.item where((linkId ='07039905-2e06-49da-fd28-0d0a31f8c306' or linkId='e3789419-6aea-4469-fa93-d0ea6436d425') and answer.value.code = 'yes') then {
+    src.item where(linkId = '07039905-2e06-49da-fd28-0d0a31f8c306' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681' "r_microlut_ref";
     } "r_microlut_type_check";
 
     // microgynon
-    src.item where((linkId ='0a53e4a5-79b6-431d-d33f-56b05fbf3f46' or linkId = '85b9d270-c097-4f5b-8302-6bf01f5fb5af') and answer.value.code = 'yes') then {
+    src.item where(linkId = '0a53e4a5-79b6-431d-d33f-56b05fbf3f46' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c' "r_microgynon_ref";
     } "r_microgynon_type_check";
 
     // depo
-    src.item where((linkId ='bda820d4-15dd-471b-b7a7-9aed02bb0558' or linkId='d71c3870-9d07-4fc8-840d-7f35e22ad3e5') and answer.value.code = 'yes') then {
+    src.item where(linkId = 'bda820d4-15dd-471b-b7a7-9aed02bb0558' and answer.value.code = 'yes') then {
         src -> ref.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546' "r_depo_ref";
     } "r_depo_type_check";
 }
