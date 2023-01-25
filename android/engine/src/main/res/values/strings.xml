@@ -100,7 +100,7 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
-    <string name="set_pin">Set Pin</string>
+    <string name="set_pin">Set PIN</string>
     <string name="set_pin_message">CHA will use this PIN to login</string>
     <string name="enter_pin_for_user">Enter PIN for %1$s</string>
     <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
