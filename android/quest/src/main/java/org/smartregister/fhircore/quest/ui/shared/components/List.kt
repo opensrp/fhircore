@@ -80,10 +80,9 @@ fun List(
               navController = navController,
             )
           }
-          Spacer(modifier = modifier.height(5.dp))
-          if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-            Divider(color = DividerColor, thickness = 0.5.dp)
-        }
+        Spacer(modifier = modifier.height(5.dp))
+        if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
+          Divider(color = DividerColor.copy(alpha = 0.5f), thickness = 1.dp)
       }
     }
   }
