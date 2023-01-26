@@ -32,10 +32,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.flowlayout.FlowRow
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
@@ -71,20 +81,113 @@ fun List(
       }
     } else {
       currentListResourceData.forEachIndexed { index, listResourceData ->
-        Column {
-          Spacer(modifier = modifier.height(5.dp))
-          Box {
-            ViewRenderer(
-              viewProperties = viewProperties.registerCard.views,
-              resourceData = listResourceData,
-              navController = navController,
-            )
-          }
-          Spacer(modifier = modifier.height(5.dp))
-          if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-            Divider(color = DividerColor, thickness = 0.5.dp)
+        when (viewProperties.orientation) {
+          ListOrientation.VERTICAL ->
+            Column {
+              DisplayListItem(
+                modifier = modifier,
+                viewProperties = viewProperties,
+                listResourceData = listResourceData,
+                navController = navController,
+                index = index,
+                currentListResourceData = currentListResourceData
+              )
+            }
+          ListOrientation.HORIZONTAL ->
+            FlowRow {
+              DisplayListItem(
+                modifier = modifier,
+                viewProperties = viewProperties,
+                listResourceData = listResourceData,
+                navController = navController,
+                index = index,
+                currentListResourceData = currentListResourceData
+              )
+            }
         }
       }
     }
+  }
+}
+
+@Composable
+private fun DisplayListItem(
+  modifier: Modifier,
+  viewProperties: ListProperties,
+  listResourceData: ResourceData,
+  navController: NavController,
+  index: Int,
+  currentListResourceData: List<ResourceData>
+) {
+  Spacer(modifier = modifier.height(5.dp))
+  Box {
+    ViewRenderer(
+      viewProperties = viewProperties.registerCard.views,
+      resourceData = listResourceData,
+      navController = navController,
+    )
+  }
+  Spacer(modifier = modifier.height(5.dp))
+  if (index < currentListResourceData.lastIndex &&
+      viewProperties.showDivider &&
+      viewProperties.orientation == ListOrientation.VERTICAL
+  )
+    Divider(color = DividerColor, thickness = 0.5.dp)
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ListInWithRowsPreview() {
+  Column {
+    ViewRenderer(
+      navController = rememberNavController(),
+      resourceData =
+        ResourceData(
+          "id",
+          ResourceType.CarePlan,
+          mapOf("1" to "Family", "2" to "Home"),
+          mapOf(
+            "listId" to
+              listOf(
+                ResourceData(
+                  baseResourceId = "1",
+                  ResourceType.CarePlan,
+                  mapOf(),
+                  emptyMap(),
+                )
+              )
+          )
+        ),
+      viewProperties =
+        listOf(
+          ListProperties(
+            viewType = ViewType.LIST,
+            orientation = ListOrientation.VERTICAL,
+            id = "listId",
+            padding = 10,
+            borderRadius = 10,
+            emptyList = NoResultsConfig(message = "No care Plans"),
+            baseResource = ResourceType.CarePlan,
+            alignment = ViewAlignment.NONE,
+            fillMaxHeight = true,
+            registerCard =
+              RegisterCardConfig(
+                views =
+                  listOf(
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "Family Planning",
+                      primaryTextColor = "#508BE8",
+                    ),
+                    CompoundTextProperties(
+                      viewType = ViewType.COMPOUND_TEXT,
+                      primaryText = "Malaria",
+                      primaryTextColor = "#508BE8",
+                    )
+                  ),
+              )
+          )
+        )
+    )
   }
 }
