@@ -1,5 +1,5 @@
 {
-  "appId": "app",
+  "appId": "cha",
   "configType": "register",
   "id": "inventoryRegister",
   "fhirResource": {
@@ -22,6 +22,34 @@
       {
         "resource": "Observation",
         "searchParameter": "subject"
+      },
+      {
+        "id": "latestObservation",
+        "resource": "Observation",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterLatestObservation",
+            "filterType": "STRING",
+            "key": "status",
+            "valueType": "STRING",
+            "valueString": "preliminary"
+          }
+        ]
+      },
+      {
+        "id": "stockOutFlag",
+        "resource": "Flag",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterActiveStockOutFlag",
+            "filterType": "STRING",
+            "key": "status",
+            "valueType": "STRING",
+            "valueString": "active"
+          }
+        ]
       }
     ]
   },
@@ -66,14 +94,28 @@
         "name": "lastUpdatedDate",
         "condition": "true",
         "actions": [
-          "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+          "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
         ]
       },
       {
-        "name": "status",
+        "name": "latestObservationId",
         "condition": "true",
         "actions": [
-          "data.put('status', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value') == '' ? 'UPCOMING' : 'DUE')"
+          "data.put('latestObservationId', fhirPath.extractValue(latestObservation.get(0), 'Observation.id'))"
+        ]
+      },
+      {
+        "name": "stockoutFlagId",
+        "condition": "true",
+        "actions": [
+          "data.put('stockoutFlagId', fhirPath.extractValue(stockOutFlag.get(0), 'Flag.id'))"
+        ]
+      },
+      {
+        "name": "stockoutStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('stockoutStartDate', fhirPath.extractValue(stockOutFlag.get(0), 'Flag.period.start'))"
         ]
       }
     ],
@@ -100,7 +142,7 @@
             "serviceButton": {
               "visible": true,
               "text": "@{quantity}",
-              "status": "@{status}",
+              "status": "DUE",
               "fontSize": 14.0,
               "smallSized": false,
               "actions": [
@@ -129,6 +171,34 @@
                       "dataType": "INTEGER",
                       "key": "currentBalance",
                       "value": "@{quantity}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
+                      "dataType": "INTEGER",
+                      "key": "currentBalance",
+                      "value": "@{quantity}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d6c39388-fb56-4e1f-8cfc-f199f2c89919",
+                      "dataType": "STRING",
+                      "key": "latestObservationId",
+                      "value": "@{latestObservationId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "513d5111-449e-49e0-d43a-8953fb53ba7d",
+                      "dataType": "STRING",
+                      "key": "stockoutFlagId",
+                      "value": "@{stockoutFlagId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "6c5c6fd7-749c-402b-990b-df96a92bf6c8",
+                      "dataType": "STRING",
+                      "key": "stockoutStartDate",
+                      "value": "@{stockoutStartDate}"
                     }
                   ]
                 }

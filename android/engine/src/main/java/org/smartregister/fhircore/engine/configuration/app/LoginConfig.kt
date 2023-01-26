@@ -18,4 +18,9 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
 
-@Serializable data class LoginConfig(val showLogo: Boolean = true, val enablePin: Boolean? = false)
+@Serializable
+data class LoginConfig(
+  val showLogo: Boolean = true,
+  val enablePin: Boolean? = false,
+  val pinLength: Int = 4
+)

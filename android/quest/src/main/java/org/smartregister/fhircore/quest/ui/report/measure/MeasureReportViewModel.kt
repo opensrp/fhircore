@@ -354,6 +354,14 @@ constructor(
     return measureReport
   }
 
+  /**
+   * Run and generate MeasureReport for given measure and subject.
+   * @param measureUrl url of measure to generate report for
+   * @param reportType type of report (population | subject)
+   * @param startDateFormatted start date of measure period with format yyyy-MM-dd
+   * @param endDateFormatted end date of measure period with format yyyy-MM-dd
+   * @param subject the individual subject reference (ResourceType/id) to run report for
+   */
   fun runMeasureReport(
     measureUrl: String,
     reportType: String,
@@ -481,6 +489,15 @@ constructor(
     return data
   }
 
+  /**
+   * Formats the supplementalData field of Measure output as contained Observation resources into
+   * MeasureReport. The Observations output the observations would have key as
+   * coding.code=populationId and value as codeableConcept. For individual i.e. subject specific
+   * reports it is key value map with exact value of variable. For multiple subjects it is a number
+   * for each subject which should be counted by for each entry for given code.
+   * @param list the list of resources output into MeasureReport.contained
+   * @param type type of report for which supplemental data was output
+   */
   fun formatSupplementalData(
     list: List<Resource>,
     type: MeasureReport.MeasureReportType
