@@ -39,11 +39,5 @@ data class ListProperties(
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
-  val emptyList: NoResultsConfig? = null,
-  val orientation: ListOrientation = ListOrientation.VERTICAL
+  val emptyList: NoResultsConfig? = null
 ) : ViewProperties()
-
-enum class ListOrientation {
-  VERTICAL,
-  HORIZONTAL
-}
