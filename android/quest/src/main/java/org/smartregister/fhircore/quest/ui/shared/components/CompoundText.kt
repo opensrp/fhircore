@@ -80,7 +80,7 @@ fun CompoundText(
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.primaryText ?: "",
+        text = compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)?.removeExtraWhiteSpaces()?: "",
         textColor = compoundTextProperties.primaryTextColor,
         backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,

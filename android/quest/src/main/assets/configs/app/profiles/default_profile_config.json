@@ -36,6 +36,13 @@
       ]
     },
     {
+      "name": "patientCarePlan",
+      "condition": "true",
+      "actions": [
+        "data.put('patientCarePlan', service.mapResourcesToExtractedValues(CarePlan, 'CarePlan.title'))"
+      ]
+    },
+    {
       "name": "patientMiddleName",
       "condition": "true",
       "actions": [
@@ -184,6 +191,31 @@
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "@{patientName}",
                   "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "LIST",
+                  "baseResource": "CarePlan",
+                  "orientation": "HORIZONTAL",
+                  "registerCard": {
+                    "rules": [
+                      {
+                        "name": "carePlanTitle",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('carePlanTitle', fhirPath.extractValue(CarePlan, 'CarePlan.title'))"
+                        ]
+                      }
+                    ],
+                    "views": [
+                      {
+                        "viewType": "COMPOUND_TEXT",
+                        "wrap_content": true,
+                        "primaryText": "@{carePlanTitle}",
+                        "primaryTextColor": "#6F7274",
+                        "fontSize": 13
+                      }
+                    ]
+                  }
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
