@@ -35,6 +35,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import io.ona.kujaku.views.KujakuMapView
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -64,19 +65,53 @@ class GeoWidgetFragmentTest {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+  lateinit var kujakuMapViewLifecycle: String
+
   @Before
   fun setup() {
+    hiltRule.inject()
     val activity =
       Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
 
     geowidgetFragment = spyk()
     geowidgetFragment.kujakuMapView = kujakuMapView
 
-    every { kujakuMapView.onLowMemory() } just runs
-    every { kujakuMapView.onPause() } just runs
-    every { kujakuMapView.onResume() } just runs
-    every { kujakuMapView.onDestroy() } just runs
-    every { kujakuMapView.onStop() } just runs
+    every { kujakuMapView.onStart() } answers { kujakuMapViewLifecycle = "onStart" }
+    every { kujakuMapView.onLowMemory() } answers { kujakuMapViewLifecycle = "onLowMemory" }
+    every { kujakuMapView.onPause() } answers { kujakuMapViewLifecycle = "onPause" }
+    every { kujakuMapView.onResume() } answers { kujakuMapViewLifecycle = "onResume" }
+    every { kujakuMapView.onDestroy() } answers { kujakuMapViewLifecycle = "onDestroy" }
+    every { kujakuMapView.onStop() } answers { kujakuMapViewLifecycle = "onStop" }
+  }
+
+  @Test
+  fun onStartSetsKujakuOnStart() {
+    geowidgetFragment.onStart()
+    Assert.assertEquals("onStart", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onPauseSetsKujakuOnPause() {
+    geowidgetFragment.onPause()
+    Assert.assertEquals("onPause", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onDestroySetsKujakuOnDestroy() {
+    geowidgetFragment.onDestroy()
+    Assert.assertEquals("onDestroy", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onStopSetsKujakuOnStop() {
+    geowidgetFragment.onStop()
+    Assert.assertEquals("onStop", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onLowMemorySetsKujakuOnLowMemory() {
+    geowidgetFragment.onLowMemory()
+    Assert.assertEquals("onLowMemory", kujakuMapViewLifecycle)
   }
 
   @Test
