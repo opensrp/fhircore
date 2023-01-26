@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.fhir.resource
+package org.smartregister.fhircore.quest.data
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.XFhirQueryResolver
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
 
 @Singleton
-class FhirXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
+class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
     return fhirEngine.search(xFhirQuery)
   }

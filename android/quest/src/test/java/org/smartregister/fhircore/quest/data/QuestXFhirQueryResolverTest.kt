@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.fhir.resource
+package org.smartregister.fhircore.quest.data
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +30,7 @@ import org.junit.Assert
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class FhirXFhirQueryResolverTest {
+class QuestXFhirQueryResolverTest {
 
   private val fhirEngine = mockk<FhirEngine>()
 
@@ -45,7 +44,7 @@ class FhirXFhirQueryResolverTest {
         val type = firstArg<Search>().type
         resources.filter { it.resourceType == type }
       }
-    val xFhirResolver = FhirXFhirQueryResolver(fhirEngine)
+    val xFhirResolver = QuestXFhirQueryResolver(fhirEngine)
     val result = xFhirResolver.resolve("Patient?active=true")
     Assert.assertTrue(result.isNotEmpty())
     Assert.assertTrue(
