@@ -159,9 +159,11 @@ fun PinLoginPage(
               color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
               fontSize = 16.sp,
               modifier =
-                modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
-                  showForgotPinDialog = !showForgotPinDialog
-                }
+                modifier
+                  .padding(top = 24.dp)
+                  .align(Alignment.CenterHorizontally)
+                  .clickable { showForgotPinDialog = !showForgotPinDialog }
+                  .bringIntoViewRequester(bringIntoViewRequester)
             )
           } else {
             // Enable button when a new pin of required length is entered

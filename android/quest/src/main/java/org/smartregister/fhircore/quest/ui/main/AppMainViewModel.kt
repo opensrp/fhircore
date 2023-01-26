@@ -309,13 +309,6 @@ constructor(
     )
   }
 
-  fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      formatLastSyncTimestamp(timestamp)
-    )
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
