@@ -26,13 +26,7 @@
       {
         "id": "stockOutFlags",
         "resource": "Flag",
-        "searchParameter": "subject",
-        "sortConfigs": [
-          {
-            "paramName": "period",
-            "dataType": "DATE"
-          }
-        ]
+        "searchParameter": "subject"
       }
     ]
   },
