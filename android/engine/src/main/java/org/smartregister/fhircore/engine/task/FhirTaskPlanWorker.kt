@@ -48,7 +48,8 @@ constructor(
     Timber.i("Starting task scheduler")
 
     // TODO also filter by date range for better performance
-    // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails due to indexing outdated resources
+    // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
+    // due to indexing outdated resources
     fhirEngine
       .search<Task> {
         filter(
@@ -62,10 +63,10 @@ constructor(
       }
       .filter {
         it.status == Task.TaskStatus.REQUESTED ||
-                it.status == Task.TaskStatus.READY ||
-                it.status == Task.TaskStatus.ACCEPTED ||
-                it.status == Task.TaskStatus.INPROGRESS ||
-                it.status == Task.TaskStatus.RECEIVED
+          it.status == Task.TaskStatus.READY ||
+          it.status == Task.TaskStatus.ACCEPTED ||
+          it.status == Task.TaskStatus.INPROGRESS ||
+          it.status == Task.TaskStatus.RECEIVED
       }
       .forEach { task ->
         if (task.hasPastEnd()) {
