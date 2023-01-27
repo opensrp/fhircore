@@ -200,14 +200,28 @@
                         "actions": [
                           "data.put('carePlanTitle', fhirPath.extractValue(CarePlan, 'CarePlan.title'))"
                         ]
+                      },
+                      {
+                        "name": "carePlanTextColor",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('carePlanTextColor', CarePlan.status='Active' ? '#DF0E1A' : CarePlan.status='Completed' ?'#6F7274':CarePlan.status='revoked'?'#DF0E1A':'#F5F5F5')"
+                        ]
+                      },
+                      {
+                        "name": "carePlanPrimaryTextColor",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('carePlanPrimaryTextColor', CarePlan.status='Active' ? '#F9CFD1' : CarePlan.status='Completed' ?'#F9CFD1':CarePlan.status='revoked'?'#F9CFD1':'#F9CFD1')"
+                        ]
                       }
                     ],
                     "views": [
                       {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryTextBackgroundColor": "#F9CFD1",
+                        "primaryTextBackgroundColor": "${carePlanPrimaryTextColor}",
                         "primaryText": "@{carePlanTitle}",
-                        "primaryTextColor": "#DF0E1A",
+                        "primaryTextColor": "@{carePlanTextColor}",
                         "fontSize": 13,
                         "padding": 7,
                         "borderRadius": 6

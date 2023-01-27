@@ -85,10 +85,11 @@ fun List(
         )
       }
     } else {
-      currentListResourceData.forEachIndexed { index, listResourceData ->
-        when (viewProperties.orientation) {
-          ListOrientation.VERTICAL ->
-            Column {
+
+      when (viewProperties.orientation) {
+        ListOrientation.VERTICAL ->
+          Column {
+            currentListResourceData.forEachIndexed { index, listResourceData ->
               DisplayListItem(
                 modifier = modifier,
                 viewProperties = viewProperties,
@@ -98,8 +99,10 @@ fun List(
                 currentListResourceData = currentListResourceData
               )
             }
-          ListOrientation.HORIZONTAL ->
-            FlowRow {
+          }
+        ListOrientation.HORIZONTAL ->
+          FlowRow {
+            currentListResourceData.forEachIndexed { index, listResourceData ->
               DisplayListItem(
                 modifier = modifier,
                 viewProperties = viewProperties,
@@ -109,7 +112,7 @@ fun List(
                 currentListResourceData = currentListResourceData
               )
             }
-        }
+          }
       }
     }
   }
@@ -134,8 +137,8 @@ private fun DisplayListItem(
   }
   Spacer(modifier = modifier.height(5.dp))
   if (index < currentListResourceData.lastIndex &&
-      viewProperties.showDivider &&
-      viewProperties.orientation == ListOrientation.VERTICAL
+    viewProperties.showDivider &&
+    viewProperties.orientation == ListOrientation.VERTICAL
   )
     Divider(color = DividerColor, thickness = 0.5.dp)
 }
