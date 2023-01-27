@@ -217,7 +217,7 @@ constructor(
   }
 
   fun attemptLocalLogin(): Boolean {
-    return accountAuthenticator.validLocalCredentials(
+    return accountAuthenticator.validateLocalCredentials(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
@@ -251,12 +251,10 @@ constructor(
       accountAuthenticator.run {
         val trimmedUsername = username.value!!.trim()
         if (validatePreviousLogin(trimmedUsername)) {
-          if (accountAuthenticator.hasActiveSession()) {
-            if (attemptLocalLogin()) {
-              updateNavigateHome(true)
-              _showProgressBar.postValue(false)
-              return@run
-            }
+          if (accountAuthenticator.hasActiveSession() && attemptLocalLogin()) {
+            updateNavigateHome(true)
+            _showProgressBar.postValue(false)
+            return@run
           }
           fetchToken(trimmedUsername, password.value!!.trim().toCharArray())
             .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})

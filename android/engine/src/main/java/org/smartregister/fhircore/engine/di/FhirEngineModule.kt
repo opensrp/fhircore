@@ -61,7 +61,7 @@ class FhirEngineModule {
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
           authenticator =
             object : Authenticator {
-              override fun getAccessToken() = tokenManagerService.getBlockingActiveAuthToken() ?: ""
+              override fun getAccessToken() = tokenManagerService.getActiveAuthToken() ?: ""
             },
           networkConfiguration =
             NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION),

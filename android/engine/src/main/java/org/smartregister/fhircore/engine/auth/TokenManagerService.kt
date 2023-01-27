@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.auth
 
-import android.accounts.Account
-import android.accounts.AccountManager
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.jsonwebtoken.ExpiredJwtException
@@ -36,32 +34,11 @@ class TokenManagerService
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val accountManager: AccountManager,
   val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference
 ) {
 
-  fun getBlockingActiveAuthToken(): String? {
-    getLocalSessionToken()?.let {
-      return it
-    }
-    Timber.v("Trying to get blocking auth token from account manager")
-    return getActiveAccount()?.let {
-      accountManager.blockingGetAuthToken(it, AUTH_TOKEN_TYPE, false)
-    }
-  }
-
-  fun getActiveAccount(): Account? {
-    Timber.v("Checking for an active account stored")
-    return secureSharedPreference.retrieveSessionUsername()?.let { username ->
-      accountManager.getAccountsByType(configService.provideAuthConfiguration().accountType).find {
-        it.name.equals(username)
-      }
-    }
-  }
-
-  fun getLocalSessionToken(): String? {
-    Timber.v("Checking local storage for access token")
+  fun getActiveAuthToken(): String? {
     val token = secureSharedPreference.retrieveSessionToken()
     return if (isTokenActive(token)) token else null
   }

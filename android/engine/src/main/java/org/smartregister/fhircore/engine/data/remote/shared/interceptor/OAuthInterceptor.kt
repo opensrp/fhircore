@@ -22,7 +22,6 @@ import javax.inject.Inject
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.smartregister.fhircore.engine.auth.TokenManagerService
-import timber.log.Timber
 
 class OAuthInterceptor
 @Inject
@@ -35,10 +34,11 @@ constructor(
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
-      tokenManagerService.runCatching { getBlockingActiveAuthToken() }.getOrNull()?.let { token ->
-        Timber.d("Passing auth token for %s", request.url.toString())
-        request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
-      }
+      request =
+        request
+          .newBuilder()
+          .addHeader("Authorization", "Bearer ${tokenManagerService.getActiveAuthToken() ?: ""}")
+          .build()
     }
     return chain.proceed(request)
   }

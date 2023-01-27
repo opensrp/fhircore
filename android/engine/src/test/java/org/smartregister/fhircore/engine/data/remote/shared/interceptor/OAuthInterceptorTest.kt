@@ -41,7 +41,7 @@ class OAuthInterceptorTest : RobolectricTest() {
 
     val tokenManagerService = mockk<TokenManagerService>()
     val interceptor = OAuthInterceptor(context, tokenManagerService)
-    every { tokenManagerService.getBlockingActiveAuthToken() } returns "my-access-token"
+    every { tokenManagerService.getActiveAuthToken() } returns "my-access-token"
 
     val requestBuilder = spyk(Request.Builder())
     val request = spyk(Request.Builder().url("http://test-url.com").build())

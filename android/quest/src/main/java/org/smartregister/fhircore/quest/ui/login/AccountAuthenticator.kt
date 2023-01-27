@@ -20,14 +20,11 @@ import android.accounts.AbstractAccountAuthenticator
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
-import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.core.os.bundleOf
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,7 +36,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.auth.DefaultErrorHandler
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.auth.TokenManagerService.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -71,6 +67,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider
 ) : AbstractAccountAuthenticator(context) {
 
+  private val authConfiguration by lazy { configService.provideAuthConfiguration() }
+
   override fun addAccount(
     response: AccountAuthenticatorResponse,
     accountType: String,
@@ -81,8 +79,8 @@ constructor(
     Timber.i("Adding account of type $accountType with auth token of type $authTokenType")
 
     val intent =
-      Intent(context, org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java).apply {
-        putExtra(AccountManager.KEY_ACCOUNT_TYPE, getAccountType())
+      Intent(context, LoginActivity::class.java).apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, accountType)
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         putExtra(AUTH_TOKEN_TYPE, authTokenType)
         putExtra(IS_NEW_ACCOUNT, true)
@@ -97,27 +95,22 @@ constructor(
     authTokenType: String,
     options: Bundle?
   ): Bundle {
-    var accessToken = tokenManagerService.getLocalSessionToken()
-
-    Timber.i(
-      "Access token for user ${account.name}, account type ${account.type}, token type $authTokenType is available:${accessToken?.isNotBlank()}"
-    )
+    var accessToken = tokenManagerService.getActiveAuthToken()
+    Timber.i("Token available for user ${account.name}, account type ${account.type}")
 
     if (accessToken.isNullOrBlank()) {
-      // Use saved refresh token to try to get new access token. Logout user otherwise
       getRefreshToken()?.let {
-        Timber.i("Saved active refresh token is available")
-
-        runCatching {
-          refreshToken(it)?.let { newTokenResponse ->
-            accessToken = newTokenResponse.accessToken!!
-            updateSession(newTokenResponse)
-          }
-        }
+        runCatching { refreshToken(it) }
           .onFailure {
             Timber.e("Refresh token expired before it was used", it.stackTraceToString())
           }
-          .onSuccess { Timber.i("Got new accessToken") }
+          .onSuccess { oAuthResponse ->
+            Timber.i("Got new accessToken")
+            if (oAuthResponse != null) {
+              accessToken = oAuthResponse.accessToken
+              updateSession(oAuthResponse)
+            }
+          }
       }
     }
 
@@ -140,7 +133,7 @@ constructor(
   override fun editProperties(
     response: AccountAuthenticatorResponse?,
     accountType: String?
-  ): Bundle = Bundle()
+  ): Bundle = bundleOf()
 
   override fun confirmCredentials(
     response: AccountAuthenticatorResponse,
@@ -161,7 +154,7 @@ constructor(
     Timber.i("Updating credentials for ${account.name} from auth activity")
 
     val intent =
-      Intent(context, org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java).apply {
+      Intent(context, LoginActivity::class.java).apply {
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
@@ -205,29 +198,19 @@ constructor(
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
       GRANT_TYPE to grantType,
-      CLIENT_ID to clientId(),
-      CLIENT_SECRET to clientSecret(),
-      SCOPE to providerScope()
+      CLIENT_ID to authConfiguration.clientId,
+      CLIENT_SECRET to authConfiguration.clientSecret,
+      SCOPE to authConfiguration.scope
     )
 
-  fun getRefreshToken(): String? {
-    Timber.v("Checking local storage for refresh token")
-    val token = secureSharedPreference.retrieveCredentials()?.refreshToken
-    return if (tokenManagerService.isTokenActive(token)) token else null
-  }
+  fun getRefreshToken(): String? = secureSharedPreference.retrieveCredentials()?.refreshToken
 
-  fun hasActiveSession(): Boolean {
-    Timber.v("Checking for an active session")
-    return tokenManagerService.getLocalSessionToken()?.isNotBlank() == true
-  }
+  fun hasActiveSession() = tokenManagerService.getActiveAuthToken()?.isNotEmpty() == true
 
-  fun hasActivePin(): Boolean {
-    Timber.v("Checking for an active PIN")
-    return secureSharedPreference.retrieveSessionPin()?.isNotBlank() == true
-  }
+  fun hasActivePin() = secureSharedPreference.retrieveSessionPin()?.isNotEmpty() == true
 
-  fun validLocalCredentials(username: String, password: CharArray): Boolean {
-    Timber.v("Validating credentials with local storage")
+  fun validateLocalCredentials(username: String, password: CharArray): Boolean {
+    Timber.v("Validating credentials")
     return if (accountExists(username)) {
       val credentials = secureSharedPreference.retrieveCredentials()
       credentials?.username.contentEquals(username, true) &&
@@ -236,13 +219,13 @@ constructor(
   }
 
   fun updateSession(successResponse: OAuthResponse) {
-    Timber.v("Updating tokens on local storage")
-    val credentials =
-      secureSharedPreference.retrieveCredentials()!!.apply {
-        this.sessionToken = successResponse.accessToken!!
-        this.refreshToken = successResponse.refreshToken!!
+    secureSharedPreference
+      .retrieveCredentials()
+      ?.apply {
+        this.sessionToken = successResponse.accessToken
+        this.refreshToken = successResponse.refreshToken
       }
-    secureSharedPreference.saveCredentials(credentials)
+      ?.run { secureSharedPreference.saveCredentials(this) }
   }
 
   fun addAuthenticatedAccount(
@@ -250,12 +233,11 @@ constructor(
     username: String,
     password: CharArray
   ) {
-    Timber.i("Adding authenticated account %s of type %s", username, getAccountType())
+    Timber.i("Adding authenticated account %s of type %s", username, authConfiguration.accountType)
 
-    val accessToken = successResponse.body()!!.accessToken!!
-    val refreshToken = successResponse.body()!!.refreshToken!!
-
-    val account = Account(username, getAccountType())
+    val accessToken = successResponse.body()?.accessToken
+    val refreshToken = successResponse.body()?.refreshToken
+    val account = Account(username, authConfiguration.accountType)
 
     accountManager.addAccountExplicitly(account, null, null)
     secureSharedPreference.saveCredentials(
@@ -267,31 +249,19 @@ constructor(
     }
   }
 
-  fun loadActiveAccount(
-    callback: AccountManagerCallback<Bundle>,
-    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
-  ) {
-    tokenManagerService.getActiveAccount()?.let { loadAccount(it, callback, errorHandler) }
-  }
-
-  fun loadAccount(
-    account: Account,
-    callback: AccountManagerCallback<Bundle>,
-    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
-  ) {
-    Timber.i("Trying to load from getAuthToken for account %s", account.name)
-    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), false, callback, errorHandler)
-  }
-
   fun logout(onLogout: () -> Unit = {}) {
     val refreshToken = getRefreshToken()
     if (refreshToken == null) {
       onLogout()
       Timber.w("Refresh token is null. User already logged out or device is offline.")
-      launchScreen(org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java)
+      launchScreen(LoginActivity::class.java)
     } else {
       val logoutService: Call<ResponseBody> =
-        oAuthService.logout(clientId(), clientSecret(), refreshToken)
+        oAuthService.logout(
+          clientId = authConfiguration.clientId,
+          clientSecret = authConfiguration.clientSecret,
+          refreshToken = refreshToken
+        )
       logoutService.enqueue(
         object : Callback<ResponseBody> {
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -303,7 +273,7 @@ constructor(
               Timber.w(response.body()?.string())
               context.showToast(context.getString(R.string.cannot_logout_user))
             }
-            launchScreen(org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java)
+            launchScreen(LoginActivity::class.java)
           }
 
           override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
@@ -312,7 +282,7 @@ constructor(
             context.showToast(
               context.getString(R.string.error_logging_out, throwable.localizedMessage)
             )
-            launchScreen(org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java)
+            launchScreen(LoginActivity::class.java)
           }
         }
       )
@@ -320,56 +290,60 @@ constructor(
   }
 
   suspend fun refreshSessionAuthToken(): Bundle {
-    val bundle = Bundle()
-    tokenManagerService.getActiveAccount()?.run {
-      val account = this
-      val accountType = getAccountType()
-      var authToken = accountManager.peekAuthToken(this, accountType)
-      if (!tokenManagerService.isTokenActive(authToken)) {
-        getRefreshToken()?.let {
-          Timber.i("Saved active refresh token is available")
-          withContext(dispatcherProvider.io()) {
-            runCatching {
-              refreshToken(it)?.let { newTokenResponse ->
-                authToken = newTokenResponse.accessToken!!
-                updateSession(newTokenResponse)
-                // Update AuthToken saved in DB
-                accountManager.setAuthToken(account, accountType, authToken)
-              }
-            }
-              .onFailure {
-                bundle.putInt(
-                  AccountManager.KEY_ERROR_CODE,
-                  AccountManager.ERROR_CODE_NETWORK_ERROR
-                )
-                if (it is UnknownHostException) {
+    return withContext(dispatcherProvider.io()) {
+      val bundle = Bundle()
+      val activeAccount = getActiveAccount()
+      if (activeAccount != null) {
+        var authToken = tokenManagerService.getActiveAuthToken()
+        if (authToken.isNullOrEmpty()) {
+          getRefreshToken()?.let { theRefreshToken ->
+            runCatching { refreshToken(theRefreshToken) }
+              .onFailure { throwable ->
+                if (throwable is UnknownHostException) {
                   bundle.putString(
                     AccountManager.KEY_ERROR_MESSAGE,
                     context.getString(R.string.refresh_token_fail_error_message)
                   )
                 }
-                Timber.e("Failed to get the refresh token", it.stackTraceToString())
+                bundle.putInt(
+                  AccountManager.KEY_ERROR_CODE,
+                  AccountManager.ERROR_CODE_NETWORK_ERROR
+                )
+                Timber.e("Failed to get the refresh token", throwable)
+                authToken = null
               }
-              .onSuccess { Timber.i("Received new access token") }
+              .onSuccess { oAuthResponse ->
+                Timber.i("Received new access token")
+                if (oAuthResponse != null) {
+                  authToken = oAuthResponse.accessToken
+                  updateSession(oAuthResponse)
+                  accountManager.setAuthToken(
+                    activeAccount,
+                    authConfiguration.accountType,
+                    authToken
+                  )
+                }
+              }
+          }
+        }
+        bundle.putString(AccountManager.KEY_ACCOUNT_NAME, activeAccount.name)
+        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, activeAccount.type)
+        if (!authToken.isNullOrEmpty()) {
+          bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken)
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            accountManager.notifyAccountAuthenticated(activeAccount)
           }
         }
       }
-
-      bundle.putString(AccountManager.KEY_ACCOUNT_NAME, this.name)
-      bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, this.type)
-
-      if (authToken?.isNotBlank() == true && tokenManagerService.isTokenActive(authToken)) {
-        bundle.putString(AccountManager.KEY_AUTHTOKEN, authToken)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-          accountManager.notifyAccountAuthenticated(this)
-        }
-      }
+      bundle
     }
-    return bundle
   }
 
   fun invalidateSession() {
-    accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
+    accountManager.invalidateAuthToken(
+      authConfiguration.accountType,
+      secureSharedPreference.retrieveSessionToken()
+    )
     secureSharedPreference.deleteSessionTokens()
   }
 
@@ -386,14 +360,6 @@ constructor(
     )
   }
 
-  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
-
-  fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
-
-  fun clientId(): String = configService.provideAuthConfiguration().clientId
-
-  fun providerScope(): String = configService.provideAuthConfiguration().scope
-
   fun validatePreviousLogin(username: String): Boolean {
     if (secureSharedPreference.retrieveCredentials() == null) return true
     return accountExists(username)
@@ -401,9 +367,17 @@ constructor(
 
   private fun accountExists(username: String) =
     accountManager.accounts.find {
-      it.name.equals(username, true) && it.type == getAccountType()
+      it.name.equals(username, true) && it.type == authConfiguration.accountType
     } != null && secureSharedPreference.retrieveCredentials()?.username.equals(username, true)
 
+  private fun getActiveAccount(): Account? {
+    Timber.v("Checking for an active account stored")
+    return secureSharedPreference.retrieveSessionUsername()?.let { username ->
+      accountManager.getAccountsByType(configService.provideAuthConfiguration().accountType).find {
+        it.name.equals(username)
+      }
+    }
+  }
   companion object {
     const val IS_NEW_ACCOUNT = "IS_NEW_ACCOUNT"
     const val GRANT_TYPE = "grant_type"

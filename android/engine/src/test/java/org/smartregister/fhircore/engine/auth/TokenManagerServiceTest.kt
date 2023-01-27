@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.engine.auth
 
-import android.accounts.Account
-import android.accounts.AccountManager
-import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -44,8 +41,6 @@ class TokenManagerServiceTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var accountManager: AccountManager
-
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var configService: ConfigService
@@ -61,7 +56,6 @@ class TokenManagerServiceTest : RobolectricTest() {
       spyk(
         TokenManagerService(
           context = context,
-          accountManager = accountManager,
           configService = configService,
           secureSharedPreference = secureSharedPreference
         )
@@ -75,14 +69,14 @@ class TokenManagerServiceTest : RobolectricTest() {
 
   @Test
   fun testLocalSessionTokenWithInactiveToken() {
-    Assert.assertNull(tokenManagerService.getLocalSessionToken())
+    Assert.assertNull(tokenManagerService.getActiveAuthToken())
   }
 
   @Test
   fun testLocalSessionTokenWithActiveToken() {
     every { tokenManagerService.isTokenActive(authCredentials.sessionToken) } returns true
     secureSharedPreference.saveCredentials(authCredentials)
-    Assert.assertEquals(authCredentials.sessionToken, tokenManagerService.getLocalSessionToken())
+    Assert.assertEquals(authCredentials.sessionToken, tokenManagerService.getActiveAuthToken())
   }
 
   @Test
@@ -106,19 +100,5 @@ class TokenManagerServiceTest : RobolectricTest() {
   @Throws(MalformedJwtException::class)
   fun testIsTokenActiveWithMalformedJwtToken() {
     Assert.assertFalse(tokenManagerService.isTokenActive("malformed-token"))
-  }
-
-  @Test
-  fun testGetActiveAccount() {
-    secureSharedPreference.saveCredentials(authCredentials)
-    accountManager.addAccountExplicitly(
-      Account(authCredentials.username, configService.provideAuthConfiguration().accountType),
-      authCredentials.password,
-      bundleOf()
-    )
-    val activeAccount = tokenManagerService.getActiveAccount()
-    Assert.assertNotNull(activeAccount)
-    Assert.assertEquals(authCredentials.username, activeAccount!!.name)
-    Assert.assertEquals(configService.provideAuthConfiguration().accountType, activeAccount.type)
   }
 }

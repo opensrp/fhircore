@@ -45,8 +45,7 @@ import org.smartregister.fhircore.quest.ui.login.LoginActivity
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
 
-  @Inject
-  lateinit var accountAuthenticator: org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
@@ -80,9 +79,7 @@ class AppSettingActivity : AppCompatActivity() {
               loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-                accountAuthenticator.launchScreen(
-                  org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java
-                )
+                accountAuthenticator.launchScreen(LoginActivity::class.java)
                 appSettingViewModel.showProgressBar.postValue(false)
                 finish()
               } else {
@@ -102,9 +99,7 @@ class AppSettingActivity : AppCompatActivity() {
             loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-              accountAuthenticator.launchScreen(
-                org.smartregister.fhircore.quest.ui.login.LoginActivity::class.java
-              )
+              accountAuthenticator.launchScreen(LoginActivity::class.java)
               finish()
             } else {
               launch(dispatcherProvider.main()) {

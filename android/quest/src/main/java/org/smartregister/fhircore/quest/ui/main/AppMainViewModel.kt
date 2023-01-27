@@ -70,7 +70,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -80,6 +79,7 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -160,20 +160,8 @@ constructor(
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
-            bundle.getString(AccountManager.KEY_ERROR_MESSAGE)?.let { event.context.showToast(it) }
-            if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              // syncBroadcaster.runSync()
-              retrieveAppMainUiState()
-              return@let
-            }
-            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE) &&
-                bundle.getInt(AccountManager.KEY_ERROR_CODE) ==
-                  AccountManager.ERROR_CODE_NETWORK_ERROR
-            ) {
-              return@let
-            } else {
-              accountAuthenticator.logout()
-            }
+            Timber.e(bundle.getString(AccountManager.KEY_ERROR_MESSAGE))
+            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE)) accountAuthenticator.logout()
           }
         }
       }
