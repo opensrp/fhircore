@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
  */
 @Composable
 fun ViewRenderer(
-  modifier: Modifier = Modifier,
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController
