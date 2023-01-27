@@ -40,7 +40,7 @@ data class ListProperties(
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
-  val orientation: ListOrientation = ListOrientation.VERTICAL
+  val orientation: ListOrientation = ListOrientation.HORIZONTAL
 ) : ViewProperties()
 
 enum class ListOrientation {

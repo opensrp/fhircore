@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
@@ -61,20 +62,24 @@ fun List(
 
   Column(
     modifier =
-      modifier
-        .background(
-          viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
-        )
-        .padding(
-          horizontal = viewProperties.padding.dp,
-          vertical = viewProperties.padding.div(4).dp
-        )
+    modifier
+      .background(
+        viewProperties.backgroundColor
+          ?.interpolate(resourceData.computedValuesMap)
+          .parseColor()
+      )
+      .padding(
+        horizontal = viewProperties.padding.dp,
+        vertical = viewProperties.padding.div(4).dp
+      )
   ) {
     if (currentListResourceData.isNullOrEmpty()) {
       Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
         Text(
           text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
-          modifier = modifier.padding(8.dp).align(Alignment.Center),
+          modifier = modifier
+            .padding(8.dp)
+            .align(Alignment.Center),
           color = DefaultColor,
           fontStyle = FontStyle.Italic
         )
@@ -142,52 +147,51 @@ private fun ListInWithRowsPreview() {
     ViewRenderer(
       navController = rememberNavController(),
       resourceData =
-        ResourceData(
-          "id",
-          ResourceType.CarePlan,
-          mapOf("1" to "Family", "2" to "Home"),
-          mapOf(
-            "listId" to
-              listOf(
-                ResourceData(
-                  baseResourceId = "1",
-                  ResourceType.CarePlan,
-                  mapOf(),
-                  emptyMap(),
-                )
-              )
-          )
-        ),
-      viewProperties =
-        listOf(
-          ListProperties(
-            viewType = ViewType.LIST,
-            orientation = ListOrientation.VERTICAL,
-            id = "listId",
-            padding = 10,
-            borderRadius = 10,
-            emptyList = NoResultsConfig(message = "No care Plans"),
-            baseResource = ResourceType.CarePlan,
-            alignment = ViewAlignment.NONE,
-            fillMaxHeight = true,
-            registerCard =
-              RegisterCardConfig(
-                views =
+      ResourceData(
+        "id",
+        ResourceType.CarePlan,
+        mapOf("1" to "Family", "2" to "Home"),
+        mapOf(
+          "listId" to
                   listOf(
-                    CompoundTextProperties(
-                      viewType = ViewType.COMPOUND_TEXT,
-                      primaryText = "Family Planning",
-                      primaryTextColor = "#508BE8",
-                    ),
-                    CompoundTextProperties(
-                      viewType = ViewType.COMPOUND_TEXT,
-                      primaryText = "Malaria",
-                      primaryTextColor = "#508BE8",
+                    ResourceData(
+                      baseResourceId = "1",
+                      ResourceType.CarePlan,
+                      mapOf(),
+                      emptyMap(),
                     )
-                  ),
+                  )
+        )
+      ),
+      viewProperties =
+      listOf(
+        ListProperties(
+          viewType = ViewType.LIST,
+          orientation = ListOrientation.HORIZONTAL,
+          id = "listId",
+          padding = 10,
+          borderRadius = 10,
+          emptyList = NoResultsConfig(message = "No care Plans"),
+          baseResource = ResourceType.CarePlan,
+          fillMaxHeight = true,
+          registerCard =
+          RegisterCardConfig(
+            views =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Family Planning",
+                primaryTextColor = "#508BE8",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Malaria",
+                primaryTextColor = "#508BE8",
               )
+            ),
           )
         )
+      )
     )
   }
 }

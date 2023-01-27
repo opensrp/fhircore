@@ -189,6 +189,9 @@
                   "viewType": "LIST",
                   "baseResource": "CarePlan",
                   "orientation": "HORIZONTAL",
+                  "emptyList": {
+                    "message": "No careplans"
+                  },
                   "registerCard": {
                     "rules": [
                       {
@@ -202,10 +205,12 @@
                     "views": [
                       {
                         "viewType": "COMPOUND_TEXT",
-                        "wrap_content": true,
+                        "primaryTextBackgroundColor": "#F9CFD173",
                         "primaryText": "@{carePlanTitle}",
                         "primaryTextColor": "#6F7274",
-                        "fontSize": 13
+                        "fontSize": 13,
+                        "padding": 7,
+                        "borderRadius": 6
                       }
                     ]
                   }
