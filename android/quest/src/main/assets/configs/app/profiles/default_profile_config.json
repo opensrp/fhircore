@@ -187,10 +187,11 @@
                 },
                 {
                   "viewType": "LIST",
+                  "id": "statusList",
                   "baseResource": "CarePlan",
                   "orientation": "HORIZONTAL",
                   "emptyList": {
-                    "message": "No care plans"
+                    "message": ""
                   },
                   "registerCard": {
                     "rules": [
@@ -307,6 +308,7 @@
           "content": [
             {
               "viewType": "LIST",
+              "id": "taskList",
               "baseResource": "Task",
               "registerCard": {
                 "rules": [
