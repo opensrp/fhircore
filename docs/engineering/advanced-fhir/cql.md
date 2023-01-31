@@ -1,6 +1,7 @@
 # CQL
 
 This Documentation on CQL is to give some insights on
+
 1. How to author the CQL script
 2. How to load and execute CQL scripts
 3. Some sample use cases where we have used CQL
@@ -27,25 +28,16 @@ We developed a digital solution to successfully transfer and interpret data from
 
 We implemented the following workflows for G6PD
 
- 1. Manual based input approach : The first workflow entails using a
-    FHIR questionnaire and extracting it to multiple FHIR resources
-    (Patient, Practitioner, Location, Observation, ServiceRequest,
-    Diagnostic report).
-
- 2. CQL Workflow : The second workflow supports the full request,
-    evaluation, and response workflow using FHIR standards. This
-    workflow provides native FHIR support on the Android device where
-    available. The FHIR workflow will utilize the ServiceRequest and
-    DiagnosticReport resources, as well as Clinical Quality Language
-    (CQL) evaluation.
+1. Manual based input approach : The first workflow entails using a FHIR questionnaire and extracting it to multiple FHIR resources (Patient, Practitioner, Location, Observation, ServiceRequest, Diagnostic report).
+2. CQL Workflow : The second workflow supports the full request, evaluation, and response workflow using FHIR standards. This workflow provides native FHIR support on the Android device where available. The FHIR workflow will utilize the ServiceRequest and DiagnosticReport resources, as well as Clinical Quality Language (CQL) evaluation.
 
 The following feature and modules were implemented
 
-1.  Authentication & Authorization
-2.  Patient Registration
-3.  Patient Search
-4.  Offline Support
-5.  Multi-language support
+1. Authentication & Authorization
+2. Patient Registration
+3. Patient Search
+4. Offline Support
+5. Multi-language support
 
 #### Additional Context
 
@@ -53,11 +45,9 @@ For patient Diagnosis we used the following table to map the threshold evaluatio
 
 ![456](https://user-images.githubusercontent.com/69383347/149340339-10a723d2-707f-4ef8-b18e-ffc638c21ed7.png)
 
-Post evaluation you get a results page with diagnosis and  Medication regimen recommendation
+Post evaluation you get a results page with diagnosis and Medication regimen recommendation
 
-<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/150296890-9ee0ef91-3158-4c90-8b4d-10a83e2f3f1d.jpg"/>
-<img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296898-cfa97ad8-eee4-4cb2-9552-46f67b9765b2.jpg"/>
-<img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296901-ebc17aa2-b8d4-4695-88a1-d6ec8e6d7ab9.jpg"/>
+![](https://user-images.githubusercontent.com/4829880/150296890-9ee0ef91-3158-4c90-8b4d-10a83e2f3f1d.jpg) ![](https://user-images.githubusercontent.com/4829880/150296898-cfa97ad8-eee4-4cb2-9552-46f67b9765b2.jpg) ![](https://user-images.githubusercontent.com/4829880/150296901-ebc17aa2-b8d4-4695-88a1-d6ec8e6d7ab9.jpg)
 
 #### Sample G6PD Threshold Evaluation CQL
 
@@ -329,44 +319,34 @@ define "OUTPUT": List { "condition", "serviceRequest", "diagnosticReport" }
 }
 ```
 
-2. G6PD Test Device Calibration
+1. G6PD Test Device Calibration
 
 #### Sample G6PD RDT Calibration (Control mode) CQL
 
-In the second use case, as a G6PD app user, I would like to check if the device is properly calibrated  in either Control Mode 1 or Control Mode 2
+In the second use case, as a G6PD app user, I would like to check if the device is properly calibrated in either Control Mode 1 or Control Mode 2
 
-First we added  both UI/UX for control mode user journey and leverage current CQL evaluation that can allow us to reuse the current CQL implementation for G6PD evaluation.
+First we added both UI/UX for control mode user journey and leverage current CQL evaluation that can allow us to reuse the current CQL implementation for G6PD evaluation.
 
 We then added a Questionnaire for test calibration that is independent of the Patient/Clinical workflow.
 
-**Control mode  table**
-<img width="634" alt="Screen Shot 2022-01-13 at 10 19 06 PM" src="https://user-images.githubusercontent.com/4540684/149395158-22a99428-dd1c-4904-a0f2-dd12ffc93945.png"/>
+**Control mode table** ![Screen Shot 2022-01-13 at 10 19 06 PM](https://user-images.githubusercontent.com/4540684/149395158-22a99428-dd1c-4904-a0f2-dd12ffc93945.png)
 
-**Test Kit in normal mode**
-<img width="260" alt="Screen Shot 2022-01-13 at 10 23 20 PM" src="https://user-images.githubusercontent.com/4540684/149396047-9c0a51c3-ddd5-4e69-9809-2281396ddac6.png"/>
+**Test Kit in normal mode** ![Screen Shot 2022-01-13 at 10 23 20 PM](https://user-images.githubusercontent.com/4540684/149396047-9c0a51c3-ddd5-4e69-9809-2281396ddac6.png)
 
-**Test kit in control mode**
-<img width="611" alt="Screen Shot 2022-01-13 at 10 25 36 PM" src="https://user-images.githubusercontent.com/4540684/149396063-5b5e8b8d-cf2c-421d-9dfa-e7d3b99a3ae5.png"/>
+**Test kit in control mode** ![Screen Shot 2022-01-13 at 10 25 36 PM](https://user-images.githubusercontent.com/4540684/149396063-5b5e8b8d-cf2c-421d-9dfa-e7d3b99a3ae5.png)
 
-More details on testing and control mode can be found in [this manual](https://www.finddx.org/wp-content/uploads/2020/09/STANDARD-G6PD-test_Training_Bangladesh-FIND-icddr-Menzies_FINAL_26Nov19.pdf).
+More details on testing and control mode can be found in [this manual](https://www.finddx.org/wp-content/uploads/2020/09/STANDARD-G6PD-test\_Training\_Bangladesh-FIND-icddr-Menzies\_FINAL\_26Nov19.pdf).
 
 **User Journey Description**
 
 1. Add a menu item to initiate the control mode test
-2. Add a Questionnaire to be able to conduct control mode, similar to the Test Questionnaire, an image of control mode and the 2 entry points for G6PD and Haemoglobin level. This should have the following fields
-        > Chip No
-        > Device Serial number
-        > G6PD level
-        > Haemoglobin level
+2. Add a Questionnaire to be able to conduct control mode, similar to the Test Questionnaire, an image of control mode and the 2 entry points for G6PD and Haemoglobin level. This should have the following fields > Chip No > Device Serial number > G6PD level > Haemoglobin level
 3. Author and load a CQL Library evaluation for control mode evaluation
 4. Initiate the control mode evaluation on press submit
 5. Add a test result page for Control mode level 1 or control mode level 2
 6. Terminate control mode flow once the user has calibrated the device
 
-<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/149816294-00760977-20c5-4cfd-83ac-5e2b79b30184.jpg"/>
-<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/149816315-6f7ebaa1-d7cd-445b-8622-54f52d51780a.jpg"/>
-<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/149816323-0afb2558-35a4-47fd-9da5-88cb668f0d14.jpg"/>
-<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/149816328-b2841f26-4560-4613-8fd0-cd1bfe707967.jpg"/>
+![](https://user-images.githubusercontent.com/4829880/149816294-00760977-20c5-4cfd-83ac-5e2b79b30184.jpg) ![](https://user-images.githubusercontent.com/4829880/149816315-6f7ebaa1-d7cd-445b-8622-54f52d51780a.jpg) ![](https://user-images.githubusercontent.com/4829880/149816323-0afb2558-35a4-47fd-9da5-88cb668f0d14.jpg) ![](https://user-images.githubusercontent.com/4829880/149816328-b2841f26-4560-4613-8fd0-cd1bfe707967.jpg)
 
 **Sample G6PD RDT Calibration (Control mode) CQL**
 
@@ -441,7 +421,6 @@ define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
 ```
 
 ### Use Case 2 : In app reporting of Indicators
-
 
 Based on the [WHO Implementation Guide (IG) for ANC](http://build.fhir.org/ig/WorldHealthOrganization/smart-anc/) and the [WHO SMART ANC Indicators](https://github.com/WorldHealthOrganization/smart-anc/tree/master/input/cql). These indicators are based on the Global ANC monitoring framework (25) and the WHO–UNICEF guidance for RMNCAH programme managers on the analysis and use of health facility data (10). These indicators may be aggregated automatically from the digital tracking tool to populate a digital HMIS, such as DHIS2.
 
