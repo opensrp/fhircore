@@ -1,5 +1,5 @@
 {
-  "appId": "cha",
+  "appId": "app",
   "configType": "profile",
   "id": "inventoryProfile",
   "fhirResource": {
@@ -77,7 +77,7 @@
       "name": "latestObservation",
       "condition": "true",
       "actions": [
-        "data.put('latestObservation', service.filterResources(Observation, 'Observation.status', 'preliminary').get(0))"
+        "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
       ]
     },
     {
@@ -98,7 +98,7 @@
       "name": "activeStockOutFlag",
       "condition": "true",
       "actions": [
-        "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status', 'active').get(0))"
+        "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
       ]
     },
     {
@@ -152,7 +152,7 @@
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
-                            "primaryText": "@{runningBalance}",
+                            "primaryText": "@{quantity}",
                             "primaryTextColor": "#000000",
                             "primaryTextFontWeight": "SEMI_BOLD"
                           },

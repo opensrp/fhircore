@@ -16,7 +16,7 @@
     ]
   },
   "date": "2022-09-16",
-  "title": "Device configurations",
+  "title": "eCBIS CHA",
   "confidentiality": "L",
   "section": [
     {
@@ -50,25 +50,15 @@
       "mode": "working"
     },
     {
-      "title": "Measure reports configurations",
+      "title": "In-App reports configuration",
       "mode": "working",
       "section": [
         {
-          "title": "Service Delivery Measure Report",
+          "title": "Service Delivery reports",
           "focus": {
             "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
             "identifier": {
               "value": "serviceDeliveryMeasureReport"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "Supply Chain Measure Report",
-          "focus": {
-            "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
-            "identifier": {
-              "value": "supplyChainMeasureReport"
             }
           },
           "mode": "working"
@@ -177,15 +167,6 @@
               "value": "tbRegister"
             }
           }
-        },
-        {
-          "title": "Patient register configuration",
-          "focus": {
-            "reference": "Binary/9aa6bbb6-df76-42a4-bdbe-72dc197378ca",
-            "identifier": {
-              "value": "patientRegister"
-            }
-          }
         }
       ]
     },
@@ -205,7 +186,7 @@
         {
           "title": "Default profile configuration",
           "focus": {
-            "reference": "Binary/40352701-4e80-41dc-9584-0847b2a04964",
+            "reference": "Binary/34b709f3-e8a1-44e9-867a-714b68bb1367",
             "identifier": {
               "value": "defaultProfile"
             }
@@ -429,7 +410,7 @@
           "mode": "working"
         },
         {
-          "title": "Under 2 Year Child Visit Form",
+          "title": "Under 1 Year Child Visit Form",
           "focus": {
             "reference": "Questionnaire/5a60a629-bcf4-4101-96ac-a5e07b35f30e",
             "identifier": {
@@ -439,7 +420,7 @@
           "mode": "working"
         },
         {
-          "title": "Over 2 Year Child Visit Form",
+          "title": "Over 1 Year Child Visit Form",
           "focus": {
             "reference": "Questionnaire/91c51999-0e04-495a-8d70-58c3aabefcab",
             "identifier": {
@@ -709,6 +690,16 @@
             "reference": "StructureMap/befbdbcf-9013-4597-8f94-1a15e9f7f549",
             "identifier": {
               "value": "eCBISDiseasesReferral"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "Supply chain Physically count & restock",
+          "focus": {
+            "reference": "StructureMap/8f7828f5-3910-4bfc-94a9-a0da749fb37c",
+            "identifier": {
+              "value": "eCBISSupplyChainPhysicallyCountAndRestock"
             }
           },
           "mode": "working"
@@ -1023,6 +1014,16 @@
           "title": "",
           "focus": {
             "reference": "Group/6815d390-1c8b-11ed-861d-0242ac120002",
+            "identifier": {
+              "value": "referral"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002",
             "identifier": {
               "value": "referral"
             }
