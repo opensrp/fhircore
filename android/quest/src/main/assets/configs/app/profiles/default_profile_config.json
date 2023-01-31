@@ -220,9 +220,9 @@
                     "views": [
                       {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryTextBackgroundColor": "#F9CFD1",
+                        "primaryTextBackgroundColor": "#F5F5F5",
                         "primaryText": "@{carePlanTitle}",
-                        "primaryTextColor": "@{carePlanTextColor}",
+                        "primaryTextColor": "#6F7274",
                         "fontSize": 13,
                         "padding": 7,
                         "borderRadius": 6
