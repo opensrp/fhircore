@@ -295,7 +295,11 @@ constructor(
                 // existing
                 if (startDateFormatted.contentEquals(
                     Date().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-                  ) || existing.isEmpty()
+                  ) ||
+                    endDateFormatted.contentEquals(
+                      Date().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+                    ) ||
+                    existing.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
