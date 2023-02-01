@@ -77,7 +77,7 @@
       "name": "latestObservation",
       "condition": "true",
       "actions": [
-        "data.put('latestObservation', service.filterResources(Observation, 'Observation.status', 'preliminary').get(0))"
+        "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
       ]
     },
     {
@@ -85,6 +85,13 @@
       "condition": "true",
       "actions": [
         "data.put('runningBalance', fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value'))"
+      ]
+    },
+    {
+      "name": "nonNullBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('nonNullBalance', runningBalance.isEmpty() ? 0 : runningBalance )"
       ]
     },
     {
@@ -98,7 +105,7 @@
       "name": "activeStockOutFlag",
       "condition": "true",
       "actions": [
-        "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status', 'active').get(0))"
+        "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
       ]
     },
     {
@@ -152,7 +159,7 @@
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
-                            "primaryText": "@{runningBalance}",
+                            "primaryText": "@{quantity}",
                             "primaryTextColor": "#000000",
                             "primaryTextFontWeight": "SEMI_BOLD"
                           },
