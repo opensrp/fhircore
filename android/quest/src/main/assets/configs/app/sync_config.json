@@ -67,7 +67,9 @@
         "base": [
           "Library"
         ]
-      }
+      },
+      "type": "token",
+      "expression": "1753,133081,133105,145195,145196,145213,145337,145374,145338,145375,145339,145376,145340,145377"
     },
     {
       "resource": {
@@ -77,7 +79,9 @@
         "base": [
           "Measure"
         ]
-      }
+      },
+      "type": "token",
+      "expression": "133082,133104,145197,145214,145333,145370,145334,145371,145335,145372,145336,145373"
     },
     {
       "resource": {
@@ -98,7 +102,8 @@
           "Practitioner",
           "PlanDefinition",
           "Library",
-          "Measure"
+          "Measure",
+          "Flag"
         ],
         "type": "token",
         "expression": "#count"

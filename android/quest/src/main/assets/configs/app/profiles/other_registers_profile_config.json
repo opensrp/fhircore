@@ -224,10 +224,10 @@
       ]
     },
     {
-      "name": "maleCondomBalance",
+      "name": "maleCondomPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('maleCondomBalance', fhirPath.extractValue(data.get('maleCondomObservation'), 'Observation.value.value') )"
+        "data.put('maleCondomPreviousBalance', fhirPath.extractValue(data.get('maleCondomObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -252,10 +252,10 @@
       ]
     },
     {
-      "name": "femaleCondomBalance",
+      "name": "femaleCondomPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('femaleCondomBalance', fhirPath.extractValue(data.get('femaleCondomObservation'), 'Observation.value.value') )"
+        "data.put('femaleCondomPreviousBalance', fhirPath.extractValue(data.get('femaleCondomObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -280,10 +280,10 @@
       ]
     },
     {
-      "name": "mnpBalance",
+      "name": "mnpPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('mnpBalance', fhirPath.extractValue(data.get('mnpObservation'), 'Observation.value.value') )"
+        "data.put('mnpPreviousBalance', fhirPath.extractValue(data.get('mnpObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -308,10 +308,10 @@
       ]
     },
     {
-      "name": "albendazole400mgBalance",
+      "name": "albendazole400mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('albendazole400mgBalance', fhirPath.extractValue(data.get('albendazole400mgObservation'), 'Observation.value.value') )"
+        "data.put('albendazole400mgPreviousBalance', fhirPath.extractValue(data.get('albendazole400mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -336,10 +336,10 @@
       ]
     },
     {
-      "name": "microgynonBalance",
+      "name": "microgynonPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('microgynonBalance', fhirPath.extractValue(data.get('microgynonObservation'), 'Observation.value.value') )"
+        "data.put('microgynonPreviousBalance', fhirPath.extractValue(data.get('microgynonObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -364,10 +364,10 @@
       ]
     },
     {
-      "name": "microlutBalance",
+      "name": "microlutPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('microlutBalance', fhirPath.extractValue(data.get('microlutObservation'), 'Observation.value.value') )"
+        "data.put('microlutPreviousBalance', fhirPath.extractValue(data.get('microlutObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -392,10 +392,10 @@
       ]
     },
     {
-      "name": "sayanaPressBalance",
+      "name": "sayanaPressPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('sayanaPressBalance', fhirPath.extractValue(data.get('sayanaPressObservation'), 'Observation.value.value') )"
+        "data.put('sayanaPressPreviousBalance', fhirPath.extractValue(data.get('sayanaPressObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -420,10 +420,10 @@
       ]
     },
     {
-      "name": "amoxicillin250mgBalance",
+      "name": "amoxicillin250mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mgBalance', fhirPath.extractValue(data.get('amoxicillin250mgObservation'), 'Observation.value.value') )"
+        "data.put('amoxicillin250mgPreviousBalance', fhirPath.extractValue(data.get('amoxicillin250mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -448,10 +448,10 @@
       ]
     },
     {
-      "name": "amoxicillin250mg2TabletsBalance",
+      "name": "amoxicillin250mg2TabletsPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mg2TabletsBalance', fhirPath.extractValue(data.get('amoxicillin250mg2TabletsObservation'), 'Observation.value.value') )"
+        "data.put('amoxicillin250mg2TabletsPreviousBalance', fhirPath.extractValue(data.get('amoxicillin250mg2TabletsObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -476,10 +476,10 @@
       ]
     },
     {
-      "name": "artemetherLumefatrine1x6Balance",
+      "name": "artemetherLumefatrine1x6PreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine1x6Balance', fhirPath.extractValue(data.get('artemetherLumefatrine1x6Observation'), 'Observation.value.value') )"
+        "data.put('artemetherLumefatrine1x6PreviousBalance', fhirPath.extractValue(data.get('artemetherLumefatrine1x6Observation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -504,10 +504,10 @@
       ]
     },
     {
-      "name": "artemetherLumefatrine2x6Balance",
+      "name": "artemetherLumefatrine2x6PreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine2x6Balance', fhirPath.extractValue(data.get('artemetherLumefatrine2x6Observation'), 'Observation.value.value') )"
+        "data.put('artemetherLumefatrine2x6PreviousBalance', fhirPath.extractValue(data.get('artemetherLumefatrine2x6Observation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -532,10 +532,10 @@
       ]
     },
     {
-      "name": "as25mg-aq67-5mgBalance",
+      "name": "as25mg-aq67-5mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mgBalance', fhirPath.extractValue(data.get('as25mg-aq67-5mgObservation'), 'Observation.value.value') )"
+        "data.put('as25mg-aq67-5mgPreviousBalance', fhirPath.extractValue(data.get('as25mg-aq67-5mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -560,10 +560,10 @@
       ]
     },
     {
-      "name": "as25mg-aq67-5mg2MonthsBalance",
+      "name": "as25mg-aq67-5mg2MonthsPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mg2MonthsBalance', fhirPath.extractValue(data.get('as25mg-aq67-5mg2MonthsObservation'), 'Observation.value.value') )"
+        "data.put('as25mg-aq67-5mg2MonthsPreviousBalance', fhirPath.extractValue(data.get('as25mg-aq67-5mg2MonthsObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -588,10 +588,10 @@
       ]
     },
     {
-      "name": "as50mg-aq135mgBalance",
+      "name": "as50mg-aq135mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('as50mg-aq135mgBalance', fhirPath.extractValue(data.get('as50mg-aq135mgObservation'), 'Observation.value.value') )"
+        "data.put('as50mg-aq135mgPreviousBalance', fhirPath.extractValue(data.get('as50mg-aq135mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -616,10 +616,10 @@
       ]
     },
     {
-      "name": "artesunate100mgBalance",
+      "name": "artesunate100mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mgBalance', fhirPath.extractValue(data.get('artesunate100mgObservation'), 'Observation.value.value') )"
+        "data.put('artesunate100mgPreviousBalance', fhirPath.extractValue(data.get('artesunate100mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -644,10 +644,10 @@
       ]
     },
     {
-      "name": "artesunate100mgtabletsBalance",
+      "name": "artesunate100mgtabletsPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mgtabletsBalance', fhirPath.extractValue(data.get('artesunate100mg2tabletsObservation'), 'Observation.value.value') )"
+        "data.put('artesunate100mgtabletsPreviousBalance', fhirPath.extractValue(data.get('artesunate100mg2tabletsObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -672,10 +672,10 @@
       ]
     },
     {
-      "name": "orsBalance",
+      "name": "orsPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('orsBalance', fhirPath.extractValue(data.get('orsObservation'), 'Observation.value.value') )"
+        "data.put('orsPreviousBalance', fhirPath.extractValue(data.get('orsObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -700,10 +700,10 @@
       ]
     },
     {
-      "name": "ors3SacketsBalance",
+      "name": "ors3SacketsPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('ors3SacketsBalance', fhirPath.extractValue(data.get('ors3SacketsObservation'), 'Observation.value.value') )"
+        "data.put('ors3SacketsPreviousBalance', fhirPath.extractValue(data.get('ors3SacketsObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -728,10 +728,10 @@
       ]
     },
     {
-      "name": "zincSulphate10mgBalance",
+      "name": "zincSulphate10mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate10mgBalance', fhirPath.extractValue(data.get('zincSulphate10mgObservation'), 'Observation.value.value') )"
+        "data.put('zincSulphate10mgPreviousBalance', fhirPath.extractValue(data.get('zincSulphate10mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -756,10 +756,10 @@
       ]
     },
     {
-      "name": "zincSulphate20mgBalance",
+      "name": "zincSulphate20mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate20mgBalance', fhirPath.extractValue(data.get('zincSulphate20mgObservation'), 'Observation.value.value') )"
+        "data.put('zincSulphate20mgPreviousBalance', fhirPath.extractValue(data.get('zincSulphate20mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -784,10 +784,10 @@
       ]
     },
     {
-      "name": "paracetamol100mgBalance",
+      "name": "paracetamol100mgPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('paracetamol100mgBalance', fhirPath.extractValue(data.get('paracetamol100mgObservation'), 'Observation.value.value') )"
+        "data.put('paracetamol100mgPreviousBalance', fhirPath.extractValue(data.get('paracetamol100mgObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -812,10 +812,10 @@
       ]
     },
     {
-      "name": "rdtBalance",
+      "name": "rdtPreviousBalance",
       "condition": "true",
       "actions": [
-        "data.put('rdtBalance', fhirPath.extractValue(data.get('rdtObservation'), 'Observation.value.value') )"
+        "data.put('rdtPreviousBalance', fhirPath.extractValue(data.get('rdtObservation'), 'Observation.value.value') )"
       ]
     },
     {
@@ -1008,8 +1008,8 @@
                             "paramType": "PREPOPULATE",
                             "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
                             "dataType": "STRING",
-                            "key": "mnpBalance",
-                            "value": "@{mnpBalance}"
+                            "key": "mnpPreviousBalance",
+                            "value": "@{mnpPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
@@ -1029,8 +1029,8 @@
                             "paramType": "PREPOPULATE",
                             "linkId": "0ea6b537-08b3-48b8-aa83-c70e10fe836b",
                             "dataType": "STRING",
-                            "key": "albendazole400mgBalance",
-                            "value": "@{albendazole400mgBalance}"
+                            "key": "albendazole400mgPreviousBalance",
+                            "value": "@{albendazole400mgPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
@@ -1045,6 +1045,111 @@
                             "dataType": "STRING",
                             "key": "albendazole400mgStockOutFlagId",
                             "value": "@{albendazole400mgStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
+                            "dataType": "STRING",
+                            "key": "maleCondomPreviousBalance",
+                            "value": "@{maleCondomPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
+                            "dataType": "STRING",
+                            "key": "femaleCondomPreviousBalance",
+                            "value": "@{femaleCondomPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "34925e0f-ad9c-4f6c-9873-1c51196d630a",
+                            "dataType": "STRING",
+                            "key": "microgynonPreviousBalance",
+                            "value": "@{microgynonPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3",
+                            "dataType": "STRING",
+                            "key": "microlutPreviousBalance",
+                            "value": "@{microlutPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "5e0cde01-7df6-40b6-ad42-d8aa52a27187",
+                            "dataType": "STRING",
+                            "key": "sayanaPressPreviousBalance",
+                            "value": "@{sayanaPressPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "955c5b30-0f08-4720-8567-99ef58350615",
+                            "dataType": "STRING",
+                            "key": "maleCondomObservationId",
+                            "value": "@{latestMaleCondomObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "3821961e-79db-4120-99db-079548307454",
+                            "dataType": "STRING",
+                            "key": "femaleCondomObservationId",
+                            "value": "@{latestFemaleCondomObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "4857a2ac-85c7-47aa-a246-1f0bac8ff56c",
+                            "dataType": "STRING",
+                            "key": "microgynonObservationId",
+                            "value": "@{microgynonObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6c204a32-da95-4251-bf3f-bbc6d3e69f1a",
+                            "dataType": "STRING",
+                            "key": "microlutObservationId",
+                            "value": "@{microlutObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "b8de4749-8d94-40d4-9a6f-fe7fa2b15cc4",
+                            "dataType": "STRING",
+                            "key": "sayanaPressObservationId",
+                            "value": "@{sayanaPressObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "56577a66-15ae-4612-bee9-a2d4168082e8",
+                            "dataType": "STRING",
+                            "key": "maleCondomStockOutFlagId",
+                            "value": "@{maleCondomStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "30be53b9-6a9c-49fd-8ae7-6e8ff1da8830",
+                            "dataType": "STRING",
+                            "key": "femaleCondomStockOutFlagId",
+                            "value": "@{femaleCondomStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "dd628ef4-1363-44ac-8d70-1ad6fc61809e",
+                            "dataType": "STRING",
+                            "key": "microgynonStockOutFlagId",
+                            "value": "@{microgynonStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "636108ea-07b0-4f8b-8f20-7cf0518deaca",
+                            "dataType": "STRING",
+                            "key": "microlutStockOutFlagId",
+                            "value": "@{microlutStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bf3ccd65-e64e-4dc5-a524-b6b1e6e17a65",
+                            "dataType": "STRING",
+                            "key": "sayanaPressStockOutFlagId",
+                            "value": "@{sayanaPressStockOutFlagId}"
                           }
                         ]
                       }
@@ -1104,8 +1209,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "652a752f-280a-4560-aac8-fa3196449961",
                 "dataType": "STRING",
-                "key": "artemetherLumefatrine1x6Balance",
-                "value": "@{artemetherLumefatrine1x6Balance}"
+                "key": "artemetherLumefatrine1x6PreviousBalance",
+                "value": "@{artemetherLumefatrine1x6PreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1125,8 +1230,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "688e8eeb-068b-40d7-97a2-ac434855ee4f",
                 "dataType": "STRING",
-                "key": "artemetherLumefatrine2x6Balance",
-                "value": "@{artemetherLumefatrine2x6Balance}"
+                "key": "artemetherLumefatrine2x6PreviousBalance",
+                "value": "@{artemetherLumefatrine2x6PreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1146,8 +1251,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "ec66a7cc-d1f6-4d5e-b161-61eb61c2922e",
                 "dataType": "STRING",
-                "key": "artesunate100mgBalance",
-                "value": "@{artesunate100mgBalance}"
+                "key": "artesunate100mgPreviousBalance",
+                "value": "@{artesunate100mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1167,8 +1272,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "8b404865-2651-4ba6-8b4d-c2de0aae55f6",
                 "dataType": "STRING",
-                "key": "artesunate100mgtabletsBalance",
-                "value": "@{artesunate100mgtabletsBalance}"
+                "key": "artesunate100mgtabletsPreviousBalance",
+                "value": "@{artesunate100mgtabletsPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1188,8 +1293,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "f03c4d81-76be-4d07-a772-6d5f19d32c93",
                 "dataType": "STRING",
-                "key": "as25mg-aq67-5mgBalance",
-                "value": "@{as25mg-aq67-5mgBalance}"
+                "key": "as25mg-aq67-5mgPreviousBalance",
+                "value": "@{as25mg-aq67-5mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1209,8 +1314,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "11537bd0-134c-4179-8b55-fbedc876e413",
                 "dataType": "STRING",
-                "key": "as50mg-aq135mgBalance",
-                "value": "@{as50mg-aq135mgBalance}"
+                "key": "as50mg-aq135mgPreviousBalance",
+                "value": "@{as50mg-aq135mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1230,8 +1335,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "254fe48e-dd6c-4428-b59c-10c8079dc8d5",
                 "dataType": "STRING",
-                "key": "amoxicillin250mgBalance",
-                "value": "@{amoxicillin250mgBalance}"
+                "key": "amoxicillin250mgPreviousBalance",
+                "value": "@{amoxicillin250mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1251,8 +1356,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "7be1c8e4-e7d0-445b-8a71-d600263a0063",
                 "dataType": "STRING",
-                "key": "amoxicillin250mg2TabletsBalance",
-                "value": "@{amoxicillin250mg2TabletsBalance}"
+                "key": "amoxicillin250mg2TabletsPreviousBalance",
+                "value": "@{amoxicillin250mg2TabletsPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1272,8 +1377,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "8851fff1-0ff7-4d60-bc70-80878a5dc769",
                 "dataType": "STRING",
-                "key": "orsBalance",
-                "value": "@{orsBalance}"
+                "key": "orsPreviousBalance",
+                "value": "@{orsPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1293,8 +1398,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "327e5785-4cc4-4c9d-9bd1-860359e3d0d9",
                 "dataType": "STRING",
-                "key": "artemetherLumefatrine2x6Balance",
-                "value": "@{artemetherLumefatrine2x6Balance}"
+                "key": "artemetherLumefatrine2x6PreviousBalance",
+                "value": "@{artemetherLumefatrine2x6PreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1314,8 +1419,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "250db9c5-3b3a-4b1c-8285-8ce40583cee3",
                 "dataType": "STRING",
-                "key": "as25mg-aq67-5mg2MonthsBalance",
-                "value": "@{as25mg-aq67-5mg2MonthsBalance}"
+                "key": "as25mg-aq67-5mg2MonthsPreviousBalance",
+                "value": "@{as25mg-aq67-5mg2MonthsPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1335,8 +1440,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "dc801d93-5e85-4bea-bf51-4093ce1b5d40",
                 "dataType": "STRING",
-                "key": "as50mg-aq135mgBalance",
-                "value": "@{as50mg-aq135mgBalance}"
+                "key": "as50mg-aq135mgPreviousBalance",
+                "value": "@{as50mg-aq135mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1356,8 +1461,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "30a4b90a-34d4-432d-91ac-35d5da6910bb",
                 "dataType": "STRING",
-                "key": "rdtBalance",
-                "value": "@{rdtBalance}"
+                "key": "rdtPreviousBalance",
+                "value": "@{rdtPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1377,8 +1482,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "7f5cab9a-c19e-4001-aaa7-5e013a515ca8",
                 "dataType": "STRING",
-                "key": "ors3SacketsBalance",
-                "value": "@{ors3SacketsBalance}"
+                "key": "ors3SacketsPreviousBalance",
+                "value": "@{ors3SacketsPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1398,8 +1503,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "927f0a45-2e37-4f8b-8608-005b266ca961",
                 "dataType": "STRING",
-                "key": "zincSulphate10mgBalance",
-                "value": "@{zincSulphate10mgBalance}"
+                "key": "zincSulphate10mgPreviousBalance",
+                "value": "@{zincSulphate10mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1419,8 +1524,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "8f62fce7-6a78-460b-9a5b-6feae7aa1818",
                 "dataType": "STRING",
-                "key": "zincSulphate20mgBalance",
-                "value": "@{zincSulphate20mgBalance}"
+                "key": "zincSulphate20mgPreviousBalance",
+                "value": "@{zincSulphate20mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1440,8 +1545,8 @@
                 "paramType": "PREPOPULATE",
                 "linkId": "ee63e5a2-302f-4576-ad12-877b02586ef0",
                 "dataType": "STRING",
-                "key": "paracetamol100mgBalance",
-                "value": "@{paracetamol100mgBalance}"
+                "key": "paracetamol100mgPreviousBalance",
+                "value": "@{paracetamol100mgPreviousBalance}"
               },
               {
                 "paramType": "PREPOPULATE",
@@ -1524,15 +1629,15 @@
               "paramType": "PREPOPULATE",
               "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
               "dataType": "STRING",
-              "key": "maleCondomBalance",
-              "value": "@{maleCondomBalance}"
+              "key": "maleCondomPreviousBalance",
+              "value": "@{maleCondomPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
               "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
               "dataType": "STRING",
-              "key": "femaleCondomBalance",
-              "value": "@{femaleCondomBalance}"
+              "key": "femaleCondomPreviousBalance",
+              "value": "@{femaleCondomPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
