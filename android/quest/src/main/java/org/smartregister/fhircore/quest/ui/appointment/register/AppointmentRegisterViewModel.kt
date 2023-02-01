@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.tracing.register
+package org.smartregister.fhircore.quest.ui.appointment.register
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -46,8 +46,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -55,38 +53,29 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.StandardRegisterEvent
 import org.smartregister.fhircore.quest.ui.StandardRegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
-import org.smartregister.fhircore.quest.util.REGISTER_FORM_ID_KEY
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class TracingRegisterViewModel
+class AppointmentRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val registerViewDataMapper: RegisterViewDataMapper,
-  val appFeatureManager: AppFeatureManager,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  private val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel(), StandardRegisterViewModel {
-
   private val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
   private val healthModule =
-    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.HOME_TRACING
+    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.APPOINTMENT
 
   private val _isRefreshing = MutableStateFlow(false)
 
@@ -160,13 +149,10 @@ constructor(
     _refreshCounter.value += 1
   }
 
-  fun isAppFeatureHousehold() =
-    appFeatureName.equals(AppFeature.HouseholdManagement.name, ignoreCase = true)
-
-  fun paginateRegisterDataFlow(page: Int) =
+  private fun paginateRegisterDataFlow(page: Int) =
     getPager(appFeatureName, loadAll = false, page = page).flow
 
-  fun filterRegisterDataFlow(text: String) =
+  private fun filterRegisterDataFlow(text: String) =
     paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
       pagingData.filter {
         it.title.contains(text, ignoreCase = true) ||
@@ -174,7 +160,7 @@ constructor(
       }
     }
 
-  fun paginateRegisterDataForSearch() {
+  private fun paginateRegisterDataForSearch() {
     paginatedRegisterDataForSearch.value =
       getPager(appFeatureName, true).flow.cachedIn(viewModelScope)
   }
@@ -187,8 +173,8 @@ constructor(
     Pager(
       config =
         PagingConfig(
-          pageSize = DEFAULT_PAGE_SIZE,
-          initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE,
+          pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
+          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE,
           enablePlaceholders = false
         ),
       pagingSourceFactory = {
@@ -206,7 +192,9 @@ constructor(
     )
 
   override fun countPages() =
-    _totalRecordsCount.map { it.toDouble().div(DEFAULT_PAGE_SIZE) }.map { ceil(it).toInt() }
+    _totalRecordsCount.map { it.toDouble().div(RegisterPagingSource.DEFAULT_PAGE_SIZE) }.map {
+      ceil(it).toInt()
+    }
 
   override fun onEvent(event: StandardRegisterEvent) {
     when (event) {
@@ -221,27 +209,10 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
       }
       is StandardRegisterEvent.OpenProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
-            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
-          )
-        if (healthModule == HealthModule.FAMILY)
-          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
-          event.navController.navigate(
-            route = MainNavigationScreen.TracingProfile.route + urlParams
-          )
+        // No-op
       }
     }
   }
-
-  fun isRegisterFormViaSettingExists(): Boolean {
-    return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
-  }
-
-  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrBlank()
 
   override fun progressMessage() =
     if (searchText.value.isEmpty()) {

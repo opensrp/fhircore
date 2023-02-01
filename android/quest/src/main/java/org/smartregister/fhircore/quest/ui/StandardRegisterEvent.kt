@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.tracing.register
+package org.smartregister.fhircore.quest.ui
 
 import androidx.navigation.NavHostController
 
-sealed class TracingRegisterEvent {
-  data class SearchRegister(val searchText: String = "") : TracingRegisterEvent()
+sealed class StandardRegisterEvent {
+  data class SearchRegister(val searchText: String = "") : StandardRegisterEvent()
 
-  object MoveToNextPage : TracingRegisterEvent()
+  object MoveToNextPage : StandardRegisterEvent()
 
-  object MoveToPreviousPage : TracingRegisterEvent()
+  object MoveToPreviousPage : StandardRegisterEvent()
 
   data class OpenProfile(val patientId: String, val navController: NavHostController) :
-    TracingRegisterEvent()
+    StandardRegisterEvent()
 }
