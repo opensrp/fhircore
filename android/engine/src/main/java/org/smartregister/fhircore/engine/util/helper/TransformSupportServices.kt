@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
@@ -72,6 +73,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
       "Observation_Component" -> Observation.ObservationComponentComponent()
+      "Task_Input" -> Task.ParameterComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
