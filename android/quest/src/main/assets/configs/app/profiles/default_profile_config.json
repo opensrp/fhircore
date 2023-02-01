@@ -1,5 +1,5 @@
 {
-  "appId": "app",
+  "appId": "cha",
   "configType": "profile",
   "id": "defaultProfile",
   "fhirResource": {
@@ -1201,6 +1201,365 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ],
+            "params": [
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "652a752f-280a-4560-aac8-fa3196449961",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine1x6PreviousBalance",
+                "value": "@{artemetherLumefatrine1x6PreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "439f2e15-5426-4b5c-9ab7-e3d3e323af1f",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine1x6ObservationId",
+                "value": "@{artemetherLumefatrine1x6ObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "22524dbf-2aeb-4599-8cf4-160a237db060",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine1x6StockOutFlagId",
+                "value": "@{artemetherLumefatrine1x6StockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "688e8eeb-068b-40d7-97a2-ac434855ee4f",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6PreviousBalance",
+                "value": "@{artemetherLumefatrine2x6PreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "504a53e3-15d2-4208-ac59-75df250ebe6c",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6ObservationId",
+                "value": "@{artemetherLumefatrine2x6ObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8158103d-fa91-403f-a5ce-d3fb21412c3f",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6StockOutFlagId",
+                "value": "@{artemetherLumefatrine2x6StockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "ec66a7cc-d1f6-4d5e-b161-61eb61c2922e",
+                "dataType": "STRING",
+                "key": "artesunate100mgPreviousBalance",
+                "value": "@{artesunate100mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "cb032c71-465b-43d1-aeef-efe7241f22bb",
+                "dataType": "STRING",
+                "key": "artesunate100mgObservationId",
+                "value": "@{artesunate100mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "6b1ed271-28a8-4dc2-8521-f3498befc981",
+                "dataType": "STRING",
+                "key": "artesunate100mgStockOutFlagId",
+                "value": "@{artesunate100mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8b404865-2651-4ba6-8b4d-c2de0aae55f6",
+                "dataType": "STRING",
+                "key": "artesunate100mgtabletsPreviousBalance",
+                "value": "@{artesunate100mgtabletsPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "caf9de81-51ca-4f4c-a523-b862f1ef22ef",
+                "dataType": "STRING",
+                "key": "artesunate100mgtabletsObservationId",
+                "value": "@{artesunate100mgtabletsObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "30ca82bd-bd6e-4b14-931d-0b6d79db5350",
+                "dataType": "STRING",
+                "key": "artesunate100mgtabletsStockOutFlagId",
+                "value": "@{artesunate100mgtabletsStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "f03c4d81-76be-4d07-a772-6d5f19d32c93",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mgPreviousBalance",
+                "value": "@{as25mg-aq67-5mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "40594c41-914c-4c12-a44e-59eb410977e4",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mgObservationId",
+                "value": "@{as25mg-aq67-5mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8c4de538-0a38-465d-b547-e8543fbf1dfd",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mgStockOutFlagId",
+                "value": "@{as25mg-aq67-5mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "11537bd0-134c-4179-8b55-fbedc876e413",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgPreviousBalance",
+                "value": "@{as50mg-aq135mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "40ba4471-3ba5-4f1c-ac35-53cf42b71565",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgObservationId",
+                "value": "@{as50mg-aq135mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "fd124836-5be2-4692-aa19-fdd4f0537cf6",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgStockOutFlagId",
+                "value": "@{as50mg-aq135mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "254fe48e-dd6c-4428-b59c-10c8079dc8d5",
+                "dataType": "STRING",
+                "key": "amoxicillin250mgPreviousBalance",
+                "value": "@{amoxicillin250mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "19f9be52-cce5-442a-9f87-d6894a57b6ff",
+                "dataType": "STRING",
+                "key": "amoxicillin250mgObservationId",
+                "value": "@{amoxicillin250mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "829c3eff-4903-4123-b21c-e4f613c1f01d",
+                "dataType": "STRING",
+                "key": "amoxicillin250mgStockOutFlagId",
+                "value": "@{amoxicillin250mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "7be1c8e4-e7d0-445b-8a71-d600263a0063",
+                "dataType": "STRING",
+                "key": "amoxicillin250mg2TabletsPreviousBalance",
+                "value": "@{amoxicillin250mg2TabletsPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "7f1b86c6-313b-42a3-ae77-541cae12b27e",
+                "dataType": "STRING",
+                "key": "amoxicillin250mg2TabletsObservationId",
+                "value": "@{amoxicillin250mg2TabletsObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "32eebd31-8edc-43eb-a620-d4a30b33bc52",
+                "dataType": "STRING",
+                "key": "amoxicillin250mg2TabletsStockOutFlagId",
+                "value": "@{amoxicillin250mg2TabletsStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8851fff1-0ff7-4d60-bc70-80878a5dc769",
+                "dataType": "STRING",
+                "key": "orsPreviousBalance",
+                "value": "@{orsPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "2feddad8-b65c-4744-919d-4d3332b6ce8b",
+                "dataType": "STRING",
+                "key": "orsObservationId",
+                "value": "@{orsObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "4cea0aa6-5f5f-4950-b4ca-0e77777e3ae2",
+                "dataType": "STRING",
+                "key": "orsStockOutFlagId",
+                "value": "@{orsStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "327e5785-4cc4-4c9d-9bd1-860359e3d0d9",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6PreviousBalance",
+                "value": "@{artemetherLumefatrine2x6PreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "69995463-830b-4c73-8cfb-a7c258fcefa5",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6ObservationId",
+                "value": "@{artemetherLumefatrine2x6ObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "d1470016-409a-4ae1-8409-addc1afeec3a",
+                "dataType": "STRING",
+                "key": "artemetherLumefatrine2x6StockOutFlagId",
+                "value": "@{artemetherLumefatrine2x6StockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "250db9c5-3b3a-4b1c-8285-8ce40583cee3",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mg2MonthsPreviousBalance",
+                "value": "@{as25mg-aq67-5mg2MonthsPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "2c8b02ff-4d60-49f8-b823-cee1e5b07ab4",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mg2MonthsObservationId",
+                "value": "@{as25mg-aq67-5mg2MonthsObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "c1f46b7e-9e37-4039-b78b-b96f00512c60",
+                "dataType": "STRING",
+                "key": "as25mg-aq67-5mg2MonthsStockOutFlagId",
+                "value": "@{as25mg-aq67-5mg2MonthsStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "dc801d93-5e85-4bea-bf51-4093ce1b5d40",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgPreviousBalance",
+                "value": "@{as50mg-aq135mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "7726bea7-1a90-497a-810f-605e79c01d77",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgObservationId",
+                "value": "@{as50mg-aq135mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "21117515-ef9e-462d-8b1d-e1fe2f4c7221",
+                "dataType": "STRING",
+                "key": "as50mg-aq135mgStockOutFlagI",
+                "value": "@{as50mg-aq135mgStockOutFlagI}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "30a4b90a-34d4-432d-91ac-35d5da6910bb",
+                "dataType": "STRING",
+                "key": "rdtPreviousBalance",
+                "value": "@{rdtPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "f5ad8745-b8ab-423d-8e52-1cc6c73f8e63",
+                "dataType": "STRING",
+                "key": "rdtObservationId",
+                "value": "@{rdtObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "752a93ba-2cae-4e44-945c-c3813ff9927a",
+                "dataType": "STRING",
+                "key": "rdtStockOutFlagId",
+                "value": "@{rdtStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "7f5cab9a-c19e-4001-aaa7-5e013a515ca8",
+                "dataType": "STRING",
+                "key": "ors3SacketsPreviousBalance",
+                "value": "@{ors3SacketsPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "d43ed70b-d8d7-4b8c-948b-e0e1f5a7b4a3",
+                "dataType": "STRING",
+                "key": "ors3SacketsObservationId",
+                "value": "@{ors3SacketsObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8994ce39-d1b8-4486-9b75-3471b9f8b8ed",
+                "dataType": "STRING",
+                "key": "ors3SacketsStockOutFlagId",
+                "value": "@{ors3SacketsStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "927f0a45-2e37-4f8b-8608-005b266ca961",
+                "dataType": "STRING",
+                "key": "zincSulphate10mgPreviousBalance",
+                "value": "@{zincSulphate10mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "37bbf711-8f65-4244-b75d-9d5e9f76c501",
+                "dataType": "STRING",
+                "key": "zincSulphate10mgObservationId",
+                "value": "@{zincSulphate10mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "7d33a5c2-53f5-44ac-8ccb-b162d2d6db2c",
+                "dataType": "STRING",
+                "key": "zincSulphate10mgStockOutFlagId",
+                "value": "@{zincSulphate10mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8f62fce7-6a78-460b-9a5b-6feae7aa1818",
+                "dataType": "STRING",
+                "key": "zincSulphate20mgPreviousBalance",
+                "value": "@{zincSulphate20mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8304199b-a549-440b-b3c6-e132d2e7a20f",
+                "dataType": "STRING",
+                "key": "zincSulphate20mgObservationId",
+                "value": "@{zincSulphate20mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "67f81318-5940-412e-8de9-8b9dd8cbafbd",
+                "dataType": "STRING",
+                "key": "zincSulphate20mgStockOutFlagId",
+                "value": "@{zincSulphate20mgStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "ee63e5a2-302f-4576-ad12-877b02586ef0",
+                "dataType": "STRING",
+                "key": "paracetamol100mgPreviousBalance",
+                "value": "@{paracetamol100mgPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "74db611e-4c4f-45ab-a28b-d99de3c813d3",
+                "dataType": "STRING",
+                "key": "paracetamol100mgObservationId",
+                "value": "@{paracetamol100mgObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "22104359-fe5c-42da-9d87-09b6727bf777",
+                "dataType": "STRING",
+                "key": "paracetamol100mgStockOutFlagId",
+                "value": "@{paracetamol100mgStockOutFlagId}"
+              }
             ]
           },
           "params": [
@@ -1685,6 +2044,113 @@
             "planDefinitions": [
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22",
               "cd39380b-2359-4b98-8ab9-df7f90fe9392"
+            ],
+            "params": [
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
+                "dataType": "STRING",
+                "key": "maleCondomPreviousBalance",
+                "value": "@{maleCondomPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
+                "dataType": "STRING",
+                "key": "femaleCondomPreviousBalance",
+                "value": "@{femaleCondomPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "34925e0f-ad9c-4f6c-9873-1c51196d630a",
+                "dataType": "STRING",
+                "key": "microgynonPreviousBalance",
+                "value": "@{microgynonPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3",
+                "dataType": "STRING",
+                "key": "microlutPreviousBalance",
+                "value": "@{microlutPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "5e0cde01-7df6-40b6-ad42-d8aa52a27187",
+                "dataType": "STRING",
+                "key": "sayanaPressPreviousBalance",
+                "value": "@{sayanaPressPreviousBalance}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "955c5b30-0f08-4720-8567-99ef58350615",
+                "dataType": "STRING",
+                "key": "maleCondomObservationId",
+                "value": "@{latestMaleCondomObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "3821961e-79db-4120-99db-079548307454",
+                "dataType": "STRING",
+                "key": "femaleCondomObservationId",
+                "value": "@{latestFemaleCondomObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "4857a2ac-85c7-47aa-a246-1f0bac8ff56c",
+                "dataType": "STRING",
+                "key": "microgynonObservationId",
+                "value": "@{microgynonObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "6c204a32-da95-4251-bf3f-bbc6d3e69f1a",
+                "dataType": "STRING",
+                "key": "microlutObservationId",
+                "value": "@{microlutObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "b8de4749-8d94-40d4-9a6f-fe7fa2b15cc4",
+                "dataType": "STRING",
+                "key": "sayanaPressObservationId",
+                "value": "@{sayanaPressObservationId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "56577a66-15ae-4612-bee9-a2d4168082e8",
+                "dataType": "STRING",
+                "key": "maleCondomStockOutFlagId",
+                "value": "@{maleCondomStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "30be53b9-6a9c-49fd-8ae7-6e8ff1da8830",
+                "dataType": "STRING",
+                "key": "femaleCondomStockOutFlagId",
+                "value": "@{femaleCondomStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "dd628ef4-1363-44ac-8d70-1ad6fc61809e",
+                "dataType": "STRING",
+                "key": "microgynonStockOutFlagId",
+                "value": "@{microgynonStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "636108ea-07b0-4f8b-8f20-7cf0518deaca",
+                "dataType": "STRING",
+                "key": "microlutStockOutFlagId",
+                "value": "@{microlutStockOutFlagId}"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "bf3ccd65-e64e-4dc5-a524-b6b1e6e17a65",
+                "dataType": "STRING",
+                "key": "sayanaPressStockOutFlagId",
+                "value": "@{sayanaPressStockOutFlagId}"
+              }
             ]
           },
           "params": [

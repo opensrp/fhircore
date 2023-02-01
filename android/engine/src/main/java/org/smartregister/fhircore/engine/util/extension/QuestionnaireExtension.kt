@@ -139,7 +139,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    prePopulationParams.firstOrNull { it.linkId == item.linkId }?.let { actionParam ->
+    prePopulationParams.firstOrNull { it.linkId == item.linkId && !it.value.isNullOrEmpty() }?.let { actionParam ->
       item.initial =
         arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
           Questionnaire.QuestionnaireItemInitialComponent().apply {

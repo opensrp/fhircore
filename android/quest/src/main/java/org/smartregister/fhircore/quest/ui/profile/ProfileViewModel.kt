@@ -137,7 +137,8 @@ constructor(
                       context = event.navController.context,
                       intentBundle = intentBundle,
                       questionnaireConfig = questionnaireConfig,
-                      computedValuesMap = event.resourceData?.computedValuesMap
+                      computedValuesMap = event.resourceData?.computedValuesMap,
+                      actionParams = actionConfig.params
                     )
                   }
                 }
