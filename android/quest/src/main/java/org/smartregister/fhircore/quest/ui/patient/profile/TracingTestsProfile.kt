@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 @Composable
 fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
   val context = LocalContext.current
-  val patient by viewModel.patientProfileViewData.collectAsState()
   val isOnTracing by viewModel.hasTracing.observeAsState(initial = false)
 
   if (viewModel.patientId.isBlank()) {
@@ -65,10 +64,16 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
           Button(onClick = { viewModel.clearAllTracingData() }) {
             Text(text = "Clear Tracing Data for All")
           }
-          Box(modifier = Modifier
-            .height(1.dp).background(Color.Blue)
-            .fillMaxWidth())
-          Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Box(
+            modifier = Modifier
+              .height(1.dp)
+              .background(Color.Blue)
+              .fillMaxWidth()
+          )
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
             Button(
               onClick = { viewModel.updateUserWithTracing(isHomeTracing = true) },
               enabled = !isOnTracing
@@ -87,9 +92,30 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
     ) {
       LazyColumn(Modifier.fillMaxWidth()) {
         items(TracingTestsViewModel.testItems) { item ->
-          Button(onClick = { viewModel.open(context, item) }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = item.title)
+          when (item) {
+            is TestItem.DividerItem -> {
+              Box(
+                Modifier
+                  .fillMaxWidth()
+                  .padding(horizontal = 12.dp)) {
+                Box(
+                  Modifier
+                    .height(1.dp)
+                    .fillMaxWidth()
+                    .background(Color.Black)) {
+                }
+              }
+            }
+            is TestItem.QuestItem -> {
+              Button(
+                onClick = { viewModel.open(context, item) },
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Text(text = item.title)
+              }
+            }
           }
+
         }
       }
     }

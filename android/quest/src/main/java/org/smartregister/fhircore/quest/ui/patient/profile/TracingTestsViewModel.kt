@@ -23,22 +23,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.rest.gclient.TokenClientParam
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.delete
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Operation
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
@@ -93,8 +92,8 @@ constructor(
     checkIfOnTracing()
     val syncStateListener =
       object : OnSyncListener {
-        override fun onSync(state: State) {
-          val isStateCompleted = state is State.Failed || state is State.Finished
+        override fun onSync(state: SyncJobStatus) {
+          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
          if (isStateCompleted) checkIfOnTracing()
         }
       }
@@ -115,7 +114,7 @@ constructor(
     }
   }
 
-  fun open(context: Context, item: TestItem) {
+  fun open(context: Context, item: TestItem.QuestItem) {
     val profile = patientProfileViewData.value
 
     context.launchQuestionnaire<QuestionnaireActivity>(
@@ -247,26 +246,34 @@ constructor(
   }
 
   companion object {
-    val testItems =
+    val testItems: List<TestItem> =
       listOf(
-        TestItem(
+        TestItem.QuestItem(
           title = "Viral Load",
           questionnaire = "tests/art_client_viral_load_test_results.json"
         ),
-        TestItem(
+        TestItem.QuestItem(
           title = "Dry Blood Samples",
           questionnaire = "tests/exposed_infant_hiv_test_and_results.json"
         ),
-        TestItem(
+        TestItem.QuestItem(
           title = "D and H VL",
           questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json"
         ),
-        TestItem(
+        TestItem.QuestItem(
           title = "Next Appointment",
           questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
+        ),
+        TestItem.DividerItem,
+        TestItem.QuestItem(
+          title = "Cervical Cancer Screening",
+          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
         )
       )
   }
 }
 
-data class TestItem(val title: String, val questionnaire: String)
+sealed class TestItem() {
+  data class QuestItem(val title: String, val questionnaire: String) : TestItem()
+  object DividerItem : TestItem()
+}
