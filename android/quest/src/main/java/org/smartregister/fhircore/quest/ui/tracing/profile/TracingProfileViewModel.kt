@@ -18,7 +18,11 @@ package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -75,8 +79,7 @@ constructor(
       )
     )
 
-  private val _patientProfileViewDataFlow =
-    MutableStateFlow(ProfileViewData.TracingProfileData())
+  private val _patientProfileViewDataFlow = MutableStateFlow(ProfileViewData.TracingProfileData())
   val patientProfileViewData: StateFlow<ProfileViewData.TracingProfileData>
     get() = _patientProfileViewDataFlow.asStateFlow()
 

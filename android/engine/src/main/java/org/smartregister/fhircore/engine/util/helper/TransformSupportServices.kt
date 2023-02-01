@@ -20,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -70,6 +71,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Timing_Repeat" -> Timing.TimingRepeatComponent()
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
+      "Appointment_Participant" -> Appointment.AppointmentParticipantComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

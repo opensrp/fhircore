@@ -85,7 +85,8 @@ fun TracingProfileScreen(
   TracingProfilePage(
     modifier = modifier,
     patientProfileViewModel = patientProfileViewModel,
-    onBackPress = { navController.popBackStack() })
+    onBackPress = { navController.popBackStack() }
+  )
 }
 
 @Composable
@@ -130,13 +131,13 @@ fun TracingProfilePage(
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
-                modifier
-                  .fillMaxWidth()
-                  .background(
-                    color =
-                    if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                    else Color.Transparent
-                  )
+                  modifier
+                    .fillMaxWidth()
+                    .background(
+                      color =
+                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
               ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
             }
           }
@@ -147,11 +148,13 @@ fun TracingProfilePage(
       Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
         Button(
           colors =
-          ButtonDefaults.buttonColors(
-            backgroundColor = LoginButtonColor,
-            LoginFieldBackgroundColor
-          ),
-          onClick = { patientProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context)) },
+            ButtonDefaults.buttonColors(
+              backgroundColor = LoginButtonColor,
+              LoginFieldBackgroundColor
+            ),
+          onClick = {
+            patientProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
+          },
           modifier = modifier.fillMaxWidth()
         ) {
           Text(
@@ -163,10 +166,7 @@ fun TracingProfilePage(
       }
     }
   ) { innerPadding ->
-    TracingProfilePageView(
-      innerPadding = innerPadding,
-      profileViewData = profileViewData
-    )
+    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData)
   }
 }
 
@@ -174,25 +174,15 @@ fun TracingProfilePage(
 fun TracingProfilePageView(
   modifier: Modifier = Modifier,
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
-  profileViewData: ProfileViewData.TracingProfileData =
-    ProfileViewData.TracingProfileData()
+  profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData()
 ) {
-  Column(
-    modifier = modifier
-      .fillMaxHeight()
-      .fillMaxWidth()
-      .padding(innerPadding)
-  ) {
-    Box(
-      modifier = Modifier
-        .padding(5.dp)
-        .weight(2.0f)
-    ) {
+  Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
+    Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
       Column(
         modifier =
-        modifier
-          .verticalScroll(rememberScrollState())
-          .background(PatientProfileSectionsBackgroundColor)
+          modifier
+            .verticalScroll(rememberScrollState())
+            .background(PatientProfileSectionsBackgroundColor)
       ) {
         // Personal Data: e.g. sex, age, dob
         PatientInfo(profileViewData)
@@ -300,9 +290,7 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
     border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
     Row(
-      modifier = modifier
-        .padding(6.dp, 8.dp)
-        .fillMaxWidth(),
+      modifier = modifier.padding(6.dp, 8.dp).fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
       Text(
@@ -367,11 +355,7 @@ private fun TracingContactAddress(
     shape = RoundedCornerShape(12.dp),
     border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
-    Column(
-      modifier = modifier
-        .padding(horizontal = 4.dp)
-        .fillMaxWidth()
-    ) {
+    Column(modifier = modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
       if (displayForHomeTrace) {
         TracingReasonItem(
           title = stringResource(R2.string.patient_district),
@@ -399,9 +383,7 @@ private fun TracingContactAddress(
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier
-            .fillMaxWidth()
-            .padding(end = 16.dp, bottom = 8.dp)
+          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
         )
       }
     }
@@ -424,7 +406,7 @@ private fun TracingGuardianAddress(
         TracingReasonItem(
           title = stringResource(R2.string.guardian_relation),
           value =
-          "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
+            "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
         )
         TracingReasonItem(
           title = stringResource(R2.string.guardian_phone_number_1),
@@ -439,9 +421,7 @@ private fun TracingGuardianAddress(
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier
-            .fillMaxWidth()
-            .padding(end = 16.dp, bottom = 8.dp)
+          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
         )
       }
     }
@@ -456,7 +436,7 @@ private fun TracingGuardianAddress(
           TracingReasonItem(
             title = stringResource(R2.string.guardian_phone_number_2),
             value =
-            "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
+              "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
           )
           TracingReasonItem(
             title = stringResource(R2.string.guardian_phone_number_2),
@@ -471,9 +451,7 @@ private fun TracingGuardianAddress(
             textAlign = TextAlign.End,
             fontSize = 14.sp,
             color = SuccessColor,
-            modifier = modifier
-              .fillMaxWidth()
-              .padding(end = 16.dp, bottom = 8.dp)
+            modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
           )
         }
       }
