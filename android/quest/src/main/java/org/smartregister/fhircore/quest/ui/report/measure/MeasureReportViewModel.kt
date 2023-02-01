@@ -282,24 +282,36 @@ constructor(
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
             val result =
-              measureReportConfigList.flatMap {
-                retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
-                  fhirEngine,
-                  startDateFormatted,
-                  endDateFormatted,
-                  it.url
-                )
-                  .ifEmpty {
-                    withContext(dispatcherProvider.io()) {
-                      fhirEngine.loadCqlLibraryBundle(fhirOperator, it.url)
-                    }
-                    evaluatePopulationMeasure(
-                      it.url,
-                      startDateFormatted,
-                      endDateFormatted,
-                      it.subjectXFhirQuery
-                    )
+              measureReportConfigList.flatMap { config ->
+                val existing =
+                  retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+                    fhirEngine,
+                    startDateFormatted,
+                    endDateFormatted,
+                    config.url
+                  )
+
+                // if report is of current month or does not exist generate a new one and replace
+                // existing
+                if (startDateFormatted.contentEquals(
+                    Date().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+                  ) ||
+                    endDateFormatted.contentEquals(
+                      Date().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+                    ) ||
+                    existing.isEmpty()
+                ) {
+                  withContext(dispatcherProvider.io()) {
+                    fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
                   }
+                  evaluatePopulationMeasure(
+                    config.url,
+                    startDateFormatted,
+                    endDateFormatted,
+                    config.subjectXFhirQuery,
+                    existing
+                  )
+                } else existing
               }
 
             _measureReportPopulationResultList.addAll(
@@ -327,7 +339,8 @@ constructor(
     measureUrl: String,
     startDateFormatted: String,
     endDateFormatted: String,
-    subjectXFhirQuery: String?
+    subjectXFhirQuery: String?,
+    existing: List<MeasureReport>
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     withContext(dispatcherProvider.io()) {
@@ -349,7 +362,16 @@ constructor(
           measureReport.add(it)
         }
 
-      measureReport.forEach { defaultRepository.addOrUpdate(resource = it) }
+      measureReport.forEach { report ->
+        // if report exists override instead of creating a new one
+        existing
+          .find {
+            it.measure == report.measure &&
+              (!it.hasSubject() || it.subject.reference == report.subject.reference)
+          }
+          ?.let { existing -> report.id = existing.id }
+        defaultRepository.addOrUpdate(resource = report)
+      }
     }
     return measureReport
   }
