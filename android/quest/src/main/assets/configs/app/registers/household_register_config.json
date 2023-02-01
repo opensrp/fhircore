@@ -26,6 +26,12 @@
             "code": "35359004"
           }
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE"
+        }
       ]
     },
     "relatedResources": [

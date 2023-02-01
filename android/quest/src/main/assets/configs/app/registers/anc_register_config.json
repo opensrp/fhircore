@@ -37,6 +37,12 @@
             "resource": "CarePlan",
             "searchParameter": "subject"
           }
+        ],
+        "sortConfigs": [
+          {
+            "paramName": "lastUpdated",
+            "dataType": "DATE"
+          }
         ]
       }
     ]

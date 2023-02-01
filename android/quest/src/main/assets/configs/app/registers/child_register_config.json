@@ -14,6 +14,12 @@
           "valueDate": "2017-03-14",
           "paramPrefix": "GREATERTHAN_OR_EQUALS"
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "lastUpdated",
+          "dataType": "DATE"
+        }
       ]
     },
     "relatedResources": [
