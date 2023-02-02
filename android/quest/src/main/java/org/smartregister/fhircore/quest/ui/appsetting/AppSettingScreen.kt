@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +68,7 @@ fun AppSettingScreen(
   modifier: Modifier = Modifier,
   appId: String,
   onAppIdChanged: (String) -> Unit,
-  onLoadConfigurations: (Boolean) -> Unit,
+  fetchConfiguration: (Context) -> Unit,
   showProgressBar: Boolean = false,
   appVersionPair: Pair<Int, String>? = null
 ) {
@@ -127,7 +128,7 @@ fun AppSettingScreen(
         modifier = modifier.bringIntoViewRequester(bringIntoViewRequester).fillMaxWidth()
       ) {
         Button(
-          onClick = { onLoadConfigurations(true) },
+          onClick = { fetchConfiguration(context) },
           enabled = !showProgressBar && appId.isNotEmpty(),
           modifier = modifier.fillMaxWidth(),
           colors =
@@ -167,7 +168,7 @@ private fun AppSettingScreenPreview() {
   AppSettingScreen(
     appId = "",
     onAppIdChanged = {},
-    onLoadConfigurations = {},
+    fetchConfiguration = {},
     appVersionPair = Pair(1, "0.0.1")
   )
 }

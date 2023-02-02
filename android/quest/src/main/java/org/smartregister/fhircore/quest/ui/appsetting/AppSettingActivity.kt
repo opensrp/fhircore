@@ -27,9 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -37,117 +35,45 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
-import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
-import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   @Inject lateinit var libraryEvaluator: LibraryEvaluator
-
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    val appSettingActivity = this@AppSettingActivity
+    appSettingActivity.applyWindowInsetListener()
     setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
     lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
+    val existingAppId =
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
-    with(appSettingViewModel) {
-      val appSettingActivity = this@AppSettingActivity
-      loadConfigs.observe(appSettingActivity) { loadConfigs ->
-        if (loadConfigs == false) {
-          showToast(getString(R.string.application_not_supported, appId.value))
-          return@observe
-        }
-
-        if (appId.value.isNullOrBlank()) return@observe
-
-        val appId = appId.value!!.trimEnd()
-
-        if (hasDebugSuffix() && BuildConfig.DEBUG) {
-          lifecycleScope.launch(dispatcherProvider.io()) {
-            configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
-              loadSuccessful: Boolean ->
-              if (loadSuccessful) {
-                sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-                appSettingViewModel.showProgressBar.postValue(false)
-                appSettingActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
-              } else {
-                launch(dispatcherProvider.main()) {
-                  showToast(getString(R.string.application_not_supported, appId))
-                  appSettingViewModel.showProgressBar.postValue(false)
-                }
-              }
-            }
-          }
-          return@observe
-        }
-
-        lifecycleScope.launch(dispatcherProvider.io()) {
-          appSettingViewModel.showProgressBar.postValue(true)
-          configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
-            loadSuccessful: Boolean ->
-            if (loadSuccessful) {
-              sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-              appSettingActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
-            } else {
-              launch(dispatcherProvider.main()) {
-                showToast(getString(R.string.application_not_supported, appId))
-              }
-            }
-            appSettingViewModel.showProgressBar.postValue(false)
-          }
-        }
+    // If app exists load the configs otherwise fetch from the server
+    if (!existingAppId.isNullOrEmpty()) {
+      appSettingViewModel.run {
+        onApplicationIdChanged(existingAppId)
+        loadConfiguration(appSettingActivity)
       }
-
-      fetchConfigs.observe(appSettingActivity) { fetchConfigs ->
-        if (fetchConfigs == false) {
-          loadConfigurations(true)
-          return@observe
+    } else {
+      setContent {
+        AppTheme {
+          val appId by appSettingViewModel.appId.observeAsState("")
+          val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
+          AppSettingScreen(
+            appId = appId,
+            onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
+            fetchConfiguration = appSettingViewModel::fetchConfigurations,
+            showProgressBar = showProgressBar
+          )
         }
-
-        if (hasDebugSuffix() && BuildConfig.DEBUG) {
-          loadConfigurations(true)
-          return@observe
-        }
-
-        if (appId.value.isNullOrBlank()) return@observe
-
-        lifecycleScope.launch(dispatcherProvider.io()) {
-          fetchConfigurations(appId.value!!, appSettingActivity)
-        }
-      }
-
-      error.observe(appSettingActivity) { error -> if (!error.isNullOrEmpty()) showToast(error) }
-    }
-
-    val lastAppId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
-    lastAppId?.let {
-      with(appSettingViewModel) {
-        onApplicationIdChanged(it)
-        fetchConfigurations(!accountAuthenticator.sessionActive())
       }
     }
-      ?: run {
-        setContent {
-          AppTheme {
-            val appId by appSettingViewModel.appId.observeAsState("")
-            val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
-            AppSettingScreen(
-              appId = appId,
-              onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-              onLoadConfigurations = appSettingViewModel::fetchConfigurations,
-              showProgressBar = showProgressBar
-            )
-          }
-        }
-      }
-    this.applyWindowInsetListener()
   }
 }

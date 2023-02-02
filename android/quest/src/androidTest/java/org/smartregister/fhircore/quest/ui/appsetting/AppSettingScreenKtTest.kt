@@ -44,7 +44,7 @@ class AppSettingScreenKtTest {
       org.smartregister.fhircore.quest.ui.appsetting.AppSettingScreen(
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
-        onLoadConfigurations = listenersSpy.onLoadConfigurations
+        fetchConfiguration = listenersSpy.onLoadConfigurations
       )
     }
   }
