@@ -57,7 +57,6 @@ import org.junit.Test
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.auth.TokenManagerService.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -108,11 +107,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = oAuthService,
-          fhirResourceService = fhirResourceService,
           parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
-          tokenManagerService = tokenManagerService,
           dispatcherProvider = dispatcherProvider,
         )
       )
@@ -226,11 +223,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          fhirResourceService = mockk(),
           parser = mockk(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
-          tokenManagerService = tokenManagerService,
           dispatcherProvider = dispatcherProvider,
         )
       )
@@ -281,11 +276,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          fhirResourceService = mockk(),
           parser = mockk(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
-          tokenManagerService = tokenManagerService,
           dispatcherProvider = dispatcherProvider,
         )
       )
@@ -504,13 +497,13 @@ class AccountAuthenticatorTest : RobolectricTest() {
       AuthCredentials("demo", "51r1K4l1".toSha1())
 
     Assert.assertTrue(
-      accountAuthenticator.validateLocalCredentials("demo", "51r1K4l1".toCharArray())
+      accountAuthenticator.validateLoginCredentials("demo", "51r1K4l1".toCharArray())
     )
     Assert.assertFalse(
-      accountAuthenticator.validateLocalCredentials("WrongUsername", "51r1K4l1".toCharArray())
+      accountAuthenticator.validateLoginCredentials("WrongUsername", "51r1K4l1".toCharArray())
     )
     Assert.assertFalse(
-      accountAuthenticator.validateLocalCredentials("demo", "WrongPassword".toCharArray())
+      accountAuthenticator.validateLoginCredentials("demo", "WrongPassword".toCharArray())
     )
   }
 

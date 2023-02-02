@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.p2p.utils.startP2PScreen
 
@@ -116,10 +115,7 @@ constructor(
     viewModelScope.launch(ioDispatcherProviderContext) {
       fhirEngine.clearDatabase()
       sharedPreferencesHelper.resetSharedPrefs()
-      accountAuthenticator.run {
-        invalidateSession()
-        launchScreen(AppSettingActivity::class.java)
-      }
+      accountAuthenticator.logout()
     }
   }
 

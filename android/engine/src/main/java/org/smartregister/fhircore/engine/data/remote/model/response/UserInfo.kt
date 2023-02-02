@@ -28,5 +28,6 @@ data class UserInfo(
   @SerialName("given_name") var givenName: String? = null,
   @SerialName("name") var name: String? = null,
   @SerialName("preferred_username") var preferredUsername: String? = null,
-  @SerialName("sub") var keycloakUuid: String? = null
+  @SerialName("sub") var keycloakUuid: String? = null,
+  @SerialName("fhir_core_app_id") var appId: String? = null
 )

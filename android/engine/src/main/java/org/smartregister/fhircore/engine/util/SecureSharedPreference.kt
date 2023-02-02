@@ -24,7 +24,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
@@ -52,16 +51,10 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   fun deleteCredentials() =
     secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name) }
 
-  fun retrieveSessionToken() = retrieveCredentials()?.sessionToken
-
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
   fun deleteSessionTokens() {
-    retrieveCredentials()?.run {
-      this.sessionToken = null
-      this.refreshToken = null
-      saveCredentials(this)
-    }
+    retrieveCredentials()?.run { saveCredentials(this) }
   }
 
   fun retrieveCredentials(): AuthCredentials? =
@@ -80,15 +73,6 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
 
   /** This method resets/clears all existing values in the shared preferences synchronously */
   fun resetSharedPrefs() = secureSharedPreferences.edit { clear() }
-
-  fun updateSession(successResponse: OAuthResponse) {
-    retrieveCredentials()
-      ?.apply {
-        this.sessionToken = successResponse.accessToken
-        this.refreshToken = successResponse.refreshToken
-      }
-      ?.run { saveCredentials(this) }
-  }
 
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"

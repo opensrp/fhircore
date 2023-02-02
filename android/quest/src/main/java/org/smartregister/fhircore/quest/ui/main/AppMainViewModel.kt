@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -79,7 +78,6 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -157,14 +155,6 @@ constructor(
         }
       }
       AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
-      is AppMainEvent.RefreshAuthToken -> {
-        viewModelScope.launch {
-          accountAuthenticator.refreshSessionAuthToken().let { bundle ->
-            Timber.e(bundle.getString(AccountManager.KEY_ERROR_MESSAGE))
-            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE)) accountAuthenticator.logout()
-          }
-        }
-      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {

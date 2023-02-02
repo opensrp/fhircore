@@ -66,7 +66,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class AppMainViewModelTest : RobolectricTest() {

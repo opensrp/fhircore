@@ -27,4 +27,24 @@ annotation class AuthOkHttpClientQualifier
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
+annotation class KeycloakOkHttpClientQualifier
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
 annotation class OkHttpClientQualifier
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class KeycloakRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RegularRetrofit

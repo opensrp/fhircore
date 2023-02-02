@@ -20,7 +20,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.res.stringResource
@@ -38,6 +37,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -54,11 +54,8 @@ class AppSettingActivity : AppCompatActivity() {
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
-
     setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
-
     lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
 
     with(appSettingViewModel) {
@@ -79,9 +76,8 @@ class AppSettingActivity : AppCompatActivity() {
               loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-                accountAuthenticator.launchScreen(LoginActivity::class.java)
                 appSettingViewModel.showProgressBar.postValue(false)
-                finish()
+                appSettingActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
               } else {
                 launch(dispatcherProvider.main()) {
                   showToast(getString(R.string.application_not_supported, appId))
@@ -99,8 +95,7 @@ class AppSettingActivity : AppCompatActivity() {
             loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-              accountAuthenticator.launchScreen(LoginActivity::class.java)
-              finish()
+              appSettingActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
             } else {
               launch(dispatcherProvider.main()) {
                 showToast(getString(R.string.application_not_supported, appId))
@@ -136,7 +131,7 @@ class AppSettingActivity : AppCompatActivity() {
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)
-        fetchConfigurations(!accountAuthenticator.hasActiveSession())
+        fetchConfigurations(!accountAuthenticator.sessionActive())
       }
     }
       ?: run {

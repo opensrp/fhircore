@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @HiltAndroidTest
-class TokenManagerServiceTest : RobolectricTest() {
+class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 

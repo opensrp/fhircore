@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.shared
+package org.smartregister.fhircore.engine.data.remote.auth
 
-import retrofit2.Call
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import retrofit2.Response
+import retrofit2.http.GET
 
-/**
- * Generic response handler used when [Response] is received from the callable site. Supports two
- * methods for handling response and failures]
- */
-interface ResponseHandler<T> {
-  /** Method to handle [response] from API [call] */
-  fun handleResponse(call: Call<T>, response: Response<T>)
-
-  /** Method to handle exception thrown from API [call] */
-  fun handleFailure(call: Call<T>, throwable: Throwable)
+interface KeycloakService {
+  @GET("protocol/openid-connect/userinfo") suspend fun fetchUserInfo(): Response<UserInfo?>
 }

@@ -23,7 +23,6 @@ import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.NetworkConfiguration
 import com.google.android.fhir.ServerConfiguration
-import com.google.android.fhir.sync.Authenticator
 import com.google.android.fhir.sync.remote.HttpLogger
 import dagger.Module
 import dagger.Provides
@@ -32,8 +31,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.TIMEOUT_DURATION
@@ -50,7 +49,7 @@ class FhirEngineModule {
   @Provides
   fun provideFhirEngine(
     @ApplicationContext context: Context,
-    tokenManagerService: TokenManagerService,
+    tokenAuthenticator: TokenAuthenticator,
     configService: ConfigService
   ): FhirEngine {
     FhirEngineProvider.init(
@@ -59,10 +58,7 @@ class FhirEngineModule {
         DatabaseErrorStrategy.UNSPECIFIED,
         ServerConfiguration(
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
-          authenticator =
-            object : Authenticator {
-              override fun getAccessToken() = tokenManagerService.getActiveAuthToken() ?: ""
-            },
+          authenticator = tokenAuthenticator,
           networkConfiguration =
             NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION),
           httpLogger =

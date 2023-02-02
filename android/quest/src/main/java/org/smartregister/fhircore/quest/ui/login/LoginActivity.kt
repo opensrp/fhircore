@@ -23,9 +23,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -43,7 +44,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var workManager: WorkManager
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,18 +55,25 @@ class LoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun navigateToScreen() {
+    // Cancel all background tasks when login is required to refresh token
+    val cancelAllWork =
+      intent.extras?.getBoolean(TokenAuthenticator.CANCEL_ALL_WORK, false) ?: false
+    if (cancelAllWork) workManager.cancelAllWork()
+
     loginViewModel.apply {
       val loginActivity = this@LoginActivity
       val isPinEnabled = isPinEnabled()
-      // Run sync and navigate directly to home screen if session is active and pin is not enabled
-      if (isPinEnabled && accountAuthenticator.hasActivePin()) {
+      val hasActivePin = secureSharedPreference.retrieveSessionPin() != null
+
+      if (isPinEnabled && hasActivePin) {
         navigateToPinLogin(launchSetup = false)
       }
+
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         when {
-          launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() ->
+          launchHomeScreen && isPinEnabled && hasActivePin ->
             navigateToPinLogin(launchSetup = false)
-          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() ->
+          launchHomeScreen && isPinEnabled && !hasActivePin ->
             navigateToPinLogin(launchSetup = true)
           launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
         }

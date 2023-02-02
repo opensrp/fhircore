@@ -112,10 +112,9 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
-        accountAuthenticator = accountAuthenticatorSpy,
-        dispatcher = coroutineTestRule.testDispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
+        accountAuthenticator = accountAuthenticatorSpy,
+        sharedPreferences = sharedPreferencesHelper,
         defaultRepository = defaultRepository,
         configService = configService
       )
@@ -172,7 +171,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     every { accountAuthenticatorSpy.fetchToken(any(), any()) } returns callMock
 
-    loginViewModel.attemptRemoteLogin()
+    loginViewModel.login(context)
 
     // Login error is reset to null
     Assert.assertNull(loginViewModel.loginErrorState.value)
@@ -205,8 +204,6 @@ internal class LoginViewModelTest : RobolectricTest() {
         )
       )
 
-    loginViewModel.oauthResponseHandler.handleResponse(call = callMock, response = mockResponse)
-
     // Show progress bar inactive
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -233,7 +230,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       onPasswordUpdated("51r1K4l1")
     }
 
-    loginViewModel.attemptRemoteLogin()
+    loginViewModel.login(context)
 
     Assert.assertEquals(null, loginViewModel.loginErrorState.value)
     loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
@@ -271,7 +268,6 @@ internal class LoginViewModelTest : RobolectricTest() {
       LoginViewModel(
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
-        dispatcher = dispatcher,
         sharedPreferences = sharedPreferences,
         defaultRepository = defaultRepository,
         configService = configService
@@ -392,7 +388,6 @@ internal class LoginViewModelTest : RobolectricTest() {
       LoginViewModel(
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
-        dispatcher = dispatcher,
         sharedPreferences = sharedPreferences,
         defaultRepository = defaultRepository,
         configService = configService
