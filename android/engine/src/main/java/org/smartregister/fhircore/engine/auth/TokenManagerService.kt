@@ -47,7 +47,7 @@ constructor(
     }
     Timber.v("Trying to get blocking auth token from account manager")
     return getActiveAccount()?.let {
-      accountManager.blockingGetAuthToken(it, AccountAuthenticator.AUTH_TOKEN_TYPE, false)
+      accountManager.blockingGetAuthToken(it, AUTH_TOKEN_TYPE, false)
     }
   }
 
@@ -81,5 +81,9 @@ constructor(
       Timber.w(malformedJwtException)
       false
     }
+  }
+
+  companion object {
+    const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"
   }
 }
