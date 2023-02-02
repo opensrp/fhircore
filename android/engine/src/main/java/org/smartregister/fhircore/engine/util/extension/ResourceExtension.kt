@@ -162,9 +162,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
-    if (qrItems.isEmpty() || qItem.linkId != qrItems[index].linkId) {
+    if (qrItems.isEmpty() || (index<qrItems.size && qItem.linkId != qrItems[index].linkId)) {
       qrItems.add(index, qItem.createQuestionnaireResponseItem())
-    } else qItem.item.generateMissingItems(qrItems[index].item)
+    } else if(index < qrItems.size) {
+      qItem.item.generateMissingItems(qrItems[index].item)
+    }
   }
 }
 /**
