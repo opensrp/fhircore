@@ -58,7 +58,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when status is inProgress`() {
     coEvery { fhirEngine.search<Task>(any()) } returns
-            listOf(Task().apply { status = Task.TaskStatus.INPROGRESS })
+      listOf(Task().apply { status = Task.TaskStatus.INPROGRESS })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
@@ -70,7 +70,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when status is failed`() {
     coEvery { fhirEngine.search<Task>(any()) } returns
-            listOf(Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() })
+      listOf(Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
@@ -82,7 +82,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when task isReady`() {
     coEvery { fhirEngine.search<Task>(any()) } returns
-            listOf(Task().apply { status = Task.TaskStatus.REQUESTED }.apply { isReady() })
+      listOf(Task().apply { status = Task.TaskStatus.REQUESTED }.apply { isReady() })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
