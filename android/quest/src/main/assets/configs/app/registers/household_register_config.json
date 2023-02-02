@@ -30,7 +30,8 @@
       "sortConfigs": [
         {
           "paramName": "_lastUpdated",
-          "dataType": "DATE"
+          "dataType": "DATE",
+          "order": "DESCENDING"
         }
       ]
     },

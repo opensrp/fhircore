@@ -1007,7 +1007,7 @@
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "mnpPreviousBalance",
                             "value": "@{mnpPreviousBalance}"
                           },
@@ -1028,7 +1028,7 @@
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "0ea6b537-08b3-48b8-aa83-c70e10fe836b",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "albendazole400mgPreviousBalance",
                             "value": "@{albendazole400mgPreviousBalance}"
                           },
@@ -1049,35 +1049,35 @@
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "maleCondomPreviousBalance",
                             "value": "@{maleCondomPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "femaleCondomPreviousBalance",
                             "value": "@{femaleCondomPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "34925e0f-ad9c-4f6c-9873-1c51196d630a",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "microgynonPreviousBalance",
                             "value": "@{microgynonPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "microlutPreviousBalance",
                             "value": "@{microlutPreviousBalance}"
                           },
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "5e0cde01-7df6-40b6-ad42-d8aa52a27187",
-                            "dataType": "STRING",
+                            "dataType": "INTEGER",
                             "key": "sayanaPressPreviousBalance",
                             "value": "@{sayanaPressPreviousBalance}"
                           },
@@ -1229,7 +1229,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "688e8eeb-068b-40d7-97a2-ac434855ee4f",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "artemetherLumefatrine2x6PreviousBalance",
                 "value": "@{artemetherLumefatrine2x6PreviousBalance}"
               },
@@ -1250,7 +1250,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "ec66a7cc-d1f6-4d5e-b161-61eb61c2922e",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "artesunate100mgPreviousBalance",
                 "value": "@{artesunate100mgPreviousBalance}"
               },
@@ -1271,7 +1271,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "8b404865-2651-4ba6-8b4d-c2de0aae55f6",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "artesunate100mgtabletsPreviousBalance",
                 "value": "@{artesunate100mgtabletsPreviousBalance}"
               },
@@ -1292,7 +1292,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "f03c4d81-76be-4d07-a772-6d5f19d32c93",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "as25mg-aq67-5mgPreviousBalance",
                 "value": "@{as25mg-aq67-5mgPreviousBalance}"
               },
@@ -1313,7 +1313,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "11537bd0-134c-4179-8b55-fbedc876e413",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "as50mg-aq135mgPreviousBalance",
                 "value": "@{as50mg-aq135mgPreviousBalance}"
               },
@@ -1334,7 +1334,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "254fe48e-dd6c-4428-b59c-10c8079dc8d5",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "amoxicillin250mgPreviousBalance",
                 "value": "@{amoxicillin250mgPreviousBalance}"
               },
@@ -1355,7 +1355,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "7be1c8e4-e7d0-445b-8a71-d600263a0063",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "amoxicillin250mg2TabletsPreviousBalance",
                 "value": "@{amoxicillin250mg2TabletsPreviousBalance}"
               },
@@ -1376,7 +1376,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "8851fff1-0ff7-4d60-bc70-80878a5dc769",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "orsPreviousBalance",
                 "value": "@{orsPreviousBalance}"
               },
@@ -1397,7 +1397,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "327e5785-4cc4-4c9d-9bd1-860359e3d0d9",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "artemetherLumefatrine2x6PreviousBalance",
                 "value": "@{artemetherLumefatrine2x6PreviousBalance}"
               },
@@ -1418,7 +1418,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "250db9c5-3b3a-4b1c-8285-8ce40583cee3",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "as25mg-aq67-5mg2MonthsPreviousBalance",
                 "value": "@{as25mg-aq67-5mg2MonthsPreviousBalance}"
               },
@@ -1439,7 +1439,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "dc801d93-5e85-4bea-bf51-4093ce1b5d40",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "as50mg-aq135mgPreviousBalance",
                 "value": "@{as50mg-aq135mgPreviousBalance}"
               },
@@ -1460,7 +1460,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "30a4b90a-34d4-432d-91ac-35d5da6910bb",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "rdtPreviousBalance",
                 "value": "@{rdtPreviousBalance}"
               },
@@ -1481,7 +1481,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "7f5cab9a-c19e-4001-aaa7-5e013a515ca8",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "ors3SacketsPreviousBalance",
                 "value": "@{ors3SacketsPreviousBalance}"
               },
@@ -1502,7 +1502,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "927f0a45-2e37-4f8b-8608-005b266ca961",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "zincSulphate10mgPreviousBalance",
                 "value": "@{zincSulphate10mgPreviousBalance}"
               },
@@ -1523,7 +1523,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "8f62fce7-6a78-460b-9a5b-6feae7aa1818",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "zincSulphate20mgPreviousBalance",
                 "value": "@{zincSulphate20mgPreviousBalance}"
               },
@@ -1544,7 +1544,7 @@
               {
                 "paramType": "PREPOPULATE",
                 "linkId": "ee63e5a2-302f-4576-ad12-877b02586ef0",
-                "dataType": "STRING",
+                "dataType": "INTEGER",
                 "key": "paracetamol100mgPreviousBalance",
                 "value": "@{paracetamol100mgPreviousBalance}"
               },
@@ -1628,14 +1628,14 @@
             {
               "paramType": "PREPOPULATE",
               "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
-              "dataType": "STRING",
+              "dataType": "INTEGER",
               "key": "maleCondomPreviousBalance",
               "value": "@{maleCondomPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
               "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
-              "dataType": "STRING",
+              "dataType": "INTEGER",
               "key": "femaleCondomPreviousBalance",
               "value": "@{femaleCondomPreviousBalance}"
             },
