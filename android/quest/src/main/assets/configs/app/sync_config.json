@@ -35,18 +35,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "publisher",
-        "code": "publisher",
-        "base": [
-          "Questionnaire"
-        ],
-        "type": "token",
-        "expression": "#publisher"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
@@ -91,7 +79,6 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Questionnaire",
           "StructureMap",
           "Task",
           "Group",
