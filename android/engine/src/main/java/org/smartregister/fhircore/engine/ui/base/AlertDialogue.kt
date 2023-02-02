@@ -46,11 +46,11 @@ object AlertDialogue {
 
   fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
 
-  fun AlertDialog.getSingleChoiceSelectedItem() =
+  private fun AlertDialog.getSingleChoiceSelectedItem() =
     if (this.listView.checkedItemCount != 1) null
     else getListItems()!![this.listView.checkedItemPosition]
 
-  fun AlertDialog.getListItems() =
+  private fun AlertDialog.getListItems() =
     this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
 
   fun showAlert(
@@ -66,7 +66,7 @@ object AlertDialogue {
     options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     val dialog =
-      AlertDialog.Builder(context)
+      AlertDialog.Builder(context, R.style.AlertDialogTheme)
         .apply {
           val view = context.layoutInflater.inflate(R.layout.alert_dialog, null)
           setView(view)
@@ -82,6 +82,9 @@ object AlertDialogue {
         }
         .show()
 
+    dialog
+      .getButton(AlertDialog.BUTTON_NEUTRAL)
+      .setTextColor(context.resources.getColor(R.color.grey_text_color))
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
         this.show()
