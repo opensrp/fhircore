@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.di
+package org.smartregister.fhircore.engine.util.extension
 
-import javax.inject.Qualifier
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.hl7.fhir.r4.model.ListResource
 
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AuthOkHttpClientQualifier
+fun ListResource.ListEntryComponent.extractResourceKey(): String {
+  return this.item.reference.substringBeforeLast("/")
+}
 
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class OkHttpClientQualifier
+fun ListResource.ListEntryComponent.extractResourceId(): String {
+  return this.item.reference.substringAfterLast("/")
+}
