@@ -141,14 +141,20 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    prePopulationParams.firstOrNull { it.linkId == item.linkId && !it.value.isNullOrEmpty() && !it.value.contains(interpolationPrefix) }?.let { actionParam ->
-      item.initial =
-        arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
-          Questionnaire.QuestionnaireItemInitialComponent().apply {
-            value = actionParam.dataType?.let { actionParam.value.castToType(it) }
-          }
-        )
-    }
+    prePopulationParams
+      .firstOrNull {
+        it.linkId == item.linkId &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(interpolationPrefix)
+      }
+      ?.let { actionParam ->
+        item.initial =
+          arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+            Questionnaire.QuestionnaireItemInitialComponent().apply {
+              value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+            }
+          )
+      }
     if (item.item.isNotEmpty()) {
       item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
     }
