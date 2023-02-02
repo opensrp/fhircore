@@ -294,12 +294,13 @@ constructor(
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
-                if (
-                  startDateFormatted.contentEquals(
-                    Date().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)) ||
-                  endDateFormatted.contentEquals(
-                    Date().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)) ||
-                  existing.isEmpty()
+                if (startDateFormatted.contentEquals(
+                    Date().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+                  ) ||
+                    endDateFormatted.contentEquals(
+                      Date().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+                    ) ||
+                    existing.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
