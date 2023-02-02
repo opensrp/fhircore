@@ -43,24 +43,9 @@ class NetworkModule {
   @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
 
   @Provides
-  @AuthOkHttpClientQualifier
   fun provideAuthOkHttpClient(oAuthInterceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(oAuthInterceptor)
-      .addInterceptor(
-        HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
-          redactHeader(AUTHORIZATION)
-          redactHeader(COOKIE)
-        }
-      )
-      .build()
-
-  @Provides
-  @OkHttpClientQualifier
-  fun provideOkHttpClient(interceptor: OAuthInterceptor) =
-    OkHttpClient.Builder()
-      .addInterceptor(interceptor)
       .addInterceptor(
         HttpLoggingInterceptor().apply {
           level = HttpLoggingInterceptor.Level.BASIC
@@ -75,7 +60,7 @@ class NetworkModule {
 
   @Provides
   fun provideOauthService(
-    @AuthOkHttpClientQualifier okHttpClient: OkHttpClient,
+    okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson
   ): OAuthService =
@@ -91,9 +76,9 @@ class NetworkModule {
   @Provides
   fun provideFhirResourceService(
     parser: IParser,
-    @OkHttpClientQualifier okHttpClient: OkHttpClient,
+    okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): FhirResourceService =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)

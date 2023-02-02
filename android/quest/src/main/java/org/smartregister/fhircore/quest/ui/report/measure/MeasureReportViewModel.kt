@@ -30,6 +30,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -347,13 +348,14 @@ constructor(
         fhirEngine
           .search(subjectXFhirQuery)
           .map {
+            val subject = "${it.resourceType}/${it.logicalId}"
             // TODO a hack to prevent missing subject in case of Group based reports where
             // MeasureEvaluator looks for Group members and skips the Group itself
             if (it is Group && !it.hasMember()) {
               it.addMember(Group.GroupMemberComponent(it.asReference()))
               fhirEngine.update(it)
             }
-            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it.id)
+            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, subject)
           }
           .forEach { measureReport.add(it) }
       } else
