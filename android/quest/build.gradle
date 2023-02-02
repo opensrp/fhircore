@@ -139,7 +139,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.9-rc1"
+            versionName "0.1.9-rc3"
         }
 
         g6pd {
