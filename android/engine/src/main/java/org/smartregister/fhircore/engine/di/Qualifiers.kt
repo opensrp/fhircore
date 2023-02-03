@@ -27,7 +27,7 @@ annotation class NoAuthorizationOkHttpClientQualifier
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class AuthorizedOkHttpClientQualifier
+annotation class WithAuthorizationOkHttpClientQualifier
 
 @ExcludeFromJacocoGeneratedReport
 @Qualifier

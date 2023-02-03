@@ -107,7 +107,7 @@ constructor(
       bundle.containsKey(AccountManager.KEY_INTENT) -> {
         val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-        // Deletes session ping to allow reset
+        // Deletes session PIN to allow reset
         secureSharedPreference.deleteSessionPin()
 
         if (launchIntent != null) {
@@ -117,7 +117,7 @@ constructor(
     }
   }
 
-  /** This function check if token is null or empty or expired; token is invalidated if expired */
+  /** This function checks if token is null or empty or expired; token is invalidated if expired */
   private fun isTokenActive(authToken: String?): Boolean {
     if (authToken.isNullOrEmpty()) return false
     val tokenPart = authToken.substringBeforeLast('.').plus(".")
@@ -208,10 +208,10 @@ constructor(
   }
 
   /**
-   * This function uses the provided [currentRefreshToken] to get a new auth token. If the
-   * [currentRefreshToken] is expired it returns an empty string forcing a re-login.
+   * This function uses the provided [currentRefreshToken] to get a new auth token or throws
+   * [HttpException] or [UnknownHostException] exceptions
    */
-  @Throws(HttpException::class)
+  @Throws(HttpException::class, UnknownHostException::class)
   fun refreshToken(currentRefreshToken: String): String {
     return runBlocking {
       val oAuthResponse =

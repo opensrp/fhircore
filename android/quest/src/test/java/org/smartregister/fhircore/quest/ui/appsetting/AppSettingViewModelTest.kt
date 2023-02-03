@@ -272,19 +272,19 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
     appSettingViewModel.appId.value = "app/debug"
-    Assert.assertTrue(appSettingViewModel.onDebugMode())
+    Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
   fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
     appSettingViewModel.appId.value = "app"
-    Assert.assertFalse(appSettingViewModel.onDebugMode())
+    Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
   fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
     appSettingViewModel.appId.value = null
-    Assert.assertFalse(appSettingViewModel.onDebugMode())
+    Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test

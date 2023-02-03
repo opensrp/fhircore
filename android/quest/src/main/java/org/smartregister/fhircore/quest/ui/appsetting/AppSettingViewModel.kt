@@ -90,7 +90,7 @@ constructor(
     val appId = appId.value
     if (!appId.isNullOrEmpty()) {
       when {
-        onDebugMode() -> loadConfiguration(context)
+        hasDebugSuffix() -> loadConfiguration(context)
         else -> fetchRemoteConfigurations(appId, context)
       }
     }
@@ -201,6 +201,6 @@ constructor(
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
-  fun onDebugMode(): Boolean =
+  fun hasDebugSuffix(): Boolean =
     appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
 }

@@ -210,13 +210,13 @@ class UserSettingViewModelTest : RobolectricTest() {
   fun testResetDatabaseFlagEventShouldInvokeResetDatabaseMethod() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
     userSettingViewModelSpy.dispatcherProvider = coroutineTestRule.testDispatcherProvider
-    every { userSettingViewModelSpy.resetDatabase(any()) } just runs
+    every { userSettingViewModelSpy.resetAppData(any()) } just runs
 
     val userSettingsEvent = UserSettingsEvent.ResetDatabaseFlag(true)
 
     userSettingViewModelSpy.onEvent(userSettingsEvent)
 
-    verify { userSettingViewModelSpy.resetDatabase(any()) }
+    verify { userSettingViewModelSpy.resetAppData(any()) }
   }
 
   @Test
@@ -240,7 +240,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
+    userSettingViewModel.resetAppData(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { fhirEngine.clearDatabase() }
   }
@@ -253,7 +253,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
+    userSettingViewModel.resetAppData(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { sharedPreferencesHelper.resetSharedPrefs() }
   }
@@ -265,7 +265,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
+    userSettingViewModel.resetAppData(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { sharedPreferencesHelper.resetSharedPrefs() }
   }
@@ -278,7 +278,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
+    userSettingViewModel.resetAppData(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.invalidateSession() }
   }
@@ -291,7 +291,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.resetSharedPrefs() } just runs
     coEvery { accountAuthenticator.invalidateSession() } just runs
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
+    userSettingViewModel.resetAppData(coroutineTestRule.testDispatcherProvider.io())
 
     coVerify { accountAuthenticator.launchScreen(any()) }
   }

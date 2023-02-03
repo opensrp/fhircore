@@ -65,7 +65,7 @@ class NetworkModule {
       .build()
 
   @Provides
-  @AuthorizedOkHttpClientQualifier
+  @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(tokenAuthenticator: TokenAuthenticator) =
     OkHttpClient.Builder()
       .addInterceptor(
@@ -124,7 +124,7 @@ class NetworkModule {
   @Provides
   @KeycloakRetrofit
   fun provideKeycloakRetrofit(
-    @AuthorizedOkHttpClientQualifier okHttpClient: OkHttpClient,
+    @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     json: Json
   ): Retrofit =
@@ -137,7 +137,7 @@ class NetworkModule {
   @Provides
   @RegularRetrofit
   fun provideRegularRetrofit(
-    @AuthorizedOkHttpClientQualifier okHttpClient: OkHttpClient,
+    @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
     parser: IParser

@@ -110,7 +110,7 @@ constructor(
       }
       is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
         showDBResetConfirmationDialog.postValue(event.isShow)
-      is UserSettingsEvent.ResetDatabaseFlag -> if (event.isReset) this.resetDatabase(event.context)
+      is UserSettingsEvent.ResetDatabaseFlag -> if (event.isReset) this.resetAppData(event.context)
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
@@ -123,9 +123,10 @@ constructor(
 
   /**
    * This function clears all the data for the app from the device, cancels all background tasks,
-   * delete the user account and resets all the data stored in the shared preferences.
+   * deletes the logged in user account from device accounts and finally clear all data stored in
+   * shared preferences.
    */
-  fun resetDatabase(context: Context) {
+  fun resetAppData(context: Context) {
     viewModelScope.launch {
       workManager.cancelAllWork()
 
