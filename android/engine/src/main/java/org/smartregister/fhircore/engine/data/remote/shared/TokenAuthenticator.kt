@@ -98,7 +98,7 @@ constructor(
         secureSharedPreference.deleteSessionPin()
 
         if (launchIntent != null) {
-          context.startActivity(launchIntent.putExtra(CANCEL_ALL_WORK, true))
+          context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
         }
       }
     }
@@ -233,6 +233,6 @@ constructor(
     const val PASSWORD = "password"
     const val REFRESH_TOKEN = "refresh_token"
     const val AUTH_TOKEN_TYPE = "provider"
-    const val CANCEL_ALL_WORK = "cancelAllWork"
+    const val CANCEL_BACKGROUND_SYNC = "cancelBackgroundSync"
   }
 }

@@ -29,6 +29,7 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
+import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -49,17 +50,18 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    this.applyWindowInsetListener()
+
+    // Cancel sync background job to get new auth token; login required, refresh token expired
+    val cancelBackgroundSync =
+      intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false
+    if (cancelBackgroundSync) workManager.cancelAllWorkByTag(AppSyncWorker::class.java.name)
+
     navigateToScreen()
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-    this.applyWindowInsetListener()
   }
 
   private fun navigateToScreen() {
-    // Cancel all background tasks when login is required to refresh token
-    val cancelAllWork =
-      intent.extras?.getBoolean(TokenAuthenticator.CANCEL_ALL_WORK, false) ?: false
-    if (cancelAllWork) workManager.cancelAllWork()
-
     loginViewModel.apply {
       val loginActivity = this@LoginActivity
       val isPinEnabled = isPinEnabled()
