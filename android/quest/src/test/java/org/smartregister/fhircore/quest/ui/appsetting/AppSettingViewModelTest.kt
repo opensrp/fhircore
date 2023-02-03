@@ -95,7 +95,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadConfigurations() = runBlockingTest {
-    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+    coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
@@ -107,7 +107,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   @Ignore("Fix failing test")
   fun testFetchConfigurations() = runBlockingTest {
-    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+    coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
         addEntry().resource =
           Composition().apply {
@@ -118,7 +118,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
 
-    coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
+    coVerify { appSettingViewModel.fhirResourceDataSource.getResource(any()) }
     coVerify { appSettingViewModel.defaultRepository.create(any()) }
   }
 
@@ -135,7 +135,7 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       }
-    coEvery { fhirResourceDataSource.loadData(any()) } returns
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
         addEntry().resource =
           Binary().apply {
@@ -171,7 +171,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     val slot = slot<List<ResourceType>>()
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-    coVerify { fhirResourceDataSource.loadData(any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
     coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
@@ -186,16 +186,16 @@ class AppSettingViewModelTest : RobolectricTest() {
     val appId = "app_id"
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
-    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+    coEvery { fhirResourceDataSource.getResource(anyString()) } throws
       HttpException(
         Response.error<ResponseBody>(
           500,
           "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
         )
       )
-    fhirResourceDataSource.loadData(anyString())
+    fhirResourceDataSource.getResource(anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
-    coVerify { fhirResourceDataSource.loadData(anyString()) }
+    coVerify { fhirResourceDataSource.getResource(anyString()) }
     coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
@@ -210,10 +210,10 @@ class AppSettingViewModelTest : RobolectricTest() {
   fun testFetchConfigurationsThrowsUnknowHostException() = runTest {
     val appId = "app_id"
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
-    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+    coEvery { fhirResourceDataSource.getResource(anyString()) } throws
       UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
     every { context.getString(R.string.error_loading_config_no_internet) }
-    fhirResourceDataSource.loadData(anyString())
+    fhirResourceDataSource.getResource(anyString())
     coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
@@ -229,7 +229,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
-    coEvery { fhirResourceDataSource.loadData(anyString()) } throws
+    coEvery { fhirResourceDataSource.getResource(anyString()) } throws
       Exception(context.getString(R.string.error_loading_config_general))
     coEvery { appSettingViewModel.fetchConfigurations(appId, context) } just runs
     appSettingViewModel.fetchConfigurations(appId, any(Context::class.java))
@@ -244,7 +244,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun `fetchComposition() should return composition resource`() = runTest {
-    coEvery { fhirResourceDataSource.loadData(any()) } returns
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
         addEntry().resource =
           Composition().apply {
@@ -264,7 +264,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         ApplicationProvider.getApplicationContext()
       )
 
-    coVerify { fhirResourceDataSource.loadData(any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
 
     assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }

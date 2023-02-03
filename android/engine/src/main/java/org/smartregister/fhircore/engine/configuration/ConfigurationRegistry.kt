@@ -62,18 +62,13 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
-  val configService: ConfigService
+  val configService: ConfigService,
+  val json: Json
 ) {
-
-  val json = Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
-    isLenient = true
-  }
 
   val configsJsonMap = mutableMapOf<String, String>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
-  val supportedFileExtensions = listOf("json", "properties")
+  private val supportedFileExtensions = listOf("json", "properties")
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -210,7 +205,7 @@ constructor(
             }
           if (iconConfigs.isNotEmpty()) {
             val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
-            fhirResourceDataSource.loadData(
+            fhirResourceDataSource.getResource(
                 "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
               )
               .entry
@@ -330,7 +325,7 @@ constructor(
                     sectionComponent.focus.extractId()
                   }
                 val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
-                fhirResourceDataSource.loadData(searchPath).entry.forEach {
+                fhirResourceDataSource.getResource(searchPath).entry.forEach {
                   addOrUpdate(it.resource)
                 }
               }

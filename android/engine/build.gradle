@@ -230,7 +230,7 @@ dependencies {
     api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
     api "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
-    def okhttpVersion = '4.9.1'
+    def okhttpVersion = '4.10.0'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 

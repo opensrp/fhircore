@@ -120,7 +120,8 @@ constructor(
 
             Timber.d("Fetching config: $resourceUrlPath")
 
-            fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent
+              ->
               defaultRepository.create(false, bundleEntryComponent.resource)
 
               if (bundleEntryComponent.resource is Binary) {
@@ -138,7 +139,6 @@ constructor(
                   }
                 }
               }
-              Timber.d("Fetched and processed config details $resourceUrlPath")
             }
           }
 
@@ -146,23 +146,22 @@ constructor(
 
         // Save composition after fetching all the referenced section resources
         defaultRepository.create(false, compositionResource)
-        Timber.d("Done fetching application configurations")
-        showProgressBar.postValue(false)
-        context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+        Timber.d("Done fetching application configurations remotely")
+        loadConfiguration(context)
       }
+    } catch (unknownHostException: UnknownHostException) {
+      _error.postValue(context.getString(R.string.error_loading_config_no_internet))
+      showProgressBar.postValue(false)
     } catch (httpException: HttpException) {
       if ((400..503).contains(httpException.response()!!.code()))
         _error.postValue(context.getString(R.string.error_loading_config_general))
       else _error.postValue(context.getString(R.string.error_loading_config_http_error))
       showProgressBar.postValue(false)
-    } catch (unknownHostException: UnknownHostException) {
-      _error.postValue(context.getString(R.string.error_loading_config_no_internet))
-      showProgressBar.postValue(false)
     }
   }
 
   suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
-    return fhirResourceDataSource.loadData(urlPath).entryFirstRep.let {
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
         showProgressBar.postValue(false)

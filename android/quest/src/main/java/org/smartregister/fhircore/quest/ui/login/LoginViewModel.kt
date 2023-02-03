@@ -162,7 +162,10 @@ constructor(
     tokenAuthenticator
       .fetchAccessToken(username, password)
       .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-      .onFailure { Timber.e(it) }
+      .onFailure {
+        _showProgressBar.postValue(false)
+        Timber.e(it)
+      }
   }
 
   private suspend fun fetchPractitioner(
@@ -180,6 +183,10 @@ constructor(
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException))
         }
+      } else {
+        onFetchPractitioner(
+          Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user."))
+        )
       }
     } catch (httpException: HttpException) {
       onFetchUserInfo(Result.failure(httpException))

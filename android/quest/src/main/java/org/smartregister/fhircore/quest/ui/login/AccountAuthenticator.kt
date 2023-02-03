@@ -139,8 +139,6 @@ constructor(
   fun validateLoginCredentials(username: String, password: CharArray) =
     tokenAuthenticator.validateSavedLoginCredentials(username, password)
 
-  fun sessionActive() = tokenAuthenticator.sessionActive()
-
   companion object {
     const val ACCOUNT_TYPE = "ACCOUNT_TYPE"
   }

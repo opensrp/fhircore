@@ -49,8 +49,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class NetworkModule {
 
   @Provides
-  @AuthOkHttpClientQualifier
-  @Singleton
+  @NoAuthorizationOkHttpClientQualifier
   fun provideAuthOkHttpClient() =
     OkHttpClient.Builder()
       .addInterceptor(
@@ -66,38 +65,21 @@ class NetworkModule {
       .build()
 
   @Provides
-  @KeycloakOkHttpClientQualifier
-  @Singleton
-  fun provideKeycloakOkHttpClient(tokenAuthenticator: TokenAuthenticator) =
-    OkHttpClient.Builder()
-      .addInterceptor(
-        HttpLoggingInterceptor().apply {
-          level =
-            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
-            else HttpLoggingInterceptor.Level.BASIC
-          redactHeader(AUTHORIZATION)
-          redactHeader(COOKIE)
-        }
-      )
-      .addInterceptor(
-        Interceptor { chain: Interceptor.Chain ->
-          val accessToken = tokenAuthenticator.getAccessToken()
-          val request =
-            chain.request().newBuilder().addHeader(AUTHORIZATION, "Bearer $accessToken").build()
-          chain.proceed(request)
-        }
-      )
-      .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
-      .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
-      .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
-      .build()
-
-  @Provides
-  @OkHttpClientQualifier
-  @Singleton
+  @AuthorizedOkHttpClientQualifier
   fun provideOkHttpClient(tokenAuthenticator: TokenAuthenticator) =
     OkHttpClient.Builder()
       .addInterceptor(
+        Interceptor { chain: Interceptor.Chain ->
+          val accessToken = tokenAuthenticator.getAccessToken()
+          // NB: Build new request before setting Auth header; otherwise the header will be bypassed
+          val request = chain.request().newBuilder()
+          if (accessToken.isNotEmpty()) {
+            request.addHeader(AUTHORIZATION, "Bearer $accessToken")
+          }
+          chain.proceed(request.build())
+        }
+      )
+      .addInterceptor(
         HttpLoggingInterceptor().apply {
           level =
             if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
@@ -106,36 +88,15 @@ class NetworkModule {
           redactHeader(COOKIE)
         }
       )
-      .addInterceptor(
-        Interceptor { chain: Interceptor.Chain ->
-          val accessToken = tokenAuthenticator.getAccessToken()
-          val request =
-            chain.request().newBuilder().addHeader(AUTHORIZATION, "Bearer $accessToken").build()
-          chain.proceed(request)
-        }
-      )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
+      .retryOnConnectionFailure(false) // Avoid silent retries sometimes before token is provided
       .build()
 
   @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
 
   @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
-
-  @Provides
-  @AuthRetrofit
-  @Singleton
-  fun provideAuthRetrofit(
-    @AuthOkHttpClientQualifier okHttpClient: OkHttpClient,
-    configService: ConfigService,
-    gson: Gson
-  ): Retrofit =
-    Retrofit.Builder()
-      .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
-      .client(okHttpClient)
-      .addConverterFactory(GsonConverterFactory.create(gson))
-      .build()
 
   @Provides
   @Singleton
@@ -146,12 +107,24 @@ class NetworkModule {
     useAlternativeNames = true
   }
 
+  @Provides
+  @AuthenticationRetrofit
+  fun provideAuthRetrofit(
+    @NoAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
+    configService: ConfigService,
+    gson: Gson
+  ): Retrofit =
+    Retrofit.Builder()
+      .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
+      .client(okHttpClient)
+      .addConverterFactory(GsonConverterFactory.create(gson))
+      .build()
+
   @OptIn(ExperimentalSerializationApi::class)
   @Provides
   @KeycloakRetrofit
-  @Singleton
   fun provideKeycloakRetrofit(
-    @KeycloakOkHttpClientQualifier okHttpClient: OkHttpClient,
+    @AuthorizedOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     json: Json
   ): Retrofit =
@@ -163,9 +136,8 @@ class NetworkModule {
 
   @Provides
   @RegularRetrofit
-  @Singleton
   fun provideRegularRetrofit(
-    @OkHttpClientQualifier okHttpClient: OkHttpClient,
+    @AuthorizedOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
     parser: IParser
@@ -179,7 +151,7 @@ class NetworkModule {
 
   @Provides
   fun provideOauthService(
-    @AuthRetrofit retrofit: Retrofit,
+    @AuthenticationRetrofit retrofit: Retrofit,
   ): OAuthService = retrofit.create(OAuthService::class.java)
 
   @Provides

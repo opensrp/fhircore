@@ -92,13 +92,13 @@ constructor(
         setAuthToken(account, AUTH_TOKEN_TYPE, token)
       }
       bundle.containsKey(AccountManager.KEY_INTENT) -> {
-        val launch = bundle.get(AccountManager.KEY_INTENT) as? Intent
+        val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
         // Deletes session ping to allow reset
         secureSharedPreference.deleteSessionPin()
 
-        if (launch != null) {
-          context.startActivity(launch.putExtra(CANCEL_ALL_WORK, true))
+        if (launchIntent != null) {
+          context.startActivity(launchIntent.putExtra(CANCEL_ALL_WORK, true))
         }
       }
     }
