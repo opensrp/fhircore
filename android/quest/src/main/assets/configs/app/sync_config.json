@@ -16,7 +16,8 @@
           "Task",
           "Flag",
           "RelatedPerson",
-          "Patient"
+          "Patient",
+          "Questionnaire"
         ]
       }
     },
@@ -83,6 +84,7 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
+          "Questionnaire",
           "StructureMap",
           "Task",
           "Group",

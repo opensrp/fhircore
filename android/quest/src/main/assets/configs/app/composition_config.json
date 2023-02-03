@@ -713,9 +713,25 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/6f3980e0-d1d6-4a7a-a950-939f3ca7b301",
+            "reference": "List/ea15c35a-8e8c-47ce-8122-c347cefa1b4a",
             "identifier": {
-              "value": "referral"
+              "value": "commodityList"
+            }
+          },
+          "mode": "working"
+        }
+      ]
+    },
+    {
+      "title": "Libraries",
+      "mode": "working",
+      "section": [
+        {
+          "title": "",
+          "focus": {
+            "reference": "Library/8ed9f827-1ac2-44cd-a455-2d5587e7c82b",
+            "identifier": {
+              "value": "common_fhircore"
             }
           },
           "mode": "working"
@@ -723,9 +739,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/e50eb835-7827-4001-b233-e1dda721d4e8",
+            "reference": "Library/f8f90bcc-cdff-4d6a-b9a9-f645877cc786",
             "identifier": {
-              "value": "referral"
+              "value": "common_stock"
             }
           },
           "mode": "working"
@@ -733,9 +749,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/90b10fdb-592c-47b6-a265-c8806a15d77c",
+            "reference": "Library/0f7f9f02-fe28-4069-9177-bab67b79d0bc",
             "identifier": {
-              "value": "referral"
+              "value": "fhir-helper"
             }
           },
           "mode": "working"
@@ -743,9 +759,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254",
+            "reference": "Library/2d04dbc9-2a1d-4a29-953c-6a7015e693c2",
             "identifier": {
-              "value": "referral"
+              "value": "quarter-calculator"
             }
           },
           "mode": "working"
@@ -753,9 +769,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/592181bc-0a68-47bc-8275-ac853bba1b09",
+            "reference": "Library/8c90d7c8-23e3-45a7-a72d-fa777c2292e7",
             "identifier": {
-              "value": "referral"
+              "value": "stock-calculator"
             }
           },
           "mode": "working"
@@ -763,9 +779,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/b339a63b-84db-45e8-b357-7fcce3bddc34",
+            "reference": "Library/0e904390-ad37-4674-a29e-d04a083aa1fb",
             "identifier": {
-              "value": "referral"
+              "value": "birth-facility"
             }
           },
           "mode": "working"
@@ -773,9 +789,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4",
+            "reference": "Library/1ecabe24-89b0-4f85-87f7-9c78049bad33",
             "identifier": {
-              "value": "referral"
+              "value": "birth-home"
             }
           },
           "mode": "working"
@@ -783,9 +799,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/9aa4d38c-1c8c-11ed-861d-0242ac120002",
+            "reference": "Library/e590ef67a-2121-41a8-804a-47e119cabc69",
             "identifier": {
-              "value": "referral"
+              "value": "death-children-under-3"
             }
           },
           "mode": "working"
@@ -793,9 +809,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/3e5529c8-1c8d-11ed-861d-0242ac120002",
+            "reference": "Library/5e8a1a04-cd84-478b-a1b7-e26d060c152e",
             "identifier": {
-              "value": "referral"
+              "value": "death-maternal"
             }
           },
           "mode": "working"
@@ -803,9 +819,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/1a06dc73-575f-4cff-9424-c95605ba7c30",
+            "reference": "Library/e7c45467-1474-4760-b329-89476e1a175c",
             "identifier": {
-              "value": "referral"
+              "value": "death-neonatal"
             }
           },
           "mode": "working"
@@ -813,9 +829,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/961eb18c-1c8e-11ed-861d-0242ac120002",
+            "reference": "Library/adba7f0e-f414-45e6-b373-70e6512fd308",
             "identifier": {
-              "value": "referral"
+              "value": "death-over-5"
             }
           },
           "mode": "working"
@@ -823,9 +839,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/23c0fed8-1c8e-11ed-861d-0242ac120002",
+            "reference": "Library/b2d93880-dc0e-407e-8732-eac6ebb2a0cc",
             "identifier": {
-              "value": "referral"
+              "value": "death-post-neonatal"
             }
           },
           "mode": "working"
@@ -833,9 +849,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/8e6fc3e6-1c8d-11ed-861d-0242ac120002",
+            "reference": "Library/40c00314-0838-47fb-ba4b-c7076bdff7a7",
             "identifier": {
-              "value": "referral"
+              "value": "hiv-clients"
             }
           },
           "mode": "working"
@@ -843,9 +859,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/75a7f6ec-1c8f-11ed-861d-0242ac120002",
+            "reference": "Library/aef58f50-0eea-4da1-93b9-791ee5ad60d9",
             "identifier": {
-              "value": "referral"
+              "value": "household-report"
             }
           },
           "mode": "working"
@@ -853,9 +869,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/3b603f72-22b1-40f9-b2e0-5e9c3df7003f",
+            "reference": "Library/79f41821-05ae-4e39-abad-2ea41c3d2da4",
             "identifier": {
-              "value": "referral"
+              "value": "pregnancy"
             }
           },
           "mode": "working"
@@ -863,9 +879,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff",
+            "reference": "Library/7aec103b-ea40-42cc-89fa-1914ab8394fe",
             "identifier": {
-              "value": "referral"
+              "value": "stillbirth"
             }
           },
           "mode": "working"
@@ -873,9 +889,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/21fc9958-1c8f-11ed-861d-0242ac120002",
+            "reference": "Library/b531b208-802b-11ed-a1eb-0242ac120002",
             "identifier": {
-              "value": "referral"
+              "value": "stock-consumption"
             }
           },
           "mode": "working"
@@ -883,9 +899,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/6e7d2b70-1c90-11ed-861d-0242ac120002",
+            "reference": "Library/1cb20df8-69ee-44d6-92bb-4b629c5d064f",
             "identifier": {
-              "value": "referral"
+              "value": "stock-consumption-monthly-average"
             }
           },
           "mode": "working"
@@ -893,9 +909,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/951da426-1506-4cab-b03e-5583bdf0ca76",
+            "reference": "Library/a98e8a20-332c-40aa-b98a-e71424282729",
             "identifier": {
-              "value": "referral"
+              "value": "stock-month-of-stock"
             }
           },
           "mode": "working"
@@ -903,9 +919,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c",
+            "reference": "Library/91ab9470-cb20-41c8-8a38-555c56efe021",
             "identifier": {
-              "value": "referral"
+              "value": "stock-on-hand"
             }
           },
           "mode": "working"
@@ -913,9 +929,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681",
+            "reference": "Library/67893dff-aa8d-4117-8051-c8639955843c",
             "identifier": {
-              "value": "referral"
+              "value": "stock-out-days"
             }
           },
           "mode": "working"
@@ -923,9 +939,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff",
+            "reference": "Library/8c3b7d70-85f7-46af-a722-efdb0d10aabb",
             "identifier": {
-              "value": "referral"
+              "value": "stock-out-rate"
             }
           },
           "mode": "working"
@@ -933,9 +949,25 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/d1ad8a94-ba92-4f78-903d-0653ebd41336",
+            "reference": "Library/ab3a2f89-fdd0-40d3-a009-ea9e25948120",
             "identifier": {
-              "value": "referral"
+              "value": "tb-clients"
+            }
+          },
+          "mode": "working"
+        }
+      ]
+    },
+    {
+      "title": "Measures",
+      "mode": "working",
+      "section": [
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/69111ad7-3472-42e1-a769-684c89ae3bf4",
+            "identifier": {
+              "value": "Births02"
             }
           },
           "mode": "working"
@@ -943,9 +975,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/6a59c142-1c87-11ed-861d-0242ac120002",
+            "reference": "Measure/a2b875d5-9bfd-42e7-82d7-9833c24e5325",
             "identifier": {
-              "value": "referral"
+              "value": "Births01"
             }
           },
           "mode": "working"
@@ -953,9 +985,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/567ec5f2-db90-4fac-b578-6e07df3f48de",
+            "reference": "Measure/18f06fe8-f0be-4a6e-87ed-980e28003617",
             "identifier": {
-              "value": "referral"
+              "value": "Deaths-Children-Under-5y-by-gender"
             }
           },
           "mode": "working"
@@ -963,9 +995,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/197faa30-1c90-11ed-861d-0242ac120002",
+            "reference": "Measure/35a0d277-2156-4c9d-9fd0-c5ba415341e5",
             "identifier": {
-              "value": "referral"
+              "value": "Deaths-Maternal-by-age-group"
             }
           },
           "mode": "working"
@@ -973,9 +1005,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/09a63acb-81d1-4117-b61d-a59dfdc177fa",
+            "reference": "Measure/8b90c5c5-261d-4507-9db9-f7a7b0becf94",
             "identifier": {
-              "value": "referral"
+              "value": "Deaths-Neonatal-by-gender"
             }
           },
           "mode": "working"
@@ -983,9 +1015,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/24dcbee9-a665-4b3e-b97d-61b3ff675589",
+            "reference": "Measure/053fbbdd-b0f8-4cb2-8710-8d70d15cec14",
             "identifier": {
-              "value": "referral"
+              "value": "Deaths-Over-5y-by-gender-age-group"
             }
           },
           "mode": "working"
@@ -993,9 +1025,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/853341c8-1c91-11ed-861d-0242ac120002",
+            "reference": "Measure/6a7b4b24-a6e8-4a03-b8b2-1a7250d3747b",
             "identifier": {
-              "value": "referral"
+              "value": "Deaths-Post-Neonatal-by-gender"
             }
           },
           "mode": "working"
@@ -1003,9 +1035,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546",
+            "reference": "Measure/fd082615-3bc7-4b27-a7dc-63c30e491c6c",
             "identifier": {
-              "value": "referral"
+              "value": "HIV-Client-by-gender-age"
             }
           },
           "mode": "working"
@@ -1013,9 +1045,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/6815d390-1c8b-11ed-861d-0242ac120002",
+            "reference": "Measure/331b7ec1-75ae-4eda-b1c4-bd6b82144c3c",
             "identifier": {
-              "value": "referral"
+              "value": "Household-and-members-indicators-by-age-and-gender"
             }
           },
           "mode": "working"
@@ -1023,9 +1055,89 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002",
+            "reference": "Measure/a4498e02-7626-11ed-a1eb-0242ac120002",
             "identifier": {
-              "value": "referral"
+              "value": "pregnancy-measure"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/25c4e962-d57e-4d1b-adf2-04f7c0ad496c",
+            "identifier": {
+              "value": "Stillbirth01"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/a7e4e53a-ceea-4041-9b8f-b509b0c566ce",
+            "identifier": {
+              "value": "Stock-consumption-monthly-avg-indicator"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/2bf0e666-802c-11ed-a1eb-0242ac120002",
+            "identifier": {
+              "value": "stock-consumption-indicator"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/a4a78a31-5f91-481c-80dd-7f4957ad9e3b",
+            "identifier": {
+              "value": "Stock-Months-of-Stock"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/8018177d-b004-45ed-aabc-6164f22200b5",
+            "identifier": {
+              "value": "Stock-on-hand-indicator"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/b401b4fd-8e3d-40d6-8a56-6a0edb37783f",
+            "identifier": {
+              "value": "Stock-out-days-indicator"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/0c52e70a-7fd0-43b6-bfb1-0e924378a804",
+            "identifier": {
+              "value": "Stock-out-rate"
+            }
+          },
+          "mode": "working"
+        },
+        {
+          "title": "",
+          "focus": {
+            "reference": "Measure/7e011ddb-1ac8-4330-9a0e-05a8fc4a0657",
+            "identifier": {
+              "value": "TB-Client-by-gender-age"
             }
           },
           "mode": "working"

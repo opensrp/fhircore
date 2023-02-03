@@ -15,12 +15,7 @@
           "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,
-          "setOrganizationDetails": true,
-          "snackBarMessage": {
-            "message": "Household has been created",
-            "actionLabel": "UNDO",
-            "duration": "Short"
-          }
+          "setOrganizationDetails": true
         }
       }
     ]
@@ -252,7 +247,7 @@
       ]
     },
     {
-      "id": "reports",
+      "id": "serviceDeliveryReports",
       "visible": true,
       "display": "Service Delivery Reports",
       "menuIconConfig": {
@@ -268,7 +263,7 @@
       ]
     },
     {
-      "id": "otherReports",
+      "id": "supplyChainReports",
       "visible": true,
       "display": "Supply Chain Reports",
       "menuIconConfig": {

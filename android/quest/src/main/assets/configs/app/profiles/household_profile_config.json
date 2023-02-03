@@ -59,6 +59,13 @@
             "resource": "RelatedPerson",
             "fhirPathExpression": "patient"
           }
+        ],
+        "sortConfigs": [
+          {
+            "paramName": "_lastUpdated",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
         ]
       },
       {

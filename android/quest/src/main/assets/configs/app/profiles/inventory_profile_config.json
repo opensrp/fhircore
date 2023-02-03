@@ -88,13 +88,6 @@
       ]
     },
     {
-      "name": "nonNullBalance",
-      "condition": "true",
-      "actions": [
-        "data.put('nonNullBalance', runningBalance.isEmpty() ? 0 : runningBalance )"
-      ]
-    },
-    {
       "name": "latestObservationId",
       "condition": "true",
       "actions": [
