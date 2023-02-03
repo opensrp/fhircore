@@ -117,7 +117,7 @@ constructor(
     }
   }
 
-  /** This function checks if token is null or empty or expired; token is invalidated if expired */
+  /** This function checks if token is null or empty or expired */
   private fun isTokenActive(authToken: String?): Boolean {
     if (authToken.isNullOrEmpty()) return false
     val tokenPart = authToken.substringBeforeLast('.').plus(".")
@@ -138,8 +138,8 @@ constructor(
     )
 
   /**
-   * This function fetches new access token from the authentication server and then creates a new if
-   * not exists.
+   * This function fetches new access token from the authentication server and then creates a new
+   * account if none exists; otherwise it updates the existing account.
    */
   suspend fun fetchAccessToken(username: String, password: CharArray): Result<OAuthResponse> {
     val body =

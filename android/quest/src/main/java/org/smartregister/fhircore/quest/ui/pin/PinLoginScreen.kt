@@ -166,7 +166,7 @@ fun PinLoginPage(
                   .bringIntoViewRequester(bringIntoViewRequester)
             )
           } else {
-            // Enable button when a new pin of required length is entered
+            // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
               enabled = newPin.length == pinUiState.pinLength,
