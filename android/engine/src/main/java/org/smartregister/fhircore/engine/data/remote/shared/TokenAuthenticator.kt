@@ -221,8 +221,7 @@ constructor(
   }
 
   fun sessionActive(): Boolean =
-    findAccount()?.let { !accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE).isNullOrEmpty() }
-      ?: false
+    findAccount()?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) } ?: false
 
   companion object {
     const val GRANT_TYPE = "grant_type"

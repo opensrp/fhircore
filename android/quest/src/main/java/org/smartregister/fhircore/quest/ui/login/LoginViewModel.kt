@@ -153,19 +153,29 @@ constructor(
 
   fun isPinEnabled(): Boolean = applicationConfiguration.loginConfig.enablePin ?: false
 
+  /**
+   * This function checks first if the existing token is active otherwise fetches a new token, then
+   * gets the user information from the authentication server. The id of the retrieved user is used
+   * to obtain the [PractitionerDetails] from the FHIR server.
+   */
   suspend fun fetchToken(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
   ) {
-    tokenAuthenticator
-      .fetchAccessToken(username, password)
-      .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-      .onFailure {
-        _showProgressBar.postValue(false)
-        Timber.e(it)
-      }
+    if (tokenAuthenticator.sessionActive()) {
+      _showProgressBar.postValue(false)
+      updateNavigateHome(true)
+    } else {
+      tokenAuthenticator
+        .fetchAccessToken(username, password)
+        .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+        .onFailure {
+          _showProgressBar.postValue(false)
+          Timber.e(it)
+        }
+    }
   }
 
   private suspend fun fetchPractitioner(
