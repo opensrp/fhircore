@@ -1,0 +1,20 @@
+{
+    "appId": "wdf",
+    "configType": "application",
+    "theme": "DEFAULT",
+    "appTitle": "Diabetes Compass",
+    "remoteSyncPageSize": 10,
+    "languages": [
+        "en"
+    ],
+    "useDarkTheme": false,
+    "syncInterval": 30,
+    "syncStrategy": [
+        "Location"
+    ],
+    "loginConfig": {
+        "showLogo": true,
+        "enablePin": false,
+        "pinLength": 6
+    }
+}

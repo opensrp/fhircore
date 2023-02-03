@@ -25,6 +25,7 @@ import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import timber.log.Timber
 
 interface QuestionnaireHandler {
 
@@ -37,6 +38,7 @@ interface QuestionnaireHandler {
     computedValuesMap: Map<String, Any>?,
     actionParams: List<ActionParameter> = emptyList()
   ) {
+    Timber.d("This is the Questionnaire ID : " + questionnaireConfig?.id)
     startForResult.launch(
       Intent(context, QuestionnaireActivity::class.java)
         .putExtras(

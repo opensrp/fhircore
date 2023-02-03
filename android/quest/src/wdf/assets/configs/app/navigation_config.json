@@ -1,0 +1,72 @@
+{
+  "appId": "wdf",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": true,
+    "display": "Add Patient",
+    "actions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "e5155788-8831-4916-a3f5-486915ce34b211",
+          "title": "Add New Patient",
+          "saveButtonText": "Add Patient",
+          "groupResource": {
+            "groupIdentifier": "@{familyLogicalId}",
+            "memberResourceType": "Patient"
+          },
+          "planDefinitions": [
+            "9fac39bd-9750-4c1d-b355-1961de4e37f311"
+          ],
+          "snackBarMessage": {
+            "message": "New Patient added",
+            "actionLabel": "UNDO",
+            "duration": "Short"
+          }
+        }
+      }
+    ]
+  },
+  "clientRegisters": [
+    {
+      "id": "patientRegister",
+      "display": "All Patients",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_households"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "patientRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "patientRegister"
+        }
+      ]
+    }
+  ],
+  "staticMenu": [
+    {
+      "id": "settings",
+      "visible": true,
+      "display": "Settings",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_settings"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ]
+}

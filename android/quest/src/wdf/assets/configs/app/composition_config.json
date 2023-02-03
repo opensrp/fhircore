@@ -1,0 +1,103 @@
+{
+    "resourceType": "Composition",
+    "id": "107253",
+    "meta": {
+        "versionId": "37",
+        "lastUpdated": "2023-01-24T08:06:15.572+00:00",
+        "source": "#5c5007a7ed90be32"
+    },
+    "identifier": {
+        "use": "official",
+        "value": "wdf"
+    },
+    "status": "final",
+    "type": {
+        "coding": [
+            {
+                "system": "http://snomed.info/sct",
+                "code": "1156600005",
+                "display": "Device setting parameter"
+            }
+        ]
+    },
+    "date": "2022-09-16",
+    "title": "Device configurations",
+    "confidentiality": "L",
+    "section": [
+        {
+            "title": "Application configuration",
+            "focus": {
+                "reference": "Binary/4755546c-e61f-43bb-b599-5cad230a3d52122",
+                "identifier": {
+                    "value": "application"
+                }
+            },
+            "mode": "working"
+        },
+        {
+            "title": "Sync configuration",
+            "focus": {
+                "reference": "Binary/a982504f-8d8b-4151-abc6-0063793500d41",
+                "identifier": {
+                    "value": "sync"
+                }
+            },
+            "mode": "working"
+        },
+        {
+            "title": "Navigation configuration",
+            "focus": {
+                "reference": "Binary/d7ce0167-ee6a-4f8f-b644-50b02425132323",
+                "identifier": {
+                    "value": "navigation"
+                }
+            },
+            "mode": "working"
+        },
+        {
+            "title": "Register configurations",
+            "mode": "working",
+            "section": [
+                {
+                    "title": "Patient register configuration",
+                    "focus": {
+                        "reference": "Binary/7ebbbf4e-c783-42f2-998d-3c6bdde5c0c61",
+                        "identifier": {
+                            "value": "patientRegister"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Profile configurations",
+            "mode": "working",
+            "section": [
+                {
+                    "title": "Default profile configuration",
+                    "focus": {
+                        "reference": "Binary/40352701-4e80-41dc-9584-0847b2a049641",
+                        "identifier": {
+                            "value": "defaultProfile"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Translation configurations",
+            "mode": "working",
+            "section": [
+                {
+                    "title": "Translation English",
+                    "focus": {
+                        "reference": "Binary/c6757818-25c8-4e51-ba51-0c9dd882cbbb",
+                        "identifier": {
+                            "value": "strings"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

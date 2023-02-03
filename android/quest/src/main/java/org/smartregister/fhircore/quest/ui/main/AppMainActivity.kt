@@ -37,6 +37,8 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -45,141 +47,171 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
+import java.util.Date
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-  @Inject lateinit var configService: ConfigService
-  @Inject lateinit var syncListenerManager: SyncListenerManager
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+    @Inject
+    lateinit var dispatcherProvider: DefaultDispatcherProvider
+    @Inject
+    lateinit var configService: ConfigService
+    @Inject
+    lateinit var syncListenerManager: SyncListenerManager
+    @Inject
+    lateinit var syncBroadcaster: SyncBroadcaster
 
-  val appMainViewModel by viewModels<AppMainViewModel>()
+    val appMainViewModel by viewModels<AppMainViewModel>()
 
-  val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+    val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
-  lateinit var navHostFragment: NavHostFragment
+    lateinit var navHostFragment: NavHostFragment
 
-  override val startForResult =
-    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
-    }
+//  private lateinit var syncStartedAt: OffsetDateTime
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
-    val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-    val topMenuConfigId =
-      topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
-    navHostFragment =
-      NavHostFragment.create(
-        R.navigation.application_nav_graph,
-        bundleOf(
-          NavigationArg.SCREEN_TITLE to topMenuConfig.display,
-          NavigationArg.REGISTER_ID to topMenuConfigId
-        )
-      )
-
-    supportFragmentManager
-      .beginTransaction()
-      .replace(R.id.nav_host, navHostFragment)
-      .setPrimaryNavigationFragment(navHostFragment)
-      .commit()
-
-    geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
-      when (geoWidgetEvent) {
-        is GeoWidgetEvent.OpenProfile ->
-          appMainViewModel.launchProfileFromGeoWidget(
-            navHostFragment.navController,
-            geoWidgetEvent.geoWidgetConfiguration.id,
-            geoWidgetEvent.data
-          )
-        is GeoWidgetEvent.RegisterClient ->
-          appMainViewModel.launchFamilyRegistrationWithLocationId(
-            context = this,
-            locationId = geoWidgetEvent.data,
-            questionnaireConfig = geoWidgetEvent.questionnaire
-          )
-      }
-    }
-
-    // Register sync listener then run sync in that order
-    syncListenerManager.registerSyncListener(this, lifecycle)
-
-    // Setup the drawer and schedule jobs
-    appMainViewModel.run {
-      retrieveAppMainUiState()
-      schedulePeriodicJobs()
-    }
-
-    syncBroadcaster.run {
-      with(appMainViewModel.syncSharedFlow) {
-        runSync(this)
-        schedulePeriodicSync(this)
-      }
-    }
-  }
-
-  override fun onResume() {
-    super.onResume()
-    syncListenerManager.registerSyncListener(this, lifecycle)
-  }
-
-  override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
-    if (activityResult.resultCode == RESULT_OK) {
-      val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
-          QuestionnaireResponse?
-      val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
-          QuestionnaireConfig?
-
-      if (questionnaireConfig != null && questionnaireResponse != null) {
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(
-          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-        )
-      }
-    }
-  }
-
-  override fun onSync(syncJobStatus: SyncJobStatus) {
-    when (syncJobStatus) {
-      is SyncJobStatus.InProgress -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
-        )
-      }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
-        Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
-      }
-      is SyncJobStatus.Failed -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            syncJobStatus,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              appMainViewModel.retrieveLastSyncTimestamp()
-            else getString(R.string.syncing_failed)
-          )
-        )
-      }
-      is SyncJobStatus.Finished -> {
-        appMainViewModel.run {
-          onEvent(
-            AppMainEvent.UpdateSyncState(
-              syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp)
+    override val startForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+            if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(
+                activityResult
             )
-          )
         }
-      }
-      else -> {
-        /*Do nothing */
-      }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
+        val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+        val topMenuConfigId =
+            topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id
+                ?: topMenuConfig.id
+        navHostFragment =
+            NavHostFragment.create(
+                R.navigation.application_nav_graph,
+                bundleOf(
+                    NavigationArg.SCREEN_TITLE to topMenuConfig.display,
+                    NavigationArg.REGISTER_ID to topMenuConfigId
+                )
+            )
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.nav_host, navHostFragment)
+            .setPrimaryNavigationFragment(navHostFragment)
+            .commit()
+
+        geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
+            when (geoWidgetEvent) {
+                is GeoWidgetEvent.OpenProfile ->
+                    appMainViewModel.launchProfileFromGeoWidget(
+                        navHostFragment.navController,
+                        geoWidgetEvent.geoWidgetConfiguration.id,
+                        geoWidgetEvent.data
+                    )
+
+                is GeoWidgetEvent.RegisterClient ->
+                    appMainViewModel.launchFamilyRegistrationWithLocationId(
+                        context = this,
+                        locationId = geoWidgetEvent.data,
+                        questionnaireConfig = geoWidgetEvent.questionnaire
+                    )
+            }
+        }
+
+        // Setup the drawer and schedule jobs
+        appMainViewModel.run {
+            retrieveAppMainUiState()
+            schedulePeriodicJobs()
+        }
+
+        syncBroadcaster.run {
+            with(appMainViewModel.syncSharedFlow) {
+                runSync(this)
+                schedulePeriodicSync(this)
+            }
+        }
     }
-  }
+
+    override fun onResume() {
+        super.onResume()
+        syncListenerManager.registerSyncListener(this, lifecycle)
+    }
+
+    override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
+        if (activityResult.resultCode == RESULT_OK) {
+            val questionnaireResponse: QuestionnaireResponse? =
+                activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
+                        QuestionnaireResponse?
+            val questionnaireConfig =
+                activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
+                        QuestionnaireConfig?
+
+            if (questionnaireConfig != null && questionnaireResponse != null) {
+                appMainViewModel.questionnaireSubmissionLiveData.postValue(
+                    QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+                )
+            }
+        }
+    }
+
+    override fun onSync(syncJobStatus: SyncJobStatus) {
+        when (syncJobStatus) {
+
+            is SyncJobStatus.InProgress -> {
+                appMainViewModel.onEvent(
+                    AppMainEvent.UpdateSyncState(
+                        syncJobStatus,
+                        getString(R.string.syncing_in_progress)
+                    )
+                )
+            }
+
+            is SyncJobStatus.Glitch -> {
+                appMainViewModel.onEvent(
+                    AppMainEvent.UpdateSyncState(
+                        syncJobStatus,
+                        appMainViewModel.retrieveLastSyncTimestamp()
+                    )
+                )
+                // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
+                Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
+            }
+
+            is SyncJobStatus.Failed -> {
+                appMainViewModel.onEvent(
+                    AppMainEvent.UpdateSyncState(
+                        syncJobStatus,
+                        if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+                            appMainViewModel.retrieveLastSyncTimestamp()
+                        else getString(R.string.syncing_failed)
+                    )
+                )
+            }
+
+            is SyncJobStatus.Finished -> {
+
+//        val totalTime = ChronoUnit.SECONDS.between(syncStartedAt, syncJobStatus.timestamp)
+//        //this.showToast(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
+//        Timber.d(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
+
+                appMainViewModel.run {
+                    onEvent(
+                        AppMainEvent.UpdateSyncState(
+                            syncJobStatus,
+                            formatLastSyncTimestamp(syncJobStatus.timestamp)
+                        )
+                    )
+                }
+            }
+
+            is SyncJobStatus.Started -> {
+                // syncStartedAt = OffsetDateTime.now()
+            }
+
+            else -> {
+                /*Do nothing */
+            }
+        }
+    }
 }
