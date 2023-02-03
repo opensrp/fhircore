@@ -65,8 +65,10 @@ class LoginActivity : BaseMultiLanguageActivity() {
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() ->
             navigateToPinLogin(launchSetup = false)
-          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() ->
+          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() -> {
+            configurationRegistry.fetchNonWorkflowConfigResources()
             navigateToPinLogin(launchSetup = true)
+          }
           launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
         }
       }
