@@ -22,6 +22,7 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
