@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -53,6 +54,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val sharedPreferences: SharedPreferencesHelper,
+  val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
   val keycloakService: KeycloakService,
@@ -168,14 +170,21 @@ constructor(
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
-      tokenAuthenticator
-        .fetchAccessToken(username, password)
-        .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-        .onFailure {
-          _showProgressBar.postValue(false)
-          _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
-          Timber.e(it)
-        }
+      // Prevent user from logging in with different credentials
+      val existingCredentials = secureSharedPreference.retrieveCredentials()
+      if (existingCredentials != null && !username.equals(existingCredentials.username, true)) {
+        _showProgressBar.postValue(false)
+        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+      } else {
+        tokenAuthenticator
+          .fetchAccessToken(username, password)
+          .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+          .onFailure {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            Timber.e(it)
+          }
+      }
     }
   }
 
