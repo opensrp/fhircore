@@ -107,11 +107,8 @@ constructor(
   }
 
   fun onMenuItemClicked(launchAppSettingScreen: Boolean) {
-    secureSharedPreference.run {
-      deleteSessionTokens()
-      deleteSessionPin()
-      deleteCredentials()
-    }
+    secureSharedPreference.deleteSessionPin()
+
     if (launchAppSettingScreen) {
       sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
       _navigateToSettings.value = true

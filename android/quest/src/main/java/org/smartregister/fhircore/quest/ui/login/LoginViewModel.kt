@@ -173,6 +173,7 @@ constructor(
         .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
         .onFailure {
           _showProgressBar.postValue(false)
+          _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
           Timber.e(it)
         }
     }

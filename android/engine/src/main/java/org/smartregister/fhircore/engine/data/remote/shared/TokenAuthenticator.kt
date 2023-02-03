@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.data.remote.shared
 import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerFuture
+import android.accounts.AuthenticatorException
+import android.accounts.OperationCanceledException
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -30,6 +32,8 @@ import com.google.android.fhir.sync.Authenticator as FhirAuthenticator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
+import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.runBlocking
@@ -66,17 +70,26 @@ constructor(
       if (!isTokenActive(accessToken)) {
         accountManager.run {
           invalidateAuthToken(account.type, accessToken)
-          getAuthToken(
-            account,
-            AUTH_TOKEN_TYPE,
-            bundleOf(),
-            true,
-            handleAccountManagerFutureCallback(account),
-            Handler(Looper.getMainLooper()) { message: Message ->
-              Timber.e(message.toString())
-              true
-            }
-          )
+          try {
+            getAuthToken(
+              account,
+              AUTH_TOKEN_TYPE,
+              bundleOf(),
+              true,
+              handleAccountManagerFutureCallback(account),
+              Handler(Looper.getMainLooper()) { message: Message ->
+                Timber.e(message.toString())
+                true
+              }
+            )
+          } catch (operationCancelledException: OperationCanceledException) {
+            Timber.e(operationCancelledException)
+          } catch (ioException: IOException) {
+            Timber.e(ioException)
+          } catch (authenticatorException: AuthenticatorException) {
+            Timber.e(authenticatorException)
+            // TODO: Should we cancel the sync job to avoid retries when offline?
+          }
         }
       }
       accessToken
@@ -140,6 +153,8 @@ constructor(
       Result.success(oAuthResponse)
     } catch (httpException: HttpException) {
       Result.failure(httpException)
+    } catch (unknownHostException: UnknownHostException) {
+      Result.failure(unknownHostException)
     }
   }
 
