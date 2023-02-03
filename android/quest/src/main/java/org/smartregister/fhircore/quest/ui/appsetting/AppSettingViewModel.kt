@@ -78,6 +78,7 @@ constructor(
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
+    _error.value = ""
   }
 
   /**
@@ -97,8 +98,8 @@ constructor(
   }
 
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
-    try {
-      viewModelScope.launch {
+    viewModelScope.launch {
+      try {
         Timber.i("Fetching configs for app $appId")
         val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val compositionResource =
@@ -148,15 +149,15 @@ constructor(
         defaultRepository.create(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfiguration(context)
+      } catch (unknownHostException: UnknownHostException) {
+        _error.postValue(context.getString(R.string.error_loading_config_no_internet))
+        showProgressBar.postValue(false)
+      } catch (httpException: HttpException) {
+        if ((400..503).contains(httpException.response()!!.code()))
+          _error.postValue(context.getString(R.string.error_loading_config_general))
+        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        showProgressBar.postValue(false)
       }
-    } catch (unknownHostException: UnknownHostException) {
-      _error.postValue(context.getString(R.string.error_loading_config_no_internet))
-      showProgressBar.postValue(false)
-    } catch (httpException: HttpException) {
-      if ((400..503).contains(httpException.response()!!.code()))
-        _error.postValue(context.getString(R.string.error_loading_config_general))
-      else _error.postValue(context.getString(R.string.error_loading_config_http_error))
-      showProgressBar.postValue(false)
     }
   }
 
@@ -165,7 +166,7 @@ constructor(
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
         showProgressBar.postValue(false)
-        _error.postValue(context.getString(R.string.application_not_supported, appId))
+        _error.postValue(context.getString(R.string.application_not_supported, appId.value))
         return null
       }
 
