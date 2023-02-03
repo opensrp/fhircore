@@ -25,6 +25,7 @@ import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import java.util.Calendar
 import java.util.Date
@@ -84,7 +85,7 @@ object AlertDialogue {
 
     dialog
       .getButton(AlertDialog.BUTTON_NEUTRAL)
-      .setTextColor(context.resources.getColor(R.color.grey_text_color))
+      .setTextColor(ContextCompat.getColor(context, R.color.grey_text_color))
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
         this.show()
