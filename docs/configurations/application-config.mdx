@@ -45,39 +45,6 @@ There can only one instance of application configuration for the entire applicat
 }
 ```
 
-## Configuring widgets in FlexRow alignment
-
-In case you want to configure widgets/components in FlexRow
-
-``` json
-{
-     "viewType": "LIST",
-      "id": "give_your_list_an_id",
-      "baseResource": "Resource_to_use",
-      "orientation": "HORIZONTAL",
-       "emptyList": {
-        "message": ""
-                     },
-        "registerCard": {
-        "rules": [],
-         "views": [
-
-          {
-           "viewType": "COMPOUND_TEXT",
-            "primaryTextBackgroundColor": "#F9CFD1",
-             "primaryText": "@{carePlanTitle}",
-             "primaryTextColor": "@{carePlanTextColor}",
-             "fontSize": 13,
-             "padding": 7,
-              "borderRadius": 6
-      }
-    ]
-    }
-   }
- ```
-Replace **COMPOUND_TEXT** with your preferred component
-
-
 ## Config properties
 
 |Property | Description | Required | Default |
