@@ -90,7 +90,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   /** This method resets/clears all existing values in the shared preferences synchronously */
   fun resetSharedPrefs() {
-    prefs.edit()?.clear()?.commit()
+    prefs.edit()?.clear()?.apply()
   }
 
   companion object {

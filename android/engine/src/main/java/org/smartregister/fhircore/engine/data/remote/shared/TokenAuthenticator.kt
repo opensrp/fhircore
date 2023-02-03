@@ -176,11 +176,11 @@ constructor(
             accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE)
           )
           Result.success(true)
-        } else {
-          Result.success(false)
-        }
+        } else Result.success(false)
       } catch (httpException: HttpException) {
         Result.failure(httpException)
+      } catch (unknownHostException: UnknownHostException) {
+        Result.failure(unknownHostException)
       }
     }
   }
@@ -237,6 +237,20 @@ constructor(
 
   fun sessionActive(): Boolean =
     findAccount()?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) } ?: false
+
+  fun invalidateSession(onSessionInvalidated: () -> Unit) =
+    findAccount()?.let { account ->
+      accountManager.run {
+        invalidateAuthToken(account.type, AUTH_TOKEN_TYPE)
+        runCatching { removeAccountExplicitly(account) }
+          .onSuccess { onSessionInvalidated() }
+          .onFailure {
+            Timber.e(it)
+            onSessionInvalidated()
+          }
+      }
+    }
+      ?: false
 
   companion object {
     const val GRANT_TYPE = "grant_type"

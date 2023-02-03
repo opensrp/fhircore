@@ -132,12 +132,18 @@ constructor(
     features: Array<out String>?
   ): Bundle = bundleOf()
 
-  fun logout(onLogout: () -> Unit = {}) {
-    tokenAuthenticator.logout().onSuccess { loggedOut -> if (loggedOut) onLogout() }
+  fun logout(onLogout: () -> Unit) {
+    tokenAuthenticator.logout().onSuccess { loggedOut -> if (loggedOut) onLogout() }.onFailure {
+      onLogout()
+    }
   }
 
   fun validateLoginCredentials(username: String, password: CharArray) =
     tokenAuthenticator.validateSavedLoginCredentials(username, password)
+
+  fun invalidateSession(onSessionInvalidated: () -> Unit) {
+    tokenAuthenticator.invalidateSession(onSessionInvalidated)
+  }
 
   companion object {
     const val ACCOUNT_TYPE = "ACCOUNT_TYPE"

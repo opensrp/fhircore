@@ -123,15 +123,6 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventLogout() {
-    val appMainEvent = AppMainEvent.Logout
-
-    appMainViewModel.onEvent(appMainEvent)
-
-    verify { accountAuthenticator.logout() }
-  }
-
-  @Test
   fun testOnEventSwitchLanguage() {
     val appMainEvent =
       AppMainEvent.SwitchLanguage(

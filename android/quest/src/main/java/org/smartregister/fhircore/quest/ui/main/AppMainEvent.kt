@@ -48,7 +48,5 @@ sealed class AppMainEvent {
     val resourceConfig: FhirResourceConfig? = null
   ) : AppMainEvent()
 
-  object Logout : AppMainEvent()
-
   object SyncData : AppMainEvent()
 }
