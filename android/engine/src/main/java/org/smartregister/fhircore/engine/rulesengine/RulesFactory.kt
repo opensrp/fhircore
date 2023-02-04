@@ -19,17 +19,15 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
-import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -183,14 +181,14 @@ constructor(
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
-      relatedResourceType: String,
+      relatedResourceType: ResourceType,
       fhirPathExpression: String,
       relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        relatedResourcesMap?.get(relatedResourceType)
-          ?: if (facts.getFact(relatedResourceType) != null)
-            facts.getFact(relatedResourceType).value as List<Resource>
+        relatedResourcesMap?.get(relatedResourceType.name)
+          ?: if (facts.getFact(relatedResourceType.name) != null)
+            facts.getFact(relatedResourceType.name).value as List<Resource>
           else emptyList()
 
       return value.filter {
@@ -305,9 +303,7 @@ constructor(
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
      * months, 3 years etc)
      */
-    fun prettifyDate(inputDate: Date): String {
-      return inputDate.prettifyDate()
-    }
+    fun prettifyDate(inputDate: Date): String = inputDate.prettifyDate()
 
     /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
@@ -315,7 +311,7 @@ constructor(
      * 2022-02 or 2022
      */
     fun prettifyDate(inputDateString: String): String {
-      return PrettyTime(Locale.ENGLISH).format(DateTime(inputDateString).toDate())
+      return PrettyTime().format(DateTime(inputDateString).toDate())
     }
 
     /**
@@ -328,18 +324,15 @@ constructor(
       inputDate: String,
       inputDateFormat: String,
       expectedFormat: String = "E, MMM dd yyyy"
-    ): String? {
-      return inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
-    }
+    ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
      * This function is responsible for formatting a date for whatever expectedFormat we need. It
      * takes an input a [date] as input and then it gives output in expected Format,
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
-    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String {
-      return date.formatDate(expectedFormat)
-    }
+    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String =
+      date.formatDate(expectedFormat)
 
     /**
      * This function generates a random 6-digit integer between a hard-coded range. It may generate
@@ -347,46 +340,30 @@ constructor(
      *
      * @return An Integer.
      */
-    fun generateRandomSixDigitInt(): Int {
-      return (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
-    }
+    fun generateRandomSixDigitInt(): Int =
+      (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
-    fun filterList(list: List<Resource>, fhirPathExpression: String): List<Resource> {
-      return list.filter {
-        (fhirPathDataExtractor.extractData(it, fhirPathExpression).first() as BooleanType).value
+    /**
+     * This function filters resource if the [value] provided matches the result of the extracted
+     * [fhirPathExpression]
+     */
+    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
+      }
+      return resources.filter {
+        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
     }
 
-    fun filterList(list: List<Resource>, attribute: String, attributeValue: Any) =
-      list.filter { getValue(it, attribute) == attributeValue }
-
-    /**
-     * This function takes a [resource] as source class and a [attribute] as field name to find out
-     * the actual value by using the java reflection API.
-     *
-     * @return optional [Any] primitive type value
-     */
-    private fun getValue(resource: Resource, attribute: String): Any? {
-      val property = getDeclaredField(attribute, resource.javaClass)
-      property?.isAccessible = true
-      return (property?.get(resource) as? PrimitiveType<*>)?.value
-    }
-
-    /**
-     * This function takes a [attribute] as a field name and [type] as a source class to find the
-     * actual field from full class hierarchy. If the field does not exist anywhere in the class
-     * hierarchy we return null.
-     *
-     * @return optional [Field]
-     */
-    private fun getDeclaredField(attribute: String, type: Class<*>): Field? {
-      return try {
-        type.getDeclaredField(attribute)
-      } catch (ex: NoSuchFieldException) {
-        if (type.superclass != null) {
-          getDeclaredField(attribute, type.superclass)
-        } else null
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>,
+      fhirPathExpression: String
+    ): List<Any> {
+      if (fhirPathExpression.isEmpty()) {
+        return emptyList()
       }
+      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
     }
   }
 

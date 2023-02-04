@@ -29,6 +29,7 @@ data class RegisterConfiguration(
   val id: String,
   val registerTitle: String? = null,
   val fhirResource: FhirResourceConfig,
+  val secondaryResources: List<FhirResourceConfig>? = null,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),

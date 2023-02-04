@@ -20,11 +20,12 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
+import androidx.fragment.app.setFragmentResult
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -53,7 +54,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -64,7 +64,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -161,7 +160,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @After
   fun cleanup() {
     unmockkObject(SharedPreferencesHelper)
-    unmockkObject(AssetUtil)
   }
 
   @Test
@@ -234,42 +232,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val updatedQuestionnaireConfig =
       ReflectionHelpers.getField<QuestionnaireConfig>(questionnaireActivity, "questionnaireConfig")
     Assert.assertTrue(updatedQuestionnaireConfig.type.isReadOnly())
-  }
-
-  @Ignore("Fix failing test")
-  @Test
-  fun testReadOnlyIntentShouldChangeSaveButtonToDone() {
-    val expectedQuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "patient-registration",
-        title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY
-      )
-    val computedValuesMap: Map<String, Any> =
-      mutableMapOf<String, Any>().apply { put("familyLogicalId", "Group/group-id") }
-    intent =
-      Intent()
-        .putExtras(
-          bundleOf(
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
-          )
-        )
-
-    val questionnaireFragment = spyk<QuestionnaireFragment>()
-    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
-
-    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
-    questionnaireActivity = controller.create().resume().get()
-    questionnaireActivity.supportFragmentManager.executePendingTransactions()
-    questionnaireActivity.supportFragmentManager.commitNow {
-      add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-    }
-
-    Assert.assertEquals(
-      "Done",
-      questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).text
-    )
   }
 
   @Test
@@ -427,46 +389,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     verify(inverse = true) {
       questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
     }
-  }
-
-  @Ignore("Flaky test")
-  @Test
-  fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
-    ReflectionHelpers.setField(
-      questionnaireActivity,
-      "questionnaire",
-      Questionnaire().apply { experimental = false }
-    )
-
-    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
-
-    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
-    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
-
-    Assert.assertEquals(
-      getString(R.string.questionnaire_alert_submit_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
-    )
-  }
-
-  @Ignore("Flaky test")
-  @Test
-  fun testOnClickSaveWithExperimentalButtonShouldShowTestOnlyConfirmationAlert() {
-    ReflectionHelpers.setField(
-      questionnaireActivity,
-      "questionnaire",
-      Questionnaire().apply { experimental = true }
-    )
-
-    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
-
-    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
-    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
-
-    Assert.assertEquals(
-      getString(R.string.questionnaire_alert_test_only_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
-    )
   }
 
   @Test
@@ -661,6 +583,50 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
       }
     }
+  }
+
+  @Test
+  fun testFragmentQuestionnaireSubmitHandlesQuestionnaireSubmit() {
+
+    every { questionnaireFragment.getQuestionnaireActivity() } returns questionnaireActivity
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig() } returns
+      QuestionnaireConfig(id = "123")
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireObject() } returns
+      Questionnaire()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every { questionnaireFragment.getQuestionnaireActivity().handleQuestionnaireSubmit() } just runs
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().handleQuestionnaireSubmit() }
+  }
+
+  @Test
+  fun testFragmentQuestionnaireSubmitWithReadOnlyModeFinishesActivity() {
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every {
+      questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig().type.isReadOnly()
+    } returns true
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().finish() }
+  }
+  @Test
+  fun testFragmentQuestionnaireSubmitWithExperimentalModeFinishesActivity() {
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    every { questionnaireFragment.getQuestionnaireActivity().finish() } just runs
+    every {
+      questionnaireFragment.getQuestionnaireActivity().getQuestionnaireObject().experimental
+    } returns true
+    every { questionnaireFragment.getQuestionnaireActivity().getQuestionnaireConfig() } returns
+      QuestionnaireConfig(id = "123")
+
+    questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
+
+    verify { questionnaireFragment.getQuestionnaireActivity().finish() }
   }
 
   override fun getActivity(): Activity {

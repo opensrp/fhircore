@@ -48,7 +48,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -66,6 +65,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -289,7 +289,7 @@ private fun BigServiceButton(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
@@ -343,7 +343,7 @@ private fun ServiceCardServiceOverduePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceDuePreview() {
   val viewProperties =
@@ -397,7 +397,7 @@ private fun ServiceCardServiceDuePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
@@ -451,7 +451,7 @@ private fun ServiceCardServiceUpcomingPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceFamilyMemberPreview() {
   val viewProperties =
@@ -486,7 +486,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
@@ -539,7 +539,7 @@ private fun ServiceCardServiceCompletedPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
@@ -587,7 +587,7 @@ private fun ServiceCardANCServiceDuePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =

@@ -22,14 +22,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -52,13 +52,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
@@ -74,139 +74,189 @@ fun ChangeManagingEntityView(
   onDismiss: () -> Unit
 ) {
   var isEnabled by remember { mutableStateOf(false) }
+  var selectedEligibleManagingEntity by remember { mutableStateOf<EligibleManagingEntity?>(null) }
+  val onEligibleManagingEntitySelection = { eligibleManagingEntity: EligibleManagingEntity ->
+    selectedEligibleManagingEntity = eligibleManagingEntity
+  }
 
-  Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
-    Column(modifier = modifier.fillMaxWidth()) {
-      Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-          modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-      ) {
-        Text(
-          text = managingEntity?.dialogTitle ?: "",
-          textAlign = TextAlign.Start,
-          fontWeight = FontWeight.Light,
-          fontSize = 20.sp,
-        )
-        Icon(
-          imageVector = Icons.Filled.Clear,
-          contentDescription = null,
-          tint = DefaultColor.copy(0.8f),
-          modifier = modifier.clickable { onDismiss() }
+  Surface(modifier = modifier.wrapContentHeight().verticalScroll(rememberScrollState())) {
+    Column(modifier = modifier.fillMaxWidth().wrapContentHeight()) {
+      // Top section with titles
+      ChangeManagingEntityTopBar(
+        modifier = modifier,
+        managingEntity = managingEntity,
+        onDismiss = onDismiss
+      )
+
+      // Main content to display eligible members
+      eligibleManagingEntities.forEachIndexed { _, item ->
+        BottomListItem(
+          modifier = modifier,
+          currentEligibleManagingEntity = item,
+          selectedEligibleManagingEntity = selectedEligibleManagingEntity,
+          enableButton = { isEnabled = it },
+          onEligibleManagingEntitySelection = onEligibleManagingEntitySelection
         )
       }
-      Divider()
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-          modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 12.dp, vertical = 18.dp)
-            .background(
-              color = colorResource(id = R.color.background_warning),
-              shape = RoundedCornerShape(8.dp)
-            )
-      ) {
-        Image(
-          painter = painterResource(id = R.drawable.ic_alert_triangle),
-          contentDescription = null,
-          modifier = modifier.padding(horizontal = 12.dp)
-        )
-        Text(
-          text = managingEntity?.dialogWarningMessage ?: "",
-          textAlign = TextAlign.Start,
-          fontWeight = FontWeight.Medium,
-          fontSize = 16.sp,
-          modifier = modifier.padding(vertical = 12.dp)
-        )
-      }
+
+      Divider(color = DividerColor, thickness = 1.dp)
+
+      // Bottom section with actions
+      ChangeManagingEntityBottomBar(
+        modifier = modifier,
+        onDismiss = onDismiss,
+        isEnabled = isEnabled,
+        onSaveClick = onSaveClick,
+        selectedEligibleManagingEntity = selectedEligibleManagingEntity
+      )
+    }
+  }
+}
+
+@Composable
+private fun ChangeManagingEntityBottomBar(
+  modifier: Modifier,
+  onDismiss: () -> Unit,
+  isEnabled: Boolean,
+  onSaveClick: (EligibleManagingEntity) -> Unit,
+  selectedEligibleManagingEntity: EligibleManagingEntity?,
+) {
+  Row(
+    horizontalArrangement = Arrangement.SpaceEvenly,
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min)
+        .padding(horizontal = 16.dp, vertical = 16.dp)
+  ) {
+    TextButton(
+      onClick = { onDismiss() },
+      modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
+    ) {
       Text(
-        text = managingEntity?.dialogContentMessage ?: "",
-        modifier = modifier.padding(horizontal = 12.dp),
+        fontSize = 14.sp,
+        color = colorResource(id = R.color.black),
+        text = stringResource(id = R.string.cancel),
+      )
+    }
+    TextButton(
+      enabled = isEnabled,
+      onClick = {
+        selectedEligibleManagingEntity?.let { onSaveClick(it) }
+        onDismiss()
+      },
+      modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_SAVE),
+      colors =
+        ButtonDefaults.textButtonColors(
+          backgroundColor =
+            colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
+        )
+    ) {
+      Text(
+        fontSize = 14.sp,
+        color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
+        text = stringResource(id = R.string.str_save).uppercase(),
+      )
+    }
+  }
+}
+
+@Composable
+private fun ChangeManagingEntityTopBar(
+  modifier: Modifier,
+  managingEntity: ManagingEntityConfig?,
+  onDismiss: () -> Unit
+) {
+  Column(modifier = modifier.fillMaxWidth()) {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .height(IntrinsicSize.Min)
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+    ) {
+      Text(
+        text = managingEntity?.dialogTitle ?: "",
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Light,
-        fontSize = 18.sp,
+        fontSize = 20.sp,
       )
-      LazyColumn(
-        contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = Modifier.fillMaxWidth()
-      ) {
-        itemsIndexed(
-          items = eligibleManagingEntities,
-          itemContent = { _, item ->
-            BottomListItem(modifier, item) { managingEntity ->
-              eligibleManagingEntities.forEach { it.selected = false }
-              managingEntity.selected = true
-              isEnabled = true
-            }
-            Divider(color = DividerColor, thickness = 1.dp)
-          }
-        )
-      }
-      Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-          modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-      ) {
-        TextButton(
-          onClick = { onDismiss() },
-          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
-        ) {
-          Text(
-            fontSize = 14.sp,
-            color = colorResource(id = R.color.black),
-            text = stringResource(id = R.string.cancel),
-          )
-        }
-        TextButton(
-          enabled = isEnabled,
-          onClick = {
-            onSaveClick(eligibleManagingEntities.first { it.selected })
-            onDismiss()
-          },
-          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_SAVE),
-          colors =
-            ButtonDefaults.textButtonColors(
-              backgroundColor =
-                colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
-            )
-        ) {
-          Text(
-            fontSize = 14.sp,
-            color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
-            text = stringResource(id = R.string.str_save).uppercase(),
-          )
-        }
-      }
+      Icon(
+        imageVector = Icons.Filled.Clear,
+        contentDescription = null,
+        tint = DefaultColor.copy(0.8f),
+        modifier = modifier.clickable { onDismiss() }
+      )
     }
+    Divider()
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .height(IntrinsicSize.Min)
+          .padding(horizontal = 12.dp, vertical = 18.dp)
+          .background(
+            color = colorResource(id = R.color.background_warning),
+            shape = RoundedCornerShape(8.dp)
+          )
+    ) {
+      Image(
+        painter = painterResource(id = R.drawable.ic_alert_triangle),
+        contentDescription = null,
+        modifier = modifier.padding(horizontal = 12.dp)
+      )
+      Text(
+        text = managingEntity?.dialogWarningMessage ?: "",
+        textAlign = TextAlign.Start,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        modifier = modifier.padding(vertical = 12.dp)
+      )
+    }
+    Text(
+      text = managingEntity?.dialogContentMessage?.uppercase() ?: "",
+      modifier = modifier.padding(horizontal = 12.dp),
+      textAlign = TextAlign.Start,
+      fontWeight = FontWeight.Light,
+      fontSize = 16.sp,
+    )
   }
 }
 
 @Composable
 fun BottomListItem(
   modifier: Modifier = Modifier,
-  managingEntity: EligibleManagingEntity,
-  onClick: (EligibleManagingEntity) -> Unit
+  currentEligibleManagingEntity: EligibleManagingEntity,
+  selectedEligibleManagingEntity: EligibleManagingEntity?,
+  onEligibleManagingEntitySelection: (EligibleManagingEntity) -> Unit,
+  enableButton: (Boolean) -> Unit
 ) {
+  val onClick = remember {
+    {
+      onEligibleManagingEntitySelection(currentEligibleManagingEntity)
+      enableButton(true)
+    }
+  }
   Row(
-    modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) },
+    modifier = modifier.fillMaxWidth().clickable { onClick() },
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    RadioButton(selected = managingEntity.selected, onClick = { onClick(managingEntity) })
-    Text(text = managingEntity.memberInfo)
+    RadioButton(
+      selected = currentEligibleManagingEntity == selectedEligibleManagingEntity,
+      onClick = onClick
+    )
+    Text(
+      text = currentEligibleManagingEntity.memberInfo,
+      modifier = modifier.clickable { onClick() }
+    )
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 fun ChangeManagingEntityViewPreview() {
   ChangeManagingEntityView(
@@ -227,11 +277,12 @@ fun ChangeManagingEntityViewPreview() {
     onDismiss = {},
     managingEntity =
       ManagingEntityConfig(
-        infoFhirPathExpression = "Patient.name",
-        fhirPathResource =
-          ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+        nameFhirPathExpression = "Patient.name",
+        eligibilityCriteriaFhirPathExpression = "Patient.active",
+        resourceType = ResourceType.Patient,
         dialogTitle = "Assign new family head",
-        dialogWarningMessage = "Are you sure you want to abort this operation?",
+        dialogWarningMessage =
+          "Please assign a new household head, family no longer has a household head",
         dialogContentMessage = "Select a new family head"
       )
   )

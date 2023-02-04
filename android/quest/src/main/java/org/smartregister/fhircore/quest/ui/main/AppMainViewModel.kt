@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -71,9 +70,11 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -159,11 +160,20 @@ constructor(
       is AppMainEvent.RefreshAuthToken -> {
         viewModelScope.launch {
           accountAuthenticator.refreshSessionAuthToken().let { bundle ->
+            bundle.getString(AccountManager.KEY_ERROR_MESSAGE)?.let { event.context.showToast(it) }
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
               // syncBroadcaster.runSync()
+              retrieveAppMainUiState()
               return@let
             }
-            accountAuthenticator.logout()
+            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE) &&
+                bundle.getInt(AccountManager.KEY_ERROR_CODE) ==
+                  AccountManager.ERROR_CODE_NETWORK_ERROR
+            ) {
+              return@let
+            } else {
+              accountAuthenticator.logout()
+            }
           }
         }
       }

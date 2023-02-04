@@ -29,7 +29,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
@@ -44,6 +43,7 @@ import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -51,6 +51,9 @@ import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
+import org.joda.time.Period
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -148,7 +151,7 @@ class RulesFactoryTest : RobolectricTest() {
     val result =
       rulesEngineService.retrieveRelatedResources(
         resource = populateTestPatient(),
-        relatedResourceType = "CarePlan",
+        relatedResourceType = ResourceType.CarePlan,
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
@@ -277,43 +280,121 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val fhirPathExpression = "Task.status = 'ready'"
-    val list =
+    val fhirPathExpression =
+      "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
+    val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
         Task().apply { status = TaskStatus.READY },
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertTrue(rulesEngineService.filterList(list, fhirPathExpression).size == 1)
+    Assert.assertTrue(
+      rulesEngineService.filterResources(
+          resources = resources,
+          fhirPathExpression = fhirPathExpression
+        )
+        .size == 2
+    )
+  }
+
+  @Test
+  fun fetchDescriptionFromReadyTasks() {
+    val fhirPathExpression = "Task.status = 'ready'"
+    val resources =
+      listOf(
+        Task().apply {
+          status = TaskStatus.COMPLETED
+          description = "minus"
+        },
+        Task().apply {
+          status = TaskStatus.READY
+          description = "plus"
+        },
+        Task().apply {
+          status = TaskStatus.CANCELLED
+          description = "multiply"
+        },
+        Task().apply {
+          status = TaskStatus.COMPLETED
+          description = "minus five"
+        },
+      )
+
+    val filteredTask = rulesEngineService.filterResources(resources, fhirPathExpression)
+    val descriptionList =
+      rulesEngineService.mapResourcesToExtractedValues(filteredTask, "Task.description")
+    Assert.assertTrue(descriptionList.first() == "plus")
   }
 
   @Test
   fun filterResourceListWithWrongExpression() {
-    val fhirPathExpression = "Task.desc = 'ready'"
-    val list =
+    val fhirPathExpression = "Task.status = 'not ready'"
+    val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
-        Task().apply { status = TaskStatus.READY },
+        Task().apply { status = TaskStatus.REQUESTED },
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    Assert.assertThrows(NoSuchElementException::class.java) {
-      runBlocking { rulesEngineService.filterList(list, fhirPathExpression) }
-    }
+    val results = rulesEngineService.filterResources(resources, fhirPathExpression)
+    Assert.assertTrue(results.isEmpty())
   }
 
   @Test
-  fun filterResourceListWithWrongAttributeValue() {
-    val fhirPathExpression = "Task.status = 'not ready'"
-    val list =
+  fun pickNamesOfPatientFromCertainAge() {
+    val fhirPathExpression =
+      "(Patient.birthDate <= today() - 2 'years') and (Patient.birthDate >= today() - 4 'years')"
+    val resources =
       listOf(
-        Task().apply { status = TaskStatus.COMPLETED },
-        Task().apply { status = TaskStatus.READY },
-        Task().apply { status = TaskStatus.CANCELLED }
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2019-10-03").toDate()
+          addName().apply { family = "rays" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2021-10-03").toDate()
+          addName().apply { family = "light" }
+        },
       )
 
-    Assert.assertEquals(emptyList<Task>(), rulesEngineService.filterList(list, fhirPathExpression))
+    val patientsList = rulesEngineService.filterResources(resources, fhirPathExpression)
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family")
+    Assert.assertTrue(names.isNotEmpty())
+  }
+
+  @Test
+  fun pickCodesFromCertainConditions() {
+    val resources =
+      listOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        }
+      )
+    val conditions =
+      rulesEngineService.filterResources(
+        resources,
+        "Condition.clinicalStatus.coding.display = 'Pregnant'"
+      )
+    val conditionIds = rulesEngineService.mapResourcesToExtractedValues(conditions, "Condition.id")
+    Assert.assertTrue(conditionIds.first() == "001")
   }
 
   @Test
@@ -379,7 +460,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun testFilterListShouldReturnMatchingResource() {
 
-    val listOfResources =
+    val resources =
       listOf(
         Condition().apply {
           id = "1"
@@ -391,7 +472,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterList(listOfResources, "id", "2")
+    val result = rulesEngineService.filterResources(resources, "Condition.id = 2")
 
     Assert.assertTrue(result.size == 1)
     with(result.first() as Condition) {
@@ -412,7 +493,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterList(listOfResources, "unknown_field", "1")
+    val result = rulesEngineService.filterResources(listOfResources, "unknown_field")
 
     Assert.assertTrue(result.isEmpty())
   }
@@ -470,5 +551,34 @@ class RulesFactoryTest : RobolectricTest() {
         subject = Reference().apply { reference = "Patient/patient-1" }
       }
     return carePlan
+  }
+
+  @Test
+  fun testPrettifyDateReturnXDaysAgo() {
+    val weeksAgo = 2
+    val inputDateString = LocalDate.now().minusWeeks(weeksAgo).toString()
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDateString)
+    Assert.assertEquals("$weeksAgo weeks ago", expected)
+  }
+
+  @Test
+  fun testPrettifyDateWithDateAsInput() {
+    val inputDate = Date()
+    val expected = rulesFactory.RulesEngineService().prettifyDate(inputDate)
+    Assert.assertEquals("", expected)
+  }
+
+  @Test
+  fun extractAge() {
+    val dateFormatter: DateTimeFormatter? = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val period =
+      Period(
+        LocalDate.parse("2005-01-01", dateFormatter),
+        LocalDate.parse(LocalDate.now().toString(), dateFormatter)
+      )
+    Assert.assertEquals(
+      period.years.toString() + "y",
+      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate()))
+    )
   }
 }
