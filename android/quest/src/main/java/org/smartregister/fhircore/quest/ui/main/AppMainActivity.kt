@@ -104,6 +104,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
     }
 
+    // Register sync listener then run sync in that order
+    syncListenerManager.registerSyncListener(this, lifecycle)
+
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()

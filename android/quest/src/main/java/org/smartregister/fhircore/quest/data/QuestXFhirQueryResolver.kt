@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.di
+package org.smartregister.fhircore.quest.data
 
-import javax.inject.Qualifier
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.XFhirQueryResolver
+import com.google.android.fhir.search.search
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Resource
 
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AuthOkHttpClientQualifier
-
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class OkHttpClientQualifier
+@Singleton
+class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
+  override suspend fun resolve(xFhirQuery: String): List<Resource> {
+    return fhirEngine.search(xFhirQuery)
+  }
+}
