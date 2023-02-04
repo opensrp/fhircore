@@ -274,6 +274,7 @@ constructor(
           else null
         }
         ?.joinToString(",")
+        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -347,23 +348,25 @@ constructor(
      * This function filters resource if the [value] provided matches the result of the extracted
      * [fhirPathExpression]
      */
-    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.filter {
+      return resources?.filter {
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
+        ?: emptyList()
     }
 
     fun mapResourcesToExtractedValues(
-      resources: List<Resource>,
+      resources: List<Resource>?,
       fhirPathExpression: String
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+      return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+        ?: emptyList()
     }
   }
 
