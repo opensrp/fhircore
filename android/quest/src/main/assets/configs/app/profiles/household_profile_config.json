@@ -101,15 +101,23 @@
               "memberResourceType": "Patient"
             },
             "planDefinitions": [
-              "9fac39bd-9750-4c1d-b355-1961de4e37f3",
-              "e994ab6f-30a5-4450-9a90-691c8199f379"
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
             ],
             "snackBarMessage": {
               "message": "Household member has been added",
               "actionLabel": "UNDO",
               "duration": "Short"
             }
-          }
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+              "dataType": "INTEGER",
+              "key": "opensrpId",
+              "value": "@{humanReadableId}"
+            }
+          ]
         }
       ]
     }
@@ -141,6 +149,13 @@
       "condition": "true",
       "actions": [
         "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+      ]
+    },
+    {
+      "name": "humanReadableId",
+      "condition": "true",
+      "actions": [
+        "data.put('humanReadableId', service.generateRandomSixDigitInt())"
       ]
     }
   ],
@@ -193,6 +208,10 @@
                 {
                   "resourceType": "Task",
                   "fhirPathExpression": "Task.for.reference"
+                },
+                {
+                  "resourceType": "Observation",
+                  "fhirPathExpression": "Observation.subject.reference"
                 }
               ],
               "registerCard": {
@@ -390,14 +409,21 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"
+                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code=\"11112222\"').get(0), 'Observation.value.text'))"
+                    ]
+                  },
+                  {
+                    "name": "removalReasonPatient",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('removalReasonPatient', !data.get('patientActive') ? data.get('removalReason'): '')"
                     ]
                   },
                   {
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReason')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
+                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
                     ]
                   }
                 ],
@@ -504,6 +530,8 @@
     {
       "title": "Remove family",
       "titleColor": "#FF0000",
+      "backgroundColor": "dangerColor",
+      "confirmAction": true,
       "visible": "true",
       "showSeparator": "true",
       "actions": [

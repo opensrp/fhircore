@@ -46,6 +46,7 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -372,6 +373,45 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertFalse(result.item[2].item[0].readOnly)
     Assert.assertFalse(result.item[2].item[1].readOnly)
     Assert.assertFalse(result.item[2].item[1].item[0].readOnly)
+  }
+
+  @Test
+  fun testLoadQuestionnaireShouldMakeQuestionsEditableWithReadonlyAndAddInitialExpressionExtension() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
+    }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertFalse(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
   }
 
   @Test
@@ -972,8 +1012,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { context.showToast(missingStructureMapExceptionMessage, Toast.LENGTH_LONG) }
   }
 
-  fun testPerformExtractionOnFailureShowsErrorToast() {
-
+  @Test
+  fun testPerformExtractionOnFailureShowsErrorToast() = runTest {
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
@@ -982,6 +1022,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
+    questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }

@@ -24,6 +24,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
@@ -47,7 +48,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -67,11 +67,15 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var gson: Gson
 
@@ -81,7 +85,9 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
-  private val secureSharedPreference: SecureSharedPreference = mockk()
+  val fhirEngine = mockk<FhirEngine>()
+
+  private val secureSharedPreference = mockk<SecureSharedPreference>()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -94,8 +100,6 @@ class AppMainViewModelTest : RobolectricTest() {
   private lateinit var appMainViewModel: AppMainViewModel
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -119,7 +123,6 @@ class AppMainViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
       )
-
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
