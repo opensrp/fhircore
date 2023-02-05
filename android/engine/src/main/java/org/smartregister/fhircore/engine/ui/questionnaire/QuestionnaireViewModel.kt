@@ -131,6 +131,8 @@ constructor(
     )
   }
 
+  private var currentFormName = ""
+
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
 
@@ -512,7 +514,14 @@ constructor(
     return fhirEngine
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-        filter(Appointment.PATIENT, { value = "Patient/$patientId" })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
       }
       .filterNot { it.hasStart() }
       .sortedBy { it.created }
@@ -593,8 +602,9 @@ constructor(
         }
 
         val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
-        if (appointmentToPopulate != null)
+        if (appointmentToPopulate != null) {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
         resourcesList[bundleIndex] = currentBundle
       }
 

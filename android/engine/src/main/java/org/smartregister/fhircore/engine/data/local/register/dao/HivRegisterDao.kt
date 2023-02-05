@@ -292,15 +292,17 @@ constructor(
     )
 
   internal suspend fun Patient.practitioners(): List<Practitioner> {
-    return generalPractitioner.mapNotNull {
-      try {
-        val id = it.reference.replace("Practitioner/", "")
-        fhirEngine.get(ResourceType.Practitioner, id) as Practitioner
-      } catch (e: Exception) {
-        Timber.e(e)
-        null
+    return generalPractitioner
+      .mapNotNull {
+        try {
+          val id = it.reference.replace("Practitioner/", "")
+          fhirEngine.get(ResourceType.Practitioner, id) as Practitioner
+        } catch (e: Exception) {
+          Timber.e(e)
+          null
+        }
       }
-    }
+      .distinctBy { it.logicalId }
   }
 
   internal suspend fun Patient.otherPatients() = this.fetchOtherPatients(this.logicalId)
