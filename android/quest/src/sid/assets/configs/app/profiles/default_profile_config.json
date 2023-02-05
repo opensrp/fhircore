@@ -233,8 +233,10 @@
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "Quick Check",
-              "enabled": "@{isPregnant}",
               "status": "DUE",
+              "enabled": "true",
+              "visible": "@{isPregnant}",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -242,11 +244,9 @@
                   "questionnaire": {
                     "id": "126123",
                     "title": "Quick Check",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -255,8 +255,10 @@
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "Symptoms & Follow-up",
-              "enabled": "@{isPregnant}",
               "status": "DUE",
+              "enabled": "true",
+              "visible": "@{isPregnant}",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -264,11 +266,9 @@
                   "questionnaire": {
                     "id": "126126",
                     "title": "Symptoms & Follow-up",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -277,8 +277,10 @@
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "Physical Exam",
-              "enabled": "@{isPregnant}",
               "status": "DUE",
+              "enabled": "true",
+              "visible": "@{isPregnant}",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -286,11 +288,9 @@
                   "questionnaire": {
                     "id": "126121",
                     "title": "Physical Exam",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -299,8 +299,10 @@
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "ANC Tests",
-              "enabled": "@{isPregnant}",
               "status": "DUE",
+              "enabled": "true",
+              "visible": "@{isPregnant}",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -308,11 +310,9 @@
                   "questionnaire": {
                     "id": "126127",
                     "title": "ANC Tests",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -321,8 +321,10 @@
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "Counseling & Treatment",
-              "enabled": "@{isPregnant}",
               "status": "DUE",
+              "enabled": "true",
+              "visible": "@{isPregnant}",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -330,11 +332,9 @@
                   "questionnaire": {
                     "id": "126120",
                     "title": "Counseling & Treatment",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -481,18 +481,7 @@
         }
       ]
     },
-    {
-      "title": "Profile",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "@{patientActive}"
-    },
-    {
-      "title": "ANC History",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "@{patientActive}"
-    },
+
     {
       "title": "Record as Sick",
       "titleColor": "@{patientTextColor}",
@@ -552,6 +541,18 @@
           }
         }
       ]
+    },
+    {
+      "title": "ANC Profile",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{isPregnant}",
+      "enabled": "@{patientActive}"
+    },
+    {
+      "title": "ANC History",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{isPregnant}",
+      "enabled": "@{patientActive}"
     },
     {
       "title": "Pregnancy Outcome",

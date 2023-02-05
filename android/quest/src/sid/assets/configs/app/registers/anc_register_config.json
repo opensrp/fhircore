@@ -91,6 +91,13 @@
         ]
       },
       {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' +  data.get('patientAge'))"
+        ]
+      },
+      {
         "name": "name",
         "condition": "true",
         "priority": 2,
@@ -191,7 +198,7 @@
               {
                 "trigger": "ON_CLICK",
                 "workflow": "LAUNCH_PROFILE",
-                "id": "ancRegistersProfile"
+                "id": "otherRegistersProfile"
               }
             ]
           }

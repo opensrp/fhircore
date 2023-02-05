@@ -1,27 +1,29 @@
 {
   "appId": "notice-f",
   "configType": "profile",
-  "id": "otherProfile",
+  "id": "otherRegistersProfile",
   "fhirResource": {
     "baseResource": {
-      "resource": "Patient"
+      "resource": "Condition"
     },
     "relatedResources": [
       {
-        "resource": "Condition",
-        "searchParameter": "subject"
-      },
-      {
-        "resource": "CarePlan",
-        "searchParameter": "subject"
-      },
-      {
-        "resource": "Task",
-        "searchParameter": "subject",
-        "sortConfigs": [
+        "resource": "Patient",
+        "fhirPathExpression": "Condition.subject",
+        "relatedResources": [
           {
-            "paramName": "period",
-            "dataType": "DATE"
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Task",
+            "searchParameter": "subject",
+            "sortConfigs": [
+              {
+                "paramName": "period",
+                "dataType": "DATE"
+              }
+            ]
           }
         ]
       }
@@ -32,21 +34,21 @@
       "name": "patientFirstName",
       "condition": "true",
       "actions": [
-        "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+        "data.put('patientFirstName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(given[0])\"))"
       ]
     },
     {
       "name": "patientMiddleName",
       "condition": "true",
       "actions": [
-        "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+        "data.put('patientMiddleName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(text)\"))"
       ]
     },
     {
       "name": "patientLastName",
       "condition": "true",
       "actions": [
-        "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+        "data.put('patientLastName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(family)\"))"
       ]
     },
     {
@@ -60,7 +62,7 @@
       "name": "patientActive",
       "condition": "true",
       "actions": [
-        "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+        "data.put('patientActive', fhirPath.extractValue(Patient.get(0), 'Patient.active'))"
       ]
     },
     {
@@ -74,35 +76,35 @@
       "name": "patientIdentifier",
       "condition": "true",
       "actions": [
-        "data.put('patientIdentifier', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+        "data.put('patientIdentifier', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
       ]
     },
     {
       "name": "patientId",
       "condition": "true",
       "actions": [
-        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+        "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.id'))"
       ]
     },
     {
       "name": "patientAge",
       "condition": "true",
       "actions": [
-        "data.put('patientAge', service.extractAge(Patient))"
+        "data.put('patientAge', service.extractAge(Patient.get(0)))"
       ]
     },
     {
       "name": "patientGender",
       "condition": "true",
       "actions": [
-        "data.put('patientGender', service.extractGender(Patient))"
+        "data.put('patientGender', service.extractGender(Patient.get(0)))"
       ]
     },
     {
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient, 'MM/dd/YY'))"
+        "data.put('patientDOB', service.extractDOB(Patient.get(0), 'MM/dd/YY'))"
       ]
     },
     {
@@ -120,17 +122,24 @@
       ]
     },
     {
+      "name": "isEligibleForFP",
+      "condition": "true",
+      "actions": [
+        "data.put('isEligibleForFP',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+      ]
+    },
+    {
       "name": "isPregnant",
       "condition": "true",
       "actions": [
-        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.text = 'Pregnant' \", false))"
+        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", false))"
       ]
     },
     {
       "name": "canRegisterPregnancy",
       "condition": "true",
       "actions": [
-        "data.put('canRegisterPregnancy', data.get('canBearChild') && data.get('!isPregnant'))"
+        "data.put('canRegisterPregnancy', data.get('canBearChild') and data.get('isPregnant'))"
       ]
     },
     {
@@ -145,6 +154,13 @@
       "condition": "true",
       "actions": [
         "data.put('isChildOver2months', fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
+      ]
+    },
+    {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome', data.get('canBearChild'))"
       ]
     }
   ],
@@ -223,6 +239,10 @@
         },
         {
           "viewType": "SPACER",
+          "height": 16
+        },
+        {
+          "viewType": "SPACER",
           "height": 8
         },
         {
@@ -234,6 +254,8 @@
               "smallSized": true,
               "text": "Quick Check",
               "status": "DUE",
+              "enabled": "true",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -241,11 +263,9 @@
                   "questionnaire": {
                     "id": "126123",
                     "title": "Quick Check",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -255,6 +275,8 @@
               "smallSized": true,
               "text": "Symptoms & Follow-up",
               "status": "DUE",
+              "enabled": "true",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -262,11 +284,9 @@
                   "questionnaire": {
                     "id": "126126",
                     "title": "Symptoms & Follow-up",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -276,6 +296,8 @@
               "smallSized": true,
               "text": "Physical Exam",
               "status": "DUE",
+              "enabled": "true",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -283,11 +305,9 @@
                   "questionnaire": {
                     "id": "126121",
                     "title": "Physical Exam",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -297,6 +317,8 @@
               "smallSized": true,
               "text": "ANC Tests",
               "status": "DUE",
+              "enabled": "true",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -304,11 +326,9 @@
                   "questionnaire": {
                     "id": "126127",
                     "title": "ANC Tests",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -318,6 +338,8 @@
               "smallSized": true,
               "text": "Counseling & Treatment",
               "status": "DUE",
+              "enabled": "true",
+              "clickable": "true",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
@@ -325,11 +347,9 @@
                   "questionnaire": {
                     "id": "126120",
                     "title": "Counseling & Treatment",
-                    "saveButtonText": "Submit Details",
+                    "saveButtonText": "Submit",
                     "setPractitionerDetails": true,
-                    "setOrganizationDetails": true,
-                    "type": "EDIT",
-                    "resourceIdentifier": "@{patientLogicalId}"
+                    "setOrganizationDetails": true
                   }
                 }
               ]
@@ -407,17 +427,17 @@
                     ]
                   },
                   {
-                    "name": "taskFor",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                    ]
-                  },
-                  {
                     "name": "taskQuestionnaireId",
                     "condition": "true",
                     "actions": [
                       "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
+                    ]
+                  },
+                  {
+                    "name": "taskFor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
                     ]
                   }
                 ],
@@ -436,9 +456,12 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+                          "resourceIdentifier": "@{taskFor}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
-                          "resourceIdentifier": "@{taskFor}"
+                          "planDefinitions": [
+                            "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+                          ]
                         }
                       }
                     ]
@@ -462,7 +485,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "e5155788-8831-4916-a3f5-486915ce34b211",
+            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
             "title": "Member registration info",
             "saveButtonText": "Update registration",
             "setPractitionerDetails": true,
@@ -470,23 +493,11 @@
             "type": "EDIT",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "9fac39bd-9750-4c1d-b355-1961de4e37f31"
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
             ]
           }
         }
       ]
-    },
-    {
-      "title": "Profile",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "@{patientActive}"
-    },
-    {
-      "title": "ANC History",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "@{patientActive}"
     },
     {
       "title": "Record as Sick",
@@ -498,11 +509,11 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "3276f55c-b25e-455b-ae4e-8846fb8fd0391",
+            "id": "3276f55c-b25e-455b-ae4e-8846fb8fd039",
             "title": "Record sick child",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "4ac4f9d6-6fc7-45bf-9a29-398798fc31341"
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
             ]
           }
         }
@@ -518,11 +529,11 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "58fbddae-c5a0-4b86-832e-f516c96f3b851",
+            "id": "58fbddae-c5a0-4b86-832e-f516c96f3b85",
             "title": "Record sick child",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "4ac4f9d6-6fc7-45bf-9a29-398798fc31341"
+              "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
             ]
           }
         }
@@ -538,15 +549,27 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "9b22f3ed-e7e1-4222-bf72-1ced426961891",
+            "id": "9b22f3ed-e7e1-4222-bf72-1ced42696189",
             "title": "Record to ANC",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "a881d53a-590c-4d52-ae0f-c87b7ff041481"
+              "a881d53a-590c-4d52-ae0f-c87b7ff04148"
             ]
           }
         }
       ]
+    },
+    {
+      "title": "ANC Profile",
+      "titleColor": "@{patientTextColor}",
+      "visible": true,
+      "enabled": "@{patientActive}"
+    },
+    {
+      "title": "ANC History",
+      "titleColor": "@{patientTextColor}",
+      "visible": true,
+      "enabled": "@{patientActive}"
     },
     {
       "title": "Pregnancy Outcome",
@@ -558,11 +581,11 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "405619ff-cde8-4379-b674-0a4735098b331",
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
             "title": "Pregnancy outcome",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "07200c16-b2d6-4d7d-a53f-128115b0ab2f1"
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
             ]
           }
         }
@@ -578,12 +601,12 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "f7004382-ba3d-4f62-a687-6e9d18c09d3a1",
+            "id": "f7004382-ba3d-4f62-a687-6e9d18c09d3a",
             "resourceIdentifier": "@{patientId}",
             "title": "Diseases Registration Form",
             "planDefinitions": [
-              "55d89227-3a06-4a9a-b526-2819dcb1d3011",
-              "d6263f2d-2ebe-456c-bbb7-786dabd3ea221"
+              "55d89227-3a06-4a9a-b526-2819dcb1d301",
+              "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
             ]
           }
         }
@@ -600,7 +623,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "7f1960ac-81b5-42a2-8813-97222de5745a1",
+            "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
             "saveButtonText": "Update registration"

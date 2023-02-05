@@ -1,7 +1,7 @@
 {
   "appId": "notice-f",
-  "configType": "profile",
-  "id": "householdProfile",
+  "configType": "register",
+  "id": "householdRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
@@ -43,541 +43,145 @@
           },
           {
             "resource": "Task",
-            "searchParameter": "subject",
-            "sortConfigs": [
-              {
-                "paramName": "period",
-                "dataType": "DATE"
-              }
-            ]
-          },
-          {
-            "resource": "Observation",
             "searchParameter": "subject"
-          },
-          {
-            "resource": "RelatedPerson",
-            "fhirPathExpression": "patient"
-          }
-        ]
-      },
-      {
-        "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
           }
         ]
       }
     ]
   },
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "{{ add.member }}",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_add"
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "familyName",
+      "familyId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "familyName",
+        "condition": "true",
+        "actions": [
+          "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
       },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "e5155788-8831-4916-a3f5-486915ce34b211",
-            "title": "Add household member",
-            "saveButtonText": "Add Member",
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient"
-            },
-            "planDefinitions": [
-              "9fac39bd-9750-4c1d-b355-1961de4e37f31"
+      {
+        "name": "familyId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "familyVillage",
+        "condition": "true",
+        "actions": [
+          "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+        ]
+      },
+      {
+        "name": "taskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('taskCount', size(Task) == 0 ? '' : size(Task))"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' :'UPCOMING')"
+        ]
+      },
+      {
+        "name": "serviceMemberIcons",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{familyName} Family",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{familyVillage} - HH No: @{familyId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
             ],
-            "snackBarMessage": {
-              "message": "Household member has been added",
-              "actionLabel": "UNDO",
-              "duration": "Short"
-            }
-          },
-          "params": [
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
-              "dataType": "INTEGER",
-              "key": "opensrpId",
-              "value": "@{humanReadableId}"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "rules": [
-    {
-      "name": "familyName",
-      "condition": "true",
-      "actions": [
-        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
-      ]
-    },
-    {
-      "name": "familyId",
-      "condition": "true",
-      "actions": [
-        "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
-      ]
-    },
-    {
-      "name": "familyLogicalId",
-      "condition": "true",
-      "actions": [
-        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
-      ]
-    },
-    {
-      "name": "familyVillage",
-      "condition": "true",
-      "actions": [
-        "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
-      ]
-    },
-    {
-      "name": "humanReadableId",
-      "condition": "true",
-      "actions": [
-        "data.put('humanReadableId', service.generateRandomSixDigitInt())"
-      ]
-    }
-  ],
-  "views": [
-    {
-      "viewType": "COLUMN",
-      "children": [
-        {
-          "viewType": "COLUMN",
-          "backgroundColor": "primaryColor",
-          "fillMaxWidth": true,
-          "padding": 8,
-          "children": [
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "@{familyName} Family",
-              "primaryTextColor": "#FFFFFF",
-              "fontSize": 20.0
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "@{familyVillage} - HH No: @{familyId}",
-              "primaryTextColor": "#FFFFFF",
-              "fontSize": 20.0
-            }
-          ]
-        },
-        {
-          "viewType": "CARD",
-          "padding": 0,
-          "content": [
-            {
-              "viewType": "BUTTON",
-              "smallSized": true,
-              "text": "Routine Household Visit",
-              "status": "DUE",
-              "enabled": "true",
-              "visible": "@{canBearChild}",
-              "clickable": "true",
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "@{serviceMemberIcons}",
+            "serviceButton": {
+              "visible": true,
+              "text": "@{taskCount}",
+              "status": "@{serviceStatus}",
+              "fontSize": 14.0,
+              "smallSized": false,
               "actions": [
                 {
                   "trigger": "ON_CLICK",
-                  "workflow": "LAUNCH_QUESTIONNAIRE",
-                  "questionnaire": {
-                    "id": "fb9dae45-e828-4c1c-9201-438d7a4e01ab",
-                    "title": "Routine Household Visit",
-                    "saveButtonText": "Submit",
-                    "setPractitionerDetails": true,
-                    "setOrganizationDetails": true
-                  }
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "householdProfile",
+                  "params": [
+                    {
+                      "key": "familyId",
+                      "value": "@{familyId}"
+                    }
+                  ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "viewType": "CARD",
-          "header": {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "HOUSEHOLD MEMBERS",
-            "primaryTextColor": "#6F7274",
-            "fontSize": 18.0,
-            "padding": 16
-          },
-          "content": [
-            {
-              "viewType": "LIST",
-              "baseResource": "Patient",
-              "relatedResources": [
-                {
-                  "resourceType": "CarePlan",
-                  "fhirPathExpression": "CarePlan.subject.reference"
-                },
-                {
-                  "resourceType": "Condition",
-                  "fhirPathExpression": "Condition.subject.reference"
-                },
-                {
-                  "resourceType": "Task",
-                  "fhirPathExpression": "Task.for.reference"
-                }
-              ],
-              "registerCard": {
-                "rules": [
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "householdProfile",
+                "params": [
                   {
-                    "name": "patientFirstName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
-                    ]
-                  },
-                  {
-                    "name": "patientMiddleName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
-                    ]
-                  },
-                  {
-                    "name": "patientLastName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
-                    ]
-                  },
-                  {
-                    "name": "patientAge",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientAge', service.extractAge(Patient))"
-                    ]
-                  },
-                  {
-                    "name": "patientActive",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
-                    ]
-                  },
-                  {
-                    "name": "patientTextColor",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientTextColor', Patient.active ? '#000000' : 'DefaultColor')"
-                    ]
-                  },
-                  {
-                    "name": "patientGender",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientGender', service.extractGender(Patient))"
-                    ]
-                  },
-                  {
-                    "name": "patientName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ', ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ', ' +  data.get('patientAge'))"
-                    ]
-                  },
-                  {
-                    "name": "patientLogicalId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientLogicalId', fhirPath.extractValue(Patient, 'Patient.id'))"
-                    ]
-                  },
-                  {
-                    "name": "serviceStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
-                    ]
-                  },
-                  {
-                    "name": "taskDescription",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
-                    ]
-                  },
-                  {
-                    "name": "taskId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
-                    ]
-                  },
-                  {
-                    "name": "taskFor",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
-                    ]
-                  },
-                  {
-                    "name": "taskQuestionnaireId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
-                    ]
-                  },
-                  {
-                    "name": "showMemberTasks",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
-                    ]
-                  },
-                  {
-                    "name": "serviceMemberIcons",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
-                    ]
-                  },
-                  {
-                    "name": "relatedPersonCount",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('relatedPersonCount', size(RelatedPerson))"
-                    ]
-                  },
-                  {
-                    "name": "getFamilyHeadStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getFamilyHeadStatus', service.mapResourcesToLabeledCSV(RelatedPerson, \"RelatedPerson.relationship = '99990006'\", 'Family Head'))"
-                    ]
-                  },
-                  {
-                    "name": "getChildStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 5 'years')\") == 'true'? 'Child': '')"
-                    ]
-                  },
-                  {
-                    "name": "getPregnancyStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getPregnancyStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", 'Pregnant'))"
-                    ]
-                  },
-                  {
-                    "name": "getFPStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getFPStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99998888' and Condition.clinicalStatus.coding.code = 'active'\", 'Family Planning'))"
-                    ]
-                  },
-                  {
-                    "name": "getPNCStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getPNCStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '234234234' and Condition.clinicalStatus.coding.code = 'active'\", 'PNC'))"
-                    ]
-                  },
-                  {
-                    "name": "getMentalHeathStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getMentalHeathStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990004' and Condition.clinicalStatus.coding.code = 'active'\", 'Mental Health'))"
-                    ]
-                  },
-                  {
-                    "name": "getHIVStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getHIVStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990003' and Condition.clinicalStatus.coding.code = 'active'\", 'HIV'))"
-                    ]
-                  },
-                  {
-                    "name": "getCMNTDStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getCMNTDStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990000' and Condition.clinicalStatus.coding.code = 'active'\", 'CM-NTD'))"
-                    ]
-                  },
-                  {
-                    "name": "getTBStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getTBStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '99990005' and Condition.clinicalStatus.coding.code = 'active'\", 'TB'))"
-                    ]
-                  },
-                  {
-                    "name": "getSickChildStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('getSickChildStatus', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.coding.code = '275142008' and Condition.clinicalStatus.coding.code = 'active'\", 'Sick Child'))"
-                    ]
-                  },
-                  {
-                    "name": "removalReason",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(Patient, Patient.active) == 'false' ? fhirPath.extractValue(Observation, 'Observation.code.text') : '')"
-                    ]
-                  },
-                  {
-                    "name": "statuses",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
-                    ]
-                  }
-                ],
-                "views": [
-                  {
-                    "viewType": "SERVICE_CARD",
-                    "details": [
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientName}",
-                        "primaryTextColor": "@{patientTextColor}"
-                      },
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{statuses}",
-                        "primaryTextColor": "#939596"
-                      }
-                    ],
-                    "serviceMemberIcons": "@{serviceMemberIcons}",
-                    "serviceButton": {
-                      "visible": "@{showMemberTasks}",
-                      "text": "@{taskDescription}",
-                      "status": "@{serviceStatus}",
-                      "smallSized": true,
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-                            "title": "@{taskDescription}",
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    },
-                    "actions": [
-                      {
-                        "trigger": "ON_CLICK",
-                        "workflow": "LAUNCH_PROFILE",
-                        "id": "defaultProfile",
-                        "params": [
-                          {
-                            "key": "familyLogicalId",
-                            "value": "@{familyLogicalId}"
-                          }
-                        ]
-                      }
-                    ]
+                    "key": "familyId",
+                    "value": "@{familyId}"
                   }
                 ]
               }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "overFlowMenuItems": [
-    {
-      "title": "Family details",
-      "titleColor": "#000000",
-      "visible": "true",
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "noResults": {
+    "title": "No households added",
+    "message": "Sorry, you haven't added any households to your register",
+    "actionButton": {
+      "id": "noResultsButton",
+      "visible": true,
+      "display": "Add household",
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
+          "id": "householdRegister",
           "questionnaire": {
-            "id": "f210a832-857f-49e6-93f5-399eec4f4edb11",
-            "title": "{{add.family}}",
-            "saveButtonText": "Update household details",
+            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "title": "Add household",
+            "saveButtonText": "Add Household",
             "setPractitionerDetails": true,
-            "setOrganizationDetails": true,
-            "type": "EDIT",
-            "resourceIdentifier": "@{familyLogicalId}"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Change household head",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "CHANGE_MANAGING_ENTITY",
-          "managingEntity": {
-            "nameFhirPathExpression": "Patient.name.given",
-            "resourceType": "Patient",
-            "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
-            "dialogTitle": "{{ assign.household.head.title }}",
-            "dialogWarningMessage": "{{ assign.household.head.warning }}",
-            "dialogContentMessage": "{{ select.new.household.head }}",
-            "noMembersErrorMessage": "{{ no.members.error.message }}"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Remove family",
-      "titleColor": "#FF0000",
-      "visible": "true",
-      "showSeparator": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "params": [
-            {
-              "key": "familyId",
-              "value": "@{familyLogicalId}"
-            },
-            {
-              "key": "familyName",
-              "value": "@{familyName}"
-            }
-          ],
-          "questionnaire": {
-            "id": "0259e181-581e-4b4c-8409-e3be3a166ef5",
-            "title": "Remove Household",
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient",
-              "removeGroup": true
-            },
-            "confirmationDialog": {
-              "title": "Remove household",
-              "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
-              "actionButtonText": "Remove household"
-            }
+            "setOrganizationDetails": true
           }
         }
       ]
     }
-  ]
+  }
 }

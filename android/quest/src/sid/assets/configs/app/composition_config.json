@@ -1,5 +1,11 @@
 {
   "resourceType": "Composition",
+  "id": "107253",
+  "meta": {
+    "versionId": "37",
+    "lastUpdated": "2023-01-24T08:06:15.572+00:00",
+    "source": "#5c5007a7ed90be32"
+  },
   "identifier": {
     "use": "official",
     "value": "notice-f"
@@ -95,15 +101,6 @@
           }
         },
         {
-          "title": "ANC Registers profile configuration",
-          "focus": {
-            "reference": "Binary/a6d69650-4806-4bb1-bd2b-a60fa18418a01",
-            "identifier": {
-              "value": "ancRegistersProfile"
-            }
-          }
-        },
-        {
           "title": "Other Registers profile configuration",
           "focus": {
             "reference": "Binary/a6d69650-4806-4bb1-bd2b-a60fa18418a01",
@@ -124,24 +121,6 @@
             "reference": "Binary/c6757818-25c8-4e51-ba51-0c9dd882cbbb",
             "identifier": {
               "value": "strings"
-            }
-          }
-        },
-        {
-          "title": "Translation Swahili",
-          "focus": {
-            "reference": "Binary/eee5f9c1-49f6-4b18-b088-8a52689a79d8",
-            "identifier": {
-              "value": "strings_sw"
-            }
-          }
-        },
-        {
-          "title": "Translation French",
-          "focus": {
-            "reference": "Binary/43e6c036-bb83-481e-8ffd-f8fdb7ee54a0",
-            "identifier": {
-              "value": "strings_fr"
             }
           }
         }
