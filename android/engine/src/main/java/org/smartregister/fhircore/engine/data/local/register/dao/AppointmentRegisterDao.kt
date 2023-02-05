@@ -64,11 +64,12 @@ constructor(
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.search<Appointment> {
+    return fhirEngine
+      .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-    }
-            .count { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
-            .toLong()
+      }
+      .count { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
+      .toLong()
   }
 
   override suspend fun loadRegisterData(
@@ -83,9 +84,6 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    // TODO: Add way to set start date for appointment, also increase memory allocated to emulator device
-    // TODO: Add Appointments to sync configs
-
     return appointments
       .filter { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
       .map {
@@ -93,7 +91,7 @@ constructor(
         val patient = defaultRepository.loadResource(refPatient) as Patient
 
         RegisterData.AppointmentRegisterData(
-          logicalId = patient.logicalId,
+          logicalId = it.logicalId,
           name = patient.extractName(),
           identifier =
             patient.identifier

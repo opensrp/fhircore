@@ -133,7 +133,7 @@ constructor(
     )
   }
 
-  private var currentFormName = "";
+  private var currentFormName = ""
 
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
@@ -222,9 +222,9 @@ constructor(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = if (currentFormName.contains(".json"))
-        readStructureMapFromAssets("tests/map/${this}.json")
-       else defaultRepository.loadResource(this)
+      structureMap =
+        if (currentFormName.contains(".json")) readStructureMapFromAssets("tests/map/$this.json")
+        else defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -311,10 +311,10 @@ constructor(
           }
 
           if (questionnaireType != QuestionnaireType.EDIT &&
-            bundleEntry.resource.resourceType.isIn(
-              ResourceType.Patient,
-              ResourceType.RelatedPerson
-            )
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
           ) {
             groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
@@ -535,7 +535,14 @@ constructor(
     return fhirEngine
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-        filter(Appointment.PATIENT, { value = "Patient/$patientId" })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
       }
       .filterNot { it.hasStart() }
       .sortedBy { it.created }
@@ -616,8 +623,9 @@ constructor(
         }
 
         val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
-        if (appointmentToPopulate != null)
+        if (appointmentToPopulate != null) {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
         resourcesList[bundleIndex] = currentBundle
       }
 
