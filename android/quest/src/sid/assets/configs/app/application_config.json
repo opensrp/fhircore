@@ -1,20 +1,20 @@
 {
-  "appId": "app",
+  "appId": "notice-f",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "ECBIS",
-  "remoteSyncPageSize": 100,
+  "appTitle": "WHO ANC Ref App",
+  "remoteSyncPageSize": 10,
   "languages": [
-    "en",
-    "sw",
-    "fr"
+    "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": ["Organization", "Location", "CareTeam", "Practitioner"],
+  "syncStrategy": [
+    "Location"
+  ],
   "loginConfig": {
     "showLogo": true,
-    "enablePin": true
+    "enablePin": false
   },
   "deviceToDeviceSync": {
     "resourcesToSync": [
