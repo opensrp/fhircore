@@ -59,14 +59,14 @@
     <string name="form_progress_message">Processing data. Please wait</string>
     <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back?</string>
     <string name="questionnaire_in_progress_alert_back_pressed_message">Are you sure you want to discard the answers?</string>
-    <string name="questionnaire_alert_back_pressed_title">Submit details</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Save</string>
+    <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
     <string name="questionnaire_alert_invalid_title">Validation Failed</string>
-    <string name="questionnaire_alert_ack_button_title">Ok</string>
+    <string name="questionnaire_alert_ack_button_title">OK</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot Password</string>
@@ -127,7 +127,7 @@
     <string name="transfer_data">Transfer Data</string>
     <string name="clear_database_title">Reset Database!</string>
     <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
-    <string name="resetting_app">Resetting Application...</string>
+    <string name="resetting_app">Resetting Application…</string>
     <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/</string>
     <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/</string>
     <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/</string>
