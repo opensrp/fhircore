@@ -17,7 +17,13 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
@@ -29,7 +35,6 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -37,10 +42,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 
 @Composable
-fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
+fun TracingTestsProfile(
+  navController: NavController,
+  viewModel: TracingTestsViewModel = hiltViewModel()
+) {
   val context = LocalContext.current
   val isOnTracing by viewModel.hasTracing.observeAsState(initial = false)
 
@@ -52,7 +61,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
       topBar = {
         TopAppBar(
           navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navController.popBackStack() }) {
               Icon(Icons.Default.ArrowBack, contentDescription = "")
             }
           },
@@ -64,12 +73,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
           Button(onClick = { viewModel.clearAllTracingData() }) {
             Text(text = "Clear Tracing Data for All")
           }
-          Box(
-            modifier = Modifier
-              .height(1.dp)
-              .background(Color.Blue)
-              .fillMaxWidth()
-          )
+          Box(modifier = Modifier.height(1.dp).background(Color.Blue).fillMaxWidth())
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -77,45 +81,30 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
             Button(
               onClick = { viewModel.updateUserWithTracing(isHomeTracing = true) },
               enabled = !isOnTracing
-            ) {
-              Text(text = "Add Home Tracing")
-            }
+            ) { Text(text = "Add Home Tracing") }
             Button(
               onClick = { viewModel.updateUserWithTracing(isHomeTracing = false) },
               enabled = !isOnTracing
-            ) {
-              Text(text = "Add Phone Tracing")
-            }
+            ) { Text(text = "Add Phone Tracing") }
           }
         }
       }
     ) {
-      LazyColumn(Modifier.fillMaxWidth()) {
+      LazyColumn(Modifier.fillMaxWidth().padding(it)) {
         items(TracingTestsViewModel.testItems) { item ->
           when (item) {
             is TestItem.DividerItem -> {
-              Box(
-                Modifier
-                  .fillMaxWidth()
-                  .padding(horizontal = 12.dp)) {
-                Box(
-                  Modifier
-                    .height(1.dp)
-                    .fillMaxWidth()
-                    .background(Color.Black)) {
-                }
+              Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                Box(Modifier.height(1.dp).fillMaxWidth().background(Color.Black)) {}
               }
             }
             is TestItem.QuestItem -> {
               Button(
                 onClick = { viewModel.open(context, item) },
                 modifier = Modifier.fillMaxWidth()
-              ) {
-                Text(text = item.title)
-              }
+              ) { Text(text = item.title) }
             }
           }
-
         }
       }
     }

@@ -94,7 +94,7 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
-         if (isStateCompleted) checkIfOnTracing()
+          if (isStateCompleted) checkIfOnTracing()
         }
       }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
@@ -128,7 +128,7 @@ constructor(
   fun checkIfOnTracing() {
     viewModelScope.launch {
       try {
-        val patientRef = "Patient/${patientId}"
+        val patientRef = "Patient/$patientId"
         val valuesHome =
           fhirEngine.search<Task> {
             filter(
@@ -143,9 +143,7 @@ constructor(
                   )
               }
             )
-            filter(Task.SUBJECT, {
-              value = patientRef
-            })
+            filter(Task.SUBJECT, { value = patientRef })
           }
         valuesHome.forEach {
           val data = jsonParser.encodeResourceToString(it)
@@ -199,11 +197,12 @@ constructor(
         },
         "for": { "reference": "Patient/$patientId" }
       }
-            """.trimIndent()
+          """.trimIndent()
 
         val task = jsonParser.parseResource(Task::class.java, data)
         task.description =
-          if (isHomeTracing) "HIV Contact Tracing via home visit" else "HIV Contact Tracing via phone"
+          if (isHomeTracing) "HIV Contact Tracing via home visit"
+          else "HIV Contact Tracing via phone"
         task.meta.tag.add(
           Coding(
             "https://d-tree.org",
@@ -238,9 +237,7 @@ constructor(
             }
           )
         }
-      allData.forEach {
-        fhirEngine.delete<Task>(it.logicalId)
-      }
+      allData.forEach { fhirEngine.delete<Task>(it.logicalId) }
       checkIfOnTracing()
     }
   }
@@ -268,6 +265,11 @@ constructor(
         TestItem.QuestItem(
           title = "Cervical Cancer Screening",
           questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
+        ),
+        TestItem.DividerItem,
+        TestItem.QuestItem(
+          title = "Finish Visit",
+          questionnaire = "tests/patient-finish-visit.json"
         )
       )
   }
