@@ -26,6 +26,7 @@ import androidx.core.os.bundleOf
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
@@ -46,6 +47,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
   @Inject lateinit var workManager: WorkManager
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,6 +88,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
+    configurationRegistry.fetchNonWorkflowConfigResources()
     startActivity(Intent(this, AppMainActivity::class.java))
     // Initialize P2P after login only when username is provided then finish activity
     val username = secureSharedPreference.retrieveSessionUsername()

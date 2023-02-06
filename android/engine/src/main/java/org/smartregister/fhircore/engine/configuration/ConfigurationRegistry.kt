@@ -34,6 +34,7 @@ import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
@@ -273,9 +275,13 @@ constructor(
 
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
+  /**
+   * Reads supported files from the asset/config directory recursively, populates all sub directory
+   * in a queue, then reads all the nested files for each.
+   *
+   * @return A list of strings of config files.
+   */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    // Reads supported files from asset/config/* directory recursively
-    // Populates all sub directory in a queue then reads all the nested files for each
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
@@ -318,15 +324,45 @@ constructor(
             composition
               .retrieveCompositionSections()
               .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
-              .filterNot { isAppConfig(it.key) }
+              .filter {
+                it.key == ResourceType.Questionnaire.name ||
+                  it.key == ResourceType.StructureMap.name ||
+                  it.key == ResourceType.List.name ||
+                  it.key == ResourceType.PlanDefinition.name ||
+                  it.key == ResourceType.Library.name ||
+                  it.key == ResourceType.Measure.name
+              }
               .forEach { resourceGroup ->
                 val resourceIds =
                   resourceGroup.value.joinToString(",") { sectionComponent ->
                     sectionComponent.focus.extractId()
                   }
                 val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
-                fhirResourceDataSource.getResource(searchPath).entry.forEach {
-                  addOrUpdate(it.resource)
+
+                fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent
+                  ->
+                  when (bundleEntryComponent.resource) {
+                    is ListResource -> {
+                      addOrUpdate(bundleEntryComponent.resource)
+                      val list = bundleEntryComponent.resource as ListResource
+                      list.entry.forEach { listEntryComponent ->
+                        val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+                        val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+
+                        val listResourceUrlPath =
+                          resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                        fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+                          listEntryResourceBundle ->
+                          addOrUpdate(listEntryResourceBundle.resource)
+                          Timber.d("Fetched and processed list reference $listResourceUrlPath")
+                        }
+                      }
+                    }
+                    else -> {
+                      addOrUpdate(bundleEntryComponent.resource)
+                      Timber.d("Fetched and processed resources $searchPath")
+                    }
+                  }
                 }
               }
           }
@@ -373,7 +409,6 @@ constructor(
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
     const val DEBUG_SUFFIX = "/debug"
     const val ORGANIZATION = "organization"
-    const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"

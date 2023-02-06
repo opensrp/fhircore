@@ -67,6 +67,9 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var gson: Gson
 
   @Inject lateinit var workManager: WorkManager
@@ -86,8 +89,6 @@ class AppMainViewModelTest : RobolectricTest() {
   private lateinit var appMainViewModel: AppMainViewModel
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -110,7 +111,6 @@ class AppMainViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
       )
-
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 

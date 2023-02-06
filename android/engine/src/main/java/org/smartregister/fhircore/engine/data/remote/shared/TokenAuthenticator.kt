@@ -36,6 +36,7 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -155,6 +156,8 @@ constructor(
       Result.failure(httpException)
     } catch (unknownHostException: UnknownHostException) {
       Result.failure(unknownHostException)
+    } catch (sslHandShakeException: SSLHandshakeException) {
+      Result.failure(sslHandShakeException)
     }
   }
 
