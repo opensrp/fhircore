@@ -16,14 +16,20 @@
 
 package org.smartregister.fhircore.quest
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -106,5 +112,29 @@ class RegisterContentTest : RobolectricTest() {
     sampleCondition.subject = condition.subject
 
     assertResourceContent(condition, sampleCondition)
+  }
+
+  @Test
+  fun testGenerateMissingItems() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaire.item.generateMissingItems(questionnaireResponse.item)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
 }
