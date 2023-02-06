@@ -42,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -132,7 +133,7 @@ constructor(
     )
   }
 
-  private var currentFormName = "";
+  private var currentFormName = ""
 
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
@@ -530,6 +531,24 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filterNot { it.hasStart() }
+      .sortedBy { it.created }
+      .firstOrNull()
+  }
+
   suspend fun loadTracing(patientId: String): List<Task> {
     val tasks =
       fhirEngine.search<Task> {
@@ -587,11 +606,11 @@ constructor(
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
-      if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
-        val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+      val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+      if (bundleIndex != -1) {
+        val currentBundle = resourcesList[bundleIndex] as Bundle
 
-        if (bundleIndex != -1) {
-          val currentBundle = resourcesList[bundleIndex] as Bundle
+        if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
           val bundle = Bundle()
           bundle.id = TracingHelpers.tracingBundleId
           val tasks = loadTracing(patientId)
@@ -601,8 +620,13 @@ constructor(
               id = TracingHelpers.tracingBundleId
             }
           )
-          resourcesList[bundleIndex] = currentBundle
         }
+
+        val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
+        if (appointmentToPopulate != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
+        resourcesList[bundleIndex] = currentBundle
       }
 
       // for situations where patient RelatedPersons not passed through intent extras

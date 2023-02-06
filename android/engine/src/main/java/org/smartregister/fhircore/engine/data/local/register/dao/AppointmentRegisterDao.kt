@@ -64,9 +64,12 @@ constructor(
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.count<Appointment> {
-      filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-    }
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      .count { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
+      .toLong()
   }
 
   override suspend fun loadRegisterData(
@@ -88,7 +91,7 @@ constructor(
         val patient = defaultRepository.loadResource(refPatient) as Patient
 
         RegisterData.AppointmentRegisterData(
-          logicalId = patient.logicalId,
+          logicalId = it.logicalId,
           name = patient.extractName(),
           identifier =
             patient.identifier
