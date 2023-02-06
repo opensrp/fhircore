@@ -115,7 +115,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  fun testGenerateMissingItems() {
+  fun testGenerateMissingItemsForQuestionnaire() {
     val patientRegistrationQuestionnaire =
       "patient-registration-questionnaire/questionnaire.json".readFile()
 
@@ -134,6 +134,30 @@ class RegisterContentTest : RobolectricTest() {
       )
 
     questionnaire.item.generateMissingItems(questionnaireResponse.item)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
+  }
+
+  @Test
+  fun testGenerateMissingItemsForQuestionnaireResponse() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaireResponse.generateMissingItems(questionnaire)
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
