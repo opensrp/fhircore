@@ -64,7 +64,7 @@ class AppSettingActivity : AppCompatActivity() {
     if (!existingAppId.isNullOrEmpty()) {
       appSettingViewModel.run {
         onApplicationIdChanged(existingAppId)
-        loadConfiguration(appSettingActivity)
+        loadConfigurations(appSettingActivity)
       }
     } else {
       setContent {

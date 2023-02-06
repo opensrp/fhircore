@@ -42,9 +42,7 @@ constructor(
   override fun editProperties(
     response: AccountAuthenticatorResponse?,
     accountType: String?
-  ): Bundle {
-    TODO("Not yet implemented")
-  }
+  ): Bundle = bundleOf()
 
   override fun addAccount(
     response: AccountAuthenticatorResponse?,
@@ -117,7 +115,7 @@ constructor(
   }
 
   override fun getAuthTokenLabel(authTokenType: String): String =
-    authTokenType.uppercase(Locale.ROOT)
+    authTokenType.uppercase(Locale.getDefault())
 
   override fun updateCredentials(
     response: AccountAuthenticatorResponse?,

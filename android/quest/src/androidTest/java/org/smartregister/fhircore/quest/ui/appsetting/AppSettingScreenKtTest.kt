@@ -33,7 +33,7 @@ class AppSettingScreenKtTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private var listenersSpy =
     object {
-      val onLoadConfigurations: (Boolean) -> Unit = {}
+      val onLoadConfigurations: (Context) -> Unit = {}
 
       val onAppIdChanged: (String) -> Unit = {}
     }
@@ -41,11 +41,11 @@ class AppSettingScreenKtTest {
   @Before
   fun setUp() {
     composeRule.setContent {
-      org.smartregister.fhircore.quest.ui.appsetting.AppSettingScreen(
+      AppSettingScreen(
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
         fetchConfiguration = listenersSpy.onLoadConfigurations,
-        error = error
+        error = ""
       )
     }
   }

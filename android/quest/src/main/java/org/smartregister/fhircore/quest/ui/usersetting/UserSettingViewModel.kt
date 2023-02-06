@@ -59,10 +59,9 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val workManager: WorkManager
+  val workManager: WorkManager,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
-
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)

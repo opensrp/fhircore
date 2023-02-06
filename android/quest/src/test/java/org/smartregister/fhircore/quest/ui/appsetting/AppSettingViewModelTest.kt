@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -32,7 +33,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.net.UnknownHostException
 import java.util.Base64
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -45,7 +45,6 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
@@ -60,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
@@ -78,19 +78,21 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val appSettingViewModel =
     spyk(
       AppSettingViewModel(
-        fhirResourceDataSource,
-        defaultRepository,
-        sharedPreferencesHelper,
-        configService
+        fhirResourceDataSource = fhirResourceDataSource,
+        defaultRepository = defaultRepository,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configService = configService,
+        configurationRegistry = Faker.buildTestConfigurationRegistry(),
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     )
-  private val context = mockk<Context>(relaxed = true)
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Test
   fun testOnApplicationIdChanged() {
     appSettingViewModel.onApplicationIdChanged("appId")
     Assert.assertNotNull(appSettingViewModel.appId.value)
-    assertEquals("appId", appSettingViewModel.appId.value)
+    Assert.assertEquals("appId", appSettingViewModel.appId.value)
   }
 
   @Test
@@ -99,9 +101,12 @@ class AppSettingViewModelTest : RobolectricTest() {
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
-    appSettingViewModel.loadConfigurations(true)
-    Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
-    assertEquals(true, appSettingViewModel.loadConfigs.value)
+    val appId = "app/debug"
+    appSettingViewModel.appId.value = appId
+    appSettingViewModel.loadConfigurations(context)
+    Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
+    Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
+    Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
   }
 
   @Test
@@ -116,7 +121,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
-    appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
+    appSettingViewModel.fetchConfigurations(context)
 
     coVerify { appSettingViewModel.fhirResourceDataSource.getResource(any()) }
     coVerify { appSettingViewModel.defaultRepository.create(any()) }
@@ -166,7 +171,10 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
     coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
-    appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
+    appSettingViewModel.run {
+      onApplicationIdChanged("app")
+      fetchConfigurations(context)
+    }
 
     val slot = slot<List<ResourceType>>()
 
@@ -175,7 +183,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
-    assertEquals(
+    Assert.assertEquals(
       listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
       slot.captured
     )
@@ -184,6 +192,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test(expected = HttpException::class)
   fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
     val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
@@ -196,50 +205,51 @@ class AppSettingViewModelTest : RobolectricTest() {
     fhirResourceDataSource.getResource(anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { fhirResourceDataSource.getResource(anyString()) }
-    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
-    assertEquals(
+    Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
       appSettingViewModel.error.value
     )
-    assertEquals(false, appSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test(expected = UnknownHostException::class)
-  fun testFetchConfigurationsThrowsUnknowHostException() = runTest {
+  fun testFetchConfigurationsThrowsUnknownHostException() = runTest {
     val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
       UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
-    every { context.getString(R.string.error_loading_config_no_internet) }
     fhirResourceDataSource.getResource(anyString())
-    coVerify { appSettingViewModel.fetchConfigurations(appId, context) }
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
-    assertEquals(
+    Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
       appSettingViewModel.error.value
     )
-    assertEquals(false, appSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test(expected = Exception::class)
   fun testFetchConfigurationsThrowsException() = runTest {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
       Exception(context.getString(R.string.error_loading_config_general))
-    coEvery { appSettingViewModel.fetchConfigurations(appId, context) } just runs
-    appSettingViewModel.fetchConfigurations(appId, any(Context::class.java))
+    coEvery { appSettingViewModel.fetchConfigurations(context) } just runs
+    appSettingViewModel.fetchConfigurations(any(Context::class.java))
     every { context.getString(R.string.error_loading_config_general) }
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
-    assertEquals(
+    Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
       appSettingViewModel.error.value
     )
-    assertEquals(false, appSettingViewModel.showProgressBar.value)
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
   @Test
@@ -266,7 +276,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { fhirResourceDataSource.getResource(any()) }
 
-    assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
+    Assert.assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }
 
   @Test
@@ -288,15 +298,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchConfigurationsShouldVerifyPostValue() = runBlocking {
-    appSettingViewModel.fetchConfigurations(true)
-    Assert.assertTrue(appSettingViewModel.fetchConfigs.value!!)
-
-    appSettingViewModel.fetchConfigurations(false)
-    Assert.assertFalse(appSettingViewModel.fetchConfigs.value!!)
-  }
-
-  @Test
   fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
@@ -308,8 +309,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name
       )!!
 
-    assertEquals(2, result.size)
-    assertEquals(ResourceType.Task.name, result.first())
-    assertEquals(ResourceType.Patient.name, result.last())
+    Assert.assertEquals(2, result.size)
+    Assert.assertEquals(ResourceType.Task.name, result.first())
+    Assert.assertEquals(ResourceType.Patient.name, result.last())
   }
 }

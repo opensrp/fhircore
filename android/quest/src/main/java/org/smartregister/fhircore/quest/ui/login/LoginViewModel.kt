@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -35,6 +36,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -59,7 +61,8 @@ constructor(
   val configService: ConfigService,
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
-  val tokenAuthenticator: TokenAuthenticator
+  val tokenAuthenticator: TokenAuthenticator,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -124,7 +127,8 @@ constructor(
               _showProgressBar.postValue(false)
               if (bundleResult.isSuccess) {
                 updateNavigateHome(true)
-                savePractitionerDetails(bundleResult.getOrDefault(FhirR4ModelBundle()))
+                val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
+                savePractitionerDetails(bundle)
               } else {
                 Timber.e(bundleResult.exceptionOrNull())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
@@ -160,7 +164,7 @@ constructor(
    * gets the user information from the authentication server. The id of the retrieved user is used
    * to obtain the [PractitionerDetails] from the FHIR server.
    */
-  suspend fun fetchToken(
+  private suspend fun fetchToken(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
@@ -214,28 +218,38 @@ constructor(
   }
 
   fun savePractitionerDetails(bundle: FhirR4ModelBundle) {
-    if (!bundle.hasEntry()) return
+    if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
 
-      val careTeams = practitionerDetails.fhirPractitionerDetails.careTeams ?: listOf()
-      val organizations = practitionerDetails.fhirPractitionerDetails.organizations ?: listOf()
-      val locations = practitionerDetails.fhirPractitionerDetails.locations ?: listOf()
+      val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
+      val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
+      val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
       val locationHierarchies =
-        practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
+        practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
       val careTeamIds =
-        defaultRepository.create(true, *careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.create(true, *careTeams.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
+        }
       val organizationIds =
-        defaultRepository.create(true, *organizations.toTypedArray()).map {
-          it.extractLogicalIdUuid()
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.create(true, *organizations.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
         }
       val locationIds =
-        defaultRepository.create(true, *locations.toTypedArray()).map { it.extractLogicalIdUuid() }
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.create(true, *locations.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
+        }
 
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
-        value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
+        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
       )
 
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)

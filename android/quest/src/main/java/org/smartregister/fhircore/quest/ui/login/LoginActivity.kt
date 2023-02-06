@@ -65,7 +65,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
     loginViewModel.apply {
       val loginActivity = this@LoginActivity
       val isPinEnabled = isPinEnabled()
-      val hasActivePin = secureSharedPreference.retrieveSessionPin() != null
+      val hasActivePin = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
 
       if (isPinEnabled && hasActivePin) {
         navigateToPinLogin(launchSetup = false)

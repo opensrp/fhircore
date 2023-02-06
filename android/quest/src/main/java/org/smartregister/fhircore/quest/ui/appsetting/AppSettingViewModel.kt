@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -63,7 +63,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   val showProgressBar = MutableLiveData(false)
@@ -91,7 +91,7 @@ constructor(
     val appId = appId.value
     if (!appId.isNullOrEmpty()) {
       when {
-        hasDebugSuffix() -> loadConfiguration(context)
+        hasDebugSuffix() -> loadConfigurations(context)
         else -> fetchRemoteConfigurations(appId, context)
       }
     }
@@ -148,7 +148,7 @@ constructor(
         // Save composition after fetching all the referenced section resources
         defaultRepository.create(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
-        loadConfiguration(context)
+        loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {
         _error.postValue(context.getString(R.string.error_loading_config_no_internet))
         showProgressBar.postValue(false)
@@ -174,7 +174,7 @@ constructor(
     }
   }
 
-  fun loadConfiguration(context: Context) {
+  fun loadConfigurations(context: Context) {
     viewModelScope.launch(dispatcherProvider.io()) {
       appId.value?.let { thisAppId ->
         configurationRegistry.loadConfigurations(thisAppId, context) {
