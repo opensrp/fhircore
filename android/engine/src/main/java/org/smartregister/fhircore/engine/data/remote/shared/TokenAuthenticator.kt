@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.toSha1
@@ -55,7 +55,7 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val configService: ConfigService,
   val oAuthService: OAuthService,
-  val dispatcherProvider: DefaultDispatcherProvider,
+  val dispatcherProvider: DispatcherProvider,
   val accountManager: AccountManager,
   @ApplicationContext val context: Context
 ) : FhirAuthenticator {
@@ -118,7 +118,7 @@ constructor(
   }
 
   /** This function checks if token is null or empty or expired */
-  private fun isTokenActive(authToken: String?): Boolean {
+  fun isTokenActive(authToken: String?): Boolean {
     if (authToken.isNullOrEmpty()) return false
     val tokenPart = authToken.substringBeforeLast('.').plus(".")
     return try {
@@ -218,6 +218,8 @@ constructor(
         oAuthService.fetchToken(
           buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) }
         )
+
+      // Returns valid token or throws exception, NullPointerException not expected
       oAuthResponse.accessToken!!
     }
   }
@@ -228,7 +230,7 @@ constructor(
       password.concatToString().toSha1().contentEquals(credentials?.password)
   }
 
-  private fun findAccount(): Account? {
+  fun findAccount(): Account? {
     val credentials = secureSharedPreference.retrieveCredentials()
     return accountManager.getAccountsByType(authConfiguration.accountType).find {
       it.name == credentials?.username
@@ -238,7 +240,7 @@ constructor(
   fun sessionActive(): Boolean =
     findAccount()?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) } ?: false
 
-  fun invalidateSession(onSessionInvalidated: () -> Unit) =
+  fun invalidateSession(onSessionInvalidated: () -> Unit) {
     findAccount()?.let { account ->
       accountManager.run {
         invalidateAuthToken(account.type, AUTH_TOKEN_TYPE)
@@ -250,7 +252,7 @@ constructor(
           }
       }
     }
-      ?: false
+  }
 
   companion object {
     const val GRANT_TYPE = "grant_type"
