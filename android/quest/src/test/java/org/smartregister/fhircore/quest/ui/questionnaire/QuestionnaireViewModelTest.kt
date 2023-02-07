@@ -23,6 +23,7 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -83,6 +84,7 @@ import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
@@ -1264,5 +1266,53 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify { defaultRepo.delete(resourceType = resourceType, resourceId = resourceIdentifier) }
+  }
+
+  @Test
+  fun testGenerateMissingItemsForQuestionnaire() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/sample/missingitem-questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/sample/missingitem-questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaire.item.generateMissingItems(questionnaireResponse.item)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
+  }
+
+  @Test
+  fun testGenerateMissingItemsForQuestionnaireResponse() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaireResponse.generateMissingItems(questionnaire)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
 }
