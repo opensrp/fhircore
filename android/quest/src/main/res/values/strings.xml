@@ -99,5 +99,6 @@
     <string name="structure_success">Successfully extracted resources for %1$s</string>
     <string name="reassigned_managing_entity">Managing entity reassigned successfully</string>
     <string name="error_fetching_user_details">Failed to fetch user details</string>
+    <string name="questionnaire_missing">Questionnaire not found.  Sync all questionnaires to fix</string>
 
 </resources>
