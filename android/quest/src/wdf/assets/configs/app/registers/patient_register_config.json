@@ -1,7 +1,7 @@
 {
   "appId": "wdf",
   "configType": "register",
-  "id": "patientRegsiter",
+  "id": "patientRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",
