@@ -1271,10 +1271,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testGenerateMissingItemsForQuestionnaire() {
     val patientRegistrationQuestionnaire =
-      "patient-registration-questionnaire/questionnaire.json".readFile()
+      "patient-registration-questionnaire/sample/missingitem-questionnaire.json".readFile()
 
     val patientRegistrationQuestionnaireResponse =
-      "patient-registration-questionnaire/questionnaire-response.json".readFile()
+      "patient-registration-questionnaire/sample/missingitem-questionnaire-response.json".readFile()
 
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
