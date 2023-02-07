@@ -43,17 +43,6 @@
           ]
         },
         {
-          "linkId": "PR-gender",
-          "answer": [
-            {
-              "valueCoding": {
-                "code": "female",
-                "display": "Female"
-              }
-            }
-          ]
-        },
-        {
           "linkId": "PR-birth-date",
           "answer": [
             {
