@@ -55,7 +55,7 @@ group extractEncounter(source questionnaireResponse : QuestionnaireResponse, sou
         questionnaireResponse -> cc('http://hl7.org/fhir/inventoryreport-counttype', 'addition', 'Addition') as restockedValueObservation then {
             questionnaireResponse.item as  valueCategory where(linkId ='35f0cdc3-7c3f-4a7a-8299-62fd801b9510' and answer.value.count() > 0) then {
                 questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId = '35f0cdc3-7c3f-4a7a-8299-62fd801b9510').answer.value) as quantityRestocked then {
-                        questionnaireResponse -> evaluate(questionnaireResponse, 'physical-count') as codeText, evaluate(questionnaireResponse, quantityRestocked) as quantityRestockedQuantity then extractObservation(questionnaireResponse, commodityGroupReference, encounter, quantityRestockedQuantity, restockedValueObservation, codeText, bundle) "rule_observation_extraction";
+                        questionnaireResponse -> evaluate(questionnaireResponse, 'restocked') as codeText, evaluate(questionnaireResponse, quantityRestocked) as quantityRestockedQuantity then extractObservation(questionnaireResponse, commodityGroupReference, encounter, quantityRestockedQuantity, restockedValueObservation, codeText, bundle) "rule_observation_extraction";
                 } "rule_restocked_quantity";
             } "rule_check_restocked_category";
         } "rule_restocked_observation_component";
