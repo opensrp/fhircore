@@ -100,5 +100,6 @@
     <string name="reassigned_managing_entity">Managing entity reassigned successfully</string>
     <string name="error_fetching_user_details">Failed to fetch user details</string>
     <string name="questionnaire_missing">Questionnaire not found.  Sync all questionnaires to fix</string>
+    <string name="no_visits">No visits</string>
 
 </resources>

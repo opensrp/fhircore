@@ -186,6 +186,37 @@
                   "primaryTextColor": "#000000"
                 },
                 {
+                  "viewType": "LIST",
+                  "id": "statusList",
+                  "baseResource": "Condition",
+                  "orientation": "HORIZONTAL",
+                  "emptyList": {
+                    "message": ""
+                  },
+                  "registerCard": {
+                    "rules": [
+                      {
+                        "name": "carePlanTitle",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('carePlanTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"
+                        ]
+                      }
+                    ],
+                    "views": [
+                      {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryTextBackgroundColor": "#F5F5F5",
+                        "primaryText": "@{carePlanTitle}",
+                        "primaryTextColor": "#6F7274",
+                        "fontSize": 13,
+                        "padding": 7,
+                        "borderRadius": 6
+                      }
+                    ]
+                  }
+                },
+                {
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "ID: #@{patientIdentifier}",
                   "primaryTextColor": "#000000"
@@ -201,12 +232,13 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Sex",
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientGender}",
-                        "fontSize": 14,
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       }
                     },
@@ -214,18 +246,20 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Age",
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientAge}",
-                        "fontSize": 14,
+                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       }
                     },
                     {
                       "label": {
                         "viewType": "COMPOUND_TEXT",
+                        "fontSize": 13,
                         "primaryText": "DOB",
                         "primaryTextColor": "#000000"
                       },
@@ -253,12 +287,14 @@
             "viewType": "COMPOUND_TEXT",
             "primaryText": "VISITS",
             "primaryTextColor": "#6F7274",
-            "fontSize": 18.0,
+            "fontSize": 14,
+            "fontStyle": "normal",
             "padding": 16
           },
           "content": [
             {
               "viewType": "LIST",
+              "id": "taskList",
               "baseResource": "Task",
               "registerCard": {
                 "rules": [
