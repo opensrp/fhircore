@@ -35,5 +35,6 @@ data class CardViewProperties(
   val cornerSize: Int = 6,
   val header: CompoundTextProperties? = null,
   val headerBackgroundColor: String = "#F2F4F7",
-  val viewAllAction: Boolean = false
+  val viewAllAction: Boolean = false,
+  val emptyContentMessage: String = ""
 ) : ViewProperties()
