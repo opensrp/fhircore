@@ -59,8 +59,8 @@
     <string name="form_progress_message">Processing data. Please wait</string>
     <string name="questionnaire_alert_back_pressed_message">Please confirm that you have all details filled in before submission</string>
     <string name="questionnaire_in_progress_alert_back_pressed_message">Are you sure you want to discard the answers?</string>
-    <string name="questionnaire_alert_back_pressed_title">Submit details</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Save</string>
+        <string name="questionnaire_alert_back_pressed_title">Submit details</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Yes</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
