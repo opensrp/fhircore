@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -79,11 +82,14 @@ internal class LoginViewModelTest : RobolectricTest() {
   private val fhirResourceService = mockk<FhirResourceService>()
   private val thisUsername = "demo"
   private val thisPassword = "paswd"
+  private val workManager = mockk<WorkManager>()
 
   @Before
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
+
+    every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
 
     loginViewModel =
       spyk(
@@ -97,7 +103,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          workManager = workManager
         )
       )
   }
@@ -322,6 +329,12 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testIsPinEnableShouldReturnTrue() {
     Assert.assertTrue(loginViewModel.isPinEnabled())
+  }
+
+  @Test
+  fun testDownloadNowWorkflowConfigs() {
+    loginViewModel.downloadNowWorkflowConfigs()
+    verify { workManager.enqueue(any<OneTimeWorkRequest>()) }
   }
 
   private fun updateCredentials() {

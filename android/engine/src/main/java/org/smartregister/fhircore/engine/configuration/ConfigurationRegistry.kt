@@ -21,6 +21,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import java.net.UnknownHostException
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdent
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
+import retrofit2.HttpException
 import timber.log.Timber
 
 @Singleton
@@ -313,59 +315,52 @@ constructor(
    * comma separated values), thus generating a search query like the following 'Resource
    * Type'?_id='comma,separated,list,of,ids'
    */
+  @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
-      withContext(dispatcherProvider.io()) {
-        try {
-          fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
-            composition
-              .retrieveCompositionSections()
-              .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
-              .filter {
-                it.key == ResourceType.Questionnaire.name ||
-                  it.key == ResourceType.StructureMap.name ||
-                  it.key == ResourceType.List.name ||
-                  it.key == ResourceType.PlanDefinition.name ||
-                  it.key == ResourceType.Library.name ||
-                  it.key == ResourceType.Measure.name
+      fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
+        composition
+          .retrieveCompositionSections()
+          .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
+          .filter {
+            it.key == ResourceType.Questionnaire.name ||
+              it.key == ResourceType.StructureMap.name ||
+              it.key == ResourceType.List.name ||
+              it.key == ResourceType.PlanDefinition.name ||
+              it.key == ResourceType.Library.name ||
+              it.key == ResourceType.Measure.name
+          }
+          .forEach { resourceGroup ->
+            val resourceIds =
+              resourceGroup.value.joinToString(",") { sectionComponent ->
+                sectionComponent.focus.extractId()
               }
-              .forEach { resourceGroup ->
-                val resourceIds =
-                  resourceGroup.value.joinToString(",") { sectionComponent ->
-                    sectionComponent.focus.extractId()
-                  }
-                val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
 
-                fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent
-                  ->
-                  when (bundleEntryComponent.resource) {
-                    is ListResource -> {
-                      addOrUpdate(bundleEntryComponent.resource)
-                      val list = bundleEntryComponent.resource as ListResource
-                      list.entry.forEach { listEntryComponent ->
-                        val resourceKey = listEntryComponent.item.reference.substringBefore("/")
-                        val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+            fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
+              when (bundleEntryComponent.resource) {
+                is ListResource -> {
+                  addOrUpdate(bundleEntryComponent.resource)
+                  val list = bundleEntryComponent.resource as ListResource
+                  list.entry.forEach { listEntryComponent ->
+                    val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+                    val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
 
-                        val listResourceUrlPath =
-                          resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
-                        fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-                          listEntryResourceBundle ->
-                          addOrUpdate(listEntryResourceBundle.resource)
-                          Timber.d("Fetched and processed list reference $listResourceUrlPath")
-                        }
-                      }
-                    }
-                    else -> {
-                      addOrUpdate(bundleEntryComponent.resource)
-                      Timber.d("Fetched and processed resources $searchPath")
+                    val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                    fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+                      listEntryResourceBundle ->
+                      addOrUpdate(listEntryResourceBundle.resource)
+                      Timber.d("Fetched and processed list reference $listResourceUrlPath")
                     }
                   }
                 }
+                else -> {
+                  addOrUpdate(bundleEntryComponent.resource)
+                  Timber.d("Fetched and processed resources $searchPath")
+                }
               }
+            }
           }
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
       }
     }
   }

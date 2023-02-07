@@ -21,6 +21,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -62,7 +65,8 @@ constructor(
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
   val tokenAuthenticator: TokenAuthenticator,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val workManager: WorkManager
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -261,5 +265,11 @@ constructor(
         locationHierarchies
       )
     }
+  }
+
+  fun downloadNowWorkflowConfigs() {
+    val oneTimeWorkRequest: OneTimeWorkRequest =
+      OneTimeWorkRequestBuilder<ConfigDownloadWorker>().build()
+    workManager.enqueue(oneTimeWorkRequest)
   }
 }

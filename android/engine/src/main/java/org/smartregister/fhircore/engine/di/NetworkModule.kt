@@ -33,7 +33,6 @@ import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -81,9 +80,7 @@ class NetworkModule {
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level =
-            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
-            else HttpLoggingInterceptor.Level.BASIC
+          level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         }
