@@ -185,7 +185,7 @@ fun Activity.isDeviceOnline(): Boolean {
         NetworkCapabilities.TRANSPORT_ETHERNET,
         NetworkCapabilities.TRANSPORT_CELLULAR,
         NetworkCapabilities.TRANSPORT_WIFI,
-        NetworkCapabilities.TRANSPORT_BLUETOOTH
+        NetworkCapabilities.TRANSPORT_VPN
       )
     return transports.any { capabilities.hasTransport(it) }
   } else {

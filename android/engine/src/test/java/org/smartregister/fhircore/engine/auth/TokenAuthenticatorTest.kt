@@ -61,6 +61,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   private lateinit var tokenAuthenticator: TokenAuthenticator
   private val accountManager = mockk<AccountManager>()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+  private val sampleUsername = "demo"
 
   @Before
   fun setUp() {
@@ -96,7 +97,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAccessTokenShouldReturnValidAccessToken() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns true
     val accessToken = "gibberishaccesstoken"
@@ -106,7 +107,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAccessTokenShouldInvalidateExpiredToken() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     val accessToken = "gibberishaccesstoken"
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
@@ -128,7 +129,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testFetchTokenShouldRetrieveNewTokenAndCreateAccount() {
     val token = "goodToken"
     val refreshToken = "refreshToken"
-    val username = "demo"
+    val username = sampleUsername
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
 
     val oAuthResponse =
@@ -137,7 +138,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = "openid"
+        scope = SCOPE
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -164,7 +165,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testLogout() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     val refreshToken = "gibberishaccesstoken"
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
@@ -188,19 +189,20 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = "soRefreshingRefreshToken",
         tokenType = "",
         expiresIn = 3600,
-        scope = "openid"
+        scope = SCOPE
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
-    val newAccessToken = tokenAuthenticator.refreshToken("oldRefreshToken")
+    val currentRefreshToken = "oldRefreshToken"
+    val newAccessToken = tokenAuthenticator.refreshToken(currentRefreshToken)
     Assert.assertNotNull(newAccessToken)
     Assert.assertEquals(accessToken, newAccessToken)
   }
 
   @Test
   fun testFindAccountShouldReturnAnAccount() {
-    secureSharedPreference.saveCredentials(AuthCredentials("demo", "sirikali"))
-    val account = Account("demo", "provider")
+    secureSharedPreference.saveCredentials(AuthCredentials(sampleUsername, "sirikali"))
+    val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
     val resultAccount = tokenAuthenticator.findAccount()
     Assert.assertNotNull(resultAccount)
@@ -210,7 +212,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testSessionActiveWithActiveToken() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     val token = "anotherToken"
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns token
@@ -221,7 +223,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testSessionActiveWithInActiveToken() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     val token = "anotherToken"
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns token
@@ -232,7 +234,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testInvalidateSessionShouldInvalidateToken() {
-    val account = Account("demo", "provider")
+    val account = Account(sampleUsername, PROVIDER)
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.invalidateAuthToken(account.type, AUTH_TOKEN_TYPE) } just runs
     every { accountManager.removeAccountExplicitly(account) } returns true
@@ -245,5 +247,10 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.removeAccountExplicitly(account)
       onSessionInvalidated()
     }
+  }
+
+  companion object {
+    private const val SCOPE = "openid"
+    private const val PROVIDER = "provider"
   }
 }
