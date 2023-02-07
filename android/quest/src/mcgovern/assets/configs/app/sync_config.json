@@ -1,0 +1,105 @@
+{
+  "resourceType": "Parameters",
+  "configType": "sync",
+  "parameter": [
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Task",
+          "RelatedPerson",
+          "Patient"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Practitioner"
+        ]
+      },
+      "type": "token",
+      "expression": "130845,94398"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "publisher",
+        "code": "publisher",
+        "base": [
+          "Questionnaire"
+        ],
+        "type": "token",
+        "expression": "#publisher"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "StructureMap",
+          "PlanDefinition"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Library"
+        ]
+      },
+      "type": "token",
+      "expression": "1753,133081,133105,145195,145196,145213,145337,145374,145338,145375,145339,145376,145340,145377"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Measure"
+        ]
+      },
+      "type": "token",
+      "expression": "133082,133104,145197,145214,145333,145370,145334,145371,145335,145372,145336,145373"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Task",
+          "Group",
+          "Practitioner",
+          "PlanDefinition"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
+    }
+  ]
+}

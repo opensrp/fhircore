@@ -185,6 +185,22 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
+
+        mcgovern {
+            dimension "apps"
+            applicationIdSuffix ".mcgovern"
+            versionNameSuffix "-mcgovern"
+            versionCode 1
+            versionName "0.0.1"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
     sourceSets {
         main {
