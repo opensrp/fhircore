@@ -186,7 +186,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
     
-    api('org.smartregister:data-capture:0.1.0-beta06-preview4-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta06-preview7-SNAPSHOT') {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
@@ -215,7 +215,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview9-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview10-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
     }
