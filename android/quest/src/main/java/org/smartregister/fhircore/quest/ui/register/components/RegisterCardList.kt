@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
+import androidx.paging.compose.itemsIndexed
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
@@ -48,12 +49,12 @@ fun RegisterCardList(
   navController: NavController
 ) {
   LazyColumn {
-    items(pagingItems, key = { it.baseResourceId }) {
+    itemsIndexed(pagingItems) { _, item ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         ViewRenderer(
           viewProperties = registerCardConfig.views,
-          resourceData = it!!,
+          resourceData = item!!,
           navController = navController,
         )
       }
