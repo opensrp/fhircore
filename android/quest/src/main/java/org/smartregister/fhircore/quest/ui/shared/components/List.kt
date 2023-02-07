@@ -30,6 +30,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,9 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.extensions.conditional
+
+const val VERTICAL_HORIENTATION = "verticalOrientation"
+const val HORIZONTAL_ORIENTATION = "horizontalOrientation"
 
 @Composable
 fun List(
@@ -80,6 +84,7 @@ fun List(
             horizontal = viewProperties.padding.dp,
             vertical = viewProperties.padding.div(4).dp
           )
+          .testTag(VERTICAL_HORIENTATION)
     ) {
       when (viewProperties.orientation) {
         ListOrientation.VERTICAL ->
@@ -88,6 +93,7 @@ fun List(
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
+                .testTag(VERTICAL_HORIENTATION)
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
@@ -102,7 +108,7 @@ fun List(
             }
           }
         ListOrientation.HORIZONTAL ->
-          FlowRow(modifier = modifier.fillMaxWidth()) {
+          FlowRow(modifier = modifier.fillMaxWidth().testTag(HORIZONTAL_ORIENTATION)) {
             currentListResourceData.forEachIndexed { _, listResourceData ->
               ViewRenderer(
                 viewProperties = viewProperties.registerCard.views,
