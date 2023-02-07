@@ -110,7 +110,7 @@ constructor(
         compositionResource
           .retrieveCompositionSections()
           .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-          .groupBy { it.focus.reference.substringBeforeLast("/") }
+          .groupBy { it.focus.reference.substringBefore("/") }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
             val ids = entry.value.joinToString(",") { it.focus.extractId() }

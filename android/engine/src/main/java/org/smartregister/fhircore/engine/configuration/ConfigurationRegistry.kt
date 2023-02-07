@@ -27,8 +27,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
@@ -315,11 +313,10 @@ constructor(
    * comma separated values), thus generating a search query like the following 'Resource
    * Type'?_id='comma,separated,list,of,ids'
    */
-  fun fetchNonWorkflowConfigResources() {
-    // TODO load these type of configs from assets too
-    CoroutineScope(dispatcherProvider.io()).launch {
-      try {
-        sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+  suspend fun fetchNonWorkflowConfigResources() {
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+      withContext(dispatcherProvider.io()) {
+        try {
           fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
             composition
               .retrieveCompositionSections()
@@ -366,9 +363,9 @@ constructor(
                 }
               }
           }
+        } catch (exception: Exception) {
+          Timber.e(exception)
         }
-      } catch (exception: Exception) {
-        Timber.e(exception)
       }
     }
   }
@@ -389,7 +386,6 @@ constructor(
   suspend fun create(vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach { it.generateMissingId() }
-
       fhirEngine.create(*resource)
     }
   }

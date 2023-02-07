@@ -23,9 +23,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
+import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
@@ -74,6 +76,8 @@ class LoginActivity : BaseMultiLanguageActivity() {
       }
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
+        if (launchHomeScreen)
+          viewModelScope.launch { configurationRegistry.fetchNonWorkflowConfigResources() }
         when {
           launchHomeScreen && isPinEnabled && hasActivePin ->
             navigateToPinLogin(launchSetup = false)
@@ -88,7 +92,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
-    configurationRegistry.fetchNonWorkflowConfigResources()
     startActivity(Intent(this, AppMainActivity::class.java))
     // Initialize P2P after login only when username is provided then finish activity
     val username = secureSharedPreference.retrieveSessionUsername()
