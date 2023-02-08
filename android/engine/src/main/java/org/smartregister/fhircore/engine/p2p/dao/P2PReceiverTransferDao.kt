@@ -54,8 +54,7 @@ constructor(
         val recordLastUpdated = resource.meta.lastUpdated.time
         defaultRepository.addOrUpdate(resource = resource)
         maxLastUpdated =
-          (if (recordLastUpdated > maxLastUpdated) maxLastUpdated
-          else maxLastUpdated)
+          (if (recordLastUpdated > maxLastUpdated) recordLastUpdated else maxLastUpdated)
         Timber.e("Received ${resource.resourceType} with id = ${resource.logicalId}")
       }
     }

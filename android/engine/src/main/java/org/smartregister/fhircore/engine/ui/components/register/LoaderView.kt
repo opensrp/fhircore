@@ -52,7 +52,7 @@ fun LoaderDialog(
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
     Dialog(
-      onDismissRequest = { openDialog.value = false },
+      onDismissRequest = { openDialog.value = true },
       properties = DialogProperties(dismissOnBackPress = true)
     ) {
       Box(Modifier.size(240.dp, 180.dp)) {
