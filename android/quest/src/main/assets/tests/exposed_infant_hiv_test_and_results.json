@@ -2,8 +2,8 @@
   "resourceType": "Questionnaire",
   "id": "exposed-infant-hiv-test-and-results",
   "meta": {
-    "versionId": "49",
-    "lastUpdated": "2022-11-26T15:12:41.505+03:00",
+    "versionId": "54",
+    "lastUpdated": "2022-12-09T06:08:32.850+03:00",
     "source": "#wOt9aLULKfRnLnvs"
   },
   "language": "en",
@@ -141,7 +141,8 @@
             }
           ],
           "enableBehavior": "any",
-          "required": true
+          "required": true,
+          "maxLength": 8
         },
         {
           "linkId": "are-the-dbs-results-known",
@@ -201,7 +202,8 @@
           "linkId": "dbs-sample-id",
           "text": "* <b>Enter:</b> DBS Sample ID",
           "type": "string",
-          "required": true
+          "required": true,
+          "maxLength": 8
         },
         {
           "extension": [
@@ -316,13 +318,30 @@
           "item": [
             {
               "linkId": "is-child-present",
-              "text": "* Is the child infront of you right now?",
+              "text": "* Is the child in front of you right now?",
               "type": "boolean",
+              "enableWhen": [
+                {
+                  "question": "hiv-test-type",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "dbs"
+                  }
+                },
+                {
+                  "question": "task-being-performed",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "entering-dbs-results"
+                  }
+                }
+              ],
+              "enableBehavior": "any",
               "required": true
             },
             {
               "linkId": "conversion-prompt",
-              "text": "<font color=red>The exposed infant will be converted to a Newly Diagnosed Client when you SAVE</font>",
+              "text": "<h1><font color='red'>The exposed infant will be converted to a Newly Diagnosed Client when you SAVE</font></h1>",
               "type": "display",
               "enableWhen": [
                 {
@@ -331,12 +350,11 @@
                   "answerBoolean": true
                 }
               ],
-              "enableBehavior": "any",
-              "required": false
+              "enableBehavior": "any"
             },
             {
               "linkId": "add-to-tracing-prompt",
-              "text": "The exposed infant will be moved to the tracing list",
+              "text": "<h1><font color='blue'>TRACE IMMEDIATELY</b></h1>",
               "type": "display",
               "enableWhen": [
                 {
@@ -345,8 +363,53 @@
                   "answerBoolean": false
                 }
               ],
-              "enableBehavior": "any",
-              "required": false
+              "enableBehavior": "any"
+            },
+            {
+              "linkId": "prompt-positive-and-dbs-action",
+              "text": "<h1>Write: <em>the information in the HCC, EID logbook and pink card</em></h1>",
+              "type": "display",
+              "enableWhen": [
+                {
+                  "question": "is-child-present",
+                  "operator": "exists",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "any"
+            }
+          ]
+        },
+        {
+          "linkId": "group-rapid-test-and-positive-result",
+          "type": "group",
+          "enableWhen": [
+            {
+              "question": "hiv-test-results",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive"
+              }
+            },
+            {
+              "question": "hiv-test-type",
+              "operator": "=",
+              "answerCoding": {
+                "code": "rapid"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "item": [
+            {
+              "linkId": "conversion-prompt-2",
+              "text": "<h1><font color='red'>The exposed infant will be converted to a Newly Diagnosed Client when you SAVE</font></h1>",
+              "type": "display"
+            },
+            {
+              "linkId": "prompt-positive-and-rapid-action",
+              "text": "<h1>Write: <em>the information in the HTS register, HCC, EID logbook, and pink card</em></h1>",
+              "type": "display"
             }
           ]
         },
@@ -459,29 +522,32 @@
                       }
                     }
                   ]
-                },
-                {
-                  "linkId": "remove-ei-prompt",
-                  "text": "Please remove this child from the person list.",
-                  "type": "display",
-                  "enableWhen": [
-                    {
-                      "question": "is-older-than-24-months",
-                      "operator": "=",
-                      "answerBoolean": true
-                    }
-                  ],
-                  "enableBehavior": "any",
-                  "required": false
                 }
               ]
+            },
+            {
+              "linkId": "remove-ei-prompt",
+              "text": "<h1>Please remove this child from the person list.</h1>",
+              "type": "display",
+              "enableWhen": [
+                {
+                  "question": "is-older-than-24-months",
+                  "operator": "=",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "any"
+            },
+            {
+              "linkId": "prompt-negative-and-dbs-action",
+              "text": "<h1>Write: <em>the information in the HCC, EID logbook and pink card</em></h1>",
+              "type": "display"
             }
           ]
         },
         {
-          "linkId": "missing-or-invalid-result",
-          "text": "The exposed infant will be moved to the tracing list. Collect another DBS sample from the exposed infant at the next visit.",
-          "type": "display",
+          "linkId": "dbs-missing-or-invalid-results-group",
+          "type": "group",
           "enableWhen": [
             {
               "question": "hiv-test-results",
@@ -499,61 +565,20 @@
             }
           ],
           "enableBehavior": "any",
-          "required": false
+          "item": [
+            {
+              "linkId": "missing-or-invalid-result",
+              "text": "<h1>The exposed infant will be moved to the tracing list. Collect another DBS sample from the exposed infant at the next visit.</h1>",
+              "type": "display"
+            },
+            {
+              "linkId": "prompt-missing-or-invalid-and-dbs-action",
+              "text": "<h1>Write: <em>the information in the HCC, EID logbook and pink card</em></h1>",
+              "type": "display"
+            }
+          ]
         }
       ]
-    },
-    {
-      "linkId": "record-info",
-      "text": "<h1>Write: <em>the information in the health passport, pink card, and HTS register</em></h1>",
-      "type": "display",
-      "enableWhen": [
-        {
-          "question": "is-child-present",
-          "operator": "exists",
-          "answerBoolean": true
-        },
-        {
-          "question": "hiv-test-results",
-          "operator": "=",
-          "answerCoding": {
-            "code": "missing"
-          }
-        },
-        {
-          "question": "hiv-test-results",
-          "operator": "=",
-          "answerCoding": {
-            "code": "invalid"
-          }
-        },
-        {
-          "question": "is-child-weaned",
-          "operator": "=",
-          "answerCoding": {
-            "code": "no"
-          }
-        },
-        {
-          "question": "is-child-weaned",
-          "operator": "=",
-          "answerCoding": {
-            "code": "unknown"
-          }
-        },
-        {
-          "question": "date-range-of-weaning",
-          "operator": "exists",
-          "answerBoolean": true
-        },
-        {
-          "question": "are-the-dbs-results-known",
-          "operator": "=",
-          "answerBoolean": false
-        }
-      ],
-      "enableBehavior": "any",
-      "required": false
     },
     {
       "extension": [

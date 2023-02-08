@@ -96,22 +96,65 @@
                   ],
                   "rule": [
                     {
-                      "name": "r_list",
+                      "name": "r_create_app",
                       "source": [{ "context": "src" }],
-                      "dependent": [
+                      "target": [
                         {
-                          "name": "HandleEncounterOutcome",
-                          "variable": ["src", "bundle", "encounter", "encList"]
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "appointment",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Appointment" }]
                         }
-                      ]
-                    },
-                    {
-                      "name": "r_enc",
-                      "source": [{ "context": "src" }],
-                      "dependent": [
+                      ],
+                      "rule": [
                         {
-                          "name": "ExtractEncounter",
-                          "variable": ["src", "bundle", "encounter", "encList"]
+                          "name": "r_create_app",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "EvaluateAppointment",
+                              "variable": ["src", "appointment"]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_list",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "HandleEncounterOutcome",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "encList"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_enc",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "ExtractEncounter",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "encList",
+                                "appointment"
+                              ]
+                            }
+                          ]
                         }
                       ]
                     }
@@ -129,7 +172,9 @@
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
         { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "encList", "type": "List", "mode": "target" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
       ],
       "rule": [
         {
@@ -489,7 +534,13 @@
               "dependent": [
                 {
                   "name": "ExtractObservations",
-                  "variable": ["src", "bundle", "encounter", "encList"]
+                  "variable": [
+                    "src",
+                    "bundle",
+                    "encounter",
+                    "encList",
+                    "appointment"
+                  ]
                 }
               ]
             }
@@ -941,7 +992,8 @@
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
         { "name": "bundle", "type": "Bundle", "mode": "target" },
         { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        { "name": "encList", "type": "List", "mode": "target" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
       ],
       "rule": [
         {
@@ -950,7 +1002,13 @@
           "dependent": [
             {
               "name": "ExtractIsTracingConducted",
-              "variable": ["src", "bundle", "encounter", "encList"]
+              "variable": [
+                "src",
+                "bundle",
+                "encounter",
+                "encList",
+                "appointment"
+              ]
             }
           ]
         }
@@ -963,7 +1021,8 @@
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
         { "name": "bundle", "type": "Bundle", "mode": "target" },
         { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        { "name": "encList", "type": "List", "mode": "target" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
       ],
       "rule": [
         {
@@ -1349,13 +1408,14 @@
                                   ],
                                   "dependent": [
                                     {
-                                      "name": "ExtractDateType",
+                                      "name": "ExctractAppointmentDate",
                                       "variable": [
                                         "src",
                                         "itemGroup",
                                         "visitDate",
                                         "bundle",
-                                        "encounter"
+                                        "encounter",
+                                        "appointment"
                                       ]
                                     }
                                   ]
@@ -1363,7 +1423,62 @@
                               ]
                             }
                           ]
-                        },
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_date_of_agreed_appointment",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "visitDate",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_date",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "visitDate",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "date-of-agreed-appointment" }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "ExctractAppointmentDate",
+                              "variable": [
+                                "src",
+                                "page",
+                                "visitDate",
+                                "bundle",
+                                "encounter",
+                                "appointment"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_refused_group",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'refused-group')"
+                        }
+                      ],
+                      "rule": [
                         {
                           "name": "r_date_of_agreed_appointment",
                           "source": [{ "context": "src" }],
@@ -1385,9 +1500,7 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    {
-                                      "valueString": "date-of-agreed-appointment"
-                                    }
+                                    { "valueString": "date-of-refusal" }
                                   ]
                                 }
                               ],
@@ -1396,7 +1509,7 @@
                                   "name": "ExtractDateType",
                                   "variable": [
                                     "src",
-                                    "pageGroup",
+                                    "itemGroup",
                                     "visitDate",
                                     "bundle",
                                     "encounter"
@@ -1407,149 +1520,95 @@
                           ]
                         },
                         {
-                          "name": "r_refused_group",
-                          "source": [
+                          "name": "r_counselling",
+                          "source": [{ "context": "src" }],
+                          "target": [
                             {
-                              "context": "pageGroup",
-                              "element": "item",
-                              "listMode": "first",
-                              "variable": "itemGroup",
-                              "condition": "(linkId = 'refused-group')"
+                              "variable": "counselling",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
                             }
                           ],
                           "rule": [
                             {
-                              "name": "r_date_of_agreed_appointment",
+                              "name": "r_bool",
                               "source": [{ "context": "src" }],
                               "target": [
                                 {
-                                  "variable": "visitDate",
-                                  "transform": "create",
-                                  "parameter": [{ "valueString": "string" }]
-                                }
-                              ],
-                              "rule": [
-                                {
-                                  "name": "r_date",
-                                  "source": [{ "context": "src" }],
-                                  "target": [
+                                  "context": "counselling",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
                                     {
-                                      "context": "visitDate",
-                                      "contextType": "variable",
-                                      "element": "value",
-                                      "transform": "copy",
-                                      "parameter": [
-                                        { "valueString": "date-of-refusal" }
-                                      ]
-                                    }
-                                  ],
-                                  "dependent": [
-                                    {
-                                      "name": "ExtractDateType",
-                                      "variable": [
-                                        "src",
-                                        "itemGroup",
-                                        "visitDate",
-                                        "bundle",
-                                        "encounter"
-                                      ]
+                                      "valueString": "agreed-to-speak-to-counsellor"
                                     }
                                   ]
                                 }
-                              ]
-                            },
-                            {
-                              "name": "r_counselling",
-                              "source": [{ "context": "src" }],
-                              "target": [
-                                {
-                                  "variable": "counselling",
-                                  "transform": "create",
-                                  "parameter": [{ "valueString": "string" }]
-                                }
                               ],
-                              "rule": [
+                              "dependent": [
                                 {
-                                  "name": "r_bool",
-                                  "source": [{ "context": "src" }],
-                                  "target": [
-                                    {
-                                      "context": "counselling",
-                                      "contextType": "variable",
-                                      "element": "value",
-                                      "transform": "copy",
-                                      "parameter": [
-                                        {
-                                          "valueString": "agreed-to-speak-to-counsellor"
-                                        }
-                                      ]
-                                    }
-                                  ],
-                                  "dependent": [
-                                    {
-                                      "name": "ExtractValueType",
-                                      "variable": [
-                                        "src",
-                                        "itemGroup",
-                                        "counselling",
-                                        "bundle",
-                                        "encounter"
-                                      ]
-                                    }
+                                  "name": "ExtractValueType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "counselling",
+                                    "bundle",
+                                    "encounter"
                                   ]
                                 }
                               ]
                             }
                           ]
-                        },
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_transfered_group",
+                      "source": [
                         {
-                          "name": "r_transfered_group",
-                          "source": [
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'transfered-group')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_date_of_agreed_appointment",
+                          "source": [{ "context": "src" }],
+                          "target": [
                             {
-                              "context": "pageGroup",
-                              "element": "item",
-                              "listMode": "first",
-                              "variable": "itemGroup",
-                              "condition": "(linkId = 'transfered-group')"
+                              "variable": "visitDate",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
                             }
                           ],
                           "rule": [
                             {
-                              "name": "r_date_of_agreed_appointment",
+                              "name": "r_date",
                               "source": [{ "context": "src" }],
                               "target": [
                                 {
-                                  "variable": "visitDate",
-                                  "transform": "create",
-                                  "parameter": [{ "valueString": "string" }]
+                                  "context": "visitDate",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "date-of-transfer" }
+                                  ]
                                 }
                               ],
-                              "rule": [
+                              "dependent": [
                                 {
-                                  "name": "r_date",
-                                  "source": [{ "context": "src" }],
-                                  "target": [
-                                    {
-                                      "context": "visitDate",
-                                      "contextType": "variable",
-                                      "element": "value",
-                                      "transform": "copy",
-                                      "parameter": [
-                                        { "valueString": "date-of-transfer" }
-                                      ]
-                                    }
-                                  ],
-                                  "dependent": [
-                                    {
-                                      "name": "ExtractDateType",
-                                      "variable": [
-                                        "src",
-                                        "itemGroup",
-                                        "visitDate",
-                                        "bundle",
-                                        "encounter"
-                                      ]
-                                    }
+                                  "name": "ExtractDateType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "visitDate",
+                                    "bundle",
+                                    "encounter"
                                   ]
                                 }
                               ]
@@ -1597,7 +1656,7 @@
                       "name": "r_error_adding",
                       "source": [
                         {
-                          "context": "pageGroup",
+                          "context": "page",
                           "element": "item",
                           "listMode": "first",
                           "variable": "noTraceReason",
@@ -1621,7 +1680,7 @@
                       "name": "r_error_adding",
                       "source": [
                         {
-                          "context": "pageGroup",
+                          "context": "page",
                           "element": "item",
                           "listMode": "first",
                           "variable": "noTraceReason",
@@ -1645,7 +1704,7 @@
                       "name": "r_refused_group",
                       "source": [
                         {
-                          "context": "pageGroup",
+                          "context": "page",
                           "element": "item",
                           "listMode": "first",
                           "variable": "itemGroup",
@@ -1802,7 +1861,7 @@
                       "name": "r_patient_to_remove_group",
                       "source": [
                         {
-                          "context": "pageGroup",
+                          "context": "page",
                           "element": "item",
                           "listMode": "first",
                           "variable": "itemGroup",
@@ -1899,6 +1958,16 @@
                               "variable": ["src", "bundle", "encList"]
                             }
                           ]
+                        },
+                        {
+                          "name": "close_app",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "CloseAppointment",
+                              "variable": ["src", "appointment"]
+                            }
+                          ]
                         }
                       ]
                     },
@@ -1906,7 +1975,7 @@
                       "name": "r_error_adding",
                       "source": [
                         {
-                          "context": "pageGroup",
+                          "context": "page",
                           "element": "item",
                           "listMode": "first",
                           "variable": "noTraceReason",
@@ -3171,9 +3240,23 @@
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encList", "type": "List", "mode": "target" }
       ],
       "rule": [
+        {
+          "name": "r_disable_enc_list",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "encList",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "retired" }]
+            }
+          ]
+        },
         {
           "name": "get_bundle_with_extras",
           "source": [
@@ -3356,6 +3439,896 @@
                           ]
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExctractAppointmentDate",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        { "name": "linkPath", "type": "string", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = linkPath) and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_value",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Observation" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "evText",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "linkPath" },
+                        {
+                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cc_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                { "valueString": "http://d-tree.org" },
+                                { "valueId": "evText" },
+                                { "valueId": "evText" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "itemAnswer" },
+                        { "valueString": "$this.answer.value.toString()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "add_app_start",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "startDate",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "instant" }]
+                    },
+                    {
+                      "context": "startDate",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "itemAnswer" },
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "startDate" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle",
+          "source": [
+            {
+              "context": "src",
+              "element": "contained",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "($this.ofType(Bundle).exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_missing_eval",
+              "source": [
+                {
+                  "context": "item",
+                  "element": "entry",
+                  "listMode": "first",
+                  "variable": "appointmentContainer",
+                  "condition": "($this.resource.ofType(Appointment).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_app_item",
+                  "source": [{ "context": "appointmentContainer" }],
+                  "target": [
+                    {
+                      "variable": "appointmentItem",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "appointmentContainer" },
+                        { "valueString": "$this.resource" }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_get_appointment_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "actualAppId",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentItem" },
+                            { "valueString": "$this.id.value.replace('#', '')" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "id",
+                              "variable": "appId",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "id" }]
+                            },
+                            {
+                              "context": "appId",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "actualAppId" }]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_reason_switch",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonCode",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentContainer" },
+                            { "valueString": "$this.resource.reasonCode" }
+                          ]
+                        },
+                        {
+                          "variable": "reasonItem",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "reasonCode" },
+                            { "valueString": "$this" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reasonItem",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "reasonCode",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "reasonItem" }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_app_empty_container",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "isListEmpty",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "item" },
+                    {
+                      "valueString": "$this.entry.resource.ofType(Appointment).empty()"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_app_empty",
+                  "source": [
+                    { "context": "src", "condition": "(isListEmpty = true)" }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_app_populate",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "PopulateAppointment",
+                          "variable": ["src", "appointment"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CloseAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_close_app",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "fulfilled" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PopulateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "booked" }]
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "created",
+              "variable": "current_date_time",
+              "transform": "evaluate",
+              "parameter": [{ "valueId": "src" }, { "valueString": "now()" }]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_service_category",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "serviceCategory",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "HIV-AIDS program" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIVAIDS" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIV-AIDS program" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_type",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "appointmentType",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Routine appointment" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "ROUTINE" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Routine appointment" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_ppointment_part_patient_component",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "partComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_comp_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_participant_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Subject" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "SBJ" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "subject" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_actor",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "encOwner",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_ppointment_part_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "encOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_part_performer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'practitioner-ref')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "performerComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_part_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_performer_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_performer_type_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_part_performer_type_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "PRF" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_actor_performer",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "performer",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                },
+                {
+                  "context": "performer",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    {
+                      "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                     }
                   ]
                 }

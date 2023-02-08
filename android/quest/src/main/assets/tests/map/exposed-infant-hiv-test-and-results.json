@@ -31,7 +31,7 @@
       ],
       "rule": [
         {
-          "name": "r_bundle_data",
+          "name": "r_add_bundle_info",
           "source": [{ "context": "src" }],
           "target": [
             {
@@ -48,11 +48,58 @@
               "parameter": [{ "valueString": "collection" }]
             }
           ],
-          "dependent": [
-            { "name": "ExtractEncounter", "variable": ["src", "bundle"] },
+          "rule": [
             {
-              "name": "CheckIfConversionIsRequired",
-              "variable": ["src", "bundle"]
+              "name": "r_create_app",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "appointment",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Appointment" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_app",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "EvaluateAppointment",
+                      "variable": ["src", "appointment"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_ext_enc",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "ExtractEncounter",
+                      "variable": ["src", "bundle"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_bundle_data",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "CheckIfConversionIsRequired",
+                      "variable": ["src", "appointment", "bundle"]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1889,6 +1936,7 @@
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" },
         { "name": "bundle", "type": "Bundle", "mode": "target" }
       ],
       "rule": [
@@ -1924,6 +1972,84 @@
                     }
                   ],
                   "rule": [
+                    {
+                      "name": "r_apt_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "DBS Positive" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_apt_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "DBS Pos" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_apt_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "DBS Positive" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_apt_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "AddToAppointment",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "appointment"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
                     {
                       "name": "r_get_positive_results_group",
                       "source": [
@@ -2243,6 +2369,24 @@
                           ]
                         }
                       ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_convert_to_ndc",
+                  "source": [
+                    {
+                      "context": "resultsGroup",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "test_results_rapid_and_positive",
+                      "condition": "(linkId = 'group-rapid-test-and-positive-result')"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ConvertToNewlyDiagnosedClient",
+                      "variable": ["src", "bundle"]
                     }
                   ]
                 }
@@ -4089,6 +4233,82 @@
               ]
             }
           ]
+        },
+        {
+          "name": "r_tracing_with_linkage",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "variable": "reasonCode",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "reasonDisplay",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "reasonText",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            },
+            {
+              "variable": "questionnaireId",
+              "transform": "create",
+              "parameter": [{ "valueString": "string" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_ndc_tracing_draft",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "reasonCode",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "linkage" }]
+                },
+                {
+                  "context": "reasonDisplay",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Linkage" }]
+                },
+                {
+                  "context": "reasonText",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Linkage" }]
+                },
+                {
+                  "context": "questionnaireId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "art-tracing-outcome" }]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "AddLinkageCarePlanActivity",
+                  "variable": [
+                    "src",
+                    "reasonCode",
+                    "reasonDisplay",
+                    "reasonText",
+                    "bundle",
+                    "carePlan",
+                    "questionnaireId"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -4945,6 +5165,1559 @@
                           ]
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddLinkageCarePlanActivity",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "reasonCode", "type": "string", "mode": "source" },
+        { "name": "reasonDisplay", "type": "string", "mode": "source" },
+        { "name": "reasonText", "type": "string", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "carePlan", "type": "CarePlan", "mode": "target" },
+        { "name": "outcomeQuestionnaireId", "type": "string", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_act_linkage",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "variable": "schedulePeriod",
+              "transform": "create",
+              "parameter": [{ "valueString": "Period" }]
+            },
+            {
+              "context": "carePlan",
+              "contextType": "variable",
+              "element": "activity",
+              "variable": "activity",
+              "transform": "create",
+              "parameter": [{ "valueString": "CarePlan_Activity" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_act_det",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "detail",
+                  "variable": "detail",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CarePlan_ActivityDetail" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_act_det_data",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "kind",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Task" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "scheduled" }]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "reasonText.value" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        { "valueString": "https://d-tree.org" },
+                        { "valueId": "outcomeQuestionnaireId" },
+                        { "valueId": "reasonDisplay" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "performer",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.author" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_act_scheduled_period",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "schedulePeriod",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "carePlan" },
+                        { "valueString": "$this.period.end" }
+                      ]
+                    },
+                    {
+                      "context": "detail",
+                      "contextType": "variable",
+                      "element": "scheduled",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "schedulePeriod" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_create_task_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "taskId",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "string" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_set_task_id",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "uuid"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_act_outcome_reference",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "activity",
+                          "contextType": "variable",
+                          "element": "outcomeReference",
+                          "variable": "activityOutcomeRef",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_act_outcome_reference_ref",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "activityOutcomeRef",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                { "valueString": "'Task/' + taskId.value" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_act_outcome_reference_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "activityOutcomeRef",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                { "valueString": "reasonDisplay.value" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_create_task_uuid",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "ExtractLinkageTracingTask",
+                              "variable": [
+                                "src",
+                                "taskId",
+                                "reasonCode",
+                                "reasonDisplay",
+                                "reasonText",
+                                "schedulePeriod",
+                                "bundle",
+                                "carePlan",
+                                "outcomeQuestionnaireId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractLinkageTracingTask",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "taskId", "type": "string", "mode": "source" },
+        { "name": "reasonCode", "type": "string", "mode": "source" },
+        { "name": "reasonDisplay", "type": "string", "mode": "source" },
+        { "name": "reasonText", "type": "string", "mode": "source" },
+        {
+          "name": "activityScheduledPeriod",
+          "type": "Period",
+          "mode": "source"
+        },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "carePlan", "type": "Careplan", "mode": "target" },
+        { "name": "outcomeQuestionnaireId", "type": "string", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_task",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [{ "valueString": "Task" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "variable": "newID",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "id" }]
+                },
+                {
+                  "context": "newID",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "taskId.value" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_data",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "ready" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "plan" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "routine" }]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "variable": "current_date_time",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "now()" }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "lastModified",
+                  "transform": "copy",
+                  "parameter": [{ "valueId": "current_date_time" }]
+                }
+              ]
+            },
+            {
+              "name": "r_task_create_identifier",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "identifier",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Identifier" }]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "official" }]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_task_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "taskCode",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskCode",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Contact Tracing" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskCode",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "http://snomed.info/sct" }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "225368008" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Contact tracing (procedure)" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_phone_tracing",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "((linkId = 'has-phonenumber') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "meta",
+                      "variable": "meta",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Meta" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_meta_tag",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "meta",
+                          "contextType": "variable",
+                          "element": "tag",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Coding" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_task_meta_tag_system",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "https://d-tree.org" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "phone-tracing" }]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Phone Tracing" }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_description",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "copy",
+                      "parameter": [
+                        { "valueString": "HIV Contact Tracing via phone" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_home_tracing",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "((linkId = 'has-phonenumber') and (answer.value = false))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "meta",
+                      "variable": "meta",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Meta" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_meta_tag",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "meta",
+                          "contextType": "variable",
+                          "element": "tag",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Coding" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_task_meta_tag_system",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "https://d-tree.org" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "home-tracing" }]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_task_meta_tag_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "Home Tracing" }]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_task_description",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "task",
+                          "contextType": "variable",
+                          "element": "description",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIV Contact Tracing via home visit"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_for",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "carePlan.subject" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_scheduled_period",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "copy",
+                  "parameter": [{ "valueId": "activityScheduledPeriod" }]
+                }
+              ]
+            },
+            {
+              "name": "r_task_owner",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    { "valueString": "carePlan.author" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_item_reason_for_removal_obs_value",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_resonCode_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "reasonText.value" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_resonCode_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_resonCode_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "https://d-tree.org" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "reasonCode.value" }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "reasonDisplay.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_reference",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "taskReasonRef",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_reason_reference_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Questionnaire/' + outcomeQuestionnaireId.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_reason_reference_display",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        { "valueString": "reasonDisplay.value + ' outcome'" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddToAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "reasonCode", "type": "string", "mode": "source" },
+        { "name": "reasonDescription", "type": "string", "mode": "source" },
+        { "name": "reasonText", "type": "string", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_code",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "reasonCode",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "reasonText" },
+                    { "valueString": "$this.value" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "https://d-tree.org" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "reasonCode" },
+                        { "valueString": "$this.value" }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "reasonDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle",
+          "source": [
+            {
+              "context": "src",
+              "element": "contained",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "($this.ofType(Bundle).exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_missing_eval",
+              "source": [
+                {
+                  "context": "item",
+                  "element": "entry",
+                  "listMode": "first",
+                  "variable": "appointmentContainer",
+                  "condition": "($this.resource.ofType(Appointment).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_app_item",
+                  "source": [{ "context": "appointmentContainer" }],
+                  "target": [
+                    {
+                      "variable": "appointmentItem",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "appointmentContainer" },
+                        { "valueString": "$this.resource" }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_get_appointment_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "actualAppId",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentItem" },
+                            { "valueString": "$this.id.value.replace('#', '')" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "id",
+                              "variable": "appId",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "id" }]
+                            },
+                            {
+                              "context": "appId",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "actualAppId" }]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_reason_switch",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonCode",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentContainer" },
+                            { "valueString": "$this.resource.reasonCode" }
+                          ]
+                        },
+                        {
+                          "variable": "reasonItem",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "reasonCode" },
+                            { "valueString": "$this" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reasonItem",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "reasonCode",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "reasonItem" }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_app_empty_container",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "isListEmpty",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "item" },
+                    {
+                      "valueString": "$this.entry.resource.ofType(Appointment).empty()"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_app_empty",
+                  "source": [
+                    { "context": "src", "condition": "(isListEmpty = true)" }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_app_populate",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "PopulateAppointment",
+                          "variable": ["src", "appointment"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PopulateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "booked" }]
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "created",
+              "variable": "current_date_time",
+              "transform": "evaluate",
+              "parameter": [{ "valueId": "src" }, { "valueString": "now()" }]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_service_category",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "serviceCategory",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "HIV-AIDS program" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIVAIDS" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIV-AIDS program" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_type",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "appointmentType",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Routine appointment" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "ROUTINE" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Routine appointment" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_ppointment_part_patient_component",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "partComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_comp_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_participant_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Subject" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "SBJ" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "subject" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_actor",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "encOwner",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_ppointment_part_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "encOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_part_performer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'practitioner-ref')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "performerComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_part_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_performer_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_performer_type_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_part_performer_type_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "PRF" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_actor_performer",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "performer",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                },
+                {
+                  "context": "performer",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    {
+                      "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                     }
                   ]
                 }

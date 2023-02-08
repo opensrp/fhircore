@@ -48,15 +48,56 @@
               "parameter": [{ "valueString": "collection" }]
             }
           ],
-          "dependent": [
-            { "name": "ExtractEncounter", "variable": ["src", "bundle"] },
+          "rule": [
             {
-              "name": "CheckIfResultsAreAvailable",
-              "variable": ["src", "bundle"]
-            },
-            {
-              "name": "CheckIfResultsAreMissingOrInvalid",
-              "variable": ["src", "bundle"]
+              "name": "r_creaet_app",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "appointment",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Appointment" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_app",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "EvaluateAppointment",
+                      "variable": ["src", "appointment"]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_handle_data",
+                  "source": [{ "context": "src" }],
+                  "dependent": [
+                    {
+                      "name": "ExtractEncounter",
+                      "variable": ["src", "bundle"]
+                    },
+                    {
+                      "name": "CheckIfResultsAreAvailable",
+                      "variable": ["src", "appointment", "bundle"]
+                    },
+                    {
+                      "name": "CheckIfResultsAreMissingOrInvalid",
+                      "variable": ["src", "appointment", "bundle"]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1563,6 +1604,7 @@
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" },
         { "name": "bundle", "type": "Bundle", "mode": "target" }
       ],
       "rule": [
@@ -1596,7 +1638,7 @@
                   "dependent": [
                     {
                       "name": "CheckIfDBSResultsAreHighOrDetectable",
-                      "variable": ["src", "dbsResult", "bundle"]
+                      "variable": ["src", "dbsResult", "appointment", "bundle"]
                     }
                   ]
                 }
@@ -1620,7 +1662,12 @@
                   "dependent": [
                     {
                       "name": "CheckIfPlasmaResultsAreHighOrDetectable",
-                      "variable": ["src", "plasmaResult", "bundle"]
+                      "variable": [
+                        "src",
+                        "plasmaResult",
+                        "appointment",
+                        "bundle"
+                      ]
                     }
                   ]
                 }
@@ -1640,6 +1687,7 @@
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
+        { "name": "appointment", "type": "Appointment", "mode": "target" },
         { "name": "bundle", "type": "Bundle", "mode": "target" }
       ],
       "rule": [
@@ -1874,6 +1922,86 @@
                           ]
                         },
                         {
+                          "name": "r_apt_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "Index Case Testing" }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_apt_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueString": "ICT" }]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_apt_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        { "valueString": "Index Case Testing" }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_apt_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "AddToAppointment",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "appointment"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
                           "name": "r_dbs_results_add_ict",
                           "source": [{ "context": "src" }],
                           "dependent": [
@@ -2086,6 +2214,7 @@
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
+        { "name": "appointment", "type": "Appointment", "mode": "target" },
         { "name": "bundle", "type": "Bundle", "mode": "target" }
       ],
       "rule": [
@@ -2321,6 +2450,86 @@
                           ]
                         },
                         {
+                          "name": "r_apt_create_reason_text",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonText",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonText",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [
+                                { "valueString": "Index Case Testing" }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_apt_create_reason_code",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonCode",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonCode",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueString": "ICT" }]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_apt_create_reason_desc",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "variable": "reasonDescription",
+                                      "transform": "create",
+                                      "parameter": [{ "valueString": "string" }]
+                                    },
+                                    {
+                                      "context": "reasonDescription",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        { "valueString": "Index Case Testing" }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_apt_create_tracing_task",
+                                      "source": [{ "context": "src" }],
+                                      "dependent": [
+                                        {
+                                          "name": "AddToAppointment",
+                                          "variable": [
+                                            "src",
+                                            "reasonCode",
+                                            "reasonDescription",
+                                            "reasonText",
+                                            "appointment"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
                           "name": "r_plasma_results_add_ict",
                           "source": [{ "context": "src" }],
                           "dependent": [
@@ -2438,6 +2647,7 @@
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" },
         { "name": "bundle", "type": "Bundle", "mode": "target" }
       ],
       "rule": [
@@ -2557,6 +2767,110 @@
                   ]
                 },
                 {
+                  "name": "r_cp_title",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "carePlanSubject",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cp_subject_reference",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlanSubject",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where((linkId = 'patient-id') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cp_subject_display",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlanSubject",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'patient-full-name') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_author",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "carePlan",
+                      "contextType": "variable",
+                      "element": "author",
+                      "variable": "carePlanAuthor",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cp_author_reference",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlanAuthor",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-author-reference') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cp_author_display",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "carePlanAuthor",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "$this.item.where((linkId = 'care-plan-author-display') and (answer.count() > 0)).answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
                   "name": "r_missing_or_invalid_check_existing_activities",
                   "source": [{ "context": "src" }],
                   "dependent": [
@@ -2652,6 +2966,86 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "name": "r_apt_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Viral Load Collection" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_apt_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "VL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_apt_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "Viral Load Collection" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_apt_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "AddToAppointment",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "appointment"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 },
@@ -2732,6 +3126,86 @@
                                         "reasonDescription",
                                         "reasonText",
                                         "bundle"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_apt_create_reason_text",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonText",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "string" }]
+                        },
+                        {
+                          "context": "reasonText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Viral Load Collection" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_apt_create_reason_code",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            },
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "VL" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_apt_create_reason_desc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "reasonDescription",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                },
+                                {
+                                  "context": "reasonDescription",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "Viral Load Collection" }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_apt_create_tracing_task",
+                                  "source": [{ "context": "src" }],
+                                  "dependent": [
+                                    {
+                                      "name": "AddToAppointment",
+                                      "variable": [
+                                        "src",
+                                        "reasonCode",
+                                        "reasonDescription",
+                                        "reasonText",
+                                        "appointment"
                                       ]
                                     }
                                   ]
@@ -4426,6 +4900,743 @@
                         { "valueId": "taskDescription" },
                         { "valueString": "$this.value" }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddToAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "reasonCode", "type": "string", "mode": "source" },
+        { "name": "reasonDescription", "type": "string", "mode": "source" },
+        { "name": "reasonText", "type": "string", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_code",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "reasonCode",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "reasonText" },
+                    { "valueString": "$this.value" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "https://d-tree.org" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "reasonCode" },
+                        { "valueString": "$this.value" }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "reasonDescription" },
+                        { "valueString": "$this.value" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle",
+          "source": [
+            {
+              "context": "src",
+              "element": "contained",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "($this.ofType(Bundle).exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_missing_eval",
+              "source": [
+                {
+                  "context": "item",
+                  "element": "entry",
+                  "listMode": "first",
+                  "variable": "appointmentContainer",
+                  "condition": "($this.resource.ofType(Appointment).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_app_item",
+                  "source": [{ "context": "appointmentContainer" }],
+                  "target": [
+                    {
+                      "variable": "appointmentItem",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "appointmentContainer" },
+                        { "valueString": "$this.resource" }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_get_appointment_id",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "actualAppId",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentItem" },
+                            { "valueString": "$this.id.value.replace('#', '')" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "id",
+                              "variable": "appId",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "id" }]
+                            },
+                            {
+                              "context": "appId",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "actualAppId" }]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_reason_switch",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "variable": "reasonCode",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentContainer" },
+                            { "valueString": "$this.resource.reasonCode" }
+                          ]
+                        },
+                        {
+                          "variable": "reasonItem",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "reasonCode" },
+                            { "valueString": "$this" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_reasonItem",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "appointment",
+                              "contextType": "variable",
+                              "element": "reasonCode",
+                              "transform": "copy",
+                              "parameter": [{ "valueId": "reasonItem" }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_app_empty_container",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "variable": "isListEmpty",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "item" },
+                    {
+                      "valueString": "$this.entry.resource.ofType(Appointment).empty()"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_app_empty",
+                  "source": [
+                    { "context": "src", "condition": "(isListEmpty = true)" }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_app_populate",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "PopulateAppointment",
+                          "variable": ["src", "appointment"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PopulateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "booked" }]
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "created",
+              "variable": "current_date_time",
+              "transform": "evaluate",
+              "parameter": [{ "valueId": "src" }, { "valueString": "now()" }]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_service_category",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "serviceCategory",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "HIV-AIDS program" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIVAIDS" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIV-AIDS program" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_type",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "appointmentType",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Routine appointment" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "ROUTINE" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Routine appointment" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_ppointment_part_patient_component",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "partComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_comp_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_participant_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Subject" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "SBJ" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "subject" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_actor",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "encOwner",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_ppointment_part_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "encOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_part_performer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'practitioner-ref')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "performerComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_part_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_performer_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_performer_type_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_part_performer_type_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "PRF" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_actor_performer",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "performer",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                },
+                {
+                  "context": "performer",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    {
+                      "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                     }
                   ]
                 }
