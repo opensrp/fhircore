@@ -317,7 +317,7 @@ dependencies {
     androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
 
 //    debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
     testImplementation 'info.cqframework:cql-to-elm:2.2.0'
 }
