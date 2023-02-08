@@ -222,9 +222,9 @@ constructor(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = if (currentFormName.contains(".json"))
-        readStructureMapFromAssets("tests/map/${this}.json")
-       else defaultRepository.loadResource(this)
+      structureMap =
+        if (currentFormName.contains(".json")) readStructureMapFromAssets("tests/map/$this.json")
+        else defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -311,10 +311,10 @@ constructor(
           }
 
           if (questionnaireType != QuestionnaireType.EDIT &&
-            bundleEntry.resource.resourceType.isIn(
-              ResourceType.Patient,
-              ResourceType.RelatedPerson
-            )
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
           ) {
             groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
