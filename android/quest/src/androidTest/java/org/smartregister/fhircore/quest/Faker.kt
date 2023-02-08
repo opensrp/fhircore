@@ -21,6 +21,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -36,6 +37,13 @@ object Faker {
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
+    val json = Json {
+      encodeDefaults = true
+      ignoreUnknownKeys = true
+      isLenient = true
+      useAlternativeNames = true
+    }
+
     val configurationRegistry =
       spyk(
         ConfigurationRegistry(
@@ -43,7 +51,8 @@ object Faker {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          json = json
         )
       )
 

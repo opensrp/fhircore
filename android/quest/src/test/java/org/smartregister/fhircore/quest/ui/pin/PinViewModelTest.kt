@@ -93,7 +93,6 @@ class PinViewModelTest : RobolectricTest() {
 
     // Session token pin and credentials reset
     verifyOrder {
-      secureSharedPreference.deleteSessionTokens()
       secureSharedPreference.deleteSessionPin()
       secureSharedPreference.deleteCredentials()
     }
@@ -106,11 +105,7 @@ class PinViewModelTest : RobolectricTest() {
     pinViewModel.onMenuItemClicked(false)
 
     // Session token pin and credentials reset
-    verifyOrder {
-      secureSharedPreference.deleteSessionTokens()
-      secureSharedPreference.deleteSessionPin()
-      secureSharedPreference.deleteCredentials()
-    }
+    verify { secureSharedPreference.deleteSessionPin() }
     Assert.assertEquals(true, pinViewModel.navigateToLogin.value)
   }
 

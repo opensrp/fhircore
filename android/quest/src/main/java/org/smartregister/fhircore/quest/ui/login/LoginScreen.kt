@@ -87,12 +87,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.R
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -110,6 +110,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
   val password by loginViewModel.password.observeAsState("")
   val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
+  val context = LocalContext.current
 
   LoginPage(
     applicationConfiguration = applicationConfiguration,
@@ -118,7 +119,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     password = password,
     onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
     forgotPassword = { loginViewModel.forgotPassword() },
-    onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
+    onLoginButtonClicked = { loginViewModel.login(context) },
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
     appVersionPair = appVersionPair
@@ -292,6 +293,11 @@ fun LoginPage(
                 stringResource(
                   id = R.string.login_error,
                   stringResource(R.string.multi_user_login_attempt)
+                )
+              LoginErrorState.ERROR_FETCHING_USER ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.error_fetching_user_details)
                 )
             },
           modifier =

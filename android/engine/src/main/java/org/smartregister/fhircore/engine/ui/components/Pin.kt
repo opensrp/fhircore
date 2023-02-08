@@ -93,7 +93,7 @@ fun PinInput(
           else {
             val validPin = enteredPin == actualPin
             onPinVerified(validPin)
-            // Wrong pin, clear entered pin
+            // Wrong PIN, clear entered PIN
             if (!validPin) {
               keyboard?.show()
               onShowPinError(true)

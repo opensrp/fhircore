@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 @Singleton
 class SecureSharedPreference @Inject constructor(@ApplicationContext val context: Context) {
 
-  val secureSharedPreferences =
+  private val secureSharedPreferences =
     EncryptedSharedPreferences.create(
       context,
       SECURE_STORAGE_FILE_NAME,
@@ -43,49 +43,34 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
   fun saveCredentials(authCredentials: AuthCredentials) {
-    secureSharedPreferences.edit { putString(LOGIN_CREDENTIAL_KEY, authCredentials.encodeJson()) }
-  }
-
-  fun deleteCredentials() {
-    secureSharedPreferences.edit { remove(LOGIN_CREDENTIAL_KEY) }
-  }
-
-  fun retrieveSessionToken() = retrieveCredentials()?.sessionToken
-
-  fun retrieveSessionUsername() = retrieveCredentials()?.username
-
-  fun deleteSessionTokens() {
-    retrieveCredentials()?.run {
-      this.sessionToken = null
-      this.refreshToken = null
-      saveCredentials(this)
+    secureSharedPreferences.edit {
+      putString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, authCredentials.encodeJson())
     }
   }
 
-  fun retrieveCredentials(): AuthCredentials? {
-    return secureSharedPreferences
-      .getString(LOGIN_CREDENTIAL_KEY, null)
+  fun deleteCredentials() =
+    secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name) }
+
+  fun retrieveSessionUsername() = retrieveCredentials()?.username
+
+  fun retrieveCredentials(): AuthCredentials? =
+    secureSharedPreferences
+      .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
-  }
 
-  fun saveSessionPin(pin: String) {
-    secureSharedPreferences.edit { putString(LOGIN_PIN_KEY, pin) }
-  }
+  fun saveSessionPin(pin: String) =
+    secureSharedPreferences.edit { putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin) }
 
-  fun retrieveSessionPin() = secureSharedPreferences.getString(LOGIN_PIN_KEY, null)
+  fun retrieveSessionPin() =
+    secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
 
-  fun deleteSessionPin() {
-    secureSharedPreferences.edit { remove(LOGIN_PIN_KEY) }
-  }
+  fun deleteSessionPin() =
+    secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_PIN_KEY.name) }
 
   /** This method resets/clears all existing values in the shared preferences synchronously */
-  fun resetSharedPrefs() {
-    secureSharedPreferences.edit()?.clear()?.commit()
-  }
+  fun resetSharedPrefs() = secureSharedPreferences.edit { clear() }
 
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
-    const val LOGIN_CREDENTIAL_KEY = "login_credentials"
-    const val LOGIN_PIN_KEY = "login_pin"
   }
 }

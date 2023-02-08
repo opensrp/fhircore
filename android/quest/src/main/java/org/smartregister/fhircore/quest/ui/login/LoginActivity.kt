@@ -23,11 +23,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
+import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -43,32 +45,39 @@ class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var workManager: WorkManager
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    this.applyWindowInsetListener()
+
+    // Cancel sync background job to get new auth token; login required, refresh token expired
+    val cancelBackgroundSync =
+      intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false
+    if (cancelBackgroundSync) workManager.cancelAllWorkByTag(AppSyncWorker::class.java.name)
+
     navigateToScreen()
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-    this.applyWindowInsetListener()
   }
 
   private fun navigateToScreen() {
     loginViewModel.apply {
       val loginActivity = this@LoginActivity
       val isPinEnabled = isPinEnabled()
-      // Run sync and navigate directly to home screen if session is active and pin is not enabled
-      if (isPinEnabled && accountAuthenticator.hasActivePin()) {
+      val hasActivePin = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+
+      if (isPinEnabled && hasActivePin) {
         navigateToPinLogin(launchSetup = false)
       }
+
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
+        if (launchHomeScreen) downloadNowWorkflowConfigs()
         when {
-          launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() ->
+          launchHomeScreen && isPinEnabled && hasActivePin ->
             navigateToPinLogin(launchSetup = false)
-          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() -> {
-            configurationRegistry.fetchNonWorkflowConfigResources()
+          launchHomeScreen && isPinEnabled && !hasActivePin ->
             navigateToPinLogin(launchSetup = true)
-          }
           launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
         }
       }
