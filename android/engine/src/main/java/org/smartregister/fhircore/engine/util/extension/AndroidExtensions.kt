@@ -23,6 +23,8 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
@@ -167,4 +169,27 @@ inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
     }
   )
   if (finishLauncherActivity) finish()
+}
+
+/** This function checks if the device is online */
+fun Activity.isDeviceOnline(): Boolean {
+  val connectivityManager =
+    this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+    // Device can be connected to the internet through any of these NetworkCapabilities
+    val transports: List<Int> =
+      listOf(
+        NetworkCapabilities.TRANSPORT_ETHERNET,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
+        NetworkCapabilities.TRANSPORT_WIFI,
+        NetworkCapabilities.TRANSPORT_VPN
+      )
+    return transports.any { capabilities.hasTransport(it) }
+  } else {
+    val networkInfo = connectivityManager.activeNetworkInfo ?: return false
+    return networkInfo.isConnected
+  }
 }

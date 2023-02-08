@@ -18,26 +18,23 @@ package org.smartregister.fhircore.engine.data.remote.auth
 
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface OAuthService {
 
   @FormUrlEncoded
   @POST("protocol/openid-connect/token")
-  fun fetchToken(@FieldMap(encoded = false) body: Map<String, String>): Call<OAuthResponse>
-
-  @GET("protocol/openid-connect/userinfo") fun userInfo(): Call<ResponseBody>
+  suspend fun fetchToken(@FieldMap(encoded = false) body: Map<String, String>): OAuthResponse
 
   @FormUrlEncoded
   @POST("protocol/openid-connect/logout")
-  fun logout(
+  suspend fun logout(
     @Field("client_id") clientId: String,
     @Field("client_secret") clientSecret: String,
     @Field("refresh_token") refreshToken: String
-  ): Call<ResponseBody>
+  ): Response<ResponseBody>
 }

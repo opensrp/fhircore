@@ -239,7 +239,7 @@ fun UserSettingScreen(
         ConfirmClearDatabaseDialog(
           permanentResetDatabase = {
             onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
-            onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
+            onEvent(UserSettingsEvent.ResetDatabaseFlag(true, context))
           },
           onDismissDialog = {
             onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false))
@@ -269,7 +269,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Logout,
         text = stringResource(id = R.string.logout),
-        clickListener = { onEvent(UserSettingsEvent.Logout) },
+        clickListener = { onEvent(UserSettingsEvent.Logout(context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT),
         iconTint = colorResource(id = R.color.colorError),
         textColor = colorResource(id = R.color.colorError)
