@@ -246,7 +246,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
         // Always refresh data when registration happens
         registerViewModel.paginateRegisterData(

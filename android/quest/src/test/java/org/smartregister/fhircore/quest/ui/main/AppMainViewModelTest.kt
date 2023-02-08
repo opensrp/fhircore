@@ -27,15 +27,22 @@ import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkClass
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +50,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -61,6 +69,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
 class AppMainViewModelTest : RobolectricTest() {
@@ -221,5 +230,69 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertTrue(fragments.first() is RegisterBottomSheetFragment)
     // Destroy the activity
     controller.destroy()
+  }
+
+  @Test
+  fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse = QuestionnaireResponse()
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainViewModel.onQuestionnaireSubmission(
+      QuestionnaireSubmission(
+        questionnaireResponse = QuestionnaireResponse(),
+        questionnaireConfig = QuestionnaireConfig(taskId = null, id = "qId")
+      )
+    )
+
+    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 }

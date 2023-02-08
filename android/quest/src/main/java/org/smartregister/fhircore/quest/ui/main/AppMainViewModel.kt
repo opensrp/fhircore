@@ -302,7 +302,7 @@ constructor(
     }
   }
 
-  suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
+  suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {
