@@ -23,11 +23,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemsIndexed
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
@@ -35,6 +36,8 @@ import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
+
+const val REGISTER_CARD_LIST_TEST_TAG = "RegisterCardListTestTag"
 
 /**
  * This is the list used to render register data. The register data is wrapped in [ResourceData]
@@ -47,13 +50,13 @@ fun RegisterCardList(
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController
 ) {
-  LazyColumn {
-    items(pagingItems, key = { it.baseResourceId }) {
+  LazyColumn(Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG)) {
+    itemsIndexed(pagingItems) { _, item ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         ViewRenderer(
           viewProperties = registerCardConfig.views,
-          resourceData = it!!,
+          resourceData = item!!,
           navController = navController,
         )
       }
