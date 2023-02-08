@@ -150,6 +150,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
+        offset = 0,
         classType = classType
       )
     }
