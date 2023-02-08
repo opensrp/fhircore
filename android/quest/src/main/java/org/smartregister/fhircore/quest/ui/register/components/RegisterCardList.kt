@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.LoadState
@@ -36,6 +37,8 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
 
+const val REGISTER_CARD_LIST_TEST_TAG = "RegisterCardListTestTag"
+
 /**
  * This is the list used to render register data. The register data is wrapped in [ResourceData]
  * class. Each row of the register is then rendered based on the provided [RegisterCardConfig]
@@ -47,7 +50,7 @@ fun RegisterCardList(
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController
 ) {
-  LazyColumn {
+  LazyColumn(Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG)) {
     itemsIndexed(pagingItems) { _, item ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
