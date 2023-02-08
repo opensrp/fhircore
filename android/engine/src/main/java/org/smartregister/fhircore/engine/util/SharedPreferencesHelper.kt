@@ -88,9 +88,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     prefs.edit().remove(key).apply()
   }
 
-  /** This method resets/clears all existing values in the shared preferences synchronously */
+  /** This method resets/clears all existing values in the shared preferences asynchronously */
   fun resetSharedPrefs() {
-    prefs.edit()?.clear()?.commit()
+    prefs.edit()?.clear()?.apply()
   }
 
   companion object {

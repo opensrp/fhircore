@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.database.CursorWindow
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
@@ -42,6 +43,17 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+    }
+
+    // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
+    try {
+      val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+      field.apply {
+        isAccessible = true
+        set(null, 10 * 1024 * 1024) // 10MB
+      }
+    } catch (e: Exception) {
+      Timber.e(e)
     }
   }
 

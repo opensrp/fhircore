@@ -48,7 +48,7 @@ class FhirResourceDataSourceTest {
     coroutineTestRule.runBlockingTest {
       val bundle = Bundle()
       coEvery { resourceService.getResource(any()) } returns bundle
-      Assert.assertEquals(bundle, fhirResourceDataSource.loadData("http://fake.url"))
+      Assert.assertEquals(bundle, fhirResourceDataSource.getResource("http://fake.url"))
     }
   }
 

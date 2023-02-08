@@ -80,7 +80,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
         // Always refresh data when questionnaire is submitted
         with(profileFragmentArgs) {
           profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)

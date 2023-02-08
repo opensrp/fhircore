@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -51,14 +53,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.ui.login.LOGIN_ERROR_TEXT_TAG
 
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
 
@@ -67,9 +69,10 @@ fun AppSettingScreen(
   modifier: Modifier = Modifier,
   appId: String,
   onAppIdChanged: (String) -> Unit,
-  onLoadConfigurations: (Boolean) -> Unit,
+  fetchConfiguration: (Context) -> Unit,
   showProgressBar: Boolean = false,
-  appVersionPair: Pair<Int, String>? = null
+  error: String,
+  appVersionPair: Pair<Int, String>? = null,
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
@@ -120,14 +123,25 @@ fun AppSettingScreen(
             }
             .focusRequester(focusRequester)
       )
-
+      if (error.isNotEmpty())
+        Text(
+          fontSize = 14.sp,
+          color = MaterialTheme.colors.error,
+          text = error,
+          modifier =
+            modifier
+              .wrapContentWidth()
+              .padding(vertical = 10.dp)
+              .align(Alignment.Start)
+              .testTag(LOGIN_ERROR_TEXT_TAG)
+        )
       Spacer(modifier = modifier.height(30.dp))
       Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.bringIntoViewRequester(bringIntoViewRequester).fillMaxWidth()
       ) {
         Button(
-          onClick = { onLoadConfigurations(true) },
+          onClick = { fetchConfiguration(context) },
           enabled = !showProgressBar && appId.isNotEmpty(),
           modifier = modifier.fillMaxWidth(),
           colors =
@@ -161,13 +175,25 @@ fun AppSettingScreen(
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-private fun AppSettingScreenPreview() {
+@PreviewWithBackgroundExcludeGenerated
+private fun AppSettingScreenWithErrorPreview() {
   AppSettingScreen(
     appId = "",
     onAppIdChanged = {},
-    onLoadConfigurations = {},
-    appVersionPair = Pair(1, "0.0.1")
+    fetchConfiguration = {},
+    appVersionPair = Pair(1, "0.0.1"),
+    error = "Application not found"
+  )
+}
+
+@Composable
+@PreviewWithBackgroundExcludeGenerated
+private fun AppSettingScreenWithNoErrorPreview() {
+  AppSettingScreen(
+    appId = "",
+    onAppIdChanged = {},
+    fetchConfiguration = {},
+    appVersionPair = Pair(1, "0.0.1"),
+    error = ""
   )
 }

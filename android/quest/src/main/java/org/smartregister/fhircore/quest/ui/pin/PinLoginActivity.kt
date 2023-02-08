@@ -46,6 +46,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    this.applyWindowInsetListener()
     val pinSetup = intent.extras?.getBoolean(PIN_SETUP) ?: false
     pinViewModel.apply {
       val pinLoginActivity = this@PinLoginActivity
@@ -65,7 +66,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
       }
     }
     setContent { AppTheme { PinLoginScreen(pinViewModel) } }
-    this.applyWindowInsetListener()
   }
 
   @OptIn(ExperimentalMaterialApi::class)

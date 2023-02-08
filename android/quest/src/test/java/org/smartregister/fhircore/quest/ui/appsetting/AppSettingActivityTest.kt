@@ -67,7 +67,7 @@ class AppSettingActivityTest : RobolectricTest() {
       ActivityScenario.launch<AppSettingActivity?>(appSettingActivityIntent()).use {
         it.onActivity { activity ->
           Assert.assertTrue(activity != null)
-          Assert.assertTrue(activity.configurationRegistry.configsJsonMap.isNotEmpty())
+          Assert.assertTrue(configurationRegistry.configsJsonMap.isNotEmpty())
         }
       }
   }

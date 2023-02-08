@@ -21,7 +21,6 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
@@ -32,16 +31,11 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
 class CoreModule {
-  @Singleton
-  @Provides
-  fun provideSyncJob(@ApplicationContext context: Context) =
-    Sync.oneTimeSync<AppSyncWorker>(context)
 
   @Singleton
   @Provides
