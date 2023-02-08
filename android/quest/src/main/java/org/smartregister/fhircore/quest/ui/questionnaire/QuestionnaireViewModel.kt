@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -79,6 +81,7 @@ import timber.log.Timber
 open class QuestionnaireViewModel
 @Inject
 constructor(
+  application: Application,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
@@ -87,7 +90,11 @@ constructor(
   val libraryEvaluator: LibraryEvaluator,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val jsonParser: IParser
-) : ViewModel() {
+) : AndroidViewModel(application) {
+
+
+  private val backgroundContext = viewModelScope.coroutineContext
+  private var questionnaireJson: String? = null
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -109,22 +116,29 @@ constructor(
       ?.extractLogicalIdUuid()
   }
 
-  suspend fun loadQuestionnaire(
-    id: String,
-    type: QuestionnaireType,
-    prePopulationParams: List<ActionParameter>? = emptyList()
-  ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
-      }
-      // prepopulate questionnaireItems with initial values
-      if (prePopulationParams?.isNotEmpty() == true) {
-        item.prePopulateInitialValues(prePopulationParams)
-      }
+//  suspend fun loadQuestionnaire(
+//    id: String,
+//    type: QuestionnaireType,
+//    prePopulationParams: List<ActionParameter>? = emptyList()
+//  ): Questionnaire? {
+//    getQuestionnaireJson()
+//  }
 
-      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-      this.url = this.url ?: this.referenceValue()
+  suspend fun getQuestionnaireJson(): String {
+    return withContext(backgroundContext) {
+      if (questionnaireJson == null) {
+        questionnaireJson = readFileFromAssets("component_attachment.json")
+      }
+      questionnaireJson!!
+    }
+  }
+
+
+  val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
+
+  private suspend fun readFileFromAssets(filename: String) =
+    withContext(backgroundContext) {
+      getApplication<Application>().assets.open(filename).bufferedReader().use { it.readText() }
     }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {

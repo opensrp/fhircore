@@ -108,10 +108,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP) as Map<String, Any>?
         ?: emptyMap()
 
-    questionnaireConfig =
-      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig).interpolate(
-        computedValuesMap
-      )
+    questionnaireConfig = QuestionnaireConfig("a")
 
     actionParams =
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
@@ -135,10 +132,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val loadProgress = showProgressAlert(this, R.string.loading)
 
     lifecycleScope.launch(dispatcherProvider.io()) {
-      questionnaireViewModel.run {
-        questionnaire =
-          loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
-      }
+//      questionnaireViewModel.run {
+////        questionnaire =
+////          loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
+//      }
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) renderFragment()
@@ -161,7 +158,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         ViewGroup.LayoutParams
           .MATCH_PARENT // Override by Styles xml does not seem to work for this layout param
 
-      if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
+      if (questionnaireConfig.type.isReadOnly()) {
         text = context.getString(R.string.done)
       } else if (questionnaireConfig.type.isEditMode()) {
         // setting the save button text from Questionnaire Config
@@ -181,7 +178,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private suspend fun renderFragment() {
     fragment =
       QuestQuestionnaireFragment().apply {
-        val questionnaireString = parser.encodeResourceToString(questionnaire)
+        val questionnaireString = questionnaireViewModel.getQuestionnaireJson()
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
         // pass questionnaire and questionnaire-response to fragment
@@ -233,12 +230,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.id,
-            questionnaireConfig.type,
-            prePopulationParams
-          )!!
+//        questionnaire =
+//          questionnaireViewModel.loadQuestionnaire(
+//            questionnaireConfig.id,
+//            questionnaireConfig.type,
+//            prePopulationParams
+//          )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {
