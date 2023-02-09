@@ -165,7 +165,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     val tokenFilters: MutableList<DateParamFilterCriterion> =
       ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
     assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+    assertEquals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS, tokenFilters[0].prefix)
   }
 
   @Test
