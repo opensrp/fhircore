@@ -46,7 +46,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -99,10 +98,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
         ?: emptyList()
 
-    prePopulationParams = actionParams.filter {
-      it.paramType == ActionParameterType.PREPOPULATE
-                    && !it.value.isNullOrEmpty()
-                    && !it.value.contains(STRING_INTERPOLATION_PREFIX) }
+    prePopulationParams =
+      actionParams.filter {
+        it.paramType == ActionParameterType.PREPOPULATE &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(STRING_INTERPOLATION_PREFIX)
+      }
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }

@@ -126,7 +126,10 @@ constructor(
                           paramType = it.paramType,
                           dataType = it.dataType,
                           linkId = it.linkId,
-                          value = it.value.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                          value =
+                            it.value.interpolate(
+                              event.resourceData?.computedValuesMap ?: emptyMap()
+                            )
                         )
                       }
 
