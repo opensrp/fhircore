@@ -62,7 +62,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -78,7 +77,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
-  private lateinit var computedValuesMap: Map<String, Any>
   private lateinit var fragment: QuestQuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -95,31 +93,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    computedValuesMap =
-      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP) as Map<String, Any>?
-        ?: emptyMap()
-
-    questionnaireConfig =
-      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig).interpolate(
-        computedValuesMap
-      )
+    questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
 
     actionParams =
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
         ?: emptyList()
 
-    actionParams =
-      actionParams.map {
-        ActionParameter(
-          key = it.key,
-          paramType = it.paramType,
-          dataType = it.dataType,
-          linkId = it.linkId,
-          value = it.value.interpolate(computedValuesMap)
-        )
-      }
-
-    prePopulationParams = actionParams.filter { it.paramType == ActionParameterType.PREPOPULATE }
+    prePopulationParams = actionParams.filter {
+      it.paramType == ActionParameterType.PREPOPULATE
+                    && !it.value.isNullOrEmpty()
+                    && !it.value.contains(STRING_INTERPOLATION_PREFIX) }
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
@@ -474,6 +457,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
     const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
+    const val STRING_INTERPOLATION_PREFIX = "@{"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -483,12 +467,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      computedValuesMap: Map<String, Any>?,
       actionParams: List<ActionParameter> = emptyList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap),
         Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
       )
         .apply {

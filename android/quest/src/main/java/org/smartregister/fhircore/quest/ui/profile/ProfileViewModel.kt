@@ -37,15 +37,18 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -113,6 +116,20 @@ constructor(
                   viewModelScope.launch {
                     var questionnaireResponse: String? = null
 
+                    questionnaireConfig.interpolate(
+                      event.resourceData?.computedValuesMap ?: emptyMap()
+                    )
+                    val actionParams =
+                      actionConfig.params.map {
+                        ActionParameter(
+                          key = it.key,
+                          paramType = it.paramType,
+                          dataType = it.dataType,
+                          linkId = it.linkId,
+                          value = it.value.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                        )
+                      }
+
                     if (event.resourceData != null) {
                       questionnaireResponse =
                         searchQuestionnaireResponses(
@@ -137,7 +154,7 @@ constructor(
                       context = event.navController.context,
                       intentBundle = intentBundle,
                       questionnaireConfig = questionnaireConfig,
-                      computedValuesMap = event.resourceData?.computedValuesMap
+                      actionParams = actionParams
                     )
                   }
                 }
