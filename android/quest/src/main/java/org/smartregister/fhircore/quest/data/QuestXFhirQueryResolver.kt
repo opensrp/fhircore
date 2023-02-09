@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.quest.data
 
-import io.mockk.mockk
-import org.junit.Assert
-import org.junit.Test
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.XFhirQueryResolver
+import com.google.android.fhir.search.search
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Resource
 
-class DefaultErrorHandlerTest {
-
-  @Test
-  fun testHandleMessage() {
-    Assert.assertTrue(DefaultErrorHandler.handleMessage(mockk()))
+@Singleton
+class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
+  override suspend fun resolve(xFhirQuery: String): List<Resource> {
+    return fhirEngine.search(xFhirQuery)
   }
 }

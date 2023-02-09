@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,24 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class AuthOkHttpClientQualifier
+annotation class NoAuthorizationOkHttpClientQualifier
 
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class OkHttpClientQualifier
+annotation class WithAuthorizationOkHttpClientQualifier
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthenticationRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class KeycloakRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RegularRetrofit

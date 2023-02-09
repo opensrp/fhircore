@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ sealed class AppMainEvent {
 
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
 
-  data class RefreshAuthToken(val context: Context) : AppMainEvent()
-
   data class OpenRegistersBottomSheet(
     val navController: NavController,
     val registersList: List<NavigationMenuConfig>?
@@ -49,8 +47,6 @@ sealed class AppMainEvent {
     val resourceId: String,
     val resourceConfig: FhirResourceConfig? = null
   ) : AppMainEvent()
-
-  object Logout : AppMainEvent()
 
   object SyncData : AppMainEvent()
 }
