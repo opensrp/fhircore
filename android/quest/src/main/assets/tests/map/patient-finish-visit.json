@@ -8006,9 +8006,14 @@
       "typeMode": "none",
       "input": [
         {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
           "name": "appointment",
           "type": "Appointment",
-          "mode": "source"
+          "mode": "target"
         },
         {
           "name": "bundle",
@@ -8021,8 +8026,8 @@
           "name": "r_fulfill_appointment_if_early",
           "source": [
             {
-              "context": "appointment",
-              "condition": "(start.exists())"
+              "context": "src",
+              "condition": "(appointment.start.exists())"
             }
           ],
           "target": [
@@ -8043,7 +8048,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "appointment"
+                  "valueId": "src"
                 },
                 {
                   "valueString": "startString.indexOf('T')"
@@ -8056,7 +8061,7 @@
               "name": "r_check_appointment_start_date",
               "source": [
                 {
-                  "context": "appointment",
+                  "context": "src",
                   "condition": "(separatorIndex != ( - 1))"
                 }
               ],
@@ -8066,7 +8071,7 @@
                   "transform": "evaluate",
                   "parameter": [
                     {
-                      "valueId": "appointment"
+                      "valueId": "src"
                     },
                     {
                       "valueString": "startString.substring(0, separatorIndex)"
@@ -8083,7 +8088,7 @@
                   ]
                 },
                 {
-                  "context": "date",
+                  "context": "appointmentDate",
                   "contextType": "variable",
                   "element": "value",
                   "transform": "copy",
@@ -8098,7 +8103,7 @@
                   "transform": "evaluate",
                   "parameter": [
                     {
-                      "valueId": "appointment"
+                      "valueId": "src"
                     },
                     {
                       "valueString": "today() <= appointmentDate"
@@ -8111,7 +8116,7 @@
                   "name": "r_appoinment_fulfilled",
                   "source": [
                     {
-                      "context": "maybeFulfilledAppointment",
+                      "context": "src",
                       "condition": "(isTodayEarly = true)"
                     }
                   ],
@@ -8275,6 +8280,7 @@
                             {
                               "name": "AppointmentFulfilled",
                               "variable": [
+                                "src",
                                 "toBeFulfilledAppointment",
                                 "bundle"
                               ]
