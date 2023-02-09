@@ -118,7 +118,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
     implementation 'androidx.fragment:fragment-ktx:1.5.5'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha04'
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'
@@ -163,6 +162,8 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
+    api 'io.jsonwebtoken:jjwt:0.9.1'
+
     def lifecycleKtxVersion = '2.5.1'
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleKtxVersion"
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
@@ -200,7 +201,8 @@ dependencies {
 
     api('javax.xml.stream:stax-api:1.0')
     api('com.github.ben-manes.caffeine:caffeine:2.9.1')
-    api('org.smartregister:data-capture:0.1.0-beta06-preview5-SNAPSHOT') {
+    
+    api('org.smartregister:data-capture:0.1.0-beta06-preview7-SNAPSHOT') {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
@@ -231,7 +233,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview9-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview10-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'
@@ -245,8 +247,9 @@ dependencies {
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+    api "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
-    def okhttpVersion = '4.9.1'
+    def okhttpVersion = '4.10.0'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 

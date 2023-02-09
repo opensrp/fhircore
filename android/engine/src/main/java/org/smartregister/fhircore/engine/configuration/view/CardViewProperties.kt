@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,5 +35,6 @@ data class CardViewProperties(
   val cornerSize: Int = 6,
   val header: CompoundTextProperties? = null,
   val headerBackgroundColor: String = "#F2F4F7",
-  val viewAllAction: Boolean = false
+  val viewAllAction: Boolean = false,
+  val emptyContentMessage: String = ""
 ) : ViewProperties()
