@@ -40,10 +40,20 @@ data class ListProperties(
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
-  val orientation: ListOrientation = ListOrientation.VERTICAL
+  val orientation: ListOrientation = ListOrientation.VERTICAL,
+  val resources: List<ListResource> = emptyList()
 ) : ViewProperties()
 
 enum class ListOrientation {
   VERTICAL,
   HORIZONTAL
 }
+
+@Serializable
+data class ListResource(
+  val id: String?,
+  val relatedResourceId: String? = null,
+  val resourceType: ResourceType,
+  val conditionalFhirPathExpression: String,
+  val relatedResources: List<ExtractedResource> = emptyList()
+)
