@@ -611,7 +611,6 @@
       "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
       "type": "string"
     },
-
     {
       "extension": [
         {

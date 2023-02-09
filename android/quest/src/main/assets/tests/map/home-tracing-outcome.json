@@ -1,8 +1,8 @@
 {
   "resourceType": "StructureMap",
-  "id": "phone-tracing-outcome",
-  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/phone-tracing-outcome",
-  "name": "Phone Tracing Outcome",
+  "id": "home-tracing-outcome",
+  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/home-tracing-outcome",
+  "name": "Home Tracing Outcome",
   "structure": [
     {
       "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse",
@@ -203,8 +203,8 @@
                     {
                       "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
                     },
-                    { "valueString": "VR" },
-                    { "valueString": "Phone Tracing" }
+                    { "valueString": "IMP" },
+                    { "valueString": "inpatient encounter" }
                   ]
                 },
                 {
@@ -214,8 +214,8 @@
                   "transform": "cc",
                   "parameter": [
                     { "valueString": "https://d-tree.org" },
-                    { "valueString": "phone-tracing-outcome" },
-                    { "valueString": "Phone Tracing Outcome" }
+                    { "valueString": "home-tracing-outcome" },
+                    { "valueString": "Home Tracing Outcome" }
                   ]
                 }
               ]
@@ -1158,11 +1158,280 @@
                       ]
                     },
                     {
-                      "name": "r_agreed_date",
+                      "name": "r_contact_tested_group",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "pageGroup",
+                          "condition": "(linkId = 'contact-tested-group')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_date_of_transfer",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "dateValue",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "dateValue",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "date-of-hiv-test" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractDateType",
+                                  "variable": [
+                                    "src",
+                                    "pageGroup",
+                                    "dateValue",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_hiv_test_type",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "testType",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_cc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "testType",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "hiv-test-type" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractCodableConceptType",
+                                  "variable": [
+                                    "src",
+                                    "pageGroup",
+                                    "testType",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_sample_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "sampleId",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_string",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "sampleId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueString": "sample-id" }]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractValueType",
+                                  "variable": [
+                                    "src",
+                                    "pageGroup",
+                                    "sampleId",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_test_results_rapid",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "testResults",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_cc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "testResults",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "test-results-rapid" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractCodableConceptType",
+                                  "variable": [
+                                    "src",
+                                    "pageGroup",
+                                    "testResults",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_test_results_dbs",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "testResults",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_cc",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "testResults",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "test-results-dbs" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractCodableConceptType",
+                                  "variable": [
+                                    "src",
+                                    "pageGroup",
+                                    "testResults",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_item_group",
+                          "source": [
+                            {
+                              "context": "pageGroup",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "itemGroup",
+                              "condition": "(linkId = 'positive-group')"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date_of_agreed_appointment",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "variable": "visitDate",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "string" }]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_date",
+                                  "source": [{ "context": "src" }],
+                                  "target": [
+                                    {
+                                      "context": "visitDate",
+                                      "contextType": "variable",
+                                      "element": "value",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        {
+                                          "valueString": "date-of-agreed-appointment"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "dependent": [
+                                    {
+                                      "name": "ExctractAppointmentDate",
+                                      "variable": [
+                                        "src",
+                                        "itemGroup",
+                                        "visitDate",
+                                        "bundle",
+                                        "encounter",
+                                        "appointment"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_date_of_agreed_appointment",
                       "source": [{ "context": "src" }],
                       "target": [
                         {
-                          "variable": "agreeDate",
+                          "variable": "visitDate",
                           "transform": "create",
                           "parameter": [{ "valueString": "string" }]
                         }
@@ -1173,7 +1442,7 @@
                           "source": [{ "context": "src" }],
                           "target": [
                             {
-                              "context": "agreeDate",
+                              "context": "visitDate",
                               "contextType": "variable",
                               "element": "value",
                               "transform": "copy",
@@ -1188,7 +1457,7 @@
                               "variable": [
                                 "src",
                                 "page",
-                                "agreeDate",
+                                "visitDate",
                                 "bundle",
                                 "encounter",
                                 "appointment"
@@ -1199,111 +1468,19 @@
                       ]
                     },
                     {
-                      "name": "r_date_of_iac",
-                      "source": [{ "context": "src" }],
-                      "target": [
-                        {
-                          "variable": "iacDate",
-                          "transform": "create",
-                          "parameter": [{ "valueString": "string" }]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_date",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "context": "iacDate",
-                              "contextType": "variable",
-                              "element": "value",
-                              "transform": "copy",
-                              "parameter": [{ "valueString": "date-of-iac" }]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "ExtractDateType",
-                              "variable": [
-                                "src",
-                                "page",
-                                "iacDate",
-                                "bundle",
-                                "encounter"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_transfer_group",
+                      "name": "r_refused_group",
                       "source": [
                         {
                           "context": "page",
                           "element": "item",
                           "listMode": "first",
-                          "variable": "pageGroup",
-                          "condition": "(linkId = 'transfered-group')"
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'refused-group')"
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_date_of_transfer",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "variable": "transferDate",
-                              "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_date",
-                              "source": [{ "context": "src" }],
-                              "target": [
-                                {
-                                  "context": "transferDate",
-                                  "contextType": "variable",
-                                  "element": "value",
-                                  "transform": "copy",
-                                  "parameter": [
-                                    { "valueString": "date-of-transfer" }
-                                  ]
-                                }
-                              ],
-                              "dependent": [
-                                {
-                                  "name": "ExtractDateType",
-                                  "variable": [
-                                    "src",
-                                    "pageGroup",
-                                    "transferDate",
-                                    "bundle",
-                                    "encounter"
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_transfer_group",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "pageGroup",
-                          "condition": "(linkId = 'home-visit-group')"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_date_of_transfer",
+                          "name": "r_date_of_agreed_appointment",
                           "source": [{ "context": "src" }],
                           "target": [
                             {
@@ -1323,60 +1500,6 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-of-visit" }
-                                  ]
-                                }
-                              ],
-                              "dependent": [
-                                {
-                                  "name": "ExtractDateType",
-                                  "variable": [
-                                    "src",
-                                    "pageGroup",
-                                    "visitDate",
-                                    "bundle",
-                                    "encounter"
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_transfer_group",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "pageGroup",
-                          "condition": "(linkId = 'refused-group')"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_date_of_transfer",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "variable": "refusedDate",
-                              "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_date",
-                              "source": [{ "context": "src" }],
-                              "target": [
-                                {
-                                  "context": "refusedDate",
-                                  "contextType": "variable",
-                                  "element": "value",
-                                  "transform": "copy",
-                                  "parameter": [
                                     { "valueString": "date-of-refusal" }
                                   ]
                                 }
@@ -1386,8 +1509,8 @@
                                   "name": "ExtractDateType",
                                   "variable": [
                                     "src",
-                                    "pageGroup",
-                                    "refusedDate",
+                                    "itemGroup",
+                                    "visitDate",
                                     "bundle",
                                     "encounter"
                                   ]
@@ -1418,7 +1541,7 @@
                                   "transform": "copy",
                                   "parameter": [
                                     {
-                                      "valueString": "psychosocial-counselling"
+                                      "valueString": "agreed-to-speak-to-counsellor"
                                     }
                                   ]
                                 }
@@ -1428,8 +1551,62 @@
                                   "name": "ExtractValueType",
                                   "variable": [
                                     "src",
-                                    "pageGroup",
+                                    "itemGroup",
                                     "counselling",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_transfered_group",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'transfered-group')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_date_of_agreed_appointment",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "visitDate",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "visitDate",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "date-of-transfer" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractDateType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "visitDate",
                                     "bundle",
                                     "encounter"
                                   ]
@@ -1476,24 +1653,299 @@
                       ]
                     },
                     {
-                      "name": "r_deceased_group",
+                      "name": "r_error_adding",
                       "source": [
                         {
                           "context": "page",
                           "element": "item",
                           "listMode": "first",
-                          "variable": "pageGroup",
-                          "condition": "(linkId = 'deceased-group')"
+                          "variable": "noTraceReason",
+                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'patient-not-home'))"
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_set_decease",
+                          "name": "r_check_limit",
                           "source": [{ "context": "src" }],
                           "dependent": [
                             {
-                              "name": "SetPatientDeceased",
-                              "variable": ["src", "pageGroup", "bundle"]
+                              "name": "CheckEncounterLimit",
+                              "variable": ["src", "bundle", "encList"]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_error_adding",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "noTraceReason",
+                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'home-not-found'))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_check_limit",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "CheckEncounterLimit",
+                              "variable": ["src", "bundle", "encList"]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_refused_group",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'client-moved-group')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_moved",
+                          "source": [
+                            {
+                              "context": "itemGroup",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "noTraceReason",
+                              "condition": "((linkId = 'new-location-known') and (answer.value.code = false))"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "remove_from_tracing",
+                              "source": [{ "context": "src" }],
+                              "dependent": [
+                                {
+                                  "name": "RemoveFromTracing",
+                                  "variable": ["src", "bundle", "encList"]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_location_known",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "locationKnown",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_bool",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "locationKnown",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "new-location-known" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractValueType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "locationKnown",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_date_new_location_known",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "visitDate",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "visitDate",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "date-new-location-known" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractDateType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "visitDate",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_client_moved",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "locGroup",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "locGroup",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "client-moved-group" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractLocationInformation",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "locGroup",
+                                    "bundle"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_patient_to_remove_group",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "itemGroup",
+                          "condition": "(linkId = 'is-deceased-group')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_is_deceased",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "isDeceased",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_bool",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "isDeceased",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "is-deceased" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractValueType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "isDeceased",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_date_of_death",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "visitDate",
+                              "transform": "create",
+                              "parameter": [{ "valueString": "string" }]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_date",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "visitDate",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    { "valueString": "date-of-death" }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractDateType",
+                                  "variable": [
+                                    "src",
+                                    "itemGroup",
+                                    "visitDate",
+                                    "bundle",
+                                    "encounter"
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         },
@@ -1527,147 +1979,7 @@
                           "element": "item",
                           "listMode": "first",
                           "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'no-tracing-required'))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "RemoveFromTracing",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_wrong_number",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'wrong-number'))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "RemoveFromTracing",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "AddHomeTracingTask",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_does_not_exisy",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'number-doesnt-exist'))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "RemoveFromTracing",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "AddHomeTracingTask",
-                              "variable": ["src", "bundle"]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_phone_busy",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'phone-busy'))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_check_limit",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "CheckEncounterLimit",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_no_answer",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'no-answer'))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_check_limit",
-                          "source": [{ "context": "src" }],
-                          "dependent": [
-                            {
-                              "name": "CheckEncounterLimit",
-                              "variable": ["src", "bundle", "encList"]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_patient_busy",
-                      "source": [
-                        {
-                          "context": "page",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "noTraceReason",
-                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'patient-busy'))"
+                          "condition": "((linkId = 'reason-for-no-tracing') and (answer.value.code = 'not-require-tracing'))"
                         }
                       ],
                       "rule": [
@@ -2481,7 +2793,7 @@
       ]
     },
     {
-      "name": "SetPatientDeceased",
+      "name": "ExtractCodableConceptType",
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
@@ -2490,828 +2802,428 @@
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
+        { "name": "linkPath", "type": "string", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" }
       ],
       "rule": [
         {
-          "name": "r_create_patient",
-          "source": [{ "context": "src" }],
-          "target": [
+          "name": "r_get_answer",
+          "source": [
             {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "patient",
-              "transform": "create",
-              "parameter": [{ "valueString": "Patient" }]
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = linkPath) and (answer.count() > 0))"
             }
           ],
           "rule": [
             {
-              "name": "r_patient_id",
+              "name": "r_obs_value",
               "source": [{ "context": "src" }],
               "target": [
                 {
-                  "context": "patient",
+                  "context": "bundle",
                   "contextType": "variable",
-                  "element": "id",
-                  "variable": "patient_id",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "id" }]
+                  "parameter": [{ "valueString": "Observation" }]
                 }
               ],
               "rule": [
                 {
-                  "name": "r_item_patient_id_patient_set_pat_id",
+                  "name": "r_obs_data_value",
                   "source": [{ "context": "src" }],
                   "target": [
                     {
-                      "context": "patient_id",
+                      "context": "obs",
                       "contextType": "variable",
-                      "element": "value",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        { "valueString": "vital-signs" }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [{ "valueId": "encounter" }]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
                         { "valueId": "src" },
+                        { "valueString": "now()" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "evText",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "linkPath" },
                         {
-                          "valueString": "$this.item.where(linkId = 'patient-id').answer.value"
+                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cc_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                { "valueString": "http://d-tree.org" },
+                                { "valueId": "evText" },
+                                { "valueId": "evText" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Reference" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value_hiv_test_type",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "CodeableConcept" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_hiv_test_type",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "itemAnswer" },
+                            { "valueString": "$this.answer.value.display" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_hiv_test_type",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "itemAnswer" },
+                            { "valueString": "$this.answer.value" }
+                          ]
                         }
                       ]
                     }
                   ]
                 }
               ]
-            },
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractLocationInformation",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        { "name": "linkPath", "type": "string", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_group_container",
+          "source": [
             {
-              "name": "r_get_date",
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemGroup",
+              "condition": "(linkId = linkPath)"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_district_answered",
               "source": [
                 {
-                  "context": "pageGroup",
+                  "context": "itemGroup",
                   "element": "item",
                   "variable": "itemAnswer",
-                  "condition": "((linkId = 'death-date-known') and (answer.count() > 0) and (answer.value = false))"
+                  "condition": "((linkId = 'district') and (answer.count() > 0))"
                 }
               ],
               "rule": [
                 {
-                  "name": "r_deceased",
+                  "name": "r_create_patient",
                   "source": [{ "context": "src" }],
                   "target": [
                     {
-                      "context": "patient",
+                      "context": "bundle",
                       "contextType": "variable",
-                      "element": "deceased",
-                      "transform": "copy",
-                      "parameter": [{ "valueBoolean": true }]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_get_date",
-              "source": [
-                {
-                  "context": "pageGroup",
-                  "element": "item",
-                  "variable": "itemAnswer",
-                  "condition": "((linkId = 'date-of-death') and (answer.count() > 0))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_date",
-                  "source": [{ "context": "src" }],
-                  "target": [
+                      "element": "entry",
+                      "variable": "entry"
+                    },
                     {
-                      "context": "patient",
+                      "context": "entry",
                       "contextType": "variable",
-                      "element": "deceased",
-                      "variable": "deceasedDate",
+                      "element": "resource",
+                      "variable": "patient",
                       "transform": "create",
-                      "parameter": [{ "valueString": "dateTime" }]
+                      "parameter": [{ "valueString": "Patient" }]
                     }
                   ],
                   "rule": [
                     {
+                      "name": "r_patient_id",
                       "source": [{ "context": "src" }],
                       "target": [
                         {
-                          "variable": "str_temp",
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "id",
+                          "variable": "patient_id",
                           "transform": "create",
-                          "parameter": [{ "valueString": "string" }]
+                          "parameter": [{ "valueString": "id" }]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_extract_date",
+                          "name": "r_item_patient_id_patient_set_pat_id",
                           "source": [{ "context": "src" }],
                           "target": [
                             {
-                              "context": "str_temp",
-                              "contextType": "variable",
-                              "element": "value",
-                              "transform": "evaluate",
-                              "parameter": [
-                                { "valueId": "itemAnswer" },
-                                {
-                                  "valueString": "$this.answer.value.toString()"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_append_date_and_time",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "context": "str_temp",
+                              "context": "patient_id",
                               "contextType": "variable",
                               "element": "value",
                               "transform": "evaluate",
                               "parameter": [
                                 { "valueId": "src" },
                                 {
-                                  "valueString": "str_temp.value + 'T11:10:34.227+03:00'"
+                                  "valueString": "$this.item.where(linkId = 'patient-id').answer.value"
                                 }
                               ]
                             }
                           ]
-                        },
-                        {
-                          "name": "r_assign_str_temp_to_datetime",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "context": "deceasedDate",
-                              "contextType": "variable",
-                              "element": "value",
-                              "transform": "copy",
-                              "parameter": [{ "valueId": "str_temp" }]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_deceased",
-                          "source": [{ "context": "src" }],
-                          "target": [
-                            {
-                              "context": "patient",
-                              "contextType": "variable",
-                              "element": "deceased",
-                              "transform": "copy",
-                              "parameter": [{ "valueId": "deceasedDate" }]
-                            }
-                          ]
                         }
                       ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "AddHomeTracingTask",
-      "typeMode": "none",
-      "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
-      ],
-      "rule": [
-        {
-          "name": "get_bundle_with_extras",
-          "source": [
-            {
-              "context": "src",
-              "element": "contained",
-              "listMode": "first",
-              "variable": "item",
-              "condition": "($this.ofType(Bundle).exists())"
-            }
-          ],
-          "rule": [
-            {
-              "name": "get_bundle_extras_container",
-              "source": [
-                {
-                  "context": "item",
-                  "element": "entry",
-                  "listMode": "first",
-                  "variable": "tracingBundleContainer",
-                  "condition": "($this.resource.ofType(Bundle).exists())"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "get_tracing_bundle_cont",
-                  "source": [
+                    },
                     {
-                      "context": "tracingBundleContainer",
-                      "element": "resource",
-                      "variable": "tracingBundle"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "all_items",
-                      "source": [
+                      "name": "r_p_address",
+                      "source": [{ "context": "src" }],
+                      "target": [
                         {
-                          "context": "tracingBundle",
-                          "element": "entry",
-                          "variable": "tracingTaskContainer",
-                          "condition": "($this.resource.ofType(Task).exists())"
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "address",
+                          "variable": "patientAddress",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Address" }]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "get_task",
-                          "source": [{ "context": "tracingTaskContainer" }],
+                          "name": "r_p_address_district",
+                          "source": [
+                            {
+                              "context": "page",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "district",
+                              "condition": "(linkId = 'district')"
+                            }
+                          ],
                           "target": [
                             {
-                              "variable": "tracingTask",
+                              "context": "patientAddress",
+                              "contextType": "variable",
+                              "element": "district",
                               "transform": "evaluate",
                               "parameter": [
-                                { "valueId": "tracingTaskContainer" },
-                                { "valueString": "$this.resource" }
+                                { "valueId": "district" },
+                                { "valueString": "$this.answer.value" }
                               ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_check_tracing_catchment",
+                          "source": [
+                            {
+                              "context": "page",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "tracingCatchment",
+                              "condition": "(linkId.startsWith('tracing-catchment') and (answer.count() > 0))"
                             }
                           ],
                           "rule": [
                             {
-                              "name": "get_task_data",
+                              "name": "r_p_address_tracing_catchment",
                               "source": [{ "context": "src" }],
                               "target": [
                                 {
-                                  "variable": "reasonCode",
+                                  "context": "patientAddress",
+                                  "contextType": "variable",
+                                  "element": "state",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "tracingTask" },
-                                    {
-                                      "valueString": "$this.reasonCode.coding.code"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "variable": "reasonDescription",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    { "valueId": "tracingTask" },
-                                    {
-                                      "valueString": "$this.reasonCode.coding.display"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "variable": "reasonText",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    { "valueId": "tracingTask" },
-                                    { "valueString": "$this.reasonCode.text" }
+                                    { "valueId": "tracingCatchment" },
+                                    { "valueString": "$this.answer.value" }
                                   ]
                                 }
-                              ],
-                              "rule": [
+                              ]
+                            },
+                            {
+                              "name": "r_p_address_text",
+                              "source": [
                                 {
-                                  "name": "r_create_tracing_task",
-                                  "source": [{ "context": "src" }],
-                                  "dependent": [
-                                    {
-                                      "name": "CreateTracingTask",
-                                      "variable": [
-                                        "src",
-                                        "reasonCode",
-                                        "reasonDescription",
-                                        "reasonText",
-                                        "bundle"
-                                      ]
-                                    }
+                                  "context": "page",
+                                  "element": "item",
+                                  "listMode": "first",
+                                  "variable": "physicalLocator",
+                                  "condition": "(linkId = 'physical-locator')"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "patientAddress",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    { "valueId": "physicalLocator" },
+                                    { "valueString": "$this.answer.value" }
                                   ]
                                 }
                               ]
                             }
                           ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CreateTracingTask",
-      "typeMode": "none",
-      "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "reasonCode", "type": "string", "mode": "source" },
-        { "name": "reasonDescription", "type": "string", "mode": "source" },
-        { "name": "reasonText", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
-      ],
-      "rule": [
-        {
-          "name": "r_create_task",
-          "source": [{ "context": "src" }],
-          "target": [
-            {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "task",
-              "transform": "create",
-              "parameter": [{ "valueString": "Task" }]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_task_data",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "id",
-                  "transform": "uuid"
-                },
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "status",
-                  "transform": "copy",
-                  "parameter": [{ "valueString": "ready" }]
-                },
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "intent",
-                  "transform": "copy",
-                  "parameter": [{ "valueString": "plan" }]
-                },
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "priority",
-                  "transform": "copy",
-                  "parameter": [{ "valueString": "routine" }]
-                },
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "authoredOn",
-                  "variable": "current_date_time",
-                  "transform": "evaluate",
-                  "parameter": [
-                    { "valueId": "src" },
-                    { "valueString": "now()" }
-                  ]
-                },
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "lastModified",
-                  "transform": "copy",
-                  "parameter": [{ "valueId": "current_date_time" }]
-                }
-              ]
-            },
-            {
-              "name": "r_task_create_identifier",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "identifier",
-                  "variable": "identifier",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Identifier" }]
-                },
-                {
-                  "context": "identifier",
-                  "contextType": "variable",
-                  "element": "use",
-                  "transform": "copy",
-                  "parameter": [{ "valueString": "official" }]
-                },
-                {
-                  "context": "identifier",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "uuid"
-                }
-              ]
-            },
-            {
-              "name": "r_task_code",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "code",
-                  "variable": "codeableConcept",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_code_text",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "codeableConcept",
-                      "contextType": "variable",
-                      "element": "text",
-                      "transform": "copy",
-                      "parameter": [{ "valueString": "Contact Tracing" }]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_task_code_coding",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "codeableConcept",
-                      "contextType": "variable",
-                      "element": "coding",
-                      "variable": "coding",
-                      "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_task_code_coding_value",
-                      "source": [{ "context": "src" }],
-                      "target": [
+                        },
                         {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "system",
-                          "transform": "copy",
-                          "parameter": [
-                            { "valueString": "http://snomed.info/sct" }
+                          "name": "r_p_address_use",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "patientAddress",
+                              "contextType": "variable",
+                              "element": "use",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "home" }]
+                            }
                           ]
                         },
                         {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "copy",
-                          "parameter": [{ "valueString": "225368008" }]
-                        },
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "copy",
-                          "parameter": [
-                            { "valueString": "Contact tracing (procedure)" }
+                          "name": "r_p_address_type",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "patientAddress",
+                              "contextType": "variable",
+                              "element": "type",
+                              "transform": "copy",
+                              "parameter": [{ "valueString": "physical" }]
+                            }
                           ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_meta",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "meta",
-                  "variable": "meta",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Meta" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_meta_tag",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "meta",
-                      "contextType": "variable",
-                      "element": "tag",
-                      "variable": "coding",
-                      "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_task_meta_tag_system",
-                      "source": [{ "context": "src" }],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "system",
-                          "transform": "copy",
-                          "parameter": [{ "valueString": "https://d-tree.org" }]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_task_meta_tag_code",
-                      "source": [{ "context": "src" }],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "copy",
-                          "parameter": [{ "valueString": "home-tracing" }]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_task_meta_tag_display",
-                      "source": [{ "context": "src" }],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "copy",
-                          "parameter": [{ "valueString": "Home Tracing" }]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_task_description",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "task",
-                      "contextType": "variable",
-                      "element": "description",
-                      "transform": "copy",
-                      "parameter": [
-                        { "valueString": "HIV Contact Tracing via home visit" }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_for",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "for",
-                  "variable": "taskFor",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_for_reference",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "taskFor",
-                      "contextType": "variable",
-                      "element": "reference",
-                      "transform": "evaluate",
-                      "parameter": [
-                        { "valueId": "src" },
-                        {
-                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_task_for_disp",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "taskFor",
-                      "contextType": "variable",
-                      "element": "display",
-                      "transform": "evaluate",
-                      "parameter": [
-                        { "valueId": "src" },
-                        {
-                          "valueString": "$this.name.given + ' ' + $this.name.family"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_period",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "executionPeriod",
-                  "variable": "taskPeriod",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Period" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_period",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "variable": "current_date_time",
-                      "transform": "evaluate",
-                      "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
-                      ]
-                    },
-                    {
-                      "context": "taskPeriod",
-                      "contextType": "variable",
-                      "element": "start",
-                      "transform": "copy",
-                      "parameter": [{ "valueId": "current_date_time" }]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_author",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "owner",
-                  "variable": "taskOwner",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_owner_reference",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "taskOwner",
-                      "contextType": "variable",
-                      "element": "reference",
-                      "transform": "evaluate",
-                      "parameter": [
-                        { "valueId": "src" },
-                        {
-                          "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_reason_code_value",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "reasonCode",
-                  "variable": "codeableConcept",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_resonCode_text",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "codeableConcept",
-                      "contextType": "variable",
-                      "element": "text",
-                      "transform": "evaluate",
-                      "parameter": [
-                        { "valueId": "reasonText" },
-                        { "valueString": "$this.value" }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_task_resonCode_coding",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "codeableConcept",
-                      "contextType": "variable",
-                      "element": "coding",
-                      "variable": "coding",
-                      "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_task_resonCode_coding_value",
-                      "source": [{ "context": "src" }],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "system",
-                          "transform": "copy",
-                          "parameter": [{ "valueString": "https://d-tree.org" }]
-                        },
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "evaluate",
-                          "parameter": [
-                            { "valueId": "reasonCode" },
-                            { "valueString": "$this.value" }
-                          ]
-                        },
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "evaluate",
-                          "parameter": [
-                            { "valueId": "reasonDescription" },
-                            { "valueString": "$this.value" }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_task_reason_reference",
-              "source": [{ "context": "src" }],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "reasonReference",
-                  "variable": "taskReasonRef",
-                  "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_reason_reference_ref",
-                  "source": [{ "context": "src" }],
-                  "target": [
-                    {
-                      "context": "taskReasonRef",
-                      "contextType": "variable",
-                      "element": "reference",
-                      "transform": "copy",
-                      "parameter": [
-                        {
-                          "valueString": "Questionnaire/exposed-infant-hiv-test-and-results"
                         }
                       ]
                     }

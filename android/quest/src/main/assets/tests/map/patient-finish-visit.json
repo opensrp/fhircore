@@ -8002,6 +8002,157 @@
       ]
     },
     {
+      "name": "AppointmentFulfilled",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_fulfill_appointment_if_early",
+          "source": [
+            {
+              "context": "appointment",
+              "condition": "(start.exists())"
+            }
+          ],
+          "target": [
+            {
+              "variable": "startString",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "appointment"
+                },
+                {
+                  "valueString": "$this.start.toString()"
+                }
+              ]
+            },
+            {
+              "variable": "separatorIndex",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "appointment"
+                },
+                {
+                  "valueString": "startString.indexOf('T')"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_check_appointment_start_date",
+              "source": [
+                {
+                  "context": "appointment",
+                  "condition": "(separatorIndex != ( - 1))"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "startDateStringPart",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "appointment"
+                    },
+                    {
+                      "valueString": "startString.substring(0, separatorIndex)"
+                    }
+                  ]
+                },
+                {
+                  "variable": "appointmentDate",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "date"
+                    }
+                  ]
+                },
+                {
+                  "context": "date",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "startDateStringPart"
+                    }
+                  ]
+                },
+                {
+                  "variable": "isTodayEarly",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "appointment"
+                    },
+                    {
+                      "valueString": "today() <= appointmentDate"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appoinment_fulfilled",
+                  "source": [
+                    {
+                      "context": "maybeFulfilledAppointment",
+                      "condition": "(isTodayEarly = true)"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "bundleEntry"
+                    },
+                    {
+                      "context": "bundleEntry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "appointment"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "fulfilled"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "ExtractARTNewAppointmentWithStart",
       "typeMode": "none",
       "input": [
@@ -8102,8 +8253,31 @@
                           "source": [
                             {
                               "context": "appointmentEntry",
-                              "variable": "maybeFulfilledAppointment",
+                              "variable": "maybeFulfilledApEntry",
                               "condition": "($this.resource.start.exists())"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "toBeFulfilledAppointment",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "maybeFulfilledApEntry"
+                                },
+                                {
+                                  "valueString": "$this.resource"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "AppointmentFulfilled",
+                              "variable": [
+                                "toBeFulfilledAppointment",
+                                "bundle"
+                              ]
                             }
                           ]
                         },

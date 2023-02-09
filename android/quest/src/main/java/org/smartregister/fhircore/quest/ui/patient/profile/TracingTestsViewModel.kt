@@ -246,36 +246,51 @@ constructor(
     val testItems: List<TestItem> =
       listOf(
         TestItem.QuestItem(
-          title = "Viral Load",
-          questionnaire = "tests/art_client_viral_load_test_results.json"
+          title = "art client viral load test results",
+          questionnaire = "tests/art_client_viral_load_test_results.json",
+          tracingList = listOf("HVL", "MVl", "IVl"),
+          appointmentList = listOf("ICT", "VL")
         ),
         TestItem.QuestItem(
-          title = "Dry Blood Samples",
-          questionnaire = "tests/exposed_infant_hiv_test_and_results.json"
+          title = "exposed infant hiv test and results",
+          questionnaire = "tests/exposed_infant_hiv_test_and_results.json",
+          tracingList = listOf("PDBS", "MDBS", "IDBS"),
+          appointmentList = listOf("Milestone")
         ),
         TestItem.QuestItem(
-          title = "D and H VL",
-          questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json"
+          title = "welcome service high or detectable viral load",
+          questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
+          tracingList = listOf("-HVL")
         ),
         TestItem.QuestItem(
-          title = "Next Appointment",
+          title = "hiv test and next appointment",
           questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
         ),
-        TestItem.DividerItem,
+        TestItem.QuestItem(
+          title = "Cervical Cancer Screening",
+          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
+        ),
         TestItem.QuestItem(
           title = "Cervical Cancer Screening",
           questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
         ),
         TestItem.DividerItem,
         TestItem.QuestItem(
-          title = "Finish Visit",
-          questionnaire = "tests/patient-finish-visit.json"
+          title = "Patient Finish Visit",
+          questionnaire = "tests/patient-finish-visit.json",
+          tracingList = listOf("miss-routine", "miss-milestone", "interrupt-treat", "miss-appt"),
+          appointmentList = listOf("Refill")
         )
       )
   }
 }
 
-sealed class TestItem() {
-  data class QuestItem(val title: String, val questionnaire: String) : TestItem()
+sealed class TestItem {
+  data class QuestItem(
+    val title: String,
+    val questionnaire: String,
+    val tracingList: List<String> = listOf(),
+    val appointmentList: List<String> = listOf()
+  ) : TestItem()
   object DividerItem : TestItem()
 }
