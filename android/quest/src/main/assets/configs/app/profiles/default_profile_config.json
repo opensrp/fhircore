@@ -841,37 +841,6 @@
                   "primaryTextColor": "#000000"
                 },
                 {
-                  "viewType": "LIST",
-                  "id": "statusList",
-                  "baseResource": "Condition",
-                  "orientation": "HORIZONTAL",
-                  "emptyList": {
-                    "message": ""
-                  },
-                  "registerCard": {
-                    "rules": [
-                      {
-                        "name": "carePlanTitle",
-                        "condition": "true",
-                        "actions": [
-                          "data.put('carePlanTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"
-                        ]
-                      }
-                    ],
-                    "views": [
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryTextBackgroundColor": "#F5F5F5",
-                        "primaryText": "@{carePlanTitle}",
-                        "primaryTextColor": "#6F7274",
-                        "fontSize": 13,
-                        "padding": 7,
-                        "borderRadius": 6
-                      }
-                    ]
-                  }
-                },
-                {
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "ID: #@{patientIdentifier}",
                   "primaryTextColor": "#000000"
@@ -887,13 +856,12 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Sex",
-                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientGender}",
-                        "fontSize": 13,
+                        "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
                     },
@@ -901,20 +869,18 @@
                       "label": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "Age",
-                        "fontSize": 13,
                         "primaryTextColor": "#000000"
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientAge}",
-                        "fontSize": 13,
+                        "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
                     },
                     {
                       "label": {
                         "viewType": "COMPOUND_TEXT",
-                        "fontSize": 13,
                         "primaryText": "DOB",
                         "primaryTextColor": "#000000"
                       },
@@ -942,14 +908,12 @@
             "viewType": "COMPOUND_TEXT",
             "primaryText": "VISITS",
             "primaryTextColor": "#6F7274",
-            "fontSize": 14,
-            "fontStyle": "normal",
+            "fontSize": 18.0,
             "padding": 16
           },
           "content": [
             {
               "viewType": "LIST",
-              "id": "taskList",
               "baseResource": "Task",
               "registerCard": {
                 "rules": [
@@ -1410,21 +1374,21 @@
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "8851fff1-0ff7-4d60-bc70-80878a5dc769",
+              "linkId": "216147dd-72fa-43eb-811f-bd8bb0e9f26c",
               "dataType": "INTEGER",
               "key": "orsPreviousBalance",
               "value": "@{orsPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "2feddad8-b65c-4744-919d-4d3332b6ce8b",
+              "linkId": "9ce85751-8403-49fd-b1b1-552449cf252b",
               "dataType": "STRING",
               "key": "orsObservationId",
               "value": "@{orsObservationId}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "4cea0aa6-5f5f-4950-b4ca-0e77777e3ae2",
+              "linkId": "8afce0d8-a7cc-4454-9534-289c6ceb97f0",
               "dataType": "STRING",
               "key": "orsStockOutFlagId",
               "value": "@{orsStockOutFlagId}"

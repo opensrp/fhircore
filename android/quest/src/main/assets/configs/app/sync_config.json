@@ -5,20 +5,13 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
+        "name": "organization",
+        "code": "organization",
         "base": [
-          "Encounter",
-          "Observation",
-          "Condition",
-          "CarePlan",
-          "QuestionnaireResponse",
-          "Task",
-          "Flag",
-          "RelatedPerson",
-          "Patient",
-          "Questionnaire"
-        ]
+          "Patient"
+        ],
+        "type": "token",
+        "expression": "#organization"
       }
     },
     {
@@ -27,24 +20,21 @@
         "name": "_id",
         "code": "_id",
         "base": [
-          "Practitioner"
-        ]
-      },
-      "type": "token",
-      "expression": "130845,94398"
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Questionnaire",
           "StructureMap",
+          "Task",
+          "Group",
           "PlanDefinition",
-          "PractitionerRole",
-          "OrganizationAffiliation",
-          "Organization",
-          "Location"
+          "RelatedPerson",
+          "Library",
+          "Measure",
+          "Flag",
+          "List"
         ]
       }
     },
@@ -88,11 +78,12 @@
           "StructureMap",
           "Task",
           "Group",
-          "Practitioner",
           "PlanDefinition",
+          "RelatedPerson",
           "Library",
           "Measure",
-          "Flag"
+          "Flag",
+          "List"
         ],
         "type": "token",
         "expression": "#count"
