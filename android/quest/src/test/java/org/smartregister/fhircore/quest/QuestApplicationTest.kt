@@ -28,7 +28,6 @@ import junit.framework.TestCase.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -36,7 +35,6 @@ class QuestApplicationTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
   @Inject lateinit var workerFactory: HiltWorkerFactory
 
   private lateinit var application: QuestApplication
