@@ -33,6 +33,8 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -510,6 +512,29 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadScheduledAppointments(patientId: String): Iterable<Appointment> {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filter {
+        it.hasStart() &&
+          it.start.after(
+            Date.from(
+              LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30)
+            )
+          )
+      }
+  }
+
   suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
     return fhirEngine
       .search<Appointment> {
@@ -604,6 +629,10 @@ constructor(
         val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
         if (appointmentToPopulate != null) {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
+        // Add appointments that may need to be closed
+        loadScheduledAppointments(patientId).forEach {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
         }
         resourcesList[bundleIndex] = currentBundle
       }
