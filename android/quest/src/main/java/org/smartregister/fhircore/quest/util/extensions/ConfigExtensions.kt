@@ -43,7 +43,8 @@ fun List<ActionConfig>.handleClickEvent(
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+          val questionnaireConfigInterpolated =
+            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
           val actionParams =
             actionConfig.params.map {
               ActionParameter(
@@ -58,7 +59,7 @@ fun List<ActionConfig>.handleClickEvent(
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              questionnaireConfig = questionnaireConfig,
+              questionnaireConfig = questionnaireConfigInterpolated,
               actionParams = actionParams
             )
           }

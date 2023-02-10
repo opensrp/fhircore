@@ -172,7 +172,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -225,7 +225,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -292,7 +292,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = event.resourceData?.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 

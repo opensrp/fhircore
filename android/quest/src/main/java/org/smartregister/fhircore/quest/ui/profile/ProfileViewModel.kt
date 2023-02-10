@@ -116,9 +116,10 @@ constructor(
                   viewModelScope.launch {
                     var questionnaireResponse: String? = null
 
-                    questionnaireConfig.interpolate(
-                      event.resourceData?.computedValuesMap ?: emptyMap()
-                    )
+                    val questionnaireConfigInterpolated =
+                      questionnaireConfig.interpolate(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      )
                     val actionParams =
                       actionConfig.params.map {
                         ActionParameter(
@@ -138,7 +139,7 @@ constructor(
                         searchQuestionnaireResponses(
                           subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
                           subjectType = event.resourceData.baseResourceType,
-                          questionnaireId = questionnaireConfig.id
+                          questionnaireId = questionnaireConfigInterpolated.id
                         )
                           .maxByOrNull { it.authored } // Get latest version
                           ?.let { parser.encodeResourceToString(it) }
@@ -156,7 +157,7 @@ constructor(
                     (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
                       context = event.navController.context,
                       intentBundle = intentBundle,
-                      questionnaireConfig = questionnaireConfig,
+                      questionnaireConfig = questionnaireConfigInterpolated,
                       actionParams = actionParams
                     )
                   }
