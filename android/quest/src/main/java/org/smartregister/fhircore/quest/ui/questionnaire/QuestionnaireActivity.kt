@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,23 +75,14 @@ import timber.log.Timber
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
   @Inject lateinit var parser: IParser
-
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-
-  protected lateinit var questionnaire: Questionnaire
-
+  private lateinit var questionnaire: Questionnaire
   private lateinit var computedValuesMap: Map<String, Any>
-
   private lateinit var fragment: QuestQuestionnaireFragment
-
   private lateinit var saveProcessingAlertDialog: AlertDialog
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
-
   private lateinit var actionParams: List<ActionParameter>
-
   private lateinit var prePopulationParams: List<ActionParameter>
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -130,23 +121,34 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     prePopulationParams = actionParams.filter { it.paramType == ActionParameterType.PREPOPULATE }
 
-    questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
+    val questionnaireActivity = this@QuestionnaireActivity
+    questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
 
-    val loadProgress = showProgressAlert(this, R.string.loading)
+    val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 
-    lifecycleScope.launch(dispatcherProvider.io()) {
-      questionnaireViewModel.run {
-        questionnaire =
-          loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
-      }
+    lifecycleScope.launch {
+      questionnaireViewModel.loadQuestionnaire(
+          questionnaireConfig.id,
+          questionnaireConfig.type,
+          prePopulationParams
+        )
+        .let { thisQuestionnaire ->
+          if (thisQuestionnaire == null) {
+            questionnaireActivity.showToast(
+              questionnaireActivity.getString(R.string.questionnaire_missing)
+            )
+            finish()
+          } else {
+            questionnaire = thisQuestionnaire
+            // Only add the fragment once, when the activity is first created.
+            if (savedInstanceState == null) renderFragment()
 
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) renderFragment()
-
-      withContext(dispatcherProvider.main()) {
-        updateViews()
-        fragment.whenStarted { loadProgress.dismiss() }
-      }
+            withContext(dispatcherProvider.main()) {
+              updateViews()
+              fragment.whenStarted { loadProgress.dismiss() }
+            }
+          }
+        }
     }
   }
 
@@ -204,9 +206,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 if (questionnaireResponse == null) {
                   questionnaireResponse =
                     questionnaireViewModel.generateQuestionnaireResponse(
-                      questionnaire,
-                      intent,
-                      questionnaireConfig
+                      questionnaire = questionnaire,
+                      intent = intent,
+                      questionnaireConfig = questionnaireConfig
                     )
                 }
                 this.putString(

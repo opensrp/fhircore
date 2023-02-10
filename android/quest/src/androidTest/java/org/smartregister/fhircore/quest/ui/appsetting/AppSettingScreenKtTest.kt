@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class AppSettingScreenKtTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private var listenersSpy =
     object {
-      val onLoadConfigurations: (Boolean) -> Unit = {}
+      val onLoadConfigurations: (Context) -> Unit = {}
 
       val onAppIdChanged: (String) -> Unit = {}
     }
@@ -41,10 +41,11 @@ class AppSettingScreenKtTest {
   @Before
   fun setUp() {
     composeRule.setContent {
-      org.smartregister.fhircore.quest.ui.appsetting.AppSettingScreen(
+      AppSettingScreen(
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
-        onLoadConfigurations = listenersSpy.onLoadConfigurations
+        fetchConfiguration = listenersSpy.onLoadConfigurations,
+        error = ""
       )
     }
   }
