@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,17 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.result.ActivityResult
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
-import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -144,12 +136,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     )
   }
 
-  @Ignore("Needs refactoring")
   @Test
-  fun `handleTaskActivityResult should set task status in-progress when response status is in-progress`() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
-
+  fun testOnSubmitQuestionnaireShouldUpdateLiveData() {
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -168,63 +156,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
-  }
-
-  @Test
-  fun `handleTaskActivityResult should set task status completed when response status is completed`() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
-
-    appMainActivity.onSubmitQuestionnaire(
-      ActivityResult(
-        -1,
-        Intent().apply {
-          putExtra(
-            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-            QuestionnaireResponse().apply {
-              status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
-            }
-          )
-          putExtra(
-            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
-          )
-        }
-      )
+    val questionnaireSubmission =
+      appMainActivity.appMainViewModel.questionnaireSubmissionLiveData.value
+    Assert.assertNotNull(questionnaireSubmission)
+    Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
+    Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
+    Assert.assertEquals(
+      QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
+      questionnaireSubmission?.questionnaireResponse?.status
     )
-
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
-  }
-
-  @Test
-  fun `handleTaskActivityResult should set task status completed when response status is null`() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
-
-    appMainActivity.onSubmitQuestionnaire(
-      ActivityResult(
-        AppCompatActivity.RESULT_OK,
-        Intent().apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, QuestionnaireResponse())
-          putExtra(
-            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
-          )
-        }
-      )
-    )
-
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
-  }
-
-  @Test
-  fun `handleTaskActivityResult should not set task status when response does not exists`() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
-
-    appMainActivity.onSubmitQuestionnaire(ActivityResult(-1, Intent()))
-
-    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 }
