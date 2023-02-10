@@ -1,45 +1,49 @@
 ---
 description: >-
-  Why did we develop OpenSRP FHIR? How can an electronic medical record system
+  Why did we develop OpenSRP? How can an electronic medical record system
   benefit a community health system?
 ---
 
 # History
 
-[https://wiki.openmrs.org/display/docs/Introduction+to+OpenMRS](https://wiki.openmrs.org/display/docs/Introduction+to+OpenMRS), [https://docs.simple.org/readme/background](https://docs.simple.org/readme/background), [https://docs.communityhealthtoolkit.org/why-the-cht/](https://docs.communityhealthtoolkit.org/why-the-cht/)
-
 ## Overview <a href="#overview" id="overview"></a>
 
-Community health importance and some background
+As an organization we fundamentally believe technology can play a critical role to empower and augment the capabilities of frontline health workers to help them serve. This is critical to overcoming the significant shortage in highly skilled medical professionals that most countries face. Digitally empowered frontline health workers are essential if we want to achieve a more universal, equitable and affordable access to health services.
 
-How big the problems are at the field, with governments, some of the things FHIR addresses, the key modules we have and why they are important.
+Affordable, basic health care such as child immunizations, maternal care, malaria, HIV, and family planning in low resource countries can:
 
-Very brief timeline of how it got here from Karnataka, with photos.
+* **Improve health outcomes:** By providing access to necessary medical treatments and management, individuals are able to better control their condition and receive lifesaving care, reducing the risk of complications and improving overall health.
+* **Prevent disease progression**: Early detection and management of health issues can prevent the progression of the issue, reducing the risk of complications and improving health outcomes.
+* **Reduce poverty**: The cost of managing serious health issues can be significant, and without access to affordable healthcare, many individuals may fall into debt or poverty as a result of medical expenses.
+* **Promote economic development**: Improved health outcomes can lead to increased productivity, thereby promoting economic development.
+* **Reduce inequality**: Access to healthcare is often limited for marginalized communities, exacerbating existing inequalities. Providing affordable healthcare can help reduce these disparities.
+
+In summary, access to affordable and effective care for both chronic, acute and preventative conditions is critical to help ensure the overall health, economic and general well being of people around the world. Technology that supports patient centered care can play one important step in helping achieve this.
 
 ## The "smart" register <a href="#in-the-field" id="in-the-field"></a>
 
-OpenSRP FHIR is designed to be a highly intuitive tool based on existing tools.&#x20;
+OpenSRP is designed to be highly intuitive and based on existing paper tools in an effort to be easy to learn by existing health workers.
 
-paint picture of why it is the way it is... Transition from paper, Focus on beginner user, Overseeing a large group of patients so needs to be easily scannable, The right way: less focus on data collection, more focus on providing care... not just data collection app and should not be.
+The paper register is a common health team tool in low resource countries. These books are easy to print and follow a simple tabular format that guides the health care practitioner through a series of inputs.
 
-Opportunity to have our say on what the "right" way is.... speed, ease of use, quick understanding of who's important, speed through data collection, usability is key.
+[![](https://camo.githubusercontent.com/ca91fd9c98bf8811d87b16d3798bba9d9d5beb7197fe59506fa8cbcf7face170/68747470733a2f2f6c68342e676f6f676c6575736572636f6e74656e742e636f6d2f4a42445136734c6a64417872657436475561567368343546615f6c6d762d4459434335695a7349586162586143675932724a5f2d4a57396578306d776d63584d47324f4f7a6a4e325f766e6b63647371324b6679636e63347279765f4434312d574a42716177703276542d4d66516174474a544c52544c3369526944717a667257616e6779504a73322d6d495a695348575f54476e41)](https://camo.githubusercontent.com/ca91fd9c98bf8811d87b16d3798bba9d9d5beb7197fe59506fa8cbcf7face170/68747470733a2f2f6c68342e676f6f676c6575736572636f6e74656e742e636f6d2f4a42445136734c6a64417872657436475561567368343546615f6c6d762d4459434335695a7349586162586143675932724a5f2d4a57396578306d776d63584d47324f4f7a6a4e325f766e6b63647371324b6679636e63347279765f4434312d574a42716177703276542d4d66516174474a544c52544c3369526944717a667257616e6779504a73322d6d495a695348575f54476e41)
 
-#### Key baseline hypothesis statement (i.e. better tools means better health workers means better health services) <a href="#feedback-loops" id="feedback-loops"></a>
+We discovered that a major obstacle in the successful adoption of technology is the first few months of adapting and learning a new platform.
 
-A system for monitoring is one of the core pillars of a hypertension control program based on the World Health Organization's [HEARTS technical package](https://www.who.int/publications-detail-redirect/hearts-technical-package). By recording a high volume of follow-up visits by patients with hypertension, it's possible improve the health system more quickly. Fundamentally, Simple is a system of feedback loops to improve patient treatment and strengthen health systems.
+We used the format paper register, which was easy to scan and understand, and upgraded it to be "smart". First, we added "tasks" which are assigned to-do's for health practitioners, which helps them track when services are due and easily see who is overdue. Next, we added some simple checks to make sure data was entered correctly, and offered solutions and decision support for health issues that arise.
 
-Problems government and implementors care about with EMR systems and why this app is inherently a different approach. Launch, reliability, training, interoperability, SMART guidelines, FHIR standard.
+OpenSRP supports health done in the right way, with less focus on rote data collection, and more focus on providing quality care. The software is meant to provide a speedy and helpful user experience where usability is king.
 
 ## More about OpenSRP FHIR <a href="#more-background" id="more-background"></a>
 
 **Blog articles**
 
-* ​​
-* ​​
+* [​​Eight reasons why FHIR is important for global health](https://ona.io/home/eight-reasons-why-fhir-is-important/)
+* [​​Powering interoperability with a FHIR to DHIS2 adapter](https://github.com/opensrp/fhircore/blob/rw-pld-gitbook-sync/docs/readme/history/#overview)
 
 **Videos**
 
-* ​
+\{% embed url="[https://www.youtube.com/watch?v=S9oaJIyIUEE](https://www.youtube.com/watch?v=S9oaJIyIUEE)" %\}
 
 **Training materials**
 
@@ -47,4 +51,4 @@ Problems government and implementors care about with EMR systems and why this ap
 
 **News**
 
-* &#x20;
+*
