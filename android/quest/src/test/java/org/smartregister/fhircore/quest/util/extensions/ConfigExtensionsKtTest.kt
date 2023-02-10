@@ -199,7 +199,6 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        computedValuesMap = any(),
         actionParams = any()
       )
     }
