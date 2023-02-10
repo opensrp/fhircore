@@ -51,7 +51,7 @@ enum class ListOrientation {
 
 @Serializable
 data class ListResource(
-  val id: String?,
+  val id: String? = null,
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String,

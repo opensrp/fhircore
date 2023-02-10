@@ -193,6 +193,20 @@
                   "emptyList": {
                     "message": ""
                   },
+                  "resources": [
+                    {
+                      "id": "readyTask",
+                      "relatedResourceId": "task",
+                      "resourceType": "Task",
+                      "conditionalFhirPathExpression": "Task.status='ready'",
+                      "relatedResources": [
+                        {
+                          "resourceType": "CarePlan",
+                          "fhirPathExpression": "Patient.subject"
+                        }
+                      ]
+                    }
+                  ],
                   "registerCard": {
                     "rules": [
                       {
