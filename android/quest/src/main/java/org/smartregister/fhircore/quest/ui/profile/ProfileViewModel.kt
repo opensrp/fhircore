@@ -272,6 +272,10 @@ constructor(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
         )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
       }
     }
 }
