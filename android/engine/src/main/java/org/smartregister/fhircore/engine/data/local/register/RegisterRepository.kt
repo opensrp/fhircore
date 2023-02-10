@@ -176,7 +176,7 @@ constructor(
    * views. This function also retrieves Lists rendered inside other views and computes their rules.
    * The LIST view computed values includes the parent's.
    *
-   * This function re-uses the parent view's [computedValuesMap] and [relatedResourcesMap]. It does
+   * This function re-uses the parent view' s [computedValuesMap] and [relatedResourcesMap]. It does
    * not re-query data from the cache. For a List view, the base resource will always be available
    * in the parent's view relatedResourcesMap. We retrieve it and use it to get it's related
    * resources so we can fire rules for the List.
@@ -194,6 +194,11 @@ constructor(
           val listResourceId = listResource.id ?: listResource.resourceType.name
           val resourceDataList =
             relatedResourcesMap[listResourceId]?.map { resource ->
+              val filteredResourcesList =
+                rulesFactory.rulesEngineService.filterResources(
+                  listOf(resource),
+                  listResource.conditionalFhirPathExpression
+                )
               val listRelatedResources =
                 listResource.relatedResources.associate {
                   Pair(
@@ -201,8 +206,8 @@ constructor(
                     rulesFactory.rulesEngineService.retrieveRelatedResources(
                       resource = resource,
                       relatedResourceType = it.resourceType,
-                      fhirPathExpression = listResource.conditionalFhirPathExpression,
-                      relatedResourcesMap = relatedResourcesMap
+                      fhirPathExpression = it.fhirPathExpression,
+                      relatedResourcesMap = mapOf(listResourceId to filteredResourcesList)
                     )
                   )
                 }
