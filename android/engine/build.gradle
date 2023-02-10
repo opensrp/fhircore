@@ -156,7 +156,7 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.6.1-BUG-FIXES-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.1-SNAPSHOT')
 
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
