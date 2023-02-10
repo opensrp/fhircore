@@ -62,6 +62,9 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -119,14 +122,22 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         "form",
         resourceIdentifier = "@{familyLogicalId}",
       )
-    val computedValuesMap: Map<String, Any> =
-      mutableMapOf<String, Any>().apply { put("familyLogicalId", "Group/group-id") }
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+          dataType = DataType.INTEGER,
+          key = "maleCondomPreviousBalance",
+          value = "100"
+        )
+      )
     intent =
       Intent()
         .putExtras(
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
           )
         )
 
@@ -182,11 +193,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             id = "my-form",
             resourceIdentifier = "1234",
             type = QuestionnaireType.READ_ONLY
+          ),
+        actionParams =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "my-param",
+              dataType = DataType.INTEGER,
+              key = "my-key",
+              value = "100"
+            )
           )
       )
 
     val actualQuestionnaireConfig =
       result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as QuestionnaireConfig
+    val actualActionParams =
+      result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS) as
+        List<ActionParameter>
     Assert.assertEquals("my-form", actualQuestionnaireConfig.id)
     Assert.assertEquals("1234", actualQuestionnaireConfig.resourceIdentifier)
     Assert.assertEquals(QuestionnaireType.READ_ONLY.name, actualQuestionnaireConfig.type.name)
@@ -200,6 +224,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
+    Assert.assertEquals(1, actualActionParams.size)
+    Assert.assertEquals("my-param", actualActionParams[0].linkId)
   }
 
   @Test
@@ -211,14 +237,22 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         title = "Patient registration",
         type = QuestionnaireType.READ_ONLY
       )
-    val computedValuesMap: Map<String, Any> =
-      mutableMapOf<String, Any>().apply { put("familyLogicalId", "Group/group-id") }
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "my-param",
+          dataType = DataType.INTEGER,
+          key = "my-key",
+          value = "100"
+        )
+      )
     intent =
       Intent()
         .putExtras(
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
           )
         )
 
