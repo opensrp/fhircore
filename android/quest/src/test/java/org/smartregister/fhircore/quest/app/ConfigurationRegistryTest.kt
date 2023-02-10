@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -52,26 +53,16 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) var coroutinesTestRule = CoroutineTestRule()
-
-  private lateinit var configurationRegistry: ConfigurationRegistry
-
   @Inject lateinit var gson: Gson
-
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
-
-  private val secureSharedPreference = mockk<SecureSharedPreference>()
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  val configService = mockk<ConfigService>()
-
+  private val secureSharedPreference = mockk<SecureSharedPreference>()
+  private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
-
-  val fhirResourceService = mockk<FhirResourceService>()
-
-  val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
+  private val fhirResourceService = mockk<FhirResourceService>()
+  private val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
   @Before
   fun setUp() {
@@ -85,7 +76,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirResourceDataSource = fhirResourceDataSource,
         sharedPreferencesHelper = sharedPreferencesHelper,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-        configService = configService
+        configService = configService,
+        json = Faker.json
       )
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
@@ -115,11 +107,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 
@@ -147,11 +139,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 }
