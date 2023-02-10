@@ -62,6 +62,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -526,7 +527,8 @@ constructor(
         }
       }
       .filter {
-        it.hasStart() &&
+        it.status == Appointment.AppointmentStatus.BOOKED &&
+          it.hasStart() &&
           it.start.after(
             Date.from(
               LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30)
@@ -548,7 +550,7 @@ constructor(
             it.actor.referenceElement.idPart == patientId
         }
       }
-      .filterNot { it.hasStart() }
+      .filterNot { it.hasStart() && it.status == Appointment.AppointmentStatus.BOOKED }
       .sortedBy { it.created }
       .firstOrNull()
   }
@@ -578,7 +580,7 @@ constructor(
           }
         )
       }
-    return tasks
+    return tasks.filter { it.status in arrayOf(TaskStatus.READY, TaskStatus.INPROGRESS) }
   }
 
   fun saveResource(resource: Resource) {

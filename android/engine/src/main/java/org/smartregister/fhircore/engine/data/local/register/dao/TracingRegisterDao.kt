@@ -196,7 +196,9 @@ constructor(
         filter(Task.SUBJECT, { value = patient.referenceValue() })
       }
     return patientTasks.filter {
-      it.executionPeriod.hasStart() && it.executionPeriod.start.before(Date())
+      it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
+        it.executionPeriod.hasStart() &&
+        it.executionPeriod.start.before(Date())
     }
   }
 
