@@ -269,6 +269,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testGetQuestionnaireResponseShouldHaveSubjectAndDate() {
+    val questionnaire = Questionnaire().apply { id = "12345" }
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     var questionnaireResponse = QuestionnaireResponse()
 
     Assert.assertNull(questionnaireResponse.id)
@@ -512,6 +514,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPostSaveSuccessfulShouldFinishActivity() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
 
     Assert.assertTrue(questionnaireActivity.isFinishing)
