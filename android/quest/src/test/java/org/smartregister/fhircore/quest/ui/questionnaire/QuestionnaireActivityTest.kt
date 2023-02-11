@@ -268,7 +268,70 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testPrePopulationParamsFiltersEmptyAndNonInterpolatedValues() {
+    Assert.assertFalse(questionnaireConfig.type.isReadOnly())
+    val expectedQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.READ_ONLY
+      )
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "my-param1",
+          dataType = DataType.INTEGER,
+          key = "my-key",
+          value = "100"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "my-param2",
+          dataType = DataType.STRING,
+          key = "my-key",
+          value = "@{value}"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "my-param2",
+          dataType = DataType.STRING,
+          key = "my-key",
+          value = ""
+        ),
+        ActionParameter(key = "patientId", value = "patient-id")
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
+          )
+        )
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val updatedActionParams =
+      ReflectionHelpers.getField<List<ActionParameter>>(questionnaireActivity, "actionParams")
+    val prePopulationParams =
+      ReflectionHelpers.getField<List<ActionParameter>>(
+        questionnaireActivity,
+        "prePopulationParams"
+      )
+    Assert.assertEquals(4, updatedActionParams.size)
+    Assert.assertEquals(1, prePopulationParams.size)
+    Assert.assertEquals("my-param1", prePopulationParams[0].linkId)
+  }
+
+  @Test
   fun testGetQuestionnaireResponseShouldHaveSubjectAndDate() {
+    val questionnaire = Questionnaire().apply { id = "12345" }
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     var questionnaireResponse = QuestionnaireResponse()
 
     Assert.assertNull(questionnaireResponse.id)
@@ -512,6 +575,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPostSaveSuccessfulShouldFinishActivity() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
 
     Assert.assertTrue(questionnaireActivity.isFinishing)
