@@ -809,11 +809,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               )
               Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
               Assert.assertTrue(
-                task.reasonCode.text ==
-                  "Administration of vaccine to produce active immunity (procedure)"
+                task.code.text == "Administration of vaccine to produce active immunity (procedure)"
               )
+              Assert.assertTrue(task.code.hasCoding())
+              Assert.assertTrue(task.code.coding.get(0).code == "33879002")
+              Assert.assertTrue(task.reasonCode.text == "Immunization at 9.5 years")
               Assert.assertTrue(task.reasonCode.hasCoding())
-              Assert.assertTrue(task.reasonCode.coding.get(0).code == "33879002")
+              Assert.assertTrue(
+                task.reasonCode.coding.get(0).code == "immunization_at_9_half_years"
+              )
             }
           }
           .all { task ->
