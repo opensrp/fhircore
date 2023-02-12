@@ -194,10 +194,10 @@ constructor(
       if (listProperties.resources.isNotEmpty()) {
         listProperties.resources.forEach { listResource ->
           val listResourceId = listResource.id ?: listResource.resourceType.name
-          updateRelatedResourcesMap(relatedResourcesMap, listResourceId, listResource)
+          val filteredResourceMap = updateRelatedResourcesMap(relatedResourcesMap, listResourceId, listResource)
           retrieveResourceDataList(
             listResourceId,
-            relatedResourcesMap,
+            filteredResourceMap,
             listProperties,
             computedValuesMap,
             resourceDataMap,
@@ -274,16 +274,18 @@ constructor(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     listResourceId: String,
     listResource: ListResource
-  ) {
+  ): MutableMap<String, MutableList<Resource>> {
     val resourcesToFilter = relatedResourcesMap[listResourceId]
     val filteredResourcesList =
       resourcesToFilter?.let {
         rulesFactory.rulesEngineService.filterResources(
           it,
           listResource.conditionalFhirPathExpression
-        )
+        ).toMutableList()
       }
-    filteredResourcesList?.let { relatedResourcesMap.replace(listResourceId, it.toMutableList()) }
+    val filteredResourceMap = HashMap(relatedResourcesMap)
+    filteredResourcesList?.let { filteredResourceMap.replace(listResourceId, it) }
+    return filteredResourceMap
   }
 
   /**
