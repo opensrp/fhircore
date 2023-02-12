@@ -214,21 +214,7 @@
                         "borderRadius": 6
                       }
                     ]
-                  },
-                  "resources": [
-                    {
-                      "id": "readyTask",
-                      "relatedResourceId": "task",
-                      "resourceType": "Task",
-                      "conditionalFhirPathExpression": "Task.status='ready'",
-                      "relatedResources": [
-                        {
-                          "resourceType": "CarePlan",
-                          "fhirPathExpression": "Patient.subject"
-                        }
-                      ]
-                    }
-                  ]
+                  }
                 },
 
                 {
@@ -311,6 +297,17 @@
               "viewType": "LIST",
               "id": "taskList",
               "baseResource": "Task",
+              "resources": [
+                {
+                  "id": "Task",
+                  "relatedResourceId": "task",
+                  "resourceType": "Task",
+                  "conditionalFhirPathExpression": "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
+                }
+              ],
+              "emptyList": {
+                "message": "No visit tasks available for this patient at the moment"
+              },
               "registerCard": {
                 "rules": [
                   {
