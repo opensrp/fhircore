@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 
 package org.smartregister.fhircore.quest.ui.usersetting
 
-import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -39,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
+import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -48,38 +48,29 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 @HiltAndroidTest
 class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
-
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
-
   lateinit var userSettingViewModel: UserSettingViewModel
-
   lateinit var accountAuthenticator: AccountAuthenticator
-
   lateinit var secureSharedPreference: SecureSharedPreference
-
   lateinit var fhirEngine: FhirEngine
-
   var sharedPreferencesHelper: SharedPreferencesHelper
-
   private var configService: ConfigService
-
   private lateinit var syncBroadcaster: SyncBroadcaster
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-
   private val resourceService: FhirResourceService = mockk()
-
+  private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
   private var fhirResourceDataSource: FhirResourceDataSource
 
   init {
@@ -94,24 +85,28 @@ class UserSettingViewModelTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
-    fhirEngine = mockk()
+    fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
-        context = application
+        context = context
       )
 
     userSettingViewModel =
-      UserSettingViewModel(
-        fhirEngine = fhirEngine,
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        configurationRegistry
+      spyk(
+        UserSettingViewModel(
+          fhirEngine = fhirEngine,
+          syncBroadcaster = syncBroadcaster,
+          accountAuthenticator = accountAuthenticator,
+          secureSharedPreference = secureSharedPreference,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          workManager = workManager,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        )
       )
   }
 
@@ -132,8 +127,11 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
-    val userSettingsEvent = UserSettingsEvent.Logout
-    every { accountAuthenticator.logout(any()) } returns Unit
+    val activity = mockk<HiltActivityForTest>(relaxed = true)
+    every { activity.isDeviceOnline() } returns true
+    every { activity.launchActivityWithNoBackStackHistory<LoginActivity>() } just runs
+    val userSettingsEvent = UserSettingsEvent.Logout(activity)
+    every { accountAuthenticator.logout(any()) } just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
@@ -210,14 +208,13 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun testResetDatabaseFlagEventShouldInvokeResetDatabaseMethod() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
-    userSettingViewModelSpy.dispatcherProvider = coroutineTestRule.testDispatcherProvider
-    every { userSettingViewModelSpy.resetDatabase(any()) } just runs
+    every { userSettingViewModelSpy.resetAppData(any()) } just runs
 
-    val userSettingsEvent = UserSettingsEvent.ResetDatabaseFlag(true)
+    val userSettingsEvent = UserSettingsEvent.ResetDatabaseFlag(true, context)
 
     userSettingViewModelSpy.onEvent(userSettingsEvent)
 
-    verify { userSettingViewModelSpy.resetDatabase(any()) }
+    verify { userSettingViewModelSpy.resetAppData(any()) }
   }
 
   @Test
@@ -234,66 +231,11 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testResetDatabaseInvokesClearDatabase() = runTest {
-    coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
+  fun testResetAppDataShouldClearEverything() = runTest {
+    userSettingViewModel.resetAppData(context)
 
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
-
+    verify { workManager.cancelAllWork() }
     coVerify { fhirEngine.clearDatabase() }
-  }
-
-  @Test
-  fun testResetDatabaseInvokesResetSharedPrefs() = runTest {
-    coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
-
-    coVerify { sharedPreferencesHelper.resetSharedPrefs() }
-  }
-
-  @Test
-  fun testResetDatabaseInvokesResetSecuredSharedPrefs() = runTest {
-    coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
-
-    coVerify { sharedPreferencesHelper.resetSharedPrefs() }
-  }
-
-  @Test
-  fun testResetDatabaseInvokesAccountAuthenticatorLocalLogout() = runTest {
-    coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
-
-    coVerify { accountAuthenticator.invalidateSession() }
-  }
-
-  @Test
-  fun testResetDatabaseInvokesAccountAuthenticatorLaunchScreen() = runTest {
-    coEvery { fhirEngine.clearDatabase() } just runs
-    coEvery { accountAuthenticator.launchScreen(any()) } just runs
-    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
-    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
-    coEvery { accountAuthenticator.invalidateSession() } just runs
-
-    userSettingViewModel.resetDatabase(coroutineTestRule.testDispatcherProvider.io())
-
-    coVerify { accountAuthenticator.launchScreen(any()) }
+    verify { accountAuthenticator.invalidateSession(any()) }
   }
 }
