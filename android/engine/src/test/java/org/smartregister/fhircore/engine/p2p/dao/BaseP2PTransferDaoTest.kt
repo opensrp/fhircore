@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,6 +150,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
+        offset = 0,
         classType = classType
       )
     }
@@ -164,7 +165,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     val tokenFilters: MutableList<DateParamFilterCriterion> =
       ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
     assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+    assertEquals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS, tokenFilters[0].prefix)
   }
 
   @Test

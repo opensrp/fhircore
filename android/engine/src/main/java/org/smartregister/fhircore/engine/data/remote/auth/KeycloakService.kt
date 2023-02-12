@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.engine.data.remote.auth
 
-import android.os.Handler
-import android.os.Message
-import timber.log.Timber
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import retrofit2.Response
+import retrofit2.http.GET
 
-/** Subclass of [Handler.Callback] that logs the error message to the console */
-object DefaultErrorHandler : Handler.Callback {
-  override fun handleMessage(msg: Message): Boolean {
-    Timber.i("Encountered an error while retrieving token: ", msg)
-    return true
-  }
+interface KeycloakService {
+  @GET("protocol/openid-connect/userinfo") suspend fun fetchUserInfo(): Response<UserInfo?>
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
@@ -86,6 +87,7 @@ constructor(
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
+    offset: Int,
     classType: Class<out Resource>
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
@@ -117,11 +119,12 @@ constructor(
             DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
             }
           )
 
-          // sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+          from = offset
           count = batchSize
         }
       fhirEngine.search(search)
