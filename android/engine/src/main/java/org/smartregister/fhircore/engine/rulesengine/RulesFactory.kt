@@ -117,7 +117,7 @@ constructor(
    */
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
-    baseResource: Resource,
+    baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values and init facts
@@ -145,9 +145,10 @@ constructor(
     }
 
     // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    facts.put(baseResource.resourceType.name, baseResource)
+    if (baseResource != null) {
+      facts.put(baseResource.resourceType.name, baseResource)
+    }
     relatedResourcesMap.forEach { facts.put(it.key, it.value) }
-
     rulesEngine.fire(Rules(customRules), facts)
 
     return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
@@ -202,7 +203,6 @@ constructor(
      * fetches a list of facts of the given [parentResourceType] then iterates through this list in
      * order to return a resource whose logical id matches the subject reference retrieved via
      * fhirPath from the [childResource]
-     *
      * - The logical Id of the parentResource [parentResourceType]
      * - The ResourceType the parentResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the logical Id from the parent resources
@@ -226,6 +226,7 @@ constructor(
      * [resources] List of resources the expressions are run against [fhirPathExpression] An
      * expression to run against the provided resources [matchAll] When true the function checks
      * whether all of the resources fulfill the expression provided
+     *
      * ```
      *            When false the function checks whether any of the resources fulfills the expression provided
      * ```
