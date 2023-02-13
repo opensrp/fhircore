@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package org.smartregister.fhircore.quest.ui.main
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -91,7 +88,8 @@ fun MainScreen(
         navController = navController,
         enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
         enableReports = uiState.enableReports,
-        syncClickEnabled = uiState.syncClickEnabled
+        syncClickEnabled = uiState.syncClickEnabled,
+        syncText = uiState.syncTextRes
       )
     },
     bottomBar = {

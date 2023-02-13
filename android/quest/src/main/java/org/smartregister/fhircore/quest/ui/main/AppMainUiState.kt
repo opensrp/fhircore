@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import androidx.annotation.StringRes
 import java.util.Locale
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
+import org.smartregister.fhircore.quest.R
 
 data class AppMainUiState(
   val appTitle: String,
@@ -29,7 +31,8 @@ data class AppMainUiState(
   val sideMenuOptions: List<SideMenuOption>,
   val enableDeviceToDeviceSync: Boolean = false,
   val enableReports: Boolean = false,
-  val syncClickEnabled: Boolean = true
+  val syncClickEnabled: Boolean = true,
+  @StringRes val syncTextRes: Int = R.string.sync
 )
 
 fun appMainUiStateOf(
@@ -40,7 +43,8 @@ fun appMainUiStateOf(
   languages: List<Language> = emptyList(),
   sideMenuOptions: List<SideMenuOption> = emptyList(),
   enableDeviceToDeviceSync: Boolean = false,
-  enableReports: Boolean = false
+  enableReports: Boolean = false,
+  @StringRes syncTextRes: Int = R.string.sync
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -50,6 +54,7 @@ fun appMainUiStateOf(
     languages = languages,
     sideMenuOptions = sideMenuOptions,
     enableDeviceToDeviceSync = enableDeviceToDeviceSync,
-    enableReports = enableReports
+    enableReports = enableReports,
+    syncTextRes = syncTextRes
   )
 }

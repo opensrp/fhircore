@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main.components
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -84,7 +85,8 @@ fun AppDrawer(
   onSideMenuClick: (AppMainEvent) -> Unit,
   enableDeviceToDeviceSync: Boolean,
   enableReports: Boolean,
-  syncClickEnabled: Boolean
+  syncClickEnabled: Boolean,
+  @StringRes syncText: Int = R.string.sync
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -205,15 +207,28 @@ fun AppDrawer(
           .background(SideMenuBottomItemDarkColor)
           .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
-      SideMenuItem(
-        iconResource = R.drawable.ic_sync,
-        title = stringResource(R.string.sync),
-        endText = lastSyncTime,
-        showEndText = true,
-        endTextColor = SubtitleTextColor,
-        onSideMenuClick = { onSideMenuClick(syncEvent) },
-        enabled = syncClickEnabled
-      )
+      if (syncText != R.string.sync) {
+        SideMenuItem(
+          title = stringResource(syncText),
+          endText = lastSyncTime,
+          showEndText = true,
+          endTextColor = SubtitleTextColor,
+          onSideMenuClick = {
+            //            onSideMenuClick(syncEvent)
+          },
+          enabled = false
+        )
+      } else {
+        SideMenuItem(
+          iconResource = R.drawable.ic_sync,
+          title = stringResource(syncText),
+          endText = lastSyncTime,
+          showEndText = true,
+          endTextColor = SubtitleTextColor,
+          onSideMenuClick = { onSideMenuClick(syncEvent) },
+          enabled = syncClickEnabled
+        )
+      }
     }
   }
 }
@@ -221,7 +236,7 @@ fun AppDrawer(
 @Composable
 fun SideMenuItem(
   modifier: Modifier = Modifier,
-  iconResource: Int,
+  iconResource: Int? = null,
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
@@ -239,12 +254,14 @@ fun SideMenuItem(
     val alpha = if (enabled) ContentAlpha.high else ContentAlpha.disabled
 
     Row(modifier = modifier.padding(vertical = 16.dp).alpha(alpha)) {
-      Icon(
-        modifier = modifier.padding(end = 10.dp).size(24.dp).alpha(alpha),
-        painter = painterResource(id = iconResource),
-        contentDescription = SIDE_MENU_ICON,
-        tint = Color.White
-      )
+      if (iconResource != null) {
+        Icon(
+          modifier = modifier.padding(end = 10.dp).size(24.dp).alpha(alpha),
+          painter = painterResource(id = iconResource),
+          contentDescription = SIDE_MENU_ICON,
+          tint = Color.White
+        )
+      }
       SideMenuItemText(title = title, textColor = Color.White.copy(alpha))
     }
 
@@ -339,6 +356,7 @@ fun AppDrawerPreviewSyncDisabled() {
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
     enableDeviceToDeviceSync = true,
     enableReports = true,
-    syncClickEnabled = false
+    syncClickEnabled = false,
+    syncText = R.string.offline
   )
 }

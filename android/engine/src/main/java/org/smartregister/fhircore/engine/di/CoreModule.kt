@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -47,13 +48,15 @@ class CoreModule {
     @ApplicationContext context: Context,
     configurationRegistry: ConfigurationRegistry,
     configService: ConfigService,
-    fhirEngine: FhirEngine
+    fhirEngine: FhirEngine,
+    sharedPreferencesHelper: SharedPreferencesHelper
   ) =
     SyncBroadcaster(
       configurationRegistry = configurationRegistry,
       configService = configService,
       fhirEngine = fhirEngine,
-      appContext = context
+      appContext = context,
+      sharedPreferencesHelper = sharedPreferencesHelper
     )
 
   @Singleton

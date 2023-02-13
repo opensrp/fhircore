@@ -22,6 +22,7 @@ import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.Exception
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,6 +33,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 /**
@@ -46,17 +49,28 @@ constructor(
   val fhirEngine: FhirEngine,
   val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
-  @ApplicationContext val appContext: Context
+  @ApplicationContext val appContext: Context,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) {
   fun runSync(networkState: (Context) -> Boolean = { NetworkState(it).invoke() }) {
-    Timber.i("Running one-time sync...")
     CoroutineScope(dispatcherProvider.io()).launch {
+      if (isRunningOffline()) {
+        Timber.w("Running offline...")
+        sharedSyncStatus.emit(
+          SyncJobStatus.Failed(
+            listOf(ResourceSyncException(ResourceType.Flag, Exception("Running Offline!")))
+          )
+        )
+        return@launch
+      }
+
+      Timber.i("Running one-time sync...")
       networkState(appContext).apply {
         if (this) Sync.oneTimeSync<AppSyncWorker>(appContext).collect { sharedSyncStatus.emit(it) }
         else {
           val message = appContext.getString(R.string.unable_to_sync)
           val resourceSyncException =
-            listOf(ResourceSyncException(ResourceType.Flag, java.lang.Exception(message)))
+            listOf(ResourceSyncException(ResourceType.Flag, Exception(message)))
           sharedSyncStatus.emit(SyncJobStatus.Failed(resourceSyncException))
         }
       }
@@ -66,6 +80,11 @@ constructor(
   fun registerSyncListener(onSyncListener: OnSyncListener, scope: CoroutineScope) {
     scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
   }
+
+  fun isRunningOffline() = !isInitialSync()
+
+  private fun isInitialSync() =
+    sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrBlank()
 
   companion object {
     const val DEFAULT_SYNC_INTERVAL: Long = 15

@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -85,7 +86,8 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
-        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
+        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting),
+        syncTextRes = if (syncBroadcaster.isRunningOffline()) R.string.offline else R.string.sync
       )
   }
 
