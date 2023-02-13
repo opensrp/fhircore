@@ -37,35 +37,55 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
 ## Display other resources (List Resources) inside another list
 To display list resources inside a list and execute it's rules , add it's configurations as show below
 ``` json
- {
-   "viewType": "LIST",
-   "id": "statusList",
-   "listResource": "Condition",
-   "orientation": "HORIZONTAL",
-   "emptyList": {
-     "message": ""
-   },
-   "registerCard": {
-     "rules": [
-       {
-         "name": "conditionTitle",
-         "condition": "true",
-         "actions": ["data.put('conditionTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"]
-       }
-     ],
-     "views": [
-       {
-         "viewType": "COMPOUND_TEXT",
-         "primaryTextBackgroundColor": "#F5F5F5",
-         "primaryText": "@{conditionTitle}",
-         "primaryTextColor": "#6F7274",
-         "fontSize": 13,
-         "padding": 7,
-         "borderRadius": 6
-       }
-     ]
-   }
- }
+{
+  "viewType": "LIST",
+  "id": "readyTasksList",
+  "resources": [
+    {
+      "id": "availableTask",
+      "relatedResourceId": "availableTasks",
+      "resourceType": "Task",
+      "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+    }
+  ],
+  "emptyList": {
+    "message": "No visit tasks available for this patient at the moment"
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "BUTTON",
+        "smallSized": "true",
+        "text": "@{taskDescriptionWithStartDate}",
+        "status": "@{taskStatusColorCode}",
+        "visible": "true",
+        "enabled": "@{patientActive}",
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_QUESTIONNAIRE",
+            "questionnaire": {
+              "id": "@{taskQuestionnaireId}",
+              "title": "@{taskDescription}",
+              "saveButtonText": "Save",
+              "taskId": "@{taskId}",
+              "resourceIdentifier": "@{taskFor}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
  ```
 
 ## Config properties
