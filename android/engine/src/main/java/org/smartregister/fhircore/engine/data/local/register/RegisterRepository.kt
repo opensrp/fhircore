@@ -192,15 +192,15 @@ constructor(
     val resourceDataMap = mutableMapOf<String, List<ResourceData>>()
     listViewProperties.forEach { listProperties ->
       if (listProperties.resources.isNotEmpty()) {
-        val resourceDataList =
+        val resourceDataList: List<ResourceData> =
           listProperties.resources.flatMap { listResource ->
-            val filteredListResources = filteredListResources(relatedResourcesMap, listResource)
-            filteredListResources.mapToResourceData(
-              relatedResourcesMap = relatedResourcesMap,
-              ruleConfigs = listProperties.registerCard.rules,
-              listRelatedResources = listResource.relatedResources,
-              computedValuesMap = computedValuesMap
-            )
+            filteredListResources(relatedResourcesMap, listResource)
+              .mapToResourceData(
+                relatedResourcesMap = relatedResourcesMap,
+                ruleConfigs = listProperties.registerCard.rules,
+                listRelatedResources = listResource.relatedResources,
+                computedValuesMap = computedValuesMap
+              )
           }
         resourceDataMap[listProperties.id] = resourceDataList
       } else {

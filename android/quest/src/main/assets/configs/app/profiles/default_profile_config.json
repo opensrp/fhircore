@@ -294,15 +294,9 @@
               "resources": [
                 {
                   "id": "availableTask",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
-                },
-                {
-                  "id": "canceledTask",
-                  "relatedResourceId": "task",
-                  "resourceType": "Task",
-                  "conditionalFhirPathExpression": "((Task.status = 'canceled' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
                 }
               ],
               "emptyList": {
@@ -419,7 +413,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_birth'"
                 }
@@ -538,7 +532,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'"
                 }
@@ -657,7 +651,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'"
                 }
@@ -776,7 +770,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'"
                 }
@@ -895,7 +889,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_months'"
                 }
@@ -1014,7 +1008,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_15_months'"
                 }
@@ -1133,7 +1127,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_years'"
                 }
@@ -1252,7 +1246,7 @@
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'"
                 }
