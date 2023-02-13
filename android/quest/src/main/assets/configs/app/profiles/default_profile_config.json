@@ -189,7 +189,7 @@
                 {
                   "viewType": "LIST",
                   "id": "statusList",
-                  "baseResource": "Condition",
+                  "listResource": "Condition",
                   "orientation": "HORIZONTAL",
                   "emptyList": {
                     "message": ""
@@ -291,13 +291,18 @@
             {
               "viewType": "LIST",
               "id": "readyTasksList",
-              "baseResource": "Task",
               "resources": [
                 {
-                  "id": "availableTasks",
+                  "id": "availableTask",
                   "relatedResourceId": "task",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+                },
+                {
+                  "id": "canceledTask",
+                  "relatedResourceId": "task",
+                  "resourceType": "Task",
+                  "conditionalFhirPathExpression": "((Task.status = 'canceled' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
                 }
               ],
               "emptyList": {
@@ -411,7 +416,6 @@
             {
               "viewType": "LIST",
               "id": "atBirthTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -531,7 +535,6 @@
             {
               "viewType": "LIST",
               "id": "at6WeeksTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -651,7 +654,6 @@
             {
               "viewType": "LIST",
               "id": "at10WeeksTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -771,7 +773,6 @@
             {
               "viewType": "LIST",
               "id": "at14WeeksTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -891,7 +892,6 @@
             {
               "viewType": "LIST",
               "id": "at9MonthsTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -1011,7 +1011,6 @@
             {
               "viewType": "LIST",
               "id": "at15MonthsTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -1131,7 +1130,6 @@
             {
               "viewType": "LIST",
               "id": "at9yearsTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
@@ -1251,7 +1249,6 @@
             {
               "viewType": "LIST",
               "id": "at9HalfYearsTaskList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",

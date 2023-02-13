@@ -27,7 +27,6 @@ import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -117,7 +116,7 @@ constructor(
    */
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
-    baseResource: Resource? = null,
+    baseResource: Resource,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values and init facts
@@ -145,9 +144,8 @@ constructor(
     }
 
     // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    if (baseResource != null) {
-      facts.put(baseResource.resourceType.name, baseResource)
-    }
+    facts.put(baseResource.resourceType.name, baseResource)
+
     relatedResourcesMap.forEach { facts.put(it.key, it.value) }
     rulesEngine.fire(Rules(customRules), facts)
 
@@ -170,31 +168,31 @@ constructor(
 
     /**
      * This method retrieves a list of relatedResources for a given resource from the facts map It
-     * fetches a list of facts of the given [relatedResourceType] then iterates through this list in
+     * fetches a list of facts of the given [relatedResourceKey] then iterates through this list in
      * order to return a list of all resources whose subject reference matches the logical Id of the
      * [resource]
      *
-     * [resource]
-     * - The parent resource for which the related resources will be retrieved [relatedResourceType]
-     * - The ResourceType the relatedResources belong to [fhirPathExpression]
-     * - A fhir path expression used to retrieve the subject reference Id from the related resources
+     * @param resource The parent resource for which the related resources will be retrieved
+     * @param relatedResourceKey The key representing the relatedResources in the map
+     * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
+     * reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
-      relatedResourceType: ResourceType,
-      fhirPathExpression: String,
+      relatedResourceKey: String,
+      referenceFhirPathExpression: String,
       relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        relatedResourcesMap?.get(relatedResourceType.name)
-          ?: if (facts.getFact(relatedResourceType.name) != null)
-            facts.getFact(relatedResourceType.name).value as List<Resource>
+        relatedResourcesMap?.get(relatedResourceKey)
+          ?: if (facts.getFact(relatedResourceKey) != null)
+            facts.getFact(relatedResourceKey).value as List<Resource>
           else emptyList()
 
       return value.filter {
         resource.logicalId ==
-          fhirPathDataExtractor.extractValue(it, fhirPathExpression).extractLogicalIdUuid()
+          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
       }
     }
 
@@ -345,8 +343,8 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function filters resource if the [value] provided matches the result of the extracted
-     * [fhirPathExpression]
+     * This function filters resource provided the condition exracted from the [fhirPathExpression]
+     * is met
      */
     fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {

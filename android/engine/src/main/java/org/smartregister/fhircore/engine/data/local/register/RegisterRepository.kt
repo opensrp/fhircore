@@ -28,7 +28,6 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -46,6 +45,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
+import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -192,108 +192,99 @@ constructor(
     val resourceDataMap = mutableMapOf<String, List<ResourceData>>()
     listViewProperties.forEach { listProperties ->
       if (listProperties.resources.isNotEmpty()) {
-        listProperties.resources.forEach { listResource ->
-          val listResourceId = listResource.id ?: listResource.resourceType.name
-          val filteredResourceMap =
-            updateRelatedResourcesMap(relatedResourcesMap, listResourceId, listResource)
-          retrieveResourceDataList(
-            listResourceId,
-            filteredResourceMap,
-            listProperties,
-            computedValuesMap,
-            resourceDataMap,
-            listResourceId
-          )
-        }
+        val resourceDataList =
+          listProperties.resources.flatMap { listResource ->
+            val filteredListResources = filteredListResources(relatedResourcesMap, listResource)
+            filteredListResources.mapToResourceData(
+              relatedResourcesMap = relatedResourcesMap,
+              ruleConfigs = listProperties.registerCard.rules,
+              listRelatedResources = listResource.relatedResources,
+              computedValuesMap = computedValuesMap
+            )
+          }
+        resourceDataMap[listProperties.id] = resourceDataList
       } else {
-        retrieveResourceDataList(
-          listProperties.baseResource.name,
-          relatedResourcesMap,
-          listProperties,
-          computedValuesMap,
-          resourceDataMap,
-          ""
-        )
+        val relatedResourceSearchKey: String = listProperties.listResource ?: ""
+        // Retrieve resources for LIST including related resource for each then fire rules
+        // To avoid re-querying the local database for data re-use data in the relatedResourcesMap
+        val resourceDataList =
+          (relatedResourcesMap[relatedResourceSearchKey] ?: emptyList()).mapToResourceData(
+            relatedResourcesMap = relatedResourcesMap,
+            ruleConfigs = listProperties.registerCard.rules,
+            listRelatedResources = listProperties.relatedResources,
+            computedValuesMap = computedValuesMap
+          )
+        resourceDataMap[listProperties.id] = resourceDataList
       }
     }
-
     return resourceDataMap
   }
 
-  private fun retrieveResourceDataList(
-    relatedResourceSearchKey: String,
+  private fun List<Resource>.mapToResourceData(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
-    listProperties: ListProperties,
-    computedValuesMap: Map<String, Any>,
-    map: MutableMap<String, List<ResourceData>>,
-    listResourceId: String
-  ) {
-    // Retrieve baseResource for LIST, then the related resources then fire rules
-    val resourceDataList =
-      relatedResourcesMap[relatedResourceSearchKey]?.map { resource ->
-        val listRelatedResources =
-          listProperties.relatedResources.associate {
-            Pair(
-              if (StringUtils.isNotBlank(listResourceId)) {
-                listResourceId
-              } else {
-                it.resourceType.name
-              },
-              rulesFactory.rulesEngineService.retrieveRelatedResources(
-                resource = resource,
-                relatedResourceType = it.resourceType,
-                fhirPathExpression = it.fhirPathExpression,
-                relatedResourcesMap = relatedResourcesMap
-              )
+    ruleConfigs: List<RuleConfig>,
+    listRelatedResources: List<ExtractedResource>,
+    computedValuesMap: Map<String, Any>
+  ) =
+    this.map { resource ->
+      val listItemRelatedResources =
+        listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
+          (id
+            ?: resourceType.name) to
+            rulesFactory.rulesEngineService.retrieveRelatedResources(
+              resource = resource,
+              relatedResourceKey = id ?: resourceType.name,
+              referenceFhirPathExpression = fhirPathExpression,
+              relatedResourcesMap = relatedResourcesMap
             )
-          }
+        }
 
-        // Values computed from the rules defined in LIST view RegisterCard
-        val listComputedValuesMap =
-          rulesFactory.fireRule(
-            ruleConfigs = listProperties.registerCard.rules,
-            baseResource = resource,
-            relatedResourcesMap = listRelatedResources
-          )
-
-        // LIST view should reuse the previously computed values
-        ResourceData(
-          baseResourceId = resource.logicalId.extractLogicalIdUuid(),
-          baseResourceType = resource.resourceType,
-          computedValuesMap = computedValuesMap.plus(listComputedValuesMap),
-          listResourceDataMap = emptyMap()
+      // Values computed from the rules defined in LIST view RegisterCard
+      val listComputedValuesMap =
+        rulesFactory.fireRule(
+          ruleConfigs = ruleConfigs,
+          baseResource = resource,
+          relatedResourcesMap = listItemRelatedResources
         )
-      }
-    map[listProperties.id] = resourceDataList ?: emptyList()
-  }
+
+      // LIST view should reuse the previously computed values
+      ResourceData(
+        baseResourceId = resource.logicalId.extractLogicalIdUuid(),
+        baseResourceType = resource.resourceType,
+        computedValuesMap = computedValuesMap.plus(listComputedValuesMap),
+        listResourceDataMap = emptyMap()
+      )
+    }
 
   /**
-   * This functions takes the [relatedResourcesMap] in the LIST VIEW gets the resources to filter
-   * from the [relatedResourcesMap] filters them and updates the [relatedResourcesMap]
+   * This function returns a list of filtered resources. The required list is obtained from
+   * [relatedResourceMap], then a filter is applied based on the condition returned from the
+   * extraction of the [ListResource] conditional FHIR path expression
    */
-  private fun updateRelatedResourcesMap(
-    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
-    listResourceId: String,
+  private fun filteredListResources(
+    relatedResourceMap: MutableMap<String, MutableList<Resource>>,
     listResource: ListResource
-  ): MutableMap<String, MutableList<Resource>> {
-    val resourcesToFilter = relatedResourcesMap[listResourceId]
+  ): MutableList<Resource> {
+    val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
+    val newListRelatedResources = relatedResourceMap[relatedResourceKey]?.toList()
+
+    // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
     val filteredResourcesList =
-      resourcesToFilter?.let {
-        rulesFactory
-          .rulesEngineService
-          .filterResources(it, listResource.conditionalFhirPathExpression)
-          .toMutableList()
+      newListRelatedResources?.let {
+        rulesFactory.rulesEngineService.filterResources(
+          resources = it,
+          fhirPathExpression = listResource.conditionalFhirPathExpression
+        )
       }
-    val filteredResourceMap = HashMap(relatedResourcesMap)
-    filteredResourcesList?.let { filteredResourceMap.replace(listResourceId, it) }
-    return filteredResourceMap
+
+    return filteredResourcesList?.toMutableList() ?: mutableListOf()
   }
 
   /**
    * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
    * LISTs
    */
-  fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
+  private fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
     val listProperties = mutableListOf<ListProperties>()
     val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
     while (viewPropertiesLinkedList.isNotEmpty()) {
