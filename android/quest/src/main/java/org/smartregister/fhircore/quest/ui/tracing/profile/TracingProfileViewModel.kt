@@ -153,7 +153,7 @@ constructor(
       is TracingProfileEvent.LoadOutComesForm -> {
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           // TODO: Replace with actual tracing outcomes url
-          if (profile.isHomeTracing) "tests/home_outcome.json" else "tests/phone_outcome.json",
+          if (profile.isHomeTracing) "home-tracing-outcome" else "phone-tracing-outcome",
           clientIdentifier = patientId,
           questionnaireType = QuestionnaireType.EDIT,
           populationResources = profile.populationResources

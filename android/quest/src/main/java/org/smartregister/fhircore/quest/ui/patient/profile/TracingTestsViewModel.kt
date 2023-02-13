@@ -247,37 +247,37 @@ constructor(
       listOf(
         TestItem.QuestItem(
           title = "art client viral load test results",
-          questionnaire = "tests/art_client_viral_load_test_results.json",
+          questionnaire = "art-client-viral-load-test-results",
           tracingList = listOf("HVL", "MVl", "IVl"),
           appointmentList = listOf("ICT", "VL")
         ),
         TestItem.QuestItem(
           title = "exposed infant hiv test and results",
-          questionnaire = "tests/exposed_infant_hiv_test_and_results.json",
+          questionnaire = "exposed-infant-hiv-test-and-results",
           tracingList = listOf("PDBS", "MDBS", "IDBS"),
           appointmentList = listOf("Milestone")
         ),
         TestItem.QuestItem(
           title = "welcome service high or detectable viral load",
-          questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
+          questionnaire = "art-client-welcome-service-high-or-detectable-viral-load",
           tracingList = listOf("-HVL")
         ),
         TestItem.QuestItem(
           title = "hiv test and next appointment",
-          questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
+          questionnaire = "contact-and-community-positive-hiv-test-and-next-appointment"
         ),
         TestItem.QuestItem(
           title = "Cervical Cancer Screening",
-          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
+          questionnaire = "art-client-womens-health-screening-female-25-years-plus"
         ),
         TestItem.QuestItem(
           title = "Cervical Cancer Screening",
-          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
+          questionnaire = "art-client-womens-health-screening-female-25-years-plus"
         ),
         TestItem.DividerItem,
         TestItem.QuestItem(
           title = "Patient Finish Visit",
-          questionnaire = "tests/patient-finish-visit.json",
+          questionnaire = "patient-finish-visit",
           tracingList = listOf("miss-routine", "miss-milestone", "interrupt-treat", "miss-appt"),
           appointmentList = listOf("Refill")
         )

@@ -34,6 +34,7 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.IOException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
@@ -125,6 +126,8 @@ constructor(
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
+  private val assetManager by lazy { applicationContext.assets }
+
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
   }
@@ -136,20 +139,26 @@ constructor(
     )
   }
 
-  private var currentFormName = ""
-
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
 
-  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
-      }
+  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? {
 
-      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-      this.url = this.url ?: this.referenceValue()
-    }
+    return kotlin
+      .runCatching {
+        val fileAssetPath = "tests/$id.json"
+        withContext(dispatcherProvider.io()) { readFileFromAssets(fileAssetPath) }
+      }
+      .getOrElse { defaultRepository.loadResource<Questionnaire>(id) }
+      ?.apply {
+        if (type.isReadOnly() || type.isEditMode()) {
+          item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
+        }
+
+        // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+        this.url = this.url ?: this.referenceValue()
+      }
+  }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
@@ -164,19 +173,14 @@ constructor(
     formName: String,
     type: QuestionnaireType
   ): Pair<QuestionnaireConfig, Questionnaire> {
-    currentFormName = formName
     return try {
       val config = getQuestionnaireConfig(formName, context)
-      val questionnaire =
-        if (formName.contains(".json")) readFileFromAssets(context, formName)
-        else loadQuestionnaire(config.identifier, type)!!
+      val questionnaire = loadQuestionnaire(config.identifier, type)!!
       Pair(config, questionnaire)
     } catch (e: Exception) {
       // load questionnaire from db and build config
       val questionnaire =
-        (if (formName.contains(".json")) readFileFromAssets(context, formName)
-        else loadQuestionnaire(formName, type))
-          ?: throw QuestionnaireNotFoundException(formName)
+        loadQuestionnaire(formName, type) ?: throw QuestionnaireNotFoundException(formName)
       questionnaireConfig =
         QuestionnaireConfig(
           form = questionnaire.name ?: "",
@@ -187,13 +191,15 @@ constructor(
     }
   }
 
-  private fun readFileFromAssets(context: Context, filename: String): Questionnaire {
-    val quest = context.assets.open(filename).bufferedReader().use { it.readText() }
+  @Throws(IOException::class)
+  private fun readFileFromAssets(filename: String): Questionnaire {
+    val quest = assetManager.open(filename).bufferedReader().use { it.readText() }
     return jsonParser.parseResource(Questionnaire::class.java, quest)
   }
 
+  @Throws(IOException::class)
   private fun readStructureMapFromAssets(filename: String): StructureMap {
-    val quest = applicationContext.assets.open(filename).bufferedReader().use { it.readText() }
+    val quest = assetManager.open(filename).bufferedReader().use { it.readText() }
     return jsonParser.parseResource(StructureMap::class.java, quest)
   }
 
@@ -223,13 +229,14 @@ constructor(
       .getOrNull()
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
-    var structureMap: StructureMap? = null
-    structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap =
-        if (currentFormName.contains(".json")) readStructureMapFromAssets("tests/map/$this.json")
-        else defaultRepository.loadResource(this)
+    return structureMapUrl?.substringAfterLast("/")?.let { identifier ->
+      kotlin
+        .runCatching {
+          val structureMapPath = "tests/map/$identifier.json"
+          withContext(dispatcherProvider.io()) { readStructureMapFromAssets(structureMapPath) }
+        }
+        .getOrElse { defaultRepository.loadResource(identifier) }
     }
-    return structureMap
   }
 
   fun appendOrganizationInfo(resource: Resource) {
