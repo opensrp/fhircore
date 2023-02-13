@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -50,10 +49,9 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
-const val VERTICAL_HORIENTATION = "verticalOrientation"
+const val VERTICAL_ORIENTATION = "verticalOrientation"
 const val HORIZONTAL_ORIENTATION = "horizontalOrientation"
 
 @Composable
@@ -67,7 +65,7 @@ fun List(
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
       Text(
-        text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
+        text = viewProperties.emptyList?.message ?: "",
         modifier = modifier.padding(8.dp).align(Alignment.Center),
         color = DefaultColor,
         fontStyle = FontStyle.Italic
@@ -84,7 +82,7 @@ fun List(
             horizontal = viewProperties.padding.dp,
             vertical = viewProperties.padding.div(4).dp
           )
-          .testTag(VERTICAL_HORIENTATION)
+          .testTag(VERTICAL_ORIENTATION)
     ) {
       when (viewProperties.orientation) {
         ListOrientation.VERTICAL ->
@@ -93,7 +91,7 @@ fun List(
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-                .testTag(VERTICAL_HORIENTATION)
+                .testTag(VERTICAL_ORIENTATION)
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
@@ -138,7 +136,7 @@ private fun ListWithHorizontalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          baseResource = ResourceType.CarePlan,
+          listResource = ResourceType.CarePlan.name,
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -213,7 +211,7 @@ private fun ListWithVerticalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          baseResource = ResourceType.CarePlan,
+          listResource = ResourceType.CarePlan.name,
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(

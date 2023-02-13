@@ -225,8 +225,7 @@ constructor(
             bundleOf(
               Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
             ),
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = null
+          questionnaireConfig = questionnaireConfig
         )
     }
   }
