@@ -39,13 +39,17 @@ data class ActionConfig(
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.map { Pair(it.key, it.value.interpolate(computedValuesMap)) }.forEach {
-        putString(it.first, it.second)
+      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
+        putString(it.key, it.value.interpolate(computedValuesMap))
       }
     }
 
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
+
+  companion object {
+    const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
+  }
 }
 
 @Serializable
