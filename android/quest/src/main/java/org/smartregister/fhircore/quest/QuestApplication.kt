@@ -25,6 +25,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
+import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -67,6 +68,10 @@ class QuestApplication :
 
   override fun onCreate() {
     super<Application>.onCreate()
+
+    // Detect input timeout ANRs
+    ANRWatchDog().start()
+
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
