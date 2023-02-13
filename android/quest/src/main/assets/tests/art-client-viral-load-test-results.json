@@ -1,0 +1,1097 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "art-client-viral-load-test-results",
+  "meta": {
+    "versionId": "84",
+    "lastUpdated": "2022-10-31T23:49:52.558+03:00",
+    "source": "#6ZxyD3HCzBw4LL4S"
+  },
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/art-client-viral-load-test-results"
+    }
+  ],
+  "title": "Viral Load Results",
+  "status": "active",
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "vl-sample-collection-date",
+      "text": "* <b>ENTER:</b> Date of viral load sample collection",
+      "type": "date",
+      "required": true
+    },
+    {
+      "linkId": "sample-id",
+      "text": "* <b>ENTER:</b> Sample ID from last viral load collection",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "last-known-vl-results-available",
+      "text": "* <b>ASK:</b> Are the viral load results from last known collection available?",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "available",
+            "display": "Available"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "not-available",
+            "display": "Not Available"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "missing",
+            "display": "Missing"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "invalid",
+            "display": "Invalid"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "test-type",
+      "text": "* <b>SELECT:</b> Viral load type",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "available"
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "dbs",
+            "display": "DBS"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "rapid",
+            "display": "Plasma"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dbs-viral-load-results",
+      "text": "* <b>ENTER:</b> Viral load results",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "dbs-ldl",
+            "display": "<LDL"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<400",
+            "display": "400"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<550",
+            "display": "<550"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<839",
+            "display": "<839"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "dbs-other",
+            "display": "Other"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dbs-less-than-ldl",
+      "text": "<b>INTERPRETATION:</b> <font color=green>Suppressed undetectable viral load Results</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs-ldl"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "dbs-less-than-four-hundred",
+      "text": "<b>INTERPRETATION:</b> <br><font color=#F4C430>Low Level viramia Detectable viral load result</font><br><<b>Action:</b><br> Provide patient with IAC at next visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<400"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "dbs-less-than-five-fifty-hundred",
+      "text": "<b>INTERPRETATION:</b> <br><font color=#F4C430>Low Level viramia Detectable viral load result</font><br><<b>Action:</b><br> Provide patient with IAC at next visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<550"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "dbs-less-than-eight-three-nine",
+      "text": "<b>INTERPRETATION:</b> <br><font color=#F4C430>Low Level viramia Detectable viral load result</font><br><<b>Action:</b><br> Provide patient with IAC at next visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<839"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "vl-result-other-enter-number",
+      "text": "* <b>ENTER:</b> The viral load number",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        },
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs-other"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true
+    },
+    {
+      "linkId": "vl-result-other-less-than-a-thousand",
+      "text": "<b>INTERPRETATION:</b><br><font color=#F4C430> Low Level Viramia Detectable Viral Load result</font><br><b>Action:<b><br> Provide patient with IAC at next visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        },
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs-other"
+          }
+        },
+        {
+          "question": "vl-result-other-enter-number",
+          "operator": "<=",
+          "answerInteger": 999
+        },
+        {
+          "question": "vl-result-other-enter-number",
+          "operator": ">=",
+          "answerInteger": 400
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "vl-result-other-more-than-a-thousand",
+      "text": "<b>INTERPRETATION:</b><br><font color=red>This client has a high viral load</font><br><b> Action:</b><br> This patient will be added to the tracing list. Provide IAC and AHD at the next clinic visit",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs"
+          }
+        },
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "dbs-other"
+          }
+        },
+        {
+          "question": "vl-result-other-enter-number",
+          "operator": ">=",
+          "answerInteger": 1000
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "plasma-viral-load-results",
+      "text": "* <b>ENTER:</b> Viral load results",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "rapid"
+          }
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "<plasma-ldl",
+            "display": "<LDL"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<20",
+            "display": "<20"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<40",
+            "display": "<40"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "<150",
+            "display": "<150"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "plasma-other",
+            "display": "Other"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "plasma-less-than-ldl",
+      "text": "<b>INTERPRETATION:</b> <br><font color=green>Suppressed undetectable viral load Results</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<plasma-ldl"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "plasma-viral-load-result-two-zero",
+      "text": "<b>INTERPRETATION:</b> <font color=green>Suppressed undetectable viral load Results</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<20"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "plasma-viral-load-result-four-zero",
+      "text": "<b>INTERPRETATION:</b> <font color=green>Suppressed undetectable viral load Results</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<40"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "plasma-viral-load-result-one-five-zore",
+      "text": "<b>INTERPRETATION:</b> <font color=green>Suppressed undetectable viral load Results</font>",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "<150"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "plasma-result-other-enter-number",
+      "text": "* <b>ENTER:</b> The viral load number",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "rapid"
+          }
+        },
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "plasma-other"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true
+    },
+    {
+      "linkId": "plasma-result-other-two-zero-zero-to-triple-nine",
+      "text": "<b>INTERPRETATION:</b> <br><font color=#F4C430> Low Level viramia Detectable viral load result</font><br><b>Action:</b> Provide patient with IAC at next visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "rapid"
+          }
+        },
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "plasma-other"
+          }
+        },
+        {
+          "question": "plasma-result-other-enter-number",
+          "operator": "<=",
+          "answerInteger": 999
+        },
+        {
+          "question": "plasma-result-other-enter-number",
+          "operator": ">=",
+          "answerInteger": 200
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "plasma-result-other-more-than-a-thousand",
+      "text": "<b>INTERPRETATION:</b> <br><font color=red>This client has a high viral load</font><br><b>Action:</b><br> This patient will be added to the tracing list. Provide IAC and AHD at the next clinic visit ",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "test-type",
+          "operator": "=",
+          "answerCoding": {
+            "code": "rapid"
+          }
+        },
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "=",
+          "answerCoding": {
+            "code": "plasma-other"
+          }
+        },
+        {
+          "question": "plasma-result-other-enter-number",
+          "operator": ">=",
+          "answerInteger": 1000
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "display-for-not-available",
+      "text": "If 12 weeks have passed since the date of viral load collection the client will be placed on the tracing list<br><b>Action:</b> Call the lab",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "not-available"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "display-for-missing",
+      "text": "The client has been moved to tracing list.Another viral load sample should be collected from the client at their next clinic visit",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "missing"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "display-for-not-invalid",
+      "text": "The client has been moved to tracing list.Another viral load sample should be collected from the client at their next clinic visit",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "record-info",
+      "text": "<b>Write:</b> The information in the Health Passport, MasterCard and Viral Load register.",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "are-the-results-known",
+          "operator": "=",
+          "answerBoolean": false
+        },
+        {
+          "question": "dbs-viral-load-results",
+          "operator": "exists",
+          "answerBoolean": true
+        },
+        {
+          "question": "plasma-viral-load-results",
+          "operator": "exists",
+          "answerBoolean": true
+        },
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "not-available"
+          }
+        },
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "missing"
+          }
+        },
+        {
+          "question": "last-known-vl-results-available",
+          "operator": "=",
+          "answerCoding": {
+            "code": "invalid"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.given + ' ' + Patient.name.family"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-full-name",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.author.reference"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-author-reference",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.author.display"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-author-display",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-id",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.period.start"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-period-start",
+      "text": "Start date",
+      "type": "dateTime"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.period.end"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-period-end",
+      "text": "Next appointment date",
+      "type": "dateTime"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[0].detail.code.coding[0].code + '|' + CarePlan.activity[0].outcomeReference[0].reference + '|' + CarePlan.activity[0].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-1",
+      "text": "Task 1",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[1].detail.code.coding[0].code + '|' + CarePlan.activity[1].outcomeReference[0].reference + '|' + CarePlan.activity[1].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-2",
+      "text": "Task 2",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[2].detail.code.coding[0].code + '|' + CarePlan.activity[2].outcomeReference[0].reference + '|' + CarePlan.activity[2].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-3",
+      "text": "Task 3",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[3].detail.code.coding[0].code + '|' + CarePlan.activity[3].outcomeReference[0].reference + '|' + CarePlan.activity[3].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-4",
+      "text": "Task 4",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[4].detail.code.coding[0].code + '|' + CarePlan.activity[4].outcomeReference[0].reference + '|' + CarePlan.activity[4].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-5",
+      "text": "Task 5",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[5].detail.code.coding[0].code + '|' + CarePlan.activity[5].outcomeReference[0].reference + '|' + CarePlan.activity[5].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-6",
+      "text": "Task 6",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[6].detail.code.coding[0].code + '|' + CarePlan.activity[6].outcomeReference[0].reference + '|' + CarePlan.activity[6].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-7",
+      "text": "Task 7",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[7].detail.code.coding[0].code + '|' + CarePlan.activity[7].outcomeReference[0].reference + '|' + CarePlan.activity[7].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-8",
+      "text": "Task 8",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[8].detail.code.coding[0].code + '|' + CarePlan.activity[8].outcomeReference[0].reference + '|' + CarePlan.activity[8].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-9",
+      "text": "Task 9",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[9].detail.code.coding[0].code + '|' + CarePlan.activity[9].outcomeReference[0].reference + '|' + CarePlan.activity[9].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-10",
+      "text": "Task 10",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[10].detail.code.coding[0].code + '|' + CarePlan.activity[10].outcomeReference[0].reference + '|' + CarePlan.activity[10].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-11",
+      "text": "Task 11",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[11].detail.code.coding[0].code + '|' + CarePlan.activity[11].outcomeReference[0].reference + '|' + CarePlan.activity[11].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-12",
+      "text": "Task 12",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[12].detail.code.coding[0].code + '|' + CarePlan.activity[12].outcomeReference[0].reference + '|' + CarePlan.activity[12].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-13",
+      "text": "Task 13",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[13].detail.code.coding[0].code + '|' + CarePlan.activity[13].outcomeReference[0].reference + '|' + CarePlan.activity[13].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-14",
+      "text": "Task 14",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[14].detail.code.coding[0].code + '|' + CarePlan.activity[14].outcomeReference[0].reference + '|' + CarePlan.activity[14].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-15",
+      "text": "Task 15",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[15].detail.code.coding[0].code + '|' + CarePlan.activity[15].outcomeReference[0].reference + '|' + CarePlan.activity[15].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-16",
+      "text": "Task 16",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[16].detail.code.coding[0].code + '|' + CarePlan.activity[16].outcomeReference[0].reference + '|' + CarePlan.activity[16].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-17",
+      "text": "Task 17",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[17].detail.code.coding[0].code + '|' + CarePlan.activity[17].outcomeReference[0].reference + '|' + CarePlan.activity[17].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-18",
+      "text": "Task 18",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[18].detail.code.coding[0].code + '|' + CarePlan.activity[18].outcomeReference[0].reference + '|' + CarePlan.activity[18].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-19",
+      "text": "Task 19",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "CarePlan.activity[19].detail.code.coding[0].code + '|' + CarePlan.activity[19].outcomeReference[0].reference + '|' + CarePlan.activity[19].detail.description"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "care-plan-task-20",
+      "text": "Task 20",
+      "type": "text"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.generalPractitioner.first().reference"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "practitioner-ref",
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.telecom.empty().not()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "has-phonenumber",
+      "text": "Has Phone",
+      "type": "boolean"
+    }
+  ]
+}

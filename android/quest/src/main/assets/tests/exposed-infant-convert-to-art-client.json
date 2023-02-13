@@ -1,0 +1,184 @@
+{
+	"resourceType": "Questionnaire",
+	"id": "exposed-infant-convert-to-art-client",
+	"meta": {
+		"versionId": "8",
+		"lastUpdated": "2022-12-09T11:51:33.704+03:00",
+		"source": "#bNq1RaLfCCcdlKmV"
+	},
+	"language": "en",
+	"extension": [
+		{
+			"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+			"valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/exposed-infant-convert-to-art-client"
+		}
+	],
+	"title": "Convert to ART Client",
+	"status": "active",
+	"publisher": "mcore",
+	"contact": [
+		{
+			"name": "http://www.d-tree.org"
+		}
+	],
+	"useContext": [
+		{
+			"code": {
+				"system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+				"code": "focus"
+			},
+			"valueCodeableConcept": {
+				"coding": [
+					{
+						"system": "http://fhir.ona.io",
+						"code": "000002",
+						"display": "Malawi Core Patient"
+					}
+				]
+			}
+		}
+	],
+	"item": [
+		{
+			"linkId": "intro",
+			"text": "Infant with PCR POS result.<br>Click SAVE if client is with you for clinic visit.<br>Click the back arrow if child not here today.",
+			"type": "display"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.id"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-id",
+			"type": "string"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.name.given + ' ' + Patient.name.family"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-full-name",
+			"definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+			"type": "string"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.birthDate"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-birth-date",
+			"type": "date"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.gender"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-gender",
+			"type": "choice",
+			"answerOption": [
+				{
+					"valueCoding": {
+						"system": "http://hl7.org/fhir/administrative-gender",
+						"code": "male",
+						"display": "Male"
+					}
+				},
+				{
+					"valueCoding": {
+						"system": "http://hl7.org/fhir/administrative-gender",
+						"code": "female",
+						"display": "Female"
+					}
+				}
+			]
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.identifier.value"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-identifier-value",
+			"type": "string"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "CarePlan.id"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "care-plan-id",
+			"type": "string"
+		},
+		{
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'dbs-positive').select(id + ',' + executionPeriod.start.toString())"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                "valueBoolean": true
+              }
+            ],
+            "linkId": "tracing-task-dbs-positive",
+            "type": "string"
+          }
+	]
+}

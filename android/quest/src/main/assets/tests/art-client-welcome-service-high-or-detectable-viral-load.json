@@ -1928,7 +1928,7 @@
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
               "valueExpression": {
                 "language": "text/fhirpath",
-                "expression": "CarePlan.activity.where(detail.code.coding.code = 'art-client-index-case-testing').select(detail.status + ',' + outcomeReference.reference).toString()"
+                "expression": "CarePlan.activity.where(detail.code.coding.code = 'art-client-index-case-testing').select(detail.status).toString()"
               }
             },
             {

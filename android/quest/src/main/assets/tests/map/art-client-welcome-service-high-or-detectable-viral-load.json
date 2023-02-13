@@ -1,0 +1,671 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-welcome-service-high-or-detectable-viral-load",
+  "url": "http://fhir-dev.d-tree.org/fhir/StructureMap/art-client-welcome-service-high-or-detectable-viral-load",
+  "name": "ART Client Welcome Service for High or Dectectable Viral Load",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
+              "name": "HandleTracingTasks",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_encounter_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_enc_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "finished"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_class",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    {
+                      "valueString": "AMB"
+                    },
+                    {
+                      "valueString": "ambulatory"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ser_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/service-type"
+                    },
+                    {
+                      "valueString": "335"
+                    },
+                    {
+                      "valueString": "Facility"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_sub",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "reference",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_sub_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "reference",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HandleTracingTasks",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_info_page",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-16')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_detectable_vl_text",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "linkPath",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "context": "linkPath",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "tracing-task-detectable-vl"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_close_detactable",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "CloseTracingTask",
+                      "variable": [
+                        "src",
+                        "page",
+                        "linkPath",
+                        "bundle"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ict_status",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "ictStatus",
+                  "condition": "((linkId = 'ict-status') and (answer.value = 'completed'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_high_vl_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "linkPath",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "string"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "linkPath",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "tracing-task-high-vl"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "CloseTracingTask",
+                          "variable": [
+                            "src",
+                            "page",
+                            "linkPath",
+                            "bundle"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CloseTracingTask",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "page",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "linkPath",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_tracing_item",
+          "source": [
+            {
+              "context": "page",
+              "element": "item",
+              "variable": "tracingItem",
+              "condition": "((linkId = linkPath) and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_tracing_task_evaluations",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "tracingTaskAnswer",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "tracingItem.answer.value"
+                    }
+                  ]
+                },
+                {
+                  "variable": "indexOfSplitter",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "tracingTaskAnswer.indexOf(',')"
+                    }
+                  ]
+                },
+                {
+                  "variable": "tracingTaskId",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "tracingTaskAnswer.substring(0, indexOfSplitter)"
+                    }
+                  ]
+                },
+                {
+                  "variable": "taskStart",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "dateTime"
+                    }
+                  ]
+                },
+                {
+                  "context": "taskStart",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "tracingTaskAnswer.substring(indexOfSplitter + 1)"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_tracing_task",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "variable": "timeNow",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "task",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Task"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_tracing_task_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "task",
+                          "contextType": "variable",
+                          "element": "id",
+                          "variable": "taskId",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "id"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "taskId",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "tracingTaskId"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_tracing_task_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "task",
+                          "contextType": "variable",
+                          "element": "status",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "iif(timeNow >= taskStart, 'completed', 'cancelled')"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_tracing_task_execution_period",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "task",
+                          "contextType": "variable",
+                          "element": "executionPeriod",
+                          "variable": "taskPeriod",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Period"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "taskPeriod",
+                          "contextType": "variable",
+                          "element": "start",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "taskStart"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "taskPeriod",
+                          "contextType": "variable",
+                          "element": "end",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "iif(timeNow >= taskStart, timeNow)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

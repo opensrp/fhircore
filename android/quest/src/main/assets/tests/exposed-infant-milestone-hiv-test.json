@@ -1,0 +1,804 @@
+{
+	"resourceType": "Questionnaire",
+	"id": "exposed-infant-milestone-hiv-test",
+	"meta": {
+		"versionId": "22",
+		"lastUpdated": "2022-12-07T18:39:11.063+03:00",
+		"source": "#H22f8joMmnZK8qOK"
+	},
+	"language": "en",
+	"extension": [
+		{
+			"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+			"valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/exposed-infant-milestone-hiv-test"
+		}
+	],
+	"title": "Milestone HIV Test",
+	"status": "active",
+	"publisher": "mcore",
+	"contact": [
+		{
+			"name": "http://www.d-tree.org"
+		}
+	],
+	"item": [
+		{
+			"linkId": "able-to-conduct-test",
+			"text": "* <b>Ask:</b> \"Are you able to conduct the milestone HIV test?\"",
+			"type": "boolean",
+			"required": true
+		},
+		{
+			"linkId": "conducted-milestone-group",
+			"type": "group",
+			"enableWhen": [
+				{
+					"question": "able-to-conduct-test",
+					"operator": "=",
+					"answerBoolean": true
+				}
+			],
+			"enableBehavior": "any",
+			"item": [
+				{
+					"extension": [
+						{
+							"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+							"valueCodeableConcept": {
+								"coding": [
+									{
+										"system": "http://hl7.org/fhir/questionnaire-item-control",
+										"code": "drop-down",
+										"display": "Drop down"
+									}
+								],
+								"text": "Drop down"
+							}
+						}
+					],
+					"linkId": "hiv-test-type",
+					"text": "* <b>Select:</b> HIV Test Type",
+					"type": "choice",
+					"required": true,
+					"answerOption": [
+						{
+							"valueCoding": {
+								"code": "rapid",
+								"display": "Rapid"
+							}
+						},
+						{
+							"valueCoding": {
+								"code": "dbs",
+								"display": "DBS"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "dbs-test-type-group",
+					"type": "group",
+					"enableWhen": [
+						{
+							"question": "hiv-test-type",
+							"operator": "=",
+							"answerCoding": {
+								"code": "dbs"
+							}
+						}
+					],
+					"enableBehavior": "any",
+					"item": [
+						{
+							"linkId": "dbs-sample-id",
+							"text": "* <b>Enter:</b> DBS sample ID",
+							"type": "string",
+							"required": true,
+							"maxLength": 8
+						},
+						{
+							"extension": [
+								{
+									"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+									"valueCodeableConcept": {
+										"coding": [
+											{
+												"system": "http://hl7.org/fhir/questionnaire-item-control",
+												"code": "drop-down",
+												"display": "Drop down"
+											}
+										],
+										"text": "Drop down"
+									}
+								}
+							],
+							"linkId": "dbs-results-known",
+							"text": "* Are the DBS test results available?",
+							"type": "boolean",
+							"enableWhen": [
+								{
+									"question": "dbs-sample-id",
+									"operator": "exists",
+									"answerBoolean": true
+								}
+							],
+							"enableBehavior": "any",
+							"required": true
+						}
+					]
+				},
+				{
+					"linkId": "hiv-test-results-group",
+					"type": "group",
+					"enableWhen": [
+						{
+							"question": "dbs-results-known",
+							"operator": "=",
+							"answerBoolean": true
+						},
+						{
+							"question": "hiv-test-type",
+							"operator": "=",
+							"answerCoding": {
+								"code": "rapid"
+							}
+						}
+					],
+					"enableBehavior": "any",
+					"item": [
+						{
+							"extension": [
+								{
+									"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+									"valueCodeableConcept": {
+										"coding": [
+											{
+												"system": "http://hl7.org/fhir/questionnaire-item-control",
+												"code": "drop-down",
+												"display": "Drop down"
+											}
+										],
+										"text": "Drop down"
+									}
+								}
+							],
+							"linkId": "hiv-test-results",
+							"text": "* <b>Select:</b> HIV Test Results",
+							"type": "choice",
+							"required": true,
+							"answerOption": [
+								{
+									"valueCoding": {
+										"code": "positive",
+										"display": "Positive"
+									}
+								},
+								{
+									"valueCoding": {
+										"code": "negative",
+										"display": "Negative"
+									}
+								},
+								{
+									"valueCoding": {
+										"code": "invalid",
+										"display": "Invalid"
+									}
+								}
+							]
+						},
+						{
+							"extension": [
+								{
+									"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+									"valueBoolean": true
+								}
+							],
+							"linkId": "result-positive-but-no-sample",
+							"type": "boolean",
+							"enableWhen": [
+								{
+									"question": "hiv-test-results",
+									"operator": "=",
+									"answerCoding": {
+										"code": "positive"
+									}
+								},
+								{
+									"question": "dbs-sample-id",
+									"operator": "exists",
+									"answerBoolean": false
+								}
+							],
+							"enableBehavior": "all",
+							"readOnly": true,
+							"initial": [
+								{
+									"valueBoolean": true
+								}
+							]
+						},
+						{
+							"linkId": "result-positive-group",
+							"type": "group",
+							"enableWhen": [
+								{
+									"question": "hiv-test-results",
+									"operator": "=",
+									"answerCoding": {
+										"code": "positive"
+									}
+								},
+								{
+									"question": "dbs-sample-id",
+									"operator": "exists",
+									"answerBoolean": true
+								}
+							],
+							"enableBehavior": "all",
+							"item": [
+								{
+									"linkId": "is-child-present",
+									"text": "* Is the child infront of you right now?",
+									"type": "boolean",
+									"required": true
+								},
+								{
+									"linkId": "conversion-prompt",
+									"text": "<h1><font color=red>The exposed infant will be converted to a Newly Diagnosed Client when you SAVE</font></h1>",
+									"type": "display",
+									"enableWhen": [
+										{
+											"question": "is-child-present",
+											"operator": "=",
+											"answerBoolean": true
+										}
+									],
+									"enableBehavior": "any"
+								},
+								{
+									"linkId": "add-to-tracing-prompt",
+									"text": "<h1>The exposed infant will be moved to the tracing list</h1>",
+									"type": "display",
+									"enableWhen": [
+										{
+											"question": "is-child-present",
+											"operator": "=",
+											"answerBoolean": false
+										}
+									],
+									"enableBehavior": "any"
+								}
+							]
+						},
+						{
+							"linkId": "group-rapid-test-and-positive-result",
+							"type": "group",
+							"enableWhen": [
+								{
+									"question": "hiv-test-results",
+									"operator": "=",
+									"answerCoding": {
+										"code": "positive"
+									}
+								},
+								{
+									"question": "hiv-test-type",
+									"operator": "=",
+									"answerCoding": {
+										"code": "rapid"
+									}
+								}
+							],
+							"enableBehavior": "all",
+							"item": [
+								{
+									"linkId": "conversion-prompt-2",
+									"text": "<h1><font color=red>The exposed infant will be converted to a Newly Diagnosed Client when you SAVE</font></h1>",
+									"type": "display"
+								}
+							]
+						},
+						{
+							"linkId": "test-negative-results-group",
+							"type": "group",
+							"enableWhen": [
+								{
+									"question": "hiv-test-results",
+									"operator": "=",
+									"answerCoding": {
+										"code": "negative"
+									}
+								},
+								{
+									"question": "is-older-than-18-months",
+									"operator": "=",
+									"answerBoolean": true
+								}
+							],
+							"enableBehavior": "all",
+							"item": [
+								{
+									"extension": [
+										{
+											"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+											"valueCodeableConcept": {
+												"coding": [
+													{
+														"system": "http://hl7.org/fhir/questionnaire-item-control",
+														"code": "drop-down",
+														"display": "Drop down"
+													}
+												],
+												"text": "Drop down"
+											}
+										}
+									],
+									"linkId": "is-the-child-weaned",
+									"text": "* Is the child weaned?",
+									"type": "choice",
+									"required": true,
+									"answerOption": [
+										{
+											"valueCoding": {
+												"code": "yes",
+												"display": "Yes"
+											}
+										},
+										{
+											"valueCoding": {
+												"code": "no",
+												"display": "No"
+											}
+										},
+										{
+											"valueCoding": {
+												"code": "unknown",
+												"display": "Unknown"
+											}
+										}
+									]
+								},
+								{
+									"extension": [
+										{
+											"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+											"valueCodeableConcept": {
+												"coding": [
+													{
+														"system": "http://hl7.org/fhir/questionnaire-item-control",
+														"code": "drop-down",
+														"display": "Drop down"
+													}
+												],
+												"text": "Drop down"
+											}
+										}
+									],
+									"linkId": "child-weaning-period",
+									"text": "* When was the child weaned?",
+									"type": "choice",
+									"enableWhen": [
+										{
+											"question": "is-the-child-weaned",
+											"operator": "=",
+											"answerCoding": {
+												"code": "yes"
+											}
+										}
+									],
+									"enableBehavior": "all",
+									"required": true,
+									"answerOption": [
+										{
+											"valueCoding": {
+												"code": "less-than-6-weeks",
+												"display": "Less than 6 weeks ago"
+											}
+										},
+										{
+											"valueCoding": {
+												"code": "more-than-6-weeks",
+												"display": "More than 6 weeks ago"
+											}
+										}
+									]
+								},
+								{
+									"linkId": "weaning-display-more-than-6-weeks",
+									"text": "<h1>Please remove this child from the person list</h1>",
+									"type": "display",
+									"enableWhen": [
+										{
+											"question": "child-weaning-period",
+											"operator": "=",
+											"answerCoding": {
+												"code": "more-than-6-weeks"
+											}
+										},
+										{
+											"question": "is-older-than-2-years",
+											"operator": "=",
+											"answerBoolean": true
+										}
+									],
+									"enableBehavior": "all"
+								}
+							]
+						},
+						{
+							"linkId": "result-display-invalid-or-missing",
+							"text": "<h1>The exposed infant will be moved to the tracing list. Collect another DBS sample from the exposed infant at the next visit.</h1>",
+							"type": "display",
+							"enableWhen": [
+								{
+									"question": "hiv-test-results",
+									"operator": "=",
+									"answerCoding": {
+										"code": "invalid"
+									}
+								}
+							],
+							"enableBehavior": "any"
+						}
+					]
+				},
+				{
+					"linkId": "record-info",
+					"text": "<h1>Write: <em>the information in the health passport, pink card, HTS register and DBS register.</em></h1>",
+					"type": "display",
+					"enableWhen": [
+						{
+							"question": "dbs-results-known",
+							"operator": "=",
+							"answerBoolean": false
+						},
+						{
+							"question": "result-positive-but-no-sample",
+							"operator": "=",
+							"answerBoolean": true
+						},
+						{
+							"question": "is-child-present",
+							"operator": "=",
+							"answerBoolean": true
+						},
+						{
+							"question": "is-child-present",
+							"operator": "=",
+							"answerBoolean": false
+						},
+						{
+							"question": "hiv-test-results",
+							"operator": "=",
+							"answerCoding": {
+								"code": "invalid"
+							}
+						},
+						{
+							"question": "is-the-child-weaned",
+							"operator": "=",
+							"answerCoding": {
+								"code": "no"
+							}
+						},
+						{
+							"question": "is-the-child-weaned",
+							"operator": "=",
+							"answerCoding": {
+								"code": "unknown"
+							}
+						},
+						{
+							"question": "child-weaning-period",
+							"operator": "=",
+							"answerCoding": {
+								"code": "more-than-6-weeks"
+							}
+						},
+						{
+							"question": "child-weaning-period",
+							"operator": "=",
+							"answerCoding": {
+								"code": "less-than-6-weeks"
+							}
+						}
+					],
+					"enableBehavior": "any",
+					"required": true
+				}
+			]
+		},
+		{
+			"linkId": "unconducted-milestone-group",
+			"type": "group",
+			"enableWhen": [
+				{
+					"question": "able-to-conduct-test",
+					"operator": "=",
+					"answerBoolean": false
+				}
+			],
+			"enableBehavior": "all",
+			"item": [
+				{
+					"extension": [
+						{
+							"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+							"valueCodeableConcept": {
+								"coding": [
+									{
+										"system": "http://hl7.org/fhir/questionnaire-item-control",
+										"code": "drop-down",
+										"display": "Drop down"
+									}
+								],
+								"text": "Drop down"
+							}
+						}
+					],
+					"linkId": "reason-unconducted-milestone",
+					"text": "* <b>Select:</b> the reason for the unconducted milestone",
+					"type": "choice",
+					"required": true,
+					"answerOption": [
+						{
+							"valueCoding": {
+								"code": "no-materials",
+								"display": "No materials"
+							}
+						},
+						{
+							"valueCoding": {
+								"code": "no-one-on-duty",
+								"display": "No one on duty"
+							}
+						},
+						{
+							"valueCoding": {
+								"code": "client-refused",
+								"display": "Client refused"
+							}
+						},
+						{
+							"valueCoding": {
+								"code": "other",
+								"display": "Other"
+							}
+						}
+					]
+				},
+				{
+					"linkId": "reason-unconducted-milestone-other",
+					"text": "* <b>Enter:</b> other reason",
+					"type": "string",
+					"enableWhen": [
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "other"
+							}
+						}
+					],
+					"enableBehavior": "all",
+					"required": true
+				},
+				{
+					"linkId": "display-unconducted-milestone",
+					"text": "<h1>Please collect viral load at the client's next visit</h1>",
+					"type": "display",
+					"enableWhen": [
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "no-materials"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "no-one-on-duty"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "client-refused"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone-other",
+							"operator": "exists",
+							"answerBoolean": true
+						}
+					],
+					"enableBehavior": "any"
+				},
+				{
+					"linkId": "unconducted-record-info",
+					"text": "<h1>Write: <em>the information in the health passport, pink card, HTS register and DBS register.</em></h1>",
+					"type": "display",
+					"enableWhen": [
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "no-materials"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "no-one-on-duty"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone",
+							"operator": "=",
+							"answerCoding": {
+								"code": "client-refused"
+							}
+						},
+						{
+							"question": "reason-unconducted-milestone-other",
+							"operator": "exists",
+							"answerBoolean": true
+						}
+					],
+					"enableBehavior": "any",
+					"required": true
+				}
+			]
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.id"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "patient-id",
+			"definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+			"type": "string"
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.birthDate >= (today() - ((18 * 31).toString() + ' days').toQuantity())"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "is-older-than-18-months",
+			"text": "Is older than 18 months",
+			"type": "boolean",
+			"required": true,
+			"readOnly": true
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Patient.birthDate >= (today() - ((2 * 365).toString() + ' days').toQuantity())"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "is-older-than-2-years",
+			"text": "Is older than 2 years",
+			"type": "boolean",
+			"required": true,
+			"readOnly": true
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Practitioner.id"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "practitioner-id",
+			"type": "string",
+			"readOnly": true
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "Practitioner.name.given"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "practitioner-name",
+			"type": "string",
+			"required": true
+		},
+		{
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+					"valueExpression": {
+						"language": "text/fhirpath",
+						"expression": "CarePlan.id"
+					}
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+					"valueBoolean": true
+				}
+			],
+			"linkId": "care-plan-id",
+			"type": "string"
+		},
+		{
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'dbs-missing').select(id + ',' + executionPeriod.start.toString())"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                "valueBoolean": true
+              }
+            ],
+            "linkId": "tracing-task-dbs-missing",
+            "type": "string"
+        },
+		{
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'dbs-invalid').select(id + ',' + executionPeriod.start.toString())"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                "valueBoolean": true
+              }
+            ],
+            "linkId": "tracing-task-dbs-invalid",
+            "type": "string"
+        }
+	]
+}

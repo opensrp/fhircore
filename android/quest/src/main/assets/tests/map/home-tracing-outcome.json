@@ -26,13 +26,25 @@
       "name": "Main",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_bundle_data",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "bundle",
@@ -45,13 +57,21 @@
               "contextType": "variable",
               "element": "type",
               "transform": "copy",
-              "parameter": [{ "valueString": "collection" }]
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_enc_id",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -65,7 +85,11 @@
                   "element": "resource",
                   "variable": "encounter",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Encounter" }]
+                  "parameter": [
+                    {
+                      "valueString": "Encounter"
+                    }
+                  ]
                 },
                 {
                   "context": "encounter",
@@ -77,7 +101,11 @@
               "rule": [
                 {
                   "name": "r_list_create",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "bundle",
@@ -91,13 +119,21 @@
                       "element": "resource",
                       "variable": "encList",
                       "transform": "create",
-                      "parameter": [{ "valueString": "List" }]
+                      "parameter": [
+                        {
+                          "valueString": "List"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_create_app",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "bundle",
@@ -111,23 +147,38 @@
                           "element": "resource",
                           "variable": "appointment",
                           "transform": "create",
-                          "parameter": [{ "valueString": "Appointment" }]
+                          "parameter": [
+                            {
+                              "valueString": "Appointment"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_create_app",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "EvaluateAppointment",
-                              "variable": ["src", "appointment"]
+                              "variable": [
+                                "src",
+                                "appointment"
+                              ]
                             }
                           ]
                         },
                         {
                           "name": "r_list",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "HandleEncounterOutcome",
@@ -142,7 +193,11 @@
                         },
                         {
                           "name": "r_enc",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "ExtractEncounter",
@@ -170,29 +225,61 @@
       "name": "ExtractEncounter",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_encounter",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "encounter",
               "contextType": "variable",
               "element": "status",
               "transform": "copy",
-              "parameter": [{ "valueString": "finished" }]
+              "parameter": [
+                {
+                  "valueString": "finished"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_enc_data",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -203,8 +290,12 @@
                     {
                       "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
                     },
-                    { "valueString": "IMP" },
-                    { "valueString": "inpatient encounter" }
+                    {
+                      "valueString": "IMP"
+                    },
+                    {
+                      "valueString": "inpatient encounter"
+                    }
                   ]
                 },
                 {
@@ -213,16 +304,26 @@
                   "element": "serviceType",
                   "transform": "cc",
                   "parameter": [
-                    { "valueString": "https://d-tree.org" },
-                    { "valueString": "home-tracing-outcome" },
-                    { "valueString": "Home Tracing Outcome" }
+                    {
+                      "valueString": "https://d-tree.org"
+                    },
+                    {
+                      "valueString": "home-tracing-outcome"
+                    },
+                    {
+                      "valueString": "Home Tracing Outcome"
+                    }
                   ]
                 }
               ]
             },
             {
               "name": "r_enc_code",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -230,26 +331,42 @@
                   "element": "type",
                   "variable": "codeableConcept",
                   "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_enc_code_text",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Contact Tracing" }]
+                      "parameter": [
+                        {
+                          "valueString": "Contact Tracing"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "r_enc_code_coding",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
@@ -257,13 +374,21 @@
                       "element": "coding",
                       "variable": "coding",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_enc_code_coding_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "coding",
@@ -271,7 +396,9 @@
                           "element": "system",
                           "transform": "copy",
                           "parameter": [
-                            { "valueString": "http://snomed.info/sct" }
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            }
                           ]
                         },
                         {
@@ -279,7 +406,11 @@
                           "contextType": "variable",
                           "element": "code",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "225368008" }]
+                          "parameter": [
+                            {
+                              "valueString": "225368008"
+                            }
+                          ]
                         },
                         {
                           "context": "coding",
@@ -287,7 +418,9 @@
                           "element": "display",
                           "transform": "copy",
                           "parameter": [
-                            { "valueString": "Contact tracing (procedure)" }
+                            {
+                              "valueString": "Contact tracing (procedure)"
+                            }
                           ]
                         }
                       ]
@@ -298,7 +431,11 @@
             },
             {
               "name": "r_enc_code",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -306,26 +443,42 @@
                   "element": "priority",
                   "variable": "codeableConcept",
                   "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_enc_code_text",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "elective" }]
+                      "parameter": [
+                        {
+                          "valueString": "elective"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "r_enc_code_coding",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
@@ -333,13 +486,21 @@
                       "element": "coding",
                       "variable": "coding",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_enc_code_coding_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "coding",
@@ -357,14 +518,22 @@
                           "contextType": "variable",
                           "element": "code",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "EL" }]
+                          "parameter": [
+                            {
+                              "valueString": "EL"
+                            }
+                          ]
                         },
                         {
                           "context": "coding",
                           "contextType": "variable",
                           "element": "display",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "elective" }]
+                          "parameter": [
+                            {
+                              "valueString": "elective"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -374,7 +543,11 @@
             },
             {
               "name": "r_enc_subject",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -382,13 +555,21 @@
                   "element": "subject",
                   "variable": "ref",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_enc_subject_ref",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "ref",
@@ -396,7 +577,9 @@
                       "element": "reference",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
+                        {
+                          "valueId": "src"
+                        },
                         {
                           "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                         }
@@ -408,7 +591,11 @@
             },
             {
               "name": "r_enc_part_component",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -416,13 +603,21 @@
                   "element": "participant",
                   "variable": "partComp",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Encounter_Participant" }]
+                  "parameter": [
+                    {
+                      "valueString": "Encounter_Participant"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_enc_part_individual",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "partComp",
@@ -430,13 +625,21 @@
                       "element": "individual",
                       "variable": "encOwner",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_enc_part_reference",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "encOwner",
@@ -444,7 +647,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                             }
@@ -458,7 +663,11 @@
             },
             {
               "name": "r_enc_reason_code_value",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "encounter",
@@ -466,26 +675,42 @@
                   "element": "reasonCode",
                   "variable": "codeableConcept",
                   "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_enc_resonCode_text",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Linkage" }]
+                      "parameter": [
+                        {
+                          "valueString": "Linkage"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "r_enc_resonCode_coding",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
@@ -493,34 +718,54 @@
                       "element": "coding",
                       "variable": "coding",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_enc_resonCode_coding_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "coding",
                           "contextType": "variable",
                           "element": "system",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "https://d-tree.org" }]
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
                         },
                         {
                           "context": "coding",
                           "contextType": "variable",
                           "element": "code",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "linkage" }]
+                          "parameter": [
+                            {
+                              "valueString": "linkage"
+                            }
+                          ]
                         },
                         {
                           "context": "coding",
                           "contextType": "variable",
                           "element": "display",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "Linkage" }]
+                          "parameter": [
+                            {
+                              "valueString": "Linkage"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -530,7 +775,11 @@
             },
             {
               "name": "r_extract_observations",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "dependent": [
                 {
                   "name": "ExtractObservations",
@@ -552,10 +801,26 @@
       "name": "HandleEncounterOutcome",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -606,35 +871,55 @@
                       "rule": [
                         {
                           "name": "r_list_id_container",
-                          "source": [{ "context": "tracingTaskContainer" }],
+                          "source": [
+                            {
+                              "context": "tracingTaskContainer"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "tracingTask",
                               "transform": "evaluate",
                               "parameter": [
-                                { "valueId": "tracingTaskContainer" },
-                                { "valueString": "$this.resource" }
+                                {
+                                  "valueId": "tracingTaskContainer"
+                                },
+                                {
+                                  "valueString": "$this.resource"
+                                }
                               ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_get_list_id",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "variable": "actualTaskId",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "tracingTask" },
-                                    { "valueString": "$this.id" }
+                                    {
+                                      "valueId": "tracingTask"
+                                    },
+                                    {
+                                      "valueString": "$this.id"
+                                    }
                                   ]
                                 }
                               ],
                               "rule": [
                                 {
                                   "name": "r_tracing_enc_id",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "encList",
@@ -642,7 +927,11 @@
                                       "element": "id",
                                       "variable": "encId",
                                       "transform": "create",
-                                      "parameter": [{ "valueString": "id" }]
+                                      "parameter": [
+                                        {
+                                          "valueString": "id"
+                                        }
+                                      ]
                                     },
                                     {
                                       "context": "encId",
@@ -650,7 +939,9 @@
                                       "element": "value",
                                       "transform": "copy",
                                       "parameter": [
-                                        { "valueId": "actualTaskId" }
+                                        {
+                                          "valueId": "actualTaskId"
+                                        }
                                       ]
                                     }
                                   ]
@@ -681,28 +972,44 @@
                               "rule": [
                                 {
                                   "name": "r_retrieve _entry",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "variable": "refR",
                                       "transform": "evaluate",
                                       "parameter": [
-                                        { "valueId": "entry6" },
-                                        { "valueString": "$this" }
+                                        {
+                                          "valueId": "entry6"
+                                        },
+                                        {
+                                          "valueString": "$this"
+                                        }
                                       ]
                                     }
                                   ],
                                   "rule": [
                                     {
                                       "name": "r_create_entry",
-                                      "source": [{ "context": "src" }],
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
                                       "target": [
                                         {
                                           "context": "encList",
                                           "contextType": "variable",
                                           "element": "entry",
                                           "transform": "copy",
-                                          "parameter": [{ "valueId": "refR" }]
+                                          "parameter": [
+                                            {
+                                              "valueId": "refR"
+                                            }
+                                          ]
                                         }
                                       ]
                                     }
@@ -716,13 +1023,19 @@
                     },
                     {
                       "name": "r_list_empty_container",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "variable": "isListEmpty",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "tracingBundle" },
+                            {
+                              "valueId": "tracingBundle"
+                            },
                             {
                               "valueString": "$this.entry.resource.ofType(List).empty()"
                             }
@@ -753,7 +1066,11 @@
                               "rule": [
                                 {
                                   "name": "r_list_id",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "encList",
@@ -767,7 +1084,9 @@
                                       "element": "status",
                                       "transform": "copy",
                                       "parameter": [
-                                        { "valueString": "current" }
+                                        {
+                                          "valueString": "current"
+                                        }
                                       ]
                                     },
                                     {
@@ -776,7 +1095,9 @@
                                       "element": "mode",
                                       "transform": "copy",
                                       "parameter": [
-                                        { "valueString": "snapshot" }
+                                        {
+                                          "valueString": "snapshot"
+                                        }
                                       ]
                                     },
                                     {
@@ -794,7 +1115,11 @@
                                 },
                                 {
                                   "name": "r_list_code",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "encList",
@@ -803,14 +1128,20 @@
                                       "variable": "codeableConcept",
                                       "transform": "create",
                                       "parameter": [
-                                        { "valueString": "CodeableConcept" }
+                                        {
+                                          "valueString": "CodeableConcept"
+                                        }
                                       ]
                                     }
                                   ],
                                   "rule": [
                                     {
                                       "name": "r_enc_code_text",
-                                      "source": [{ "context": "src" }],
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
                                       "target": [
                                         {
                                           "context": "codeableConcept",
@@ -818,14 +1149,20 @@
                                           "element": "text",
                                           "transform": "copy",
                                           "parameter": [
-                                            { "valueString": "Contact Tracing" }
+                                            {
+                                              "valueString": "Contact Tracing"
+                                            }
                                           ]
                                         }
                                       ]
                                     },
                                     {
                                       "name": "r_lisy_code_coding",
-                                      "source": [{ "context": "src" }],
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
                                       "target": [
                                         {
                                           "context": "codeableConcept",
@@ -834,14 +1171,20 @@
                                           "variable": "coding",
                                           "transform": "create",
                                           "parameter": [
-                                            { "valueString": "Coding" }
+                                            {
+                                              "valueString": "Coding"
+                                            }
                                           ]
                                         }
                                       ],
                                       "rule": [
                                         {
                                           "name": "r_enc_code_coding_value",
-                                          "source": [{ "context": "src" }],
+                                          "source": [
+                                            {
+                                              "context": "src"
+                                            }
+                                          ],
                                           "target": [
                                             {
                                               "context": "coding",
@@ -860,7 +1203,9 @@
                                               "element": "code",
                                               "transform": "copy",
                                               "parameter": [
-                                                { "valueString": "225368008" }
+                                                {
+                                                  "valueString": "225368008"
+                                                }
                                               ]
                                             },
                                             {
@@ -882,7 +1227,11 @@
                                 },
                                 {
                                   "name": "r_list_source",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "encList",
@@ -891,14 +1240,20 @@
                                       "variable": "ref",
                                       "transform": "create",
                                       "parameter": [
-                                        { "valueString": "Reference" }
+                                        {
+                                          "valueString": "Reference"
+                                        }
                                       ]
                                     }
                                   ],
                                   "rule": [
                                     {
                                       "name": "r_obs_sub_ref_dbs_viral_load_results",
-                                      "source": [{ "context": "src" }],
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
                                       "target": [
                                         {
                                           "context": "ref",
@@ -906,7 +1261,9 @@
                                           "element": "reference",
                                           "transform": "evaluate",
                                           "parameter": [
-                                            { "valueId": "src" },
+                                            {
+                                              "valueId": "src"
+                                            },
                                             {
                                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                                             }
@@ -918,7 +1275,11 @@
                                 },
                                 {
                                   "name": "r_enc_part_individual",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "encList",
@@ -927,14 +1288,20 @@
                                       "variable": "encOwner",
                                       "transform": "create",
                                       "parameter": [
-                                        { "valueString": "Reference" }
+                                        {
+                                          "valueString": "Reference"
+                                        }
                                       ]
                                     }
                                   ],
                                   "rule": [
                                     {
                                       "name": "r_enc_part_reference",
-                                      "source": [{ "context": "src" }],
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
                                       "target": [
                                         {
                                           "context": "encOwner",
@@ -942,7 +1309,9 @@
                                           "element": "reference",
                                           "transform": "evaluate",
                                           "parameter": [
-                                            { "valueId": "src" },
+                                            {
+                                              "valueId": "src"
+                                            },
                                             {
                                               "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                                             }
@@ -966,7 +1335,11 @@
         },
         {
           "name": "r_add_encounter_ref",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "encList",
@@ -979,7 +1352,11 @@
               "contextType": "variable",
               "element": "item",
               "transform": "reference",
-              "parameter": [{ "valueId": "encounter" }]
+              "parameter": [
+                {
+                  "valueId": "encounter"
+                }
+              ]
             }
           ]
         }
@@ -989,16 +1366,40 @@
       "name": "ExtractObservations",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_ext_obs",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "dependent": [
             {
               "name": "ExtractIsTracingConducted",
@@ -1018,11 +1419,31 @@
       "name": "ExtractIsTracingConducted",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -1039,7 +1460,11 @@
           "rule": [
             {
               "name": "r_obs_date_of_sample_collection",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -1053,13 +1478,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_date_of_sample_collection",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -1073,8 +1506,12 @@
                       "element": "code",
                       "transform": "cc",
                       "parameter": [
-                        { "valueString": "https://d-tree.org" },
-                        { "valueString": "phone-tracing-outcome-able-to-speak" }
+                        {
+                          "valueString": "https://d-tree.org"
+                        },
+                        {
+                          "valueString": "phone-tracing-outcome-able-to-speak"
+                        }
                       ]
                     },
                     {
@@ -1086,7 +1523,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -1094,7 +1533,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -1102,15 +1545,23 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
                   "name": "r_obs_value_date_of_sample_collection",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -1118,8 +1569,12 @@
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "item" },
-                        { "valueString": "$this.answer.value" }
+                        {
+                          "valueId": "item"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
                       ]
                     }
                   ]
@@ -1149,11 +1604,20 @@
                   "rule": [
                     {
                       "name": "r_ext_obs_conducted",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "dependent": [
                         {
                           "name": "ExtractDiscussionOutcome",
-                          "variable": ["src", "page", "bundle", "encounter"]
+                          "variable": [
+                            "src",
+                            "page",
+                            "bundle",
+                            "encounter"
+                          ]
                         }
                       ]
                     },
@@ -1171,18 +1635,30 @@
                       "rule": [
                         {
                           "name": "r_date_of_transfer",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "dateValue",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "dateValue",
@@ -1190,7 +1666,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-of-hiv-test" }
+                                    {
+                                      "valueString": "date-of-hiv-test"
+                                    }
                                   ]
                                 }
                               ],
@@ -1211,18 +1689,30 @@
                         },
                         {
                           "name": "r_hiv_test_type",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "testType",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_cc",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "testType",
@@ -1230,7 +1720,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "hiv-test-type" }
+                                    {
+                                      "valueString": "hiv-test-type"
+                                    }
                                   ]
                                 }
                               ],
@@ -1251,25 +1743,41 @@
                         },
                         {
                           "name": "r_sample_id",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "sampleId",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_string",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "sampleId",
                                   "contextType": "variable",
                                   "element": "value",
                                   "transform": "copy",
-                                  "parameter": [{ "valueString": "sample-id" }]
+                                  "parameter": [
+                                    {
+                                      "valueString": "sample-id"
+                                    }
+                                  ]
                                 }
                               ],
                               "dependent": [
@@ -1289,18 +1797,30 @@
                         },
                         {
                           "name": "r_test_results_rapid",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "testResults",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_cc",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "testResults",
@@ -1308,7 +1828,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "test-results-rapid" }
+                                    {
+                                      "valueString": "test-results-rapid"
+                                    }
                                   ]
                                 }
                               ],
@@ -1329,18 +1851,30 @@
                         },
                         {
                           "name": "r_test_results_dbs",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "testResults",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_cc",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "testResults",
@@ -1348,7 +1882,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "test-results-dbs" }
+                                    {
+                                      "valueString": "test-results-dbs"
+                                    }
                                   ]
                                 }
                               ],
@@ -1381,18 +1917,30 @@
                           "rule": [
                             {
                               "name": "r_date_of_agreed_appointment",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "variable": "visitDate",
                                   "transform": "create",
-                                  "parameter": [{ "valueString": "string" }]
+                                  "parameter": [
+                                    {
+                                      "valueString": "string"
+                                    }
+                                  ]
                                 }
                               ],
                               "rule": [
                                 {
                                   "name": "r_date",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "visitDate",
@@ -1428,18 +1976,30 @@
                     },
                     {
                       "name": "r_date_of_agreed_appointment",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "variable": "visitDate",
                           "transform": "create",
-                          "parameter": [{ "valueString": "string" }]
+                          "parameter": [
+                            {
+                              "valueString": "string"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_date",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "visitDate",
@@ -1447,7 +2007,9 @@
                               "element": "value",
                               "transform": "copy",
                               "parameter": [
-                                { "valueString": "date-of-agreed-appointment" }
+                                {
+                                  "valueString": "date-of-agreed-appointment"
+                                }
                               ]
                             }
                           ],
@@ -1481,18 +2043,30 @@
                       "rule": [
                         {
                           "name": "r_date_of_agreed_appointment",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "visitDate",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "visitDate",
@@ -1500,7 +2074,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-of-refusal" }
+                                    {
+                                      "valueString": "date-of-refusal"
+                                    }
                                   ]
                                 }
                               ],
@@ -1521,18 +2097,30 @@
                         },
                         {
                           "name": "r_counselling",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "counselling",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_bool",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "counselling",
@@ -1577,18 +2165,30 @@
                       "rule": [
                         {
                           "name": "r_date_of_agreed_appointment",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "visitDate",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "visitDate",
@@ -1596,7 +2196,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-of-transfer" }
+                                    {
+                                      "valueString": "date-of-transfer"
+                                    }
                                   ]
                                 }
                               ],
@@ -1644,11 +2246,20 @@
                   "rule": [
                     {
                       "name": "r_ext_obs_not_conducted",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "dependent": [
                         {
                           "name": "ExtractReasonForUnconducted",
-                          "variable": ["src", "page", "bundle", "encounter"]
+                          "variable": [
+                            "src",
+                            "page",
+                            "bundle",
+                            "encounter"
+                          ]
                         }
                       ]
                     },
@@ -1666,11 +2277,19 @@
                       "rule": [
                         {
                           "name": "r_check_limit",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "CheckEncounterLimit",
-                              "variable": ["src", "bundle", "encList"]
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encList"
+                              ]
                             }
                           ]
                         }
@@ -1690,11 +2309,19 @@
                       "rule": [
                         {
                           "name": "r_check_limit",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "CheckEncounterLimit",
-                              "variable": ["src", "bundle", "encList"]
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encList"
+                              ]
                             }
                           ]
                         }
@@ -1726,11 +2353,19 @@
                           "rule": [
                             {
                               "name": "remove_from_tracing",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "dependent": [
                                 {
                                   "name": "RemoveFromTracing",
-                                  "variable": ["src", "bundle", "encList"]
+                                  "variable": [
+                                    "src",
+                                    "bundle",
+                                    "encList"
+                                  ]
                                 }
                               ]
                             }
@@ -1738,18 +2373,30 @@
                         },
                         {
                           "name": "r_location_known",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "locationKnown",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_bool",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "locationKnown",
@@ -1757,7 +2404,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "new-location-known" }
+                                    {
+                                      "valueString": "new-location-known"
+                                    }
                                   ]
                                 }
                               ],
@@ -1778,18 +2427,30 @@
                         },
                         {
                           "name": "r_date_new_location_known",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "visitDate",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "visitDate",
@@ -1797,7 +2458,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-new-location-known" }
+                                    {
+                                      "valueString": "date-new-location-known"
+                                    }
                                   ]
                                 }
                               ],
@@ -1818,18 +2481,30 @@
                         },
                         {
                           "name": "r_client_moved",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "locGroup",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "locGroup",
@@ -1837,7 +2512,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "client-moved-group" }
+                                    {
+                                      "valueString": "client-moved-group"
+                                    }
                                   ]
                                 }
                               ],
@@ -1871,18 +2548,30 @@
                       "rule": [
                         {
                           "name": "r_is_deceased",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "isDeceased",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_bool",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "isDeceased",
@@ -1890,7 +2579,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "is-deceased" }
+                                    {
+                                      "valueString": "is-deceased"
+                                    }
                                   ]
                                 }
                               ],
@@ -1911,18 +2602,30 @@
                         },
                         {
                           "name": "r_date_of_death",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "visitDate",
                               "transform": "create",
-                              "parameter": [{ "valueString": "string" }]
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "r_date",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "visitDate",
@@ -1930,7 +2633,9 @@
                                   "element": "value",
                                   "transform": "copy",
                                   "parameter": [
-                                    { "valueString": "date-of-death" }
+                                    {
+                                      "valueString": "date-of-death"
+                                    }
                                   ]
                                 }
                               ],
@@ -1951,21 +2656,36 @@
                         },
                         {
                           "name": "remove_from_tracing",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "RemoveFromTracing",
-                              "variable": ["src", "bundle", "encList"]
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encList"
+                              ]
                             }
                           ]
                         },
                         {
                           "name": "close_app",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "CloseAppointment",
-                              "variable": ["src", "appointment"]
+                              "variable": [
+                                "src",
+                                "appointment"
+                              ]
                             }
                           ]
                         }
@@ -1985,11 +2705,19 @@
                       "rule": [
                         {
                           "name": "r_check_limit",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "dependent": [
                             {
                               "name": "CheckEncounterLimit",
-                              "variable": ["src", "bundle", "encList"]
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encList"
+                              ]
                             }
                           ]
                         }
@@ -2007,24 +2735,47 @@
       "name": "CheckEncounterLimit",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_max_encounters",
           "source": [
-            { "context": "src", "condition": "(encList.entry.count() >= 2)" }
+            {
+              "context": "src",
+              "condition": "(encList.entry.count() >= 2)"
+            }
           ],
           "rule": [
             {
               "name": "remove_from_tracing",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "dependent": [
                 {
                   "name": "RemoveFromTracing",
-                  "variable": ["src", "bundle", "encList"]
+                  "variable": [
+                    "src",
+                    "bundle",
+                    "encList"
+                  ]
                 }
               ]
             }
@@ -2036,14 +2787,26 @@
       "name": "ExtractDiscussionOutcome",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" }
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -2060,7 +2823,11 @@
           "rule": [
             {
               "name": "r_obs_dbs_viral_load_results",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -2074,13 +2841,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2094,7 +2869,9 @@
                       "element": "code",
                       "transform": "cc",
                       "parameter": [
-                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "https://d-tree.org"
+                        },
                         {
                           "valueString": "phone-tracing-outcome-tracing-outcome"
                         }
@@ -2109,7 +2886,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -2117,7 +2896,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -2125,15 +2908,23 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
                   "name": "r_obs_sub_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2141,13 +2932,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -2155,7 +2954,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -2167,7 +2968,11 @@
                 },
                 {
                   "name": "r_obs_value_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2175,13 +2980,21 @@
                       "element": "value",
                       "variable": "codeableConcept",
                       "transform": "create",
-                      "parameter": [{ "valueString": "CodeableConcept" }]
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_value_text_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -2189,15 +3002,23 @@
                           "element": "text",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "item" },
-                            { "valueString": "$this.answer.value.display" }
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
                           ]
                         }
                       ]
                     },
                     {
                       "name": "r_obs_value_c_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -2205,8 +3026,12 @@
                           "element": "coding",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "item" },
-                            { "valueString": "$this.answer.value" }
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
                           ]
                         }
                       ]
@@ -2223,14 +3048,26 @@
       "name": "ExtractReasonForUnconducted",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" }
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -2247,7 +3084,11 @@
           "rule": [
             {
               "name": "r_obs_dbs_viral_load_results",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -2261,13 +3102,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2281,7 +3130,9 @@
                       "element": "code",
                       "transform": "cc",
                       "parameter": [
-                        { "valueString": "https://d-tree.org" },
+                        {
+                          "valueString": "https://d-tree.org"
+                        },
                         {
                           "valueString": "phone-tracing-outcome-reason-for-no-tracing"
                         }
@@ -2296,7 +3147,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -2304,7 +3157,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -2312,15 +3169,23 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
                   "name": "r_obs_sub_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2328,13 +3193,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -2342,7 +3215,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -2354,7 +3229,11 @@
                 },
                 {
                   "name": "r_obs_value_dbs_viral_load_results",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2362,13 +3241,21 @@
                       "element": "value",
                       "variable": "codeableConcept",
                       "transform": "create",
-                      "parameter": [{ "valueString": "CodeableConcept" }]
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_value_text_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -2376,15 +3263,23 @@
                           "element": "text",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "item" },
-                            { "valueString": "$this.answer.value.display" }
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
                           ]
                         }
                       ]
                     },
                     {
                       "name": "r_obs_value_c_dbs_viral_load_results",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -2392,8 +3287,12 @@
                           "element": "coding",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "item" },
-                            { "valueString": "$this.answer.value" }
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
                           ]
                         }
                       ]
@@ -2410,15 +3309,31 @@
       "name": "ExtractDateType",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "linkPath", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" }
+        {
+          "name": "linkPath",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -2434,7 +3349,11 @@
           "rule": [
             {
               "name": "r_obs_value",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -2448,13 +3367,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2471,7 +3398,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -2479,7 +3408,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -2487,20 +3420,30 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "evText",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "linkPath" },
+                        {
+                          "valueId": "linkPath"
+                        },
                         {
                           "valueString": "'phone-tracing-outcome-' + $this.value"
                         }
@@ -2510,7 +3453,11 @@
                   "rule": [
                     {
                       "name": "r_obs_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "obs",
@@ -2518,13 +3465,21 @@
                           "element": "code",
                           "variable": "codeableConcept",
                           "transform": "create",
-                          "parameter": [{ "valueString": "CodeableConcept" }]
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_cc_coding",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "codeableConcept",
@@ -2532,9 +3487,15 @@
                               "element": "coding",
                               "transform": "c",
                               "parameter": [
-                                { "valueString": "http://d-tree.org" },
-                                { "valueId": "evText" },
-                                { "valueId": "evText" }
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueId": "evText"
+                                },
+                                {
+                                  "valueId": "evText"
+                                }
                               ]
                             }
                           ]
@@ -2545,7 +3506,11 @@
                 },
                 {
                   "name": "r_obs_reference",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2553,13 +3518,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -2567,7 +3540,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -2579,7 +3554,11 @@
                 },
                 {
                   "name": "r_obs_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2587,8 +3566,12 @@
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "itemAnswer" },
-                        { "valueString": "$this.answer.value.toString()" }
+                        {
+                          "valueId": "itemAnswer"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString()"
+                        }
                       ]
                     }
                   ]
@@ -2603,15 +3586,31 @@
       "name": "ExtractValueType",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "linkPath", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" }
+        {
+          "name": "linkPath",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -2627,7 +3626,11 @@
           "rule": [
             {
               "name": "r_obs_value",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -2641,13 +3644,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2664,7 +3675,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -2672,7 +3685,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -2680,20 +3697,30 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "evText",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "linkPath" },
+                        {
+                          "valueId": "linkPath"
+                        },
                         {
                           "valueString": "'phone-tracing-outcome-' + $this.value"
                         }
@@ -2703,7 +3730,11 @@
                   "rule": [
                     {
                       "name": "r_obs_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "obs",
@@ -2711,13 +3742,21 @@
                           "element": "code",
                           "variable": "codeableConcept",
                           "transform": "create",
-                          "parameter": [{ "valueString": "CodeableConcept" }]
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_cc_coding",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "codeableConcept",
@@ -2725,9 +3764,15 @@
                               "element": "coding",
                               "transform": "c",
                               "parameter": [
-                                { "valueString": "http://d-tree.org" },
-                                { "valueId": "evText" },
-                                { "valueId": "evText" }
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueId": "evText"
+                                },
+                                {
+                                  "valueId": "evText"
+                                }
                               ]
                             }
                           ]
@@ -2738,7 +3783,11 @@
                 },
                 {
                   "name": "r_obs_reference",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2746,13 +3795,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -2760,7 +3817,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -2772,7 +3831,11 @@
                 },
                 {
                   "name": "r_obs_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2780,8 +3843,12 @@
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "itemAnswer" },
-                        { "valueString": "$this.answer.value" }
+                        {
+                          "valueId": "itemAnswer"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
                       ]
                     }
                   ]
@@ -2796,15 +3863,31 @@
       "name": "ExtractCodableConceptType",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "linkPath", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" }
+        {
+          "name": "linkPath",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -2820,7 +3903,11 @@
           "rule": [
             {
               "name": "r_obs_value",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -2834,13 +3921,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2857,7 +3952,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -2865,7 +3962,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -2873,20 +3974,30 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "evText",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "linkPath" },
+                        {
+                          "valueId": "linkPath"
+                        },
                         {
                           "valueString": "'phone-tracing-outcome-' + $this.value"
                         }
@@ -2896,7 +4007,11 @@
                   "rule": [
                     {
                       "name": "r_obs_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "obs",
@@ -2904,13 +4019,21 @@
                           "element": "code",
                           "variable": "codeableConcept",
                           "transform": "create",
-                          "parameter": [{ "valueString": "CodeableConcept" }]
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_cc_coding",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "codeableConcept",
@@ -2918,9 +4041,15 @@
                               "element": "coding",
                               "transform": "c",
                               "parameter": [
-                                { "valueString": "http://d-tree.org" },
-                                { "valueId": "evText" },
-                                { "valueId": "evText" }
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueId": "evText"
+                                },
+                                {
+                                  "valueId": "evText"
+                                }
                               ]
                             }
                           ]
@@ -2931,7 +4060,11 @@
                 },
                 {
                   "name": "r_obs_reference",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2939,13 +4072,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -2953,7 +4094,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -2965,7 +4108,11 @@
                 },
                 {
                   "name": "r_obs_value_hiv_test_type",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -2973,13 +4120,21 @@
                       "element": "value",
                       "variable": "codeableConcept",
                       "transform": "create",
-                      "parameter": [{ "valueString": "CodeableConcept" }]
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_value_text_hiv_test_type",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -2987,15 +4142,23 @@
                           "element": "text",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "itemAnswer" },
-                            { "valueString": "$this.answer.value.display" }
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
                           ]
                         }
                       ]
                     },
                     {
                       "name": "r_obs_value_c_hiv_test_type",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "codeableConcept",
@@ -3003,8 +4166,12 @@
                           "element": "coding",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "itemAnswer" },
-                            { "valueString": "$this.answer.value" }
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
                           ]
                         }
                       ]
@@ -3021,14 +4188,26 @@
       "name": "ExtractLocationInformation",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "linkPath", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
+        {
+          "name": "linkPath",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -3055,7 +4234,11 @@
               "rule": [
                 {
                   "name": "r_create_patient",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "bundle",
@@ -3069,13 +4252,21 @@
                       "element": "resource",
                       "variable": "patient",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Patient" }]
+                      "parameter": [
+                        {
+                          "valueString": "Patient"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_patient_id",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "patient",
@@ -3083,13 +4274,21 @@
                           "element": "id",
                           "variable": "patient_id",
                           "transform": "create",
-                          "parameter": [{ "valueString": "id" }]
+                          "parameter": [
+                            {
+                              "valueString": "id"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_item_patient_id_patient_set_pat_id",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "patient_id",
@@ -3097,7 +4296,9 @@
                               "element": "value",
                               "transform": "evaluate",
                               "parameter": [
-                                { "valueId": "src" },
+                                {
+                                  "valueId": "src"
+                                },
                                 {
                                   "valueString": "$this.item.where(linkId = 'patient-id').answer.value"
                                 }
@@ -3109,7 +4310,11 @@
                     },
                     {
                       "name": "r_p_address",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "patient",
@@ -3117,7 +4322,11 @@
                           "element": "address",
                           "variable": "patientAddress",
                           "transform": "create",
-                          "parameter": [{ "valueString": "Address" }]
+                          "parameter": [
+                            {
+                              "valueString": "Address"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
@@ -3139,8 +4348,12 @@
                               "element": "district",
                               "transform": "evaluate",
                               "parameter": [
-                                { "valueId": "district" },
-                                { "valueString": "$this.answer.value" }
+                                {
+                                  "valueId": "district"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
                               ]
                             }
                           ]
@@ -3159,7 +4372,11 @@
                           "rule": [
                             {
                               "name": "r_p_address_tracing_catchment",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "patientAddress",
@@ -3167,8 +4384,12 @@
                                   "element": "state",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "tracingCatchment" },
-                                    { "valueString": "$this.answer.value" }
+                                    {
+                                      "valueId": "tracingCatchment"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
                                   ]
                                 }
                               ]
@@ -3191,8 +4412,12 @@
                                   "element": "text",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "physicalLocator" },
-                                    { "valueString": "$this.answer.value" }
+                                    {
+                                      "valueId": "physicalLocator"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
                                   ]
                                 }
                               ]
@@ -3201,27 +4426,43 @@
                         },
                         {
                           "name": "r_p_address_use",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "patientAddress",
                               "contextType": "variable",
                               "element": "use",
                               "transform": "copy",
-                              "parameter": [{ "valueString": "home" }]
+                              "parameter": [
+                                {
+                                  "valueString": "home"
+                                }
+                              ]
                             }
                           ]
                         },
                         {
                           "name": "r_p_address_type",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "patientAddress",
                               "contextType": "variable",
                               "element": "type",
                               "transform": "copy",
-                              "parameter": [{ "valueString": "physical" }]
+                              "parameter": [
+                                {
+                                  "valueString": "physical"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -3239,21 +4480,41 @@
       "name": "RemoveFromTracing",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encList", "type": "List", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encList",
+          "type": "List",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_disable_enc_list",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "encList",
               "contextType": "variable",
               "element": "status",
               "transform": "copy",
-              "parameter": [{ "valueString": "retired" }]
+              "parameter": [
+                {
+                  "valueString": "retired"
+                }
+              ]
             }
           ]
         },
@@ -3304,21 +4565,33 @@
                       "rule": [
                         {
                           "name": "get_task",
-                          "source": [{ "context": "tracingTaskContainer" }],
+                          "source": [
+                            {
+                              "context": "tracingTaskContainer"
+                            }
+                          ],
                           "target": [
                             {
                               "variable": "tracingTask",
                               "transform": "evaluate",
                               "parameter": [
-                                { "valueId": "tracingTaskContainer" },
-                                { "valueString": "$this.resource" }
+                                {
+                                  "valueId": "tracingTaskContainer"
+                                },
+                                {
+                                  "valueString": "$this.resource"
+                                }
                               ]
                             }
                           ],
                           "rule": [
                             {
                               "name": "get_task_data",
-                              "source": [{ "context": "src" }],
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
                               "target": [
                                 {
                                   "context": "bundle",
@@ -3330,23 +4603,33 @@
                                   "variable": "timeNow",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "src" },
-                                    { "valueString": "now()" }
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
                                   ]
                                 },
                                 {
                                   "variable": "actualTaskId",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "tracingTask" },
-                                    { "valueString": "$this.id" }
+                                    {
+                                      "valueId": "tracingTask"
+                                    },
+                                    {
+                                      "valueString": "$this.id"
+                                    }
                                   ]
                                 },
                                 {
                                   "variable": "startPeriod",
                                   "transform": "evaluate",
                                   "parameter": [
-                                    { "valueId": "tracingTask" },
+                                    {
+                                      "valueId": "tracingTask"
+                                    },
                                     {
                                       "valueString": "$this.executionPeriod.start"
                                     }
@@ -3358,13 +4641,21 @@
                                   "element": "resource",
                                   "variable": "task",
                                   "transform": "create",
-                                  "parameter": [{ "valueString": "Task" }]
+                                  "parameter": [
+                                    {
+                                      "valueString": "Task"
+                                    }
+                                  ]
                                 }
                               ],
                               "rule": [
                                 {
                                   "name": "r_tracing_task_id",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "task",
@@ -3372,7 +4663,11 @@
                                       "element": "id",
                                       "variable": "taskId",
                                       "transform": "create",
-                                      "parameter": [{ "valueString": "id" }]
+                                      "parameter": [
+                                        {
+                                          "valueString": "id"
+                                        }
+                                      ]
                                     },
                                     {
                                       "context": "taskId",
@@ -3380,14 +4675,20 @@
                                       "element": "value",
                                       "transform": "copy",
                                       "parameter": [
-                                        { "valueId": "actualTaskId" }
+                                        {
+                                          "valueId": "actualTaskId"
+                                        }
                                       ]
                                     }
                                   ]
                                 },
                                 {
                                   "name": "r_tracing_task_status",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "task",
@@ -3395,14 +4696,20 @@
                                       "element": "status",
                                       "transform": "copy",
                                       "parameter": [
-                                        { "valueString": "completed" }
+                                        {
+                                          "valueString": "completed"
+                                        }
                                       ]
                                     }
                                   ]
                                 },
                                 {
                                   "name": "r_tracing_task_execution_period",
-                                  "source": [{ "context": "src" }],
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
                                   "target": [
                                     {
                                       "context": "task",
@@ -3410,7 +4717,11 @@
                                       "element": "executionPeriod",
                                       "variable": "taskPeriod",
                                       "transform": "create",
-                                      "parameter": [{ "valueString": "Period" }]
+                                      "parameter": [
+                                        {
+                                          "valueString": "Period"
+                                        }
+                                      ]
                                     },
                                     {
                                       "context": "taskPeriod",
@@ -3418,8 +4729,12 @@
                                       "element": "start",
                                       "transform": "evaluate",
                                       "parameter": [
-                                        { "valueId": "src" },
-                                        { "valueString": "startPeriod" }
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "startPeriod"
+                                        }
                                       ]
                                     },
                                     {
@@ -3428,8 +4743,12 @@
                                       "element": "end",
                                       "transform": "evaluate",
                                       "parameter": [
-                                        { "valueId": "src" },
-                                        { "valueString": "timeNow" }
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "timeNow"
+                                        }
                                       ]
                                     }
                                   ]
@@ -3452,16 +4771,36 @@
       "name": "ExctractAppointmentDate",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "pageGroup",
           "type": "QuestionnaireResponseItem",
           "mode": "source"
         },
-        { "name": "linkPath", "type": "string", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" },
-        { "name": "encounter", "type": "Encounter", "mode": "target" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "linkPath",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -3477,7 +4816,11 @@
           "rule": [
             {
               "name": "r_obs_value",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "bundle",
@@ -3491,13 +4834,21 @@
                   "element": "resource",
                   "variable": "obs",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Observation" }]
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_obs_data_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -3514,7 +4865,9 @@
                         {
                           "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
                         },
-                        { "valueString": "vital-signs" }
+                        {
+                          "valueString": "vital-signs"
+                        }
                       ]
                     },
                     {
@@ -3522,7 +4875,11 @@
                       "contextType": "variable",
                       "element": "encounter",
                       "transform": "reference",
-                      "parameter": [{ "valueId": "encounter" }]
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
                     },
                     {
                       "context": "obs",
@@ -3530,20 +4887,30 @@
                       "element": "effective",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
-                        { "valueString": "now()" }
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "evText",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "linkPath" },
+                        {
+                          "valueId": "linkPath"
+                        },
                         {
                           "valueString": "'phone-tracing-outcome-' + $this.value"
                         }
@@ -3553,7 +4920,11 @@
                   "rule": [
                     {
                       "name": "r_obs_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "obs",
@@ -3561,13 +4932,21 @@
                           "element": "code",
                           "variable": "codeableConcept",
                           "transform": "create",
-                          "parameter": [{ "valueString": "CodeableConcept" }]
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_cc_coding",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "codeableConcept",
@@ -3575,9 +4954,15 @@
                               "element": "coding",
                               "transform": "c",
                               "parameter": [
-                                { "valueString": "http://d-tree.org" },
-                                { "valueId": "evText" },
-                                { "valueId": "evText" }
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueId": "evText"
+                                },
+                                {
+                                  "valueId": "evText"
+                                }
                               ]
                             }
                           ]
@@ -3588,7 +4973,11 @@
                 },
                 {
                   "name": "r_obs_reference",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -3596,13 +4985,21 @@
                       "element": "subject",
                       "variable": "ref",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Reference" }]
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_obs_sub_ref_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "ref",
@@ -3610,7 +5007,9 @@
                           "element": "reference",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "src" },
+                            {
+                              "valueId": "src"
+                            },
                             {
                               "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                             }
@@ -3622,7 +5021,11 @@
                 },
                 {
                   "name": "r_obs_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "obs",
@@ -3630,20 +5033,32 @@
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "itemAnswer" },
-                        { "valueString": "$this.answer.value.toString()" }
+                        {
+                          "valueId": "itemAnswer"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString()"
+                        }
                       ]
                     }
                   ]
                 },
                 {
                   "name": "add_app_start",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "startDate",
                       "transform": "create",
-                      "parameter": [{ "valueString": "instant" }]
+                      "parameter": [
+                        {
+                          "valueString": "instant"
+                        }
+                      ]
                     },
                     {
                       "context": "startDate",
@@ -3651,7 +5066,9 @@
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "itemAnswer" },
+                        {
+                          "valueId": "itemAnswer"
+                        },
                         {
                           "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
                         }
@@ -3662,7 +5079,11 @@
                       "contextType": "variable",
                       "element": "start",
                       "transform": "copy",
-                      "parameter": [{ "valueId": "startDate" }]
+                      "parameter": [
+                        {
+                          "valueId": "startDate"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -3676,8 +5097,16 @@
       "name": "EvaluateAppointment",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
@@ -3706,35 +5135,55 @@
               "rule": [
                 {
                   "name": "r_get_app_item",
-                  "source": [{ "context": "appointmentContainer" }],
+                  "source": [
+                    {
+                      "context": "appointmentContainer"
+                    }
+                  ],
                   "target": [
                     {
                       "variable": "appointmentItem",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "appointmentContainer" },
-                        { "valueString": "$this.resource" }
+                        {
+                          "valueId": "appointmentContainer"
+                        },
+                        {
+                          "valueString": "$this.resource"
+                        }
                       ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_get_appointment_id",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "variable": "actualAppId",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "appointmentItem" },
-                            { "valueString": "$this.id.value.replace('#', '')" }
+                            {
+                              "valueId": "appointmentItem"
+                            },
+                            {
+                              "valueString": "$this.id.value.replace('#', '')"
+                            }
                           ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_appointment_id",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "appointment",
@@ -3742,14 +5191,22 @@
                               "element": "id",
                               "variable": "appId",
                               "transform": "create",
-                              "parameter": [{ "valueString": "id" }]
+                              "parameter": [
+                                {
+                                  "valueString": "id"
+                                }
+                              ]
                             },
                             {
                               "context": "appId",
                               "contextType": "variable",
                               "element": "value",
                               "transform": "copy",
-                              "parameter": [{ "valueId": "actualAppId" }]
+                              "parameter": [
+                                {
+                                  "valueId": "actualAppId"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -3757,36 +5214,56 @@
                     },
                     {
                       "name": "r_reason_switch",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "variable": "reasonCode",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "appointmentContainer" },
-                            { "valueString": "$this.resource.reasonCode" }
+                            {
+                              "valueId": "appointmentContainer"
+                            },
+                            {
+                              "valueString": "$this.resource.reasonCode"
+                            }
                           ]
                         },
                         {
                           "variable": "reasonItem",
                           "transform": "evaluate",
                           "parameter": [
-                            { "valueId": "reasonCode" },
-                            { "valueString": "$this" }
+                            {
+                              "valueId": "reasonCode"
+                            },
+                            {
+                              "valueString": "$this"
+                            }
                           ]
                         }
                       ],
                       "rule": [
                         {
                           "name": "r_create_reasonItem",
-                          "source": [{ "context": "src" }],
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
                           "target": [
                             {
                               "context": "appointment",
                               "contextType": "variable",
                               "element": "reasonCode",
                               "transform": "copy",
-                              "parameter": [{ "valueId": "reasonItem" }]
+                              "parameter": [
+                                {
+                                  "valueId": "reasonItem"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -3798,13 +5275,19 @@
             },
             {
               "name": "r_app_empty_container",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "variable": "isListEmpty",
                   "transform": "evaluate",
                   "parameter": [
-                    { "valueId": "item" },
+                    {
+                      "valueId": "item"
+                    },
                     {
                       "valueString": "$this.entry.resource.ofType(Appointment).empty()"
                     }
@@ -3815,16 +5298,26 @@
                 {
                   "name": "r_app_empty",
                   "source": [
-                    { "context": "src", "condition": "(isListEmpty = true)" }
+                    {
+                      "context": "src",
+                      "condition": "(isListEmpty = true)"
+                    }
                   ],
                   "rule": [
                     {
                       "name": "r_app_populate",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "dependent": [
                         {
                           "name": "PopulateAppointment",
-                          "variable": ["src", "appointment"]
+                          "variable": [
+                            "src",
+                            "appointment"
+                          ]
                         }
                       ]
                     }
@@ -3840,20 +5333,36 @@
       "name": "CloseAppointment",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_close_app",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "appointment",
               "contextType": "variable",
               "element": "status",
               "transform": "copy",
-              "parameter": [{ "valueString": "fulfilled" }]
+              "parameter": [
+                {
+                  "valueString": "fulfilled"
+                }
+              ]
             }
           ]
         }
@@ -3863,13 +5372,25 @@
       "name": "PopulateAppointment",
       "typeMode": "none",
       "input": [
-        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "appointment", "type": "Appointment", "mode": "target" }
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
       ],
       "rule": [
         {
           "name": "r_appointment_data",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "appointment",
@@ -3882,7 +5403,11 @@
               "contextType": "variable",
               "element": "status",
               "transform": "copy",
-              "parameter": [{ "valueString": "booked" }]
+              "parameter": [
+                {
+                  "valueString": "booked"
+                }
+              ]
             },
             {
               "context": "appointment",
@@ -3890,13 +5415,24 @@
               "element": "created",
               "variable": "current_date_time",
               "transform": "evaluate",
-              "parameter": [{ "valueId": "src" }, { "valueString": "now()" }]
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "now()"
+                }
+              ]
             }
           ]
         },
         {
           "name": "r_appointment_service_category",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "appointment",
@@ -3904,26 +5440,42 @@
               "element": "serviceCategory",
               "variable": "codeableConcept",
               "transform": "create",
-              "parameter": [{ "valueString": "CodeableConcept" }]
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_appointment_code_text",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "codeableConcept",
                   "contextType": "variable",
                   "element": "text",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "HIV-AIDS program" }]
+                  "parameter": [
+                    {
+                      "valueString": "HIV-AIDS program"
+                    }
+                  ]
                 }
               ]
             },
             {
               "name": "r_appointment_code_coding",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "codeableConcept",
@@ -3931,13 +5483,21 @@
                   "element": "coding",
                   "variable": "coding",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Coding" }]
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_appointment_code_coding_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "coding",
@@ -3955,14 +5515,22 @@
                       "contextType": "variable",
                       "element": "code",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "HIVAIDS" }]
+                      "parameter": [
+                        {
+                          "valueString": "HIVAIDS"
+                        }
+                      ]
                     },
                     {
                       "context": "coding",
                       "contextType": "variable",
                       "element": "display",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "HIV-AIDS program" }]
+                      "parameter": [
+                        {
+                          "valueString": "HIV-AIDS program"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -3972,7 +5540,11 @@
         },
         {
           "name": "r_appointment_type",
-          "source": [{ "context": "src" }],
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
           "target": [
             {
               "context": "appointment",
@@ -3980,26 +5552,42 @@
               "element": "appointmentType",
               "variable": "codeableConcept",
               "transform": "create",
-              "parameter": [{ "valueString": "CodeableConcept" }]
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_appointment_code_text",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "codeableConcept",
                   "contextType": "variable",
                   "element": "text",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "Routine appointment" }]
+                  "parameter": [
+                    {
+                      "valueString": "Routine appointment"
+                    }
+                  ]
                 }
               ]
             },
             {
               "name": "r_appointment_code_coding",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "codeableConcept",
@@ -4007,13 +5595,21 @@
                   "element": "coding",
                   "variable": "coding",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Coding" }]
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_appointment_code_coding_value",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "coding",
@@ -4031,14 +5627,22 @@
                       "contextType": "variable",
                       "element": "code",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "ROUTINE" }]
+                      "parameter": [
+                        {
+                          "valueString": "ROUTINE"
+                        }
+                      ]
                     },
                     {
                       "context": "coding",
                       "contextType": "variable",
                       "element": "display",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Routine appointment" }]
+                      "parameter": [
+                        {
+                          "valueString": "Routine appointment"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -4063,33 +5667,53 @@
               "element": "participant",
               "variable": "partComp",
               "transform": "create",
-              "parameter": [{ "valueString": "Appointment_Participant" }]
+              "parameter": [
+                {
+                  "valueString": "Appointment_Participant"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_appointment_comp_one_liners",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "partComp",
                   "contextType": "variable",
                   "element": "required",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "required" }]
+                  "parameter": [
+                    {
+                      "valueString": "required"
+                    }
+                  ]
                 },
                 {
                   "context": "partComp",
                   "contextType": "variable",
                   "element": "status",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "accepted" }]
+                  "parameter": [
+                    {
+                      "valueString": "accepted"
+                    }
+                  ]
                 }
               ]
             },
             {
               "name": "r_appointment_participant_code",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "partComp",
@@ -4097,26 +5721,42 @@
                   "element": "type",
                   "variable": "codeableConcept",
                   "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_appointment_code_text",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Subject" }]
+                      "parameter": [
+                        {
+                          "valueString": "Subject"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "r_appointment_participant_code_coding",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
@@ -4124,13 +5764,21 @@
                       "element": "coding",
                       "variable": "coding",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
                     }
                   ],
                   "rule": [
                     {
                       "name": "r_appointment_code_coding_value",
-                      "source": [{ "context": "src" }],
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
                       "target": [
                         {
                           "context": "coding",
@@ -4148,14 +5796,22 @@
                           "contextType": "variable",
                           "element": "code",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "SBJ" }]
+                          "parameter": [
+                            {
+                              "valueString": "SBJ"
+                            }
+                          ]
                         },
                         {
                           "context": "coding",
                           "contextType": "variable",
                           "element": "display",
                           "transform": "copy",
-                          "parameter": [{ "valueString": "subject" }]
+                          "parameter": [
+                            {
+                              "valueString": "subject"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -4165,7 +5821,11 @@
             },
             {
               "name": "r_ppointment_part_actor",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "partComp",
@@ -4173,13 +5833,21 @@
                   "element": "actor",
                   "variable": "encOwner",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_ppointment_part_reference",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "encOwner",
@@ -4187,7 +5855,9 @@
                       "element": "reference",
                       "transform": "evaluate",
                       "parameter": [
-                        { "valueId": "src" },
+                        {
+                          "valueId": "src"
+                        },
                         {
                           "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
                         }
@@ -4216,33 +5886,53 @@
               "element": "participant",
               "variable": "performerComp",
               "transform": "create",
-              "parameter": [{ "valueString": "Appointment_Participant" }]
+              "parameter": [
+                {
+                  "valueString": "Appointment_Participant"
+                }
+              ]
             }
           ],
           "rule": [
             {
               "name": "r_appointment_part_one_liners",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "performerComp",
                   "contextType": "variable",
                   "element": "required",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "required" }]
+                  "parameter": [
+                    {
+                      "valueString": "required"
+                    }
+                  ]
                 },
                 {
                   "context": "performerComp",
                   "contextType": "variable",
                   "element": "status",
                   "transform": "copy",
-                  "parameter": [{ "valueString": "accepted" }]
+                  "parameter": [
+                    {
+                      "valueString": "accepted"
+                    }
+                  ]
                 }
               ]
             },
             {
               "name": "r_appointment_performer_type",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "performerComp",
@@ -4250,26 +5940,42 @@
                   "element": "type",
                   "variable": "codeableConcept",
                   "transform": "create",
-                  "parameter": [{ "valueString": "CodeableConcept" }]
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
                 }
               ],
               "rule": [
                 {
                   "name": "r_appointment_part_performer_type_text",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Performer" }]
+                      "parameter": [
+                        {
+                          "valueString": "Performer"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "name": "r_appointment_part_performer_type_coding",
-                  "source": [{ "context": "src" }],
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
                   "target": [
                     {
                       "context": "codeableConcept",
@@ -4277,7 +5983,11 @@
                       "element": "coding",
                       "variable": "coding",
                       "transform": "create",
-                      "parameter": [{ "valueString": "Coding" }]
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
                     },
                     {
                       "context": "coding",
@@ -4295,14 +6005,22 @@
                       "contextType": "variable",
                       "element": "code",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "PRF" }]
+                      "parameter": [
+                        {
+                          "valueString": "PRF"
+                        }
+                      ]
                     },
                     {
                       "context": "coding",
                       "contextType": "variable",
                       "element": "display",
                       "transform": "copy",
-                      "parameter": [{ "valueString": "Performer" }]
+                      "parameter": [
+                        {
+                          "valueString": "Performer"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -4310,7 +6028,11 @@
             },
             {
               "name": "r_appointment_actor_performer",
-              "source": [{ "context": "src" }],
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
               "target": [
                 {
                   "context": "performerComp",
@@ -4318,7 +6040,11 @@
                   "element": "actor",
                   "variable": "performer",
                   "transform": "create",
-                  "parameter": [{ "valueString": "Reference" }]
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
                 },
                 {
                   "context": "performer",
@@ -4326,7 +6052,9 @@
                   "element": "reference",
                   "transform": "evaluate",
                   "parameter": [
-                    { "valueId": "src" },
+                    {
+                      "valueId": "src"
+                    },
                     {
                       "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
                     }

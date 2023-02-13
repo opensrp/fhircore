@@ -1,0 +1,4633 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-sexual-contact-registration",
+  "url": "http://fhir-dev.d-tree.org/fhir/StructureMap/art-client-sexual-contact-registration",
+  "name": "Art Client Sexual Contact Registration",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bun_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_bun_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractPatient",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_encounter",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_data",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "finished"
+                    }
+                  ]
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    {
+                      "valueString": "AMB"
+                    },
+                    {
+                      "valueString": "ambulatory"
+                    }
+                  ]
+                },
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "https://d-tree.org"
+                    },
+                    {
+                      "valueString": "art-client-sexual-contact-registration"
+                    },
+                    {
+                      "valueString": "Child Contact Registration"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_subject_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "ref",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_page_1",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "page",
+                  "condition": "(linkId = 'page-1')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_should_register",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "contactRecorded",
+                      "condition": "((linkId = 'should-register-sexual') and (answer.value = true))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_enc_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "encounter",
+                          "contextType": "variable",
+                          "element": "status",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "in-progress"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_extract_observations",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExtractObservations",
+                          "variable": [
+                            "src",
+                            "bundle",
+                            "encounter"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_not_should_register",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "contactRecorded",
+                      "condition": "((linkId = 'should-register-sexual') and (answer.value = false))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_enc_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "encounter",
+                          "contextType": "variable",
+                          "element": "status",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "finished"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_extract_all_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractIPVScreening",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_page_5",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-5')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_extract_all_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractClientReferralChoice",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractContractReferralDate",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractDualReferralDate",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractProviderReferralDate",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractFollowUpDate",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractResonForNoReferral",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                },
+                {
+                  "name": "ExtractOtherResonForNoReferral",
+                  "variable": [
+                    "src",
+                    "page",
+                    "bundle",
+                    "encounter"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractIPVScreening",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = 'ipv-screening') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "https://d-tree.og"
+                        },
+                        {
+                          "valueString": "art-client-sexual-contact-registration-ipv-screening"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractClientReferralChoice",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_value",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "obs",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_data_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "code",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "https://d-tree.og"
+                    },
+                    {
+                      "valueString": "art-client-sexual-contact-registration-referral-choice"
+                    }
+                  ]
+                },
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                    },
+                    {
+                      "valueString": "vital-signs"
+                    }
+                  ]
+                },
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
+                },
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "effective",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_reference",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_sub_ref_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "ref",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_get_answer",
+              "source": [
+                {
+                  "context": "pageGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'referral-choice') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_get_answer",
+              "source": [
+                {
+                  "context": "pageGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'referral-choice-gbv') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_value_text_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_c_contact_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractContractReferralDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_contact_referral_group",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "contactGroup",
+              "condition": "(linkId = 'contact-referral-group')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_get_answer",
+              "source": [
+                {
+                  "context": "contactGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'contract-date-referral') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.og"
+                            },
+                            {
+                              "valueString": "art-client-sexual-contact-registration-contract-date-referral"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_reference",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value",
+                      "source": [
+                        {
+                          "context": "itemAnswer",
+                          "element": "answer",
+                          "variable": "value"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "value"
+                            },
+                            {
+                              "valueString": "$this.value.toString()"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDualReferralDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = 'dual-date-referral') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "https://d-tree.og"
+                        },
+                        {
+                          "valueString": "art-client-sexual-contact-registration-dual-date-referral"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "itemAnswer",
+                      "element": "answer",
+                      "variable": "value"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "value"
+                        },
+                        {
+                          "valueString": "$this.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractProviderReferralDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = 'provider-date-referral') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "https://d-tree.og"
+                        },
+                        {
+                          "valueString": "art-client-sexual-contact-registration-provider-date-referral"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "itemAnswer",
+                      "element": "answer",
+                      "variable": "value"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "value"
+                        },
+                        {
+                          "valueString": "$this.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractFollowUpDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "itemAnswer",
+              "condition": "((linkId = 'follow-up-date') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_data_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "https://d-tree.og"
+                        },
+                        {
+                          "valueString": "art-client-sexual-contact-registration-follow-up-date"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_sub_ref_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "itemAnswer",
+                      "element": "answer",
+                      "variable": "value"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "value"
+                        },
+                        {
+                          "valueString": "$this.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractResonForNoReferral",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "contactGroup",
+              "condition": "(linkId = 'no-follow-group')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_get_answer",
+              "source": [
+                {
+                  "context": "contactGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'reason-no-referral') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.og"
+                            },
+                            {
+                              "valueString": "art-client-sexual-contact-registration-reason-no-referral"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_reference",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_value_text_contact_type",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "itemAnswer"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.display"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_c_contact_type",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "itemAnswer"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractOtherResonForNoReferral",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "pageGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_get_answer",
+          "source": [
+            {
+              "context": "pageGroup",
+              "element": "item",
+              "variable": "contactGroup",
+              "condition": "(linkId = 'no-follow-group')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_get_answer",
+              "source": [
+                {
+                  "context": "contactGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'other-reason') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.og"
+                            },
+                            {
+                              "valueString": "art-client-sexual-contact-registration-other-reason"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_reference",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'page-1').item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "itemAnswer"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPatient",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_1",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_should_register",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "contactRecorded",
+                  "condition": "((linkId = 'should-register-sexual') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_patient",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "patient",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Patient"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_p_id_1",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_p_active",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "active",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueBoolean": true
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_p_meta",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "meta",
+                          "variable": "meta",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Meta"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_p_meta_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "meta",
+                              "contextType": "variable",
+                              "element": "tag",
+                              "variable": "coding",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Coding"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_p_coding_system",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "system",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "https://d-tree.org"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_p_coding_code",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "sexual-contact"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_p_coding_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Sexual Contact"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_patient_demo",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExtractPatientDemographics",
+                          "variable": [
+                            "src",
+                            "patient"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_location_info",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExtractLocationInformation",
+                          "variable": [
+                            "src",
+                            "patient"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_location_info",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExtractPhoneInformation",
+                          "variable": [
+                            "src",
+                            "patient"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_referral_tracing",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExtractReferralTracing",
+                          "variable": [
+                            "src",
+                            "patient",
+                            "bundle"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPatientDemographics",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_1",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_info_group",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "infoGroup",
+                  "condition": "(linkId = 'information-group')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_name",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patient",
+                      "contextType": "variable",
+                      "element": "name",
+                      "variable": "patientName",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "HumanName"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_first_name",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientName",
+                          "contextType": "variable",
+                          "element": "given",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "infoGroup"
+                            },
+                            {
+                              "valueString": "$this.item.where(linkId = 'firstname').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_last_name",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientName",
+                          "contextType": "variable",
+                          "element": "family",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "infoGroup"
+                            },
+                            {
+                              "valueString": "$this.item.where(linkId = 'lastname').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_gender",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patient",
+                      "contextType": "variable",
+                      "element": "gender",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "infoGroup"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'gender').answer.value.code"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_age_in_days",
+                  "source": [
+                    {
+                      "context": "infoGroup",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "age",
+                      "condition": "((linkId = 'age') and (answer.count() > 0))"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "age_in_days",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "age"
+                        },
+                        {
+                          "valueString": "(($this.answer.value * 365).toString() + ' days').toQuantity()"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_approx_dob",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "approximate_date_of_birth",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "today() - age_in_days"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_year_of_birth",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "year_of_birth",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "approximate_date_of_birth.toString().substring(0, 4)"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_month_and_day_of_birth",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "variable": "month_and_day_of_birth",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "today().toString().substring(5)"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_dob_today_x_years_ago",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "patient",
+                                      "contextType": "variable",
+                                      "element": "birthDate",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "year_of_birth + '-' + month_and_day_of_birth"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractLocationInformation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_page_3",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_address",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "address",
+                  "variable": "patientAddress",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Address"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_address_district",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "district",
+                      "condition": "(linkId = 'district')"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "district",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "district"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_check_tracing_catchment",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "tracingCatchment",
+                      "condition": "(linkId.startsWith('tracing-catchment') and (answer.count() > 0))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_p_address_tracing_catchment",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientAddress",
+                          "contextType": "variable",
+                          "element": "state",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "tracingCatchment"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_p_address_text",
+                      "source": [
+                        {
+                          "context": "page",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "physicalLocator",
+                          "condition": "(linkId = 'physical-locator')"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientAddress",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "physicalLocator"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_address_use",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "home"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_address_type",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "type",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "physical"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPhoneInformation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_page_4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "page",
+              "condition": "(linkId = 'page-3')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_check_phone_1",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "((linkId = 'phone-number-available-1') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_save_phone_1",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "group1",
+                      "condition": "(linkId = 'phone-information-1')"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "StorePhoneInformation",
+                      "variable": [
+                        "src",
+                        "group1",
+                        "patient"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_check_phone_2",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "((linkId = 'phone-number-available-2') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_save_phone_2",
+                  "source": [
+                    {
+                      "context": "page",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "group2",
+                      "condition": "(linkId = 'phone-information-2')"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "StorePhoneInformation",
+                      "variable": [
+                        "src",
+                        "group2",
+                        "patient"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StorePhoneInformation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "phoneNumberGroup",
+          "type": "QuestionnaireResponseItem",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_p_telecom",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "patient",
+              "contextType": "variable",
+              "element": "telecom",
+              "variable": "patientContact",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "ContactPoint"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_phone_number_value",
+              "source": [
+                {
+                  "context": "phoneNumberGroup",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "phoneNumber",
+                  "condition": "(linkId.startsWith('phone-number-value'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_contact_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "phoneNumber"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_contact_system",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "phone"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReferralTracing",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_referral_tracing",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "pageReferral",
+              "condition": "linkId = 'page-5'"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_page_referral_tracing_1",
+              "source": [
+                {
+                  "context": "pageReferral"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "codeText",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "variable": "displayText",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_page_referral_tracing_1_texts",
+                  "source": [
+                    {
+                      "context": "pageReferral",
+                      "element": "item",
+                      "variable": "referralAnswerItem",
+                      "condition": "linkId.startsWith('referral-choice') and (answer.count() > 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_page_referral_tracing_1_texts_1",
+                      "source": [
+                        {
+                          "context": "referralAnswerItem"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "referralAnswerItem"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "displayText",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "referralAnswerItem"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_valid_page_tracing_referral",
+                      "source": [
+                        {
+                          "context": "referralAnswerItem",
+                          "element": "answer",
+                          "condition": "value.code != 'none-of-the-above'"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "patientRef",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "patient"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "practitionerRef",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "hasPhone",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "boolean"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "dueDate",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "dateTime"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_page_one_elements",
+                          "source": [
+                            {
+                              "context": "src",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "pageOne",
+                              "condition": "linkId = 'page-1'"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_page_one_practitionerref_id",
+                              "source": [
+                                {
+                                  "context": "pageOne",
+                                  "element": "item",
+                                  "listMode": "first",
+                                  "variable": "practitionerItem",
+                                  "condition": "linkId = 'practitioner-id'"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "practitionerRef",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "practitionerItem"
+                                    },
+                                    {
+                                      "valueString": "'Practitioner/' + $this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_page_one_practitionerref_name",
+                              "source": [
+                                {
+                                  "context": "pageOne",
+                                  "element": "item",
+                                  "listMode": "first",
+                                  "variable": "practitionerNameItem",
+                                  "condition": "linkId = 'practitioner-fullname'"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "practitionerRef",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "practitionerNameItem"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_page_one_has_phone",
+                              "source": [
+                                {
+                                  "context": "pageOne"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "variable": "parentHasPhone",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "pageOne"
+                                    },
+                                    {
+                                      "valueString": "$this.item.where(linkId = 'patient-has-phone').exists()"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variable": "sexualContactPhone",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "$this.item.where(linkId = 'page-3').item.where(linkId = 'phone-number-available-1').answer.value"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "hasPhone",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "(parentHasPhone or sexualContactPhone).toString()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_extract_contract_due_date",
+                          "source": [
+                            {
+                              "context": "pageReferral",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "contractDueDateGroup",
+                              "condition": "linkId = 'contact-referral-group'"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_tracing_due_date",
+                              "source": [
+                                {
+                                  "context": "contractDueDateGroup",
+                                  "element": "item",
+                                  "variable": "contractDateItem",
+                                  "condition": "(linkId = 'contract-date-referral') and (answer.count() > 0)"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "dueDate",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "(contractDateItem.answer.value + '1 day'.toQuantity()).toString() + 'T00:00:00+00:00'"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_tracing_due_date",
+                          "source": [
+                            {
+                              "context": "pageReferral",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "dualDateItem",
+                              "condition": "(linkId = 'dual-date-referral') and (answer.count() > 0)"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "dueDate",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "(dualDateItem.answer.value + '1 day'.toQuantity()).toString() + 'T00:00:00+00:00'"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_tracing_due_date",
+                          "source": [
+                            {
+                              "context": "pageReferral",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "providerDateItem",
+                              "condition": "(linkId = 'provider-date-referral') and (answer.count() > 0)"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "dueDate",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "(providerDateItem.answer.value + '1 day'.toQuantity()).toString() + 'T00:00:00+00:00'"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_tracing_due_date",
+                          "source": [
+                            {
+                              "context": "pageReferral",
+                              "element": "item",
+                              "listMode": "first",
+                              "variable": "followUpDateItem",
+                              "condition": "(linkId = 'follow-up-date') and (answer.count() > 0)"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "dueDate",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "(followUpDateItem.answer.value + '1 day'.toQuantity()).toString() + 'T00:00:00+00:00'"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_extract_task",
+                          "source": [
+                            {
+                              "context": "pageReferral"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "schedulePeriod",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Period"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "schedulePeriod",
+                              "contextType": "variable",
+                              "element": "start",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueId": "dueDate"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "outcomeQuestionnaireId",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_r_extract_task_1",
+                              "source": [
+                                {
+                                  "context": "pageReferral"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "outcomeQuestionnaireId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "art-tracing-outcome"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "ExtractToTracingTask",
+                                  "variable": [
+                                    "src",
+                                    "codeText",
+                                    "displayText",
+                                    "displayText",
+                                    "schedulePeriod",
+                                    "hasPhone",
+                                    "outcomeQuestionnaireId",
+                                    "patientRef",
+                                    "practitionerRef",
+                                    "bundle"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractToTracingTask",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "reasonCode",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "reasonDisplay",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "reasonText",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "activityScheduledPeriod",
+          "type": "Period",
+          "mode": "source"
+        },
+        {
+          "name": "hasPhone",
+          "type": "boolean",
+          "mode": "source"
+        },
+        {
+          "name": "outcomeQuestionnaireId",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "patientRef",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "practitionerRef",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_create_task",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_task_data",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "ready"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "plan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "routine"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "variable": "current_date_time",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "lastModified",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "current_date_time"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_create_identifier",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "identifier",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "official"
+                    }
+                  ]
+                },
+                {
+                  "context": "identifier",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_task_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "taskCode",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_code_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskCode",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Contact Tracing"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskCode",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "225368008"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Contact tracing (procedure)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_tracing_meta",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "meta",
+                  "variable": "meta",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Meta"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_meta_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "meta",
+                      "contextType": "variable",
+                      "element": "tag",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_meta_coding_system",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_task_meta_coding_phone",
+                      "source": [
+                        {
+                          "context": "hasPhone",
+                          "condition": "($this = true)"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "phone-tracing"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Phone Tracing"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_task_meta_coding_home",
+                      "source": [
+                        {
+                          "context": "hasPhone",
+                          "condition": "($this = false)"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "home-tracing"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Home Tracing"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_description",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "description",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "iif(hasPhone = true, 'HIV Contact Tracing via phone', 'HIV Contact Tracing via home visit')"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_for",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "patientRef"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_scheduled_period",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "activityScheduledPeriod"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_owner",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "practitionerRef"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_item_reason_for_removal_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_resonCode_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "reasonText"
+                        },
+                        {
+                          "valueString": "$this.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_resonCode_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_task_resonCode_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "reasonCode"
+                            },
+                            {
+                              "valueString": "$this.value"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "reasonDisplay"
+                            },
+                            {
+                              "valueString": "$this.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_reference",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "taskReasonRef",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_reason_reference_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Questionnaire/' + outcomeQuestionnaireId.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_reason_reference_display",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskReasonRef",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "reasonDisplay.value + ' outcome'"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+{
+    "resourceType": "Questionnaire",
+    "language": "en",
+    "id": "art-client-viral-load-collection",
+    "title": "Viral Load Collection",
+    "status": "active",
+    "publisher": "mcore",
+    "meta": {
+        "versionId": "9",
+        "lastUpdated": "2022-08-17T05:04:21.686+03:00",
+        "source": "#GtgiMAMyuXOwCT5T"
+    },
+    "useContext": [
+        {
+            "code": {
+                "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+                "code": "focus"
+            },
+            "valueCodeableConcept": {
+                "coding": [
+                    {
+                        "system": "http://fhir.ona.io",
+                        "code": "000002",
+                        "display": "Malawi Core Patient"
+                    }
+                ]
+            }
+        }
+    ],
+    "contact": [
+        {
+            "name": "http://www.d-tree.org"
+        }
+    ],
+    "extension": [
+        {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+            "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/art-client-viral-load-collection"
+        }
+    ],
+    "item": [
+        {
+            "linkId": "page-start",
+            "text": "<h1><b>You are beginning the viral Load collection process</b></h>",
+            "type": "display",
+            "required": true
+        },
+        {
+            "linkId": "viral-load-collection-confirmation",
+            "text": "<b>Ask:</b> Are you able to collect the client's viral load?",
+            "type": "boolean",
+            "required": true
+        },
+        {
+            "linkId": "viral-load-type",
+            "text": "<b>SELECT:</b> Viral load type",
+            "type": "choice",
+            "enableWhen": [
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": true
+                }
+            ],
+            "answerOption": [
+                {
+                    "valueCoding": {
+                        "code": "dbs",
+                        "display": "DBS"
+                    }
+                },
+                {
+                    "valueCoding": {
+                        "code": "plasma",
+                        "display": "Plasma"
+                    }
+                }
+            ]
+        },
+        {
+            "linkId": "sample-id",
+            "text": "<b>ENTER:</b> Sample ID",
+            "type": "string",
+            "enableWhen": [
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": true
+                },
+                {
+                    "question": "viral-load-type",
+                    "operator": "exists",
+                    "answerBoolean": true
+                }
+            ],
+            "enableBehavior": "all",
+            "required": true
+        },
+        {
+            "linkId": "date-of-viral-load-sample-collection",
+            "text": "<b>ENTER</b> date of viral load sample collection",
+            "type": "date",
+            "enableWhen": [
+                {
+                    "question": "viral-load-type",
+                    "operator": "exists",
+                    "answerBoolean": true
+                },
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": true
+                }
+            ],
+            "required": true,
+            "enableBehavior": "all"
+        },
+        {
+            "linkId": "reason-for-uncollected-results",
+            "text": "<b>SELECT</b> reason for uncollected viral load",
+            "type": "choice",
+            "enableWhen": [
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": false
+                }
+            ],
+            "required": true,
+            "answerOption": [
+                {
+                    "valueCoding": {
+                        "code": "no-materials",
+                        "display": "No materials"
+                    }
+                },
+                {
+                    "valueCoding": {
+                        "code": "noone-on-duty",
+                        "display": "Noone on duty"
+                    }
+                },
+                {
+                    "valueCoding": {
+                        "code": "client-refused",
+                        "display": "Client refused"
+                    }
+                },
+                {
+                    "valueCoding": {
+                        "code": "other",
+                        "display": "Other"
+                    }
+                }
+            ]
+        },
+        {
+            "linkId": "other-reason",
+            "text": "<b>ENTER</b> other reason",
+            "type": "string",
+            "enableWhen": [
+                {
+                    "question": "reason-for-uncollected-results",
+                    "operator": "=",
+                    "answerCoding": {
+                        "code": "other"
+                    }
+                }
+            ],
+            "required": true
+        },
+        {
+            "linkId": "viral-load-collection-message",
+            "text": "Please collect viral Load at the client's next visit",
+            "type": "display",
+            "enableWhen": [
+                {
+                    "question": "reason-for-uncollected-results",
+                    "operator": "exists",
+                    "answerBoolean": true
+                },
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": false
+                }
+            ],
+            "required": true,
+            "enableBehavior": "all"
+        },
+        {
+            "linkId": "finish-message",
+            "text": "<b>Record:</b> the information in the health passport,  Mastercard and viral load register",
+            "type": "display",
+            "enableWhen": [
+                {
+                    "question": "sample-id",
+                    "operator": "exists",
+                    "answerBoolean": true
+                },
+                {
+                    "question": "date-of-viral-load-sample-collection",
+                    "operator": "exists",
+                    "answerBoolean": true
+                },
+                {
+                    "question": "viral-load-collection-confirmation",
+                    "operator": "=",
+                    "answerBoolean": true
+                }
+            ],
+            "required": true,
+            "enableBehavior": "all"
+        },
+        {
+            "extension": [
+                {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                        "language": "text/fhirpath",
+                        "expression": "Patient.id"
+                    }
+                },
+                {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                    "valueBoolean": true
+                }
+            ],
+            "linkId": "patient-id",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+            "type": "string"
+        },
+        {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'missing-vl' or reasonCode.coding.code = 'invalid-vl').select(id + ',' + executionPeriod.start.toString())"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                "valueBoolean": true
+              }
+            ],
+            "linkId": "tracing-task-missing-invalid-vl",
+            "type": "string"
+          }
+    ]
+}
