@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure
 
 import android.annotation.SuppressLint
-import android.database.CursorWindow
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
@@ -107,17 +106,6 @@ constructor(
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
-
-  // TODO remove this code once SDK fixes cursor size issue
-  init {
-    try {
-      val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
-      field.isAccessible = true
-      field.set(null, 10 * 1024 * 1024) // the 10MB is the new size
-    } catch (e: Exception) {
-      Timber.e(e)
-    }
-  }
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
 

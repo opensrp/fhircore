@@ -1,5 +1,5 @@
 {
-  "appId": "cha",
+  "appId": "app",
   "configType": "profile",
   "id": "inventoryProfile",
   "fhirResource": {
@@ -88,13 +88,6 @@
       ]
     },
     {
-      "name": "nonNullBalance",
-      "condition": "true",
-      "actions": [
-        "data.put('nonNullBalance', runningBalance.isEmpty() ? 0 : runningBalance )"
-      ]
-    },
-    {
       "name": "latestObservationId",
       "condition": "true",
       "actions": [
@@ -159,7 +152,7 @@
                         {
                           "label": {
                             "viewType": "COMPOUND_TEXT",
-                            "primaryText": "@{quantity}",
+                            "primaryText": "@{runningBalance}",
                             "primaryTextColor": "#000000",
                             "primaryTextFontWeight": "SEMI_BOLD"
                           },
@@ -235,7 +228,7 @@
               "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
               "dataType": "INTEGER",
               "key": "currentBalance",
-              "value": "@{quantity}"
+              "value": "@{runningBalance}"
             },
             {
               "paramType": "PREPOPULATE",

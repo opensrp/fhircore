@@ -1,5 +1,5 @@
 {
-  "appId": "cha",
+  "appId": "app",
   "configType": "register",
   "id": "inventoryRegister",
   "fhirResource": {
@@ -16,6 +16,13 @@
             "code": "386452003"
           }
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
       ]
     },
     "relatedResources": [
@@ -24,32 +31,9 @@
         "searchParameter": "subject"
       },
       {
-        "id": "latestObservation",
-        "resource": "Observation",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "id": "filterLatestObservation",
-            "filterType": "STRING",
-            "key": "status",
-            "valueType": "STRING",
-            "valueString": "preliminary"
-          }
-        ]
-      },
-      {
-        "id": "stockOutFlag",
+        "id": "stockOutFlags",
         "resource": "Flag",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "id": "filterActiveStockOutFlag",
-            "filterType": "STRING",
-            "key": "status",
-            "valueType": "STRING",
-            "valueString": "active"
-          }
-        ]
+        "searchParameter": "subject"
       }
     ]
   },
@@ -98,24 +82,45 @@
         ]
       },
       {
+        "name": "latestObservation",
+        "condition": "true",
+        "actions": [
+          "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
+        ]
+      },
+      {
+        "name": "runningBalance",
+        "condition": "true",
+        "actions": [
+          "data.put('runningBalance', fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value'))"
+        ]
+      },
+      {
         "name": "latestObservationId",
         "condition": "true",
         "actions": [
-          "data.put('latestObservationId', fhirPath.extractValue(latestObservation.get(0), 'Observation.id'))"
+          "data.put('latestObservationId', fhirPath.extractValue( data.get('latestObservation'), 'Observation.id.replace(\"Observation/\",\"\")').split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "activeStockOutFlag",
+        "condition": "true",
+        "actions": [
+          "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
         ]
       },
       {
         "name": "stockoutFlagId",
         "condition": "true",
         "actions": [
-          "data.put('stockoutFlagId', fhirPath.extractValue(stockOutFlag.get(0), 'Flag.id'))"
+          "data.put('stockoutFlagId', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.id.replace(\"Flag/\",\"\")').split(\"/\").get(0))"
         ]
       },
       {
         "name": "stockoutStartDate",
         "condition": "true",
         "actions": [
-          "data.put('stockoutStartDate', fhirPath.extractValue(stockOutFlag.get(0), 'Flag.period.start'))"
+          "data.put('stockoutStartDate', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.period.start'))"
         ]
       }
     ],
@@ -141,7 +146,7 @@
             "showVerticalDivider": false,
             "serviceButton": {
               "visible": true,
-              "text": "@{quantity}",
+              "text": "@{runningBalance}",
               "status": "DUE",
               "fontSize": 14.0,
               "smallSized": false,
@@ -170,14 +175,7 @@
                       "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
                       "dataType": "INTEGER",
                       "key": "currentBalance",
-                      "value": "@{quantity}"
-                    },
-                    {
-                      "paramType": "PREPOPULATE",
-                      "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
-                      "dataType": "INTEGER",
-                      "key": "currentBalance",
-                      "value": "@{quantity}"
+                      "value": "@{runningBalance}"
                     },
                     {
                       "paramType": "PREPOPULATE",

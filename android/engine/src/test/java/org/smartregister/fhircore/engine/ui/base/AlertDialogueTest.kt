@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import android.content.DialogInterface
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import java.util.Date
 import org.junit.Assert
 import org.junit.Before
@@ -246,5 +247,25 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return context
+  }
+
+  @Test
+  fun testAlertDialogNeutralButtonReturnsCorrectColor() {
+    AlertDialogue.showInfoAlert(
+      context = context,
+      message = "Please confirm that you have all details filled in before submission",
+      title = "Submit Details",
+      confirmButtonText = R.string.questionnaire_alert_neutral_button_title
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
+
+    // test an additional cancel or neutral button in confirm alert
+    val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+    Assert.assertEquals(
+      ContextCompat.getColor(context, R.color.grey_text_color),
+      neutralButton.currentTextColor
+    )
   }
 }
