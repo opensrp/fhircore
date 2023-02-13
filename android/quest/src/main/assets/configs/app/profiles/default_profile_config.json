@@ -192,7 +192,7 @@
                   "baseResource": "Condition",
                   "orientation": "HORIZONTAL",
                   "emptyList": {
-                    "message": ""
+                    "message": "No care plans available for the patient at the moment"
                   },
                   "registerCard": {
                     "rules": [
