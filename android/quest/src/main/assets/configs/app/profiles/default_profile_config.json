@@ -844,7 +844,7 @@
                 {
                   "viewType": "LIST",
                   "id": "statusList",
-                  "baseResource": "Condition",
+                  "listResource": "Condition",
                   "orientation": "HORIZONTAL",
                   "emptyList": {
                     "message": ""
@@ -946,11 +946,10 @@
             {
               "viewType": "LIST",
               "id": "readyTasksList",
-              "baseResource": "Task",
               "resources": [
                 {
-                  "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "id": "availableTask",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
                 }
