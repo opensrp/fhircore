@@ -36,59 +36,37 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
 
 ## Display other resources (List Resources) inside another list
 To display list resources inside a list and execute it's rules , add it's configurations as show below
-```json
-        {
-              "viewType": "LIST",
-              "id": "readyTasksList",
-              "resources": [
-                {
-                  "id": "availableTask",
-                  "relatedResourceId": "availableTasks",
-                  "resourceType": "Resource to extract data from",
-                  "conditionalFhirPathExpression": "Add your execution "
-                }
-              ],
-              "emptyList": {
-                "message": "No visit tasks available for this patient at the moment"
-              },
-              "registerCard": {
-                "rules": [
-                  {
-                    "name": "taskStatus",
-                    "condition": "true",
-                    "actions": ["Your preferred execution action"]
-                  },
-                  {
-                    "name": "taskStatusColorCode",
-                    "condition": "true",
-                    "actions": ["Your preferred execution action"]
-                  }
-                ],
-                "views": [
-                  {
-                    "viewType": "BUTTON",
-                    "smallSized": "true",
-                    "text": "",
-                    "status": "",
-                    "visible": "true",
-                    "enabled": "",
-                    "actions": [
-                      {
-                        "trigger": "ON_CLICK",
-                        "workflow": "LAUNCH_QUESTIONNAIRE",
-                        "questionnaire": {
-                          "id": "addIdHereGoodTo",
-                          "title": "@{taskDescription}",
-                          "saveButtonText": "Save",
-                          "taskId": "@{taskId}",
-                          "resourceIdentifier": "@{taskFor}"
-                        }
-                      }
-                    ]
-                  }
-                  }
-                  }
-                  ```
+``` json
+ {
+   "viewType": "LIST",
+   "id": "statusList",
+   "listResource": "Condition",
+   "orientation": "HORIZONTAL",
+   "emptyList": {
+     "message": ""
+   },
+   "registerCard": {
+     "rules": [
+       {
+         "name": "conditionTitle",
+         "condition": "true",
+         "actions": ["data.put('conditionTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"]
+       }
+     ],
+     "views": [
+       {
+         "viewType": "COMPOUND_TEXT",
+         "primaryTextBackgroundColor": "#F5F5F5",
+         "primaryText": "@{conditionTitle}",
+         "primaryTextColor": "#6F7274",
+         "fontSize": 13,
+         "padding": 7,
+         "borderRadius": 6
+       }
+     ]
+   }
+ }
+ ```
 
 ## Config properties
 
