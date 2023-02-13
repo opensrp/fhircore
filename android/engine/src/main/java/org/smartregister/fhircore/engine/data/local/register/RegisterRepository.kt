@@ -183,7 +183,7 @@ constructor(
    * in the parent's view relatedResourcesMap. We retrieve it and use it to get it's related
    * resources so we can fire rules for the List.
    */
-  private fun computeListRules(
+  fun computeListRules(
     views: List<ViewProperties>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     computedValuesMap: Map<String, Any>
