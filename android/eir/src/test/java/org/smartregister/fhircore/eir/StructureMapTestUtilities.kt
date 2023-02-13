@@ -731,6 +731,28 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
+  fun `generate structure map for physical stock inventory and count`() {
+
+    val structureMap = "structure-map-questionnaires/quest/ecbis-saa/supply_chain/physical_inventory_count_and_stock.map".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(structureMap, "Physical Inventory Count and Stock Supply")
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+  }
+
+  @Test
   fun generateStructureMap() {
 
     val patientRegistrationStructureMap = "path/structure-map-file.map".readFile()
