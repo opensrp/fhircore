@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.codingOf
@@ -294,13 +295,9 @@ constructor(
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
-                if (startDateFormatted.contentEquals(
-                    Date().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-                  ) ||
-                    endDateFormatted.contentEquals(
-                      Date().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-                    ) ||
-                    existing.isEmpty()
+                if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
+                    .formatDate(SDF_YYYY_MMM)
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
