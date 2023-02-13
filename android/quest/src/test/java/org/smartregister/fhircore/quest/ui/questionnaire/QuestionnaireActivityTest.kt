@@ -213,6 +213,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         List<ActionParameter>
     Assert.assertEquals("my-form", actualQuestionnaireConfig.id)
     Assert.assertEquals("1234", actualQuestionnaireConfig.resourceIdentifier)
+    Assert.assertEquals(1, actualActionParams.size)
+    Assert.assertEquals("my-param", actualActionParams[0].linkId)
     Assert.assertEquals(QuestionnaireType.READ_ONLY.name, actualQuestionnaireConfig.type.name)
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4)
