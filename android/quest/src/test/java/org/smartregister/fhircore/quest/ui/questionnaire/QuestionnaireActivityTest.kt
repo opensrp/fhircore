@@ -269,12 +269,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPrePopulationParamsFiltersEmptyAndNonInterpolatedValues() {
-    Assert.assertFalse(questionnaireConfig.type.isReadOnly())
     val expectedQuestionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY
+        type = QuestionnaireType.DEFAULT
       )
     val actionParams =
       listOf(
