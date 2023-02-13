@@ -28,7 +28,6 @@ import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -185,8 +184,14 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix java.lang.NullPointerException")
   fun testLaunchQuestionnaireActionOnClick() {
+    val context =
+      mockk<Context>(
+        moreInterfaces = arrayOf(QuestionnaireHandler::class),
+        relaxUnitFun = true,
+        relaxed = true
+      )
+    val navController = NavController(context)
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
@@ -195,7 +200,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
-      (context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+      (navController.context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
