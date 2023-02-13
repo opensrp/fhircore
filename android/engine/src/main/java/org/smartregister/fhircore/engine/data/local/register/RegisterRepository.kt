@@ -231,12 +231,12 @@ constructor(
         listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
           (id
             ?: resourceType.name) to
-                  rulesFactory.rulesEngineService.retrieveRelatedResources(
-                    resource = resource,
-                    relatedResourceKey = id ?: resourceType.name,
-                    referenceFhirPathExpression = fhirPathExpression,
-                    relatedResourcesMap = relatedResourcesMap
-                  )
+            rulesFactory.rulesEngineService.retrieveRelatedResources(
+              resource = resource,
+              relatedResourceKey = id ?: resourceType.name,
+              referenceFhirPathExpression = fhirPathExpression,
+              relatedResourcesMap = relatedResourcesMap
+            )
         }
 
       // Values computed from the rules defined in LIST view RegisterCard
@@ -324,7 +324,7 @@ constructor(
    * [Resource] s in the map.
    */
   private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
-          MutableMap<String, MutableList<Resource>> {
+    MutableMap<String, MutableList<Resource>> {
     val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
     while (this.isNotEmpty()) {
       val relatedResourceData = this.removeFirst()
