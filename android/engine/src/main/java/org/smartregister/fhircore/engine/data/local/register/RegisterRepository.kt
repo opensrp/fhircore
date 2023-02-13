@@ -192,20 +192,6 @@ constructor(
     val resourceDataMap = mutableMapOf<String, List<ResourceData>>()
     listViewProperties.forEach { listProperties ->
       if (listProperties.resources.isNotEmpty()) {
-<<<<<<< HEAD
-        listProperties.resources.forEach { listResource ->
-          val listResourceId = listResource.id ?: listResource.resourceType.name
-          val filteredResourceMap = updateRelatedResourcesMap(relatedResourcesMap, listResourceId, listResource)
-          retrieveResourceDataList(
-            listResourceId,
-            filteredResourceMap,
-            listProperties,
-            computedValuesMap,
-            resourceDataMap,
-            listResourceId
-          )
-        }
-=======
         val resourceDataList: List<ResourceData> =
           listProperties.resources.flatMap { listResource ->
             filteredListResources(relatedResourcesMap, listResource)
@@ -217,7 +203,6 @@ constructor(
               )
           }
         resourceDataMap[listProperties.id] = resourceDataList
->>>>>>> issue_2001
       } else {
         val relatedResourceSearchKey: String = listProperties.listResource ?: ""
         // Retrieve resources for LIST including related resource for each then fire rules
@@ -279,35 +264,20 @@ constructor(
   private fun filteredListResources(
     relatedResourceMap: MutableMap<String, MutableList<Resource>>,
     listResource: ListResource
-<<<<<<< HEAD
-  ): MutableMap<String, MutableList<Resource>> {
-    val resourcesToFilter = relatedResourcesMap[listResourceId]
-=======
   ): MutableList<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
     val newListRelatedResources = relatedResourceMap[relatedResourceKey]?.toList()
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
->>>>>>> issue_2001
     val filteredResourcesList =
       newListRelatedResources?.let {
         rulesFactory.rulesEngineService.filterResources(
-<<<<<<< HEAD
-          it,
-          listResource.conditionalFhirPathExpression
-        ).toMutableList()
-      }
-    val filteredResourceMap = HashMap(relatedResourcesMap)
-    filteredResourcesList?.let { filteredResourceMap.replace(listResourceId, it) }
-    return filteredResourceMap
-=======
           resources = it,
           fhirPathExpression = listResource.conditionalFhirPathExpression
         )
       }
 
     return filteredResourcesList?.toMutableList() ?: mutableListOf()
->>>>>>> issue_2001
   }
 
   /**
