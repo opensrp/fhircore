@@ -456,7 +456,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
-    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
     const val STRING_INTERPOLATION_PREFIX = "@{"
 
