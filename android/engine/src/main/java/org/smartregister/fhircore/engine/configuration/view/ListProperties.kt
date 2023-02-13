@@ -35,7 +35,7 @@ data class ListProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   val id: String = "listId",
-  val baseResource: ResourceType,
+  val listResource: String? = null,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
@@ -51,7 +51,7 @@ enum class ListOrientation {
 
 @Serializable
 data class ListResource(
-  val id: String? = null,
+  val id: String,
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String,

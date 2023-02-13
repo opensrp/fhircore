@@ -49,6 +49,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -142,7 +145,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -155,6 +168,10 @@ class ProfileViewModelTest : RobolectricTest() {
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
         )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
       }
     } returns listOf(questionnaireResponse)
 
@@ -166,13 +183,27 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     profileViewModel.onEvent(event)
 
+    coVerify {
+      registerRepository.fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${ResourceType.Patient.name}/999" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
+      }
+    }
+
     val slot = slot<Bundle>()
     verify {
       (context as QuestionnaireHandler).launchQuestionnaire<Any>(
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -196,8 +227,19 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
+
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
 
@@ -207,6 +249,10 @@ class ProfileViewModelTest : RobolectricTest() {
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
         )
       }
     } returns listOf()
@@ -225,7 +271,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -248,7 +294,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -273,7 +329,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -292,7 +358,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = event.resourceData?.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 

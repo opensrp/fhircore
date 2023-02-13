@@ -151,8 +151,8 @@ class RulesFactoryTest : RobolectricTest() {
     val result =
       rulesEngineService.retrieveRelatedResources(
         resource = populateTestPatient(),
-        relatedResourceType = ResourceType.CarePlan,
-        fhirPathExpression = "CarePlan.subject.reference"
+        relatedResourceKey = ResourceType.CarePlan.name,
+        referenceFhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
