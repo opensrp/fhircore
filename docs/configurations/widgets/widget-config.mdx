@@ -34,6 +34,61 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
    }
  ```
 
+## Display other resources (List Resources) inside another list
+To display list resources inside a list and execute it's rules , add it's configurations as show below
+```json
+        {
+              "viewType": "LIST",
+              "id": "readyTasksList",
+              "resources": [
+                {
+                  "id": "availableTask",
+                  "relatedResourceId": "availableTasks",
+                  "resourceType": "Resource to extract data from",
+                  "conditionalFhirPathExpression": "Add your execution "
+                }
+              ],
+              "emptyList": {
+                "message": "No visit tasks available for this patient at the moment"
+              },
+              "registerCard": {
+                "rules": [
+                  {
+                    "name": "taskStatus",
+                    "condition": "true",
+                    "actions": ["Your preferred execution action"]
+                  },
+                  {
+                    "name": "taskStatusColorCode",
+                    "condition": "true",
+                    "actions": ["Your preferred execution action"]
+                  }
+                ],
+                "views": [
+                  {
+                    "viewType": "BUTTON",
+                    "smallSized": "true",
+                    "text": "",
+                    "status": "",
+                    "visible": "true",
+                    "enabled": "",
+                    "actions": [
+                      {
+                        "trigger": "ON_CLICK",
+                        "workflow": "LAUNCH_QUESTIONNAIRE",
+                        "questionnaire": {
+                          "id": "addIdHereGoodTo",
+                          "title": "@{taskDescription}",
+                          "saveButtonText": "Save",
+                          "taskId": "@{taskId}",
+                          "resourceIdentifier": "@{taskFor}"
+                        }
+                      }
+                    ]
+                  }
+                  }
+                  }
+                  ```
 
 ## Config properties
 
@@ -46,3 +101,4 @@ orientation | This is the direction you want to the widgets to flex | yes | VERT
 emptyList | empty list json with a message to show in case the resource data to display is empty | no but highly recommended | no visits |
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
+resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
