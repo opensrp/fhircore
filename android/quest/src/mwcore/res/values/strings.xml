@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Tingathe</string>
+    <string name="app_name" translatable="false">Tingathe *</string>
     <string name="sex">Gender</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.mwcore</string>
     <string name="identifier_unassigned">Unassigned</string>
