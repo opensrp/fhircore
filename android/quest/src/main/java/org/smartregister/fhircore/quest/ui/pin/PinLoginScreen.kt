@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,12 +159,14 @@ fun PinLoginPage(
               color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
               fontSize = 16.sp,
               modifier =
-                modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
-                  showForgotPinDialog = !showForgotPinDialog
-                }
+                modifier
+                  .padding(top = 24.dp)
+                  .align(Alignment.CenterHorizontally)
+                  .clickable { showForgotPinDialog = !showForgotPinDialog }
+                  .bringIntoViewRequester(bringIntoViewRequester)
             )
           } else {
-            // Enable button when a new pin of required length is entered
+            // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
               enabled = newPin.length == pinUiState.pinLength,

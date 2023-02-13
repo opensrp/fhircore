@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,64 +154,30 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             }
         }
     }
+  }
 
-    override fun onSync(syncJobStatus: SyncJobStatus) {
-        when (syncJobStatus) {
-
-            is SyncJobStatus.InProgress -> {
-                appMainViewModel.onEvent(
-                    AppMainEvent.UpdateSyncState(
-                        syncJobStatus,
-                        getString(R.string.syncing_in_progress)
-                    )
-                )
-            }
-
-            is SyncJobStatus.Glitch -> {
-                appMainViewModel.onEvent(
-                    AppMainEvent.UpdateSyncState(
-                        syncJobStatus,
-                        appMainViewModel.retrieveLastSyncTimestamp()
-                    )
-                )
-                // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
-                Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
-            }
-
-            is SyncJobStatus.Failed -> {
-                appMainViewModel.onEvent(
-                    AppMainEvent.UpdateSyncState(
-                        syncJobStatus,
-                        if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-                            appMainViewModel.retrieveLastSyncTimestamp()
-                        else getString(R.string.syncing_failed)
-                    )
-                )
-            }
-
-            is SyncJobStatus.Finished -> {
-
-//        val totalTime = ChronoUnit.SECONDS.between(syncStartedAt, syncJobStatus.timestamp)
-//        //this.showToast(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
-//        Timber.d(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
-
-                appMainViewModel.run {
-                    onEvent(
-                        AppMainEvent.UpdateSyncState(
-                            syncJobStatus,
-                            formatLastSyncTimestamp(syncJobStatus.timestamp)
-                        )
-                    )
-                }
-            }
-
-            is SyncJobStatus.Started -> {
-                // syncStartedAt = OffsetDateTime.now()
-            }
-
-            else -> {
-                /*Do nothing */
-            }
+  override fun onSync(syncJobStatus: SyncJobStatus) {
+    when (syncJobStatus) {
+      is SyncJobStatus.InProgress -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
+        )
+      }
+      is SyncJobStatus.Glitch -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
+        )
+        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
+        Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
+      }
+      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              syncJobStatus,
+              formatLastSyncTimestamp(syncJobStatus.timestamp)
+            )
+          )
         }
     }
 }
