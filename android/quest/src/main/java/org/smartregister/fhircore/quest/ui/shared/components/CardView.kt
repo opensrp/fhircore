@@ -33,10 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
-import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
-import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
-import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.*
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -49,36 +46,38 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
-    // Header section
-    Column(modifier = modifier.fillMaxWidth()) {
-      if (viewProperties.header != null) {
-        Spacer(modifier = modifier.height(8.dp))
-        CompoundText(
-          modifier = modifier.wrapContentWidth(Alignment.Start),
-          compoundTextProperties = viewProperties.header!!,
-          resourceData = resourceData,
-          navController = navController
-        )
-        // TODO Display viewAll action text
-        Spacer(modifier = modifier.height(8.dp))
+  if (viewProperties.isVisible(resourceData.computedValuesMap)) {
+    Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
+      // Header section
+      Column(modifier = modifier.fillMaxWidth()) {
+        if (viewProperties.header != null) {
+          Spacer(modifier = modifier.height(8.dp))
+          CompoundText(
+            modifier = modifier.wrapContentWidth(Alignment.Start),
+            compoundTextProperties = viewProperties.header!!,
+            resourceData = resourceData,
+            navController = navController
+          )
+          // TODO Display viewAll action text
+          Spacer(modifier = modifier.height(8.dp))
+        }
       }
-    }
-    // Card section
-    Card(
-      elevation = viewProperties.elevation.dp,
-      modifier =
+      // Card section
+      Card(
+        elevation = viewProperties.elevation.dp,
+        modifier =
         modifier
           .padding(horizontal = viewProperties.padding.dp)
           .fillMaxWidth()
           .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-    ) {
-      Column(modifier = modifier.padding(16.dp)) {
-        ViewRenderer(
-          viewProperties = viewProperties.content,
-          resourceData = resourceData,
-          navController = navController
-        )
+      ) {
+        Column(modifier = modifier.padding(16.dp)) {
+          ViewRenderer(
+            viewProperties = viewProperties.content,
+            resourceData = resourceData,
+            navController = navController
+          )
+        }
       }
     }
   }

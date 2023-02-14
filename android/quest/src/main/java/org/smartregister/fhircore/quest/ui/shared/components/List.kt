@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -61,19 +62,20 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
-  if (currentListResourceData.isNullOrEmpty()) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
-      Text(
-        text = viewProperties.emptyList?.message ?: "",
-        modifier = modifier.padding(8.dp).align(Alignment.Center),
-        color = DefaultColor,
-        fontStyle = FontStyle.Italic
-      )
-    }
-  } else {
-    Box(
-      modifier =
+  if (viewProperties.isVisible(resourceData.computedValuesMap)) {
+    val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
+    if (currentListResourceData.isNullOrEmpty()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
+        Text(
+          text = viewProperties.emptyList?.message ?: "",
+          modifier = modifier.padding(8.dp).align(Alignment.Center),
+          color = DefaultColor,
+          fontStyle = FontStyle.Italic
+        )
+      }
+    } else {
+      Box(
+        modifier =
         modifier
           .background(
             viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
@@ -83,38 +85,39 @@ fun List(
             vertical = viewProperties.padding.div(4).dp
           )
           .testTag(VERTICAL_ORIENTATION)
-    ) {
-      when (viewProperties.orientation) {
-        ListOrientation.VERTICAL ->
-          Column(
-            modifier =
+      ) {
+        when (viewProperties.orientation) {
+          ListOrientation.VERTICAL ->
+            Column(
+              modifier =
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
                 .testTag(VERTICAL_ORIENTATION)
-          ) {
-            currentListResourceData.forEachIndexed { index, listResourceData ->
-              Spacer(modifier = modifier.height(6.dp))
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
-              Spacer(modifier = modifier.height(6.dp))
-              if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-                Divider(color = DividerColor, thickness = 0.5.dp)
+            ) {
+              currentListResourceData.forEachIndexed { index, listResourceData ->
+                Spacer(modifier = modifier.height(6.dp))
+                ViewRenderer(
+                  viewProperties = viewProperties.registerCard.views,
+                  resourceData = listResourceData,
+                  navController = navController,
+                )
+                Spacer(modifier = modifier.height(6.dp))
+                if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
+                  Divider(color = DividerColor, thickness = 0.5.dp)
+              }
             }
-          }
-        ListOrientation.HORIZONTAL ->
-          FlowRow(modifier = modifier.fillMaxWidth().testTag(HORIZONTAL_ORIENTATION)) {
-            currentListResourceData.forEachIndexed { _, listResourceData ->
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
+          ListOrientation.HORIZONTAL ->
+            FlowRow(modifier = modifier.fillMaxWidth().testTag(HORIZONTAL_ORIENTATION)) {
+              currentListResourceData.forEachIndexed { _, listResourceData ->
+                ViewRenderer(
+                  viewProperties = viewProperties.registerCard.views,
+                  resourceData = listResourceData,
+                  navController = navController,
+                )
+              }
             }
-          }
+        }
       }
     }
   }
