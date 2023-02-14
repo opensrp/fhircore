@@ -38,7 +38,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.*
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -60,19 +64,19 @@ fun CompoundText(
   if (compoundTextProperties.isVisible(resourceData.computedValuesMap)) {
     FlowRow(
       modifier =
-      modifier
-        .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
-        .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
-        .padding(
-          horizontal = compoundTextProperties.padding.dp,
-          vertical = compoundTextProperties.padding.div(2).dp
-        )
-        .background(
-          compoundTextProperties
-            .backgroundColor
-            ?.interpolate(resourceData.computedValuesMap)
-            .parseColor()
-        )
+        modifier
+          .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
+          .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
+          .padding(
+            horizontal = compoundTextProperties.padding.dp,
+            vertical = compoundTextProperties.padding.div(2).dp
+          )
+          .background(
+            compoundTextProperties
+              .backgroundColor
+              ?.interpolate(resourceData.computedValuesMap)
+              .parseColor()
+          )
     ) {
       if (!compoundTextProperties.primaryText.isNullOrBlank()) {
         CompoundTextPart(

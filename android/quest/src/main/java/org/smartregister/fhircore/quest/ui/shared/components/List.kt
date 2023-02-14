@@ -76,24 +76,27 @@ fun List(
     } else {
       Box(
         modifier =
-        modifier
-          .background(
-            viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
-          )
-          .padding(
-            horizontal = viewProperties.padding.dp,
-            vertical = viewProperties.padding.div(4).dp
-          )
-          .testTag(VERTICAL_ORIENTATION)
+          modifier
+            .background(
+              viewProperties
+                .backgroundColor
+                ?.interpolate(resourceData.computedValuesMap)
+                .parseColor()
+            )
+            .padding(
+              horizontal = viewProperties.padding.dp,
+              vertical = viewProperties.padding.div(4).dp
+            )
+            .testTag(VERTICAL_ORIENTATION)
       ) {
         when (viewProperties.orientation) {
           ListOrientation.VERTICAL ->
             Column(
               modifier =
-              modifier
-                .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
-                .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-                .testTag(VERTICAL_ORIENTATION)
+                modifier
+                  .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
+                  .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
+                  .testTag(VERTICAL_ORIENTATION)
             ) {
               currentListResourceData.forEachIndexed { index, listResourceData ->
                 Spacer(modifier = modifier.height(6.dp))

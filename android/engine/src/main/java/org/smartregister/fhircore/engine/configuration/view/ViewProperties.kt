@@ -46,4 +46,5 @@ enum class ViewAlignment {
   NONE
 }
 
-fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) = visible.interpolate(computedValuesMap).toBoolean()
+fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
+  visible.interpolate(computedValuesMap).toBoolean()

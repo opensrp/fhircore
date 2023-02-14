@@ -53,7 +53,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.*
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
+import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
@@ -90,32 +95,32 @@ fun ServiceCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier =
-        modifier
-          .padding(top = 12.dp, bottom = 12.dp)
-          .conditional(
-            serviceCardProperties.serviceButton == null &&
-                    serviceCardProperties.services.isNullOrEmpty(),
-            { fillMaxWidth() },
-            { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) }
-          )
-          .conditional(
-            serviceCardClickable,
-            {
-              clickable {
-                serviceCardProperties.actions.handleClickEvent(
-                  navController = navController,
-                  resourceData = resourceData
-                )
+          modifier
+            .padding(top = 12.dp, bottom = 12.dp)
+            .conditional(
+              serviceCardProperties.serviceButton == null &&
+                serviceCardProperties.services.isNullOrEmpty(),
+              { fillMaxWidth() },
+              { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) }
+            )
+            .conditional(
+              serviceCardClickable,
+              {
+                clickable {
+                  serviceCardProperties.actions.handleClickEvent(
+                    navController = navController,
+                    resourceData = resourceData
+                  )
+                }
               }
-            }
-          )
+            )
       ) {
         // When show div
         Column(
           modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+            modifier
+              .wrapContentWidth(Alignment.Start)
+              .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
         ) {
           serviceCardProperties.details.forEach {
             CompoundText(
@@ -129,7 +134,7 @@ fun ServiceCard(
           ServiceMemberIcons(
             modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
             serviceMemberIcons =
-            serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+              serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
           )
         }
       }
@@ -144,28 +149,29 @@ fun ServiceCard(
       } else {
         ServiceMemberIcons(
           serviceMemberIcons =
-          serviceCardProperties
-            .serviceMemberIcons
-            ?.replace("\\s+".toRegex(), "")
-            ?.interpolate(resourceData.computedValuesMap)
+            serviceCardProperties
+              .serviceMemberIcons
+              ?.replace("\\s+".toRegex(), "")
+              ?.interpolate(resourceData.computedValuesMap)
         )
       }
 
       // Show action button (occupies 25% of the row width)
       Box(
         modifier =
-        modifier
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-          .padding(top = 12.dp, bottom = 12.dp),
+          modifier
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+            .padding(top = 12.dp, bottom = 12.dp),
         contentAlignment = Alignment.Center
       ) {
         // Service card visibility can be determined dynamically e.g. only display when task is due
-        if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
+        if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)
+        ) {
           if (serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!
-              .visible
-              .interpolate(resourceData.computedValuesMap)
-              .toBoolean()
+              serviceCardProperties.serviceButton!!
+                .visible
+                .interpolate(resourceData.computedValuesMap)
+                .toBoolean()
           ) {
             if (serviceCardProperties.serviceButton!!.smallSized) {
               Column {

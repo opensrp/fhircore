@@ -46,7 +46,7 @@ fun PersonalDataView(
   if (personalDataCardProperties.isVisible(resourceData.computedValuesMap)) {
     FlowRow(
       modifier =
-      modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+        modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
     ) {
       PersonalDataItem(
         personalDataCardProperties = personalDataCardProperties,
