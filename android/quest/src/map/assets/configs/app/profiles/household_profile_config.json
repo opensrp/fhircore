@@ -168,7 +168,7 @@
         },
         {
           "viewType": "LIST",
-          "baseResource": "Patient",
+          "listResource": "Patient",
           "padding": 16,
           "relatedResources": [
             {
