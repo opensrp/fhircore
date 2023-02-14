@@ -36,15 +36,25 @@ data class ListProperties(
   override val clickable: String = "false",
   override val visible: String = "true",
   val id: String = "listId",
-  val baseResource: ResourceType,
+  val listResource: String? = null,
   val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
-  val orientation: ListOrientation = ListOrientation.VERTICAL
+  val orientation: ListOrientation = ListOrientation.VERTICAL,
+  val resources: List<ListResource> = emptyList()
 ) : ViewProperties()
 
 enum class ListOrientation {
   VERTICAL,
   HORIZONTAL
 }
+
+@Serializable
+data class ListResource(
+  val id: String,
+  val relatedResourceId: String? = null,
+  val resourceType: ResourceType,
+  val conditionalFhirPathExpression: String,
+  val relatedResources: List<ExtractedResource> = emptyList()
+)
