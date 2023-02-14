@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,10 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
+import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.ui.register.RegisterEvent
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
 
@@ -50,7 +54,10 @@ fun RegisterCardList(
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  lazyListState: LazyListState
+  lazyListState: LazyListState,
+  onEvent: (RegisterEvent) -> Unit,
+  registerUiState: RegisterUiState,
+  currentPage: MutableState<Int>
 ) {
   LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     itemsIndexed(pagingItems) { _, item ->
@@ -83,6 +90,18 @@ fun RegisterCardList(
             ErrorMessage(message = error.error.localizedMessage!!, onClickRetry = { retry() })
           }
         }
+      }
+    }
+
+    item {
+      if (pagingItems.itemCount > 0) {
+        RegisterFooter(
+          resultCount = pagingItems.itemCount,
+          currentPage = currentPage.value.plus(1),
+          pagesCount = registerUiState.pagesCount,
+          previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
+          nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
+        )
       }
     }
   }

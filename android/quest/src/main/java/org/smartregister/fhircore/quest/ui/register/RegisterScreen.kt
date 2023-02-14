@@ -46,7 +46,6 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
-import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -97,20 +96,6 @@ fun RegisterScreen(
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
-    bottomBar = {
-      // Bottom section has a pagination footer
-      Column {
-        if (searchText.value.isEmpty() && pagingItems.itemCount > 0) {
-          RegisterFooter(
-            resultCount = pagingItems.itemCount,
-            currentPage = currentPage.value.plus(1),
-            pagesCount = registerUiState.pagesCount,
-            previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
-            nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
-          )
-        }
-      }
-    },
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
@@ -131,7 +116,10 @@ fun RegisterScreen(
           registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
           navController = navController,
-          lazyListState = lazyListState
+          lazyListState = lazyListState,
+          onEvent = onEvent,
+          registerUiState = registerUiState,
+          currentPage = currentPage
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
