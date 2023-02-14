@@ -8,9 +8,15 @@ description: >-
 
 ## Record services
 
-Services are recorded using forms. Forms are flexible to include a range of fields.
+Patient and health service information is captured using forms with questions and fields. The app keeps the interaction as simple as possible and has error-checking to keep entered data accurate.
 
-Pulling data into a form (previous inputs or indicators?). Attaching to a task or not. Relevance logic ability. Medicines pick list. Types of fields. Back dating. Editing. Recording services related to care plans&#x20;
+A range of fields are available: boolean, single choice, multiple choice, dropdown, text, date picker, date and time picker, slider, attachment. In addition, forms include functionality for showing modals, showing images in questions, showing images next to multiple choice options, having repeated groups, autocomplete, and help.
+
+Forms can be edited on the same day they were entered. Editing is disabled on the following day.
+
+Data cannot be pulled from previous forms and entered into an active form. However, data from the same form can be used later in the form.
+
+Form styling is flexible and applies to all forms in an OpenSRP app instance. It is possible to style elements such as the question label text, radio buttons, drop down layout, and error text, submit button, and many other visual items.
 
 ## Patient and family registration&#x20;
 
