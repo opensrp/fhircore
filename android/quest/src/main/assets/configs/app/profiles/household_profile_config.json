@@ -195,7 +195,7 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Patient",
+              "listResource": "Patient",
               "relatedResources": [
                 {
                   "resourceType": "CarePlan",
