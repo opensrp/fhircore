@@ -261,7 +261,7 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Task",
+              "listResource": "Task",
               "registerCard": {
                 "rules": [
                   {
