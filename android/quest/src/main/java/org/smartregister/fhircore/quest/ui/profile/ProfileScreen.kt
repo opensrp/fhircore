@@ -18,13 +18,12 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -78,6 +77,7 @@ fun ProfileScreen(
 ) {
   val scaffoldState = rememberScaffoldState()
   var showOverflowMenu by remember { mutableStateOf(false) }
+  val lazyListState = rememberLazyListState()
 
   LaunchedEffect(Unit) {
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
@@ -172,10 +172,12 @@ fun ProfileScreen(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
           resourceData = profileUiState.resourceData,
-          navController = navController
+          navController = navController,
+          lazyListState = lazyListState
         )
       }
     },
+    isFloatingActionButtonDocked = true,
     snackbarHost = { snackBarHostState ->
       SnackBarMessage(
         snackBarHostState = snackBarHostState,
@@ -188,13 +190,15 @@ fun ProfileScreen(
     Box(
       modifier = modifier.background(ProfileBackgroundColor).fillMaxHeight().padding(innerPadding)
     ) {
-      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
-        ViewRenderer(
-          viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-          resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
-          navController = navController
-        )
+      LazyColumn(state = lazyListState) {
+        item(key = profileUiState.resourceData?.baseResourceId) {
+          ViewRenderer(
+            viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
+            resourceData = profileUiState.resourceData
+                ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
+            navController = navController
+          )
+        }
       }
     }
   }

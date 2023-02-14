@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -62,7 +63,8 @@ class ExtendedFabTest {
             )
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
+        navController = navController,
+        lazyListState = rememberLazyListState()
       )
     }
   }

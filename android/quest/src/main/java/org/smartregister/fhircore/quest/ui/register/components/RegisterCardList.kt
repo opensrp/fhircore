@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -48,9 +49,10 @@ fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  lazyListState: LazyListState
 ) {
-  LazyColumn(Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG)) {
+  LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     itemsIndexed(pagingItems) { _, item ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {

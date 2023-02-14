@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -71,6 +73,8 @@ fun RegisterScreen(
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
+  val lazyListState: LazyListState = rememberLazyListState()
+
   Scaffold(
     topBar = {
       Column {
@@ -110,7 +114,11 @@ fun RegisterScreen(
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-        ExtendedFab(fabActions = fabActions, navController = navController)
+        ExtendedFab(
+          fabActions = fabActions,
+          navController = navController,
+          lazyListState = lazyListState
+        )
       }
     }
   ) { innerPadding ->
@@ -122,7 +130,8 @@ fun RegisterScreen(
         RegisterCardList(
           registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
-          navController = navController
+          navController = navController,
+          lazyListState = lazyListState
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
