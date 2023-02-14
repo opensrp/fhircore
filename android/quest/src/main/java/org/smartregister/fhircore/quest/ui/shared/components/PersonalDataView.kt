@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -42,15 +43,17 @@ fun PersonalDataView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  FlowRow(
-    modifier =
+  if (personalDataCardProperties.isVisible(resourceData.computedValuesMap)) {
+    FlowRow(
+      modifier =
       modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
-  ) {
-    PersonalDataItem(
-      personalDataCardProperties = personalDataCardProperties,
-      resourceData = resourceData,
-      navController = navController
-    )
+    ) {
+      PersonalDataItem(
+        personalDataCardProperties = personalDataCardProperties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
   }
 }
 

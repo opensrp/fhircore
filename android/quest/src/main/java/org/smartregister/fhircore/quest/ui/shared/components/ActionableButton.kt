@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -66,7 +67,7 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
+  if (buttonProperties.isVisible(resourceData.computedValuesMap)) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
     val buttonEnabled =

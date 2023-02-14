@@ -34,6 +34,7 @@ data class ListProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
+  override val visible: String = "true",
   val id: String = "listId",
   val baseResource: ResourceType,
   val relatedResources: List<ExtractedResource> = emptyList(),

@@ -38,10 +38,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
-import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
-import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.configuration.view.*
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -60,8 +57,9 @@ fun CompoundText(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  FlowRow(
-    modifier =
+  if (compoundTextProperties.isVisible(resourceData.computedValuesMap)) {
+    FlowRow(
+      modifier =
       modifier
         .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
         .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
@@ -75,49 +73,50 @@ fun CompoundText(
             ?.interpolate(resourceData.computedValuesMap)
             .parseColor()
         )
-  ) {
-    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
-      CompoundTextPart(
-        modifier = modifier,
-        viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.primaryText ?: "",
-        textColor = compoundTextProperties.primaryTextColor,
-        backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
-        borderRadius = compoundTextProperties.borderRadius,
-        fontSize = compoundTextProperties.fontSize,
-        textFontWeight = compoundTextProperties.primaryTextFontWeight,
-        clickable = compoundTextProperties.clickable,
-        actions = compoundTextProperties.primaryTextActions,
-        resourceData = resourceData,
-        navController = navController
-      )
-    }
-    // Separate the primary and secondary text
-    if (!compoundTextProperties.separator.isNullOrEmpty()) {
-      Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
-        Text(
-          text = compoundTextProperties.separator ?: "-",
-          fontSize = compoundTextProperties.fontSize.sp,
-          color = DefaultColor,
-          textAlign = TextAlign.Center
+    ) {
+      if (!compoundTextProperties.primaryText.isNullOrBlank()) {
+        CompoundTextPart(
+          modifier = modifier,
+          viewAlignment = compoundTextProperties.alignment,
+          text = compoundTextProperties.primaryText ?: "",
+          textColor = compoundTextProperties.primaryTextColor,
+          backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
+          borderRadius = compoundTextProperties.borderRadius,
+          fontSize = compoundTextProperties.fontSize,
+          textFontWeight = compoundTextProperties.primaryTextFontWeight,
+          clickable = compoundTextProperties.clickable,
+          actions = compoundTextProperties.primaryTextActions,
+          resourceData = resourceData,
+          navController = navController
         )
       }
-    }
-    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
-      CompoundTextPart(
-        modifier = modifier,
-        viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.secondaryText ?: "",
-        textColor = compoundTextProperties.secondaryTextColor,
-        backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
-        borderRadius = compoundTextProperties.borderRadius,
-        fontSize = compoundTextProperties.fontSize,
-        textFontWeight = compoundTextProperties.secondaryTextFontWeight,
-        clickable = compoundTextProperties.clickable,
-        actions = compoundTextProperties.secondaryTextActions,
-        navController = navController,
-        resourceData = resourceData,
-      )
+      // Separate the primary and secondary text
+      if (!compoundTextProperties.separator.isNullOrEmpty()) {
+        Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
+          Text(
+            text = compoundTextProperties.separator ?: "-",
+            fontSize = compoundTextProperties.fontSize.sp,
+            color = DefaultColor,
+            textAlign = TextAlign.Center
+          )
+        }
+      }
+      if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
+        CompoundTextPart(
+          modifier = modifier,
+          viewAlignment = compoundTextProperties.alignment,
+          text = compoundTextProperties.secondaryText ?: "",
+          textColor = compoundTextProperties.secondaryTextColor,
+          backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
+          borderRadius = compoundTextProperties.borderRadius,
+          fontSize = compoundTextProperties.fontSize,
+          textFontWeight = compoundTextProperties.secondaryTextFontWeight,
+          clickable = compoundTextProperties.clickable,
+          actions = compoundTextProperties.secondaryTextActions,
+          navController = navController,
+          resourceData = resourceData,
+        )
+      }
     }
   }
 }
