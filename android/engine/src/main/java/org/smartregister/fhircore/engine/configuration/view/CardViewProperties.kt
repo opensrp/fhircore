@@ -31,7 +31,6 @@ data class CardViewProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
   override val visible: String = "true",
-  val gone: String = "true",
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
