@@ -376,6 +376,58 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testJoinToStringWithNulls() {
+    val source = mutableListOf("apple", null, "banana", "cherry", null, "date")
+    val expected = "apple, banana, cherry, date"
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
+  fun testJoinToStringWithoutNulls() {
+    val source = mutableListOf("apple", "banana", "cherry", "date")
+    val expected = "apple, banana, cherry, date"
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source.toMutableList()))
+  }
+
+  @Test
+  fun testJoinToStringWithWhitespace() {
+    val source = mutableListOf("apple", "banana ", " cherry", "date ")
+    val expected = "apple, banana, cherry, date"
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source.toMutableList()))
+  }
+
+  @Test
+  fun testJoinToStringWithEmptyList() {
+    val source = mutableListOf<String?>()
+    val expected = ""
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
+  fun testJoinToStringWithExtraCommasAndSpaces() {
+    val source =
+      mutableListOf(
+        "apple",
+        null,
+        " cherry",
+        "date ",
+        ",   ",
+        " ,",
+        ", ",
+        ",     ",
+        "  ,   ",
+        "   ,     ",
+        "   ,",
+        ", ",
+        ",     ",
+        "     ,   ",
+        "      , "
+      )
+    val expected = "apple, cherry, date "
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
   fun pickCodesFromCertainConditions() {
     val resources =
       listOf(
