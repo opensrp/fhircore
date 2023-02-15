@@ -357,6 +357,16 @@ constructor(
         ?: emptyList()
     }
 
+    /**
+     * This function combines all string indexes to comma separated
+     */
+    fun joinToString(source: MutableList<String?>): String {
+      source.removeIf { it == null }
+      val inputString = source.joinToString()
+      val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
+      return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
+    }
+
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String
