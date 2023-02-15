@@ -203,18 +203,6 @@ constructor(
               )
           }
         resourceDataMap[listProperties.id] = resourceDataList
-      } else {
-        val relatedResourceSearchKey: String = listProperties.listResource ?: ""
-        // Retrieve resources for LIST including related resource for each then fire rules
-        // To avoid re-querying the local database for data re-use data in the relatedResourcesMap
-        val resourceDataList =
-          (relatedResourcesMap[relatedResourceSearchKey] ?: emptyList()).mapToResourceData(
-            relatedResourcesMap = relatedResourcesMap,
-            ruleConfigs = listProperties.registerCard.rules,
-            listRelatedResources = listProperties.relatedResources,
-            computedValuesMap = computedValuesMap
-          )
-        resourceDataMap[listProperties.id] = resourceDataList
       }
     }
     return resourceDataMap
@@ -266,18 +254,22 @@ constructor(
     listResource: ListResource
   ): MutableList<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
-    val newListRelatedResources = relatedResourceMap[relatedResourceKey]?.toList()
+    val newListRelatedResources = relatedResourceMap[relatedResourceKey]
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
-    val filteredResourcesList =
-      newListRelatedResources?.let {
-        rulesFactory.rulesEngineService.filterResources(
-          resources = it,
+    if (newListRelatedResources != null &&
+        !listResource.conditionalFhirPathExpression.isNullOrEmpty()
+    ) {
+      return rulesFactory
+        .rulesEngineService
+        .filterResources(
+          resources = newListRelatedResources,
           fhirPathExpression = listResource.conditionalFhirPathExpression
         )
-      }
+        .toMutableList()
+    }
 
-    return filteredResourcesList?.toMutableList() ?: mutableListOf()
+    return newListRelatedResources ?: mutableListOf()
   }
 
   /**
