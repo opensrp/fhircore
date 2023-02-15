@@ -391,8 +391,8 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testJoinToStringWithWhitespace() {
-    val source = mutableListOf("apple", "banana ", " cherry", "date ")
-    val expected = "apple, banana, cherry, date"
+    val source = mutableListOf("apple", "banana", " cherry", "   ", "date ")
+    val expected = "apple, banana, cherry, date "
     Assert.assertTrue(expected == rulesEngineService.joinToString(source.toMutableList()))
   }
 
