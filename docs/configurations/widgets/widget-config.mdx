@@ -110,37 +110,3 @@ emptyList | empty list json with a message to show in case the resource data to 
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
-
-
-## How to use COMPOUND_TEXT
-This view type allows for the display of multiple lines of text, where each line can be formatted separately.
-
- ``` json
-{
-                "viewType": "COMPOUND_TEXT",
-                "primaryTextBackgroundColor": "#F9CFD1",
-                "primaryText": "@{taskName}",
-                "primaryTextColor": "#000000",
-                "padding": 7,
-                "borderRadius": 6
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "Start date: @{taskStartDate}",
-                "primaryTextColor": "#5A5A5A",
-                "fontSize": 20.0
-
-              }
-```
-
-
-## Config properties of COMPOUND_TEXT
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
-primaryTextBackgroundColor | Background color of the primary text to be displayed. This should not overshadow the primary text to be displayed | No | |
-primaryText | The primary text to be displayed | Yes | |
-primaryTextColor |The color of the primary text to be displayed. This should be visible | Yes | |
-fontSize | The font size should be a number. | No but you can override if you want to display a different size of text | |
-padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | |
-borderRadius | Rounds the corners of the view's outer edge | | |
