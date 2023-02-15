@@ -119,3 +119,6 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
+
+fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
+  this.visible.interpolate(computedValuesMap).toBoolean()

@@ -45,6 +45,3 @@ enum class ViewAlignment {
   CENTER,
   NONE
 }
-
-fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
-  visible.interpolate(computedValuesMap).toBoolean()

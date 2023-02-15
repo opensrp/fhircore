@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperti
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
-import org.smartregister.fhircore.engine.configuration.view.isVisible
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -52,6 +51,7 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 const val VERTICAL_ORIENTATION = "verticalOrientation"
 const val HORIZONTAL_ORIENTATION = "horizontalOrientation"
