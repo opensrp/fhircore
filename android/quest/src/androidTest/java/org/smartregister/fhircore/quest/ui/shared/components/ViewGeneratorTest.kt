@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -351,14 +352,26 @@ class ViewGeneratorTest {
   @Test
   fun testGenerateViewRendersVerticalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = 16F, width = null)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(VERTICAL_SPACER_TEST_TAG).assertExists()
   }
 
   @Test
   fun testGenerateViewRendersHorizontalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = null, width = 16F)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
   }
 }
