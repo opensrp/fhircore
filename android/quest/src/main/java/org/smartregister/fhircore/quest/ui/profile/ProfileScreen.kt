@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
@@ -138,7 +137,7 @@ fun ProfileScreen(
     },
   ) { innerPadding ->
     Box(
-      modifier = modifier.background(ProfileBackgroundColor).fillMaxHeight().padding(innerPadding)
+      modifier = modifier.background(Color.White).fillMaxHeight().padding(innerPadding)
     ) {
       LazyColumn(state = lazyListState) {
         item(key = profileUiState.resourceData?.baseResourceId) {

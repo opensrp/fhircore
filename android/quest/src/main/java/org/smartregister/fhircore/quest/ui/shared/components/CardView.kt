@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.TextCase
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -56,7 +57,7 @@ fun CardView(
         Spacer(modifier = modifier.height(8.dp))
         CompoundText(
           modifier = modifier.wrapContentWidth(Alignment.Start),
-          compoundTextProperties = viewProperties.header!!,
+          compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
           navController = navController
         )
