@@ -70,44 +70,19 @@ Tasks in OpenSRP can fit into five categories: (1) inactive and not completable,
 
 Tasks can be due on a specific day or for a time period. The primary settings for a task are the health service form that closes the task and time periods for when the task becomes active, remains active, becomes overdue, and expires.
 
-## Reports
+## In-app reports
 
-[https://docs.google.com/document/d/18FVsOeym3iT0qhnsAXKlfq9RPVQsV8x0jDZgtlUBwdQ/edit#heading=h.raxzz8kpbpmr](https://docs.google.com/document/d/18FVsOeym3iT0qhnsAXKlfq9RPVQsV8x0jDZgtlUBwdQ/edit#heading=h.raxzz8kpbpmr), [https://docs.communityhealthtoolkit.org/apps/features/reports/](https://docs.communityhealthtoolkit.org/apps/features/reports/), [https://docs.simple.org/readme/simple-app-features#progress-reports](https://docs.simple.org/readme/simple-app-features#progress-reports)
+OpenSRP can generate easy-to-understand indicators used by community health workers to track progress, celebrate successes, and learn about gaps in coverage.&#x20;
 
-## Stock control or commodity management
+Indicators are calculated from a user's patient list (and so show a health worker's achievements) and are often tied to goals or targets set by health supervisors. They can be grouped by register.
 
-[https://docs.simple.org/readme/simple-app-features#drug-stock-reporting](https://docs.simple.org/readme/simple-app-features#drug-stock-reporting), [https://docs.google.com/document/d/18FVsOeym3iT0qhnsAXKlfq9RPVQsV8x0jDZgtlUBwdQ/edit#heading=h.nct1tawcwukq](https://docs.google.com/document/d/18FVsOeym3iT0qhnsAXKlfq9RPVQsV8x0jDZgtlUBwdQ/edit#heading=h.nct1tawcwukq),&#x20;
+## Stock and commodity management
 
-VHTs are required to provide treatments to U5s who are unwell due to common childhood illnesses like malaria, diarrhea and pneumonia. In cases where the U5s do not get better or show danger signs, they are referred to the health facility and followed up by the VHT thereafter, to ensure that they get better. The VHTs are thus normally restocked with drugs/commodities following the National Medical Stores schedule that operates on a two-month or bi-monthly cycle. The drugs are usually dispatched to health facilities before they are passed on to the VHTs. VHTs use a consumption log to document the drugs they receive and dispense in the community and are required to present a key accountability document called HMIS VHT 004 Summary Form for Consumption and Requisition  to their respective Health Assistant (at the facility where they are attached) in order to receive drugs and commodities (aka refill). VHTs are then given drugs and commodities based on any balances they may have.
+OpenSRP makes stock and commodity management easier for health workers to anticipate how much they need and thus avoid stock outs.&#x20;
 
-System Workflows
+When stock is received by a health worker, they use a consumption log form to document commodities received. As commodities are provided or used with patients during health services, stock is automatically deducted. If a stock level reaches a predetermined threshold, the app will highlight that commodity so the health worker can obtain more. During the next commodity refill, the app can calculate the correct balance the health worker should receive.
 
-Recording new stock
-
-![](https://lh5.googleusercontent.com/iFlwoLZXM2LpCi\_RgPmzhvcPc3HR3ZMV23UKYfeRVblRPZVEJET\_gAvOksWBa8N9SJzAR-Wae\_5e9sIO3XvkWMw9G0cXhgpSPm6LTsW9HRkrKxM1k-TjscBFwFFMe34Rm0USbauk2gJLNnGW7VqYeW3aixXBlN9UwpfSDVtHGMfPd\_8wFiai4arwOY9eOA)
-
-\
-
-
-Recording of commodity consumption during service delivery
-
-![](https://lh4.googleusercontent.com/oSIY7bnRL9d49Upg6rEUBOBacGtQ5ChszqaVkBqXv9B9IQcTbCc02y6VS25RamSI1bAGAG3IJ3edfm4rtAG2JkCP929WQSPNThRl8YZXd4GZsNy6MM8CBqi9rt2aL7Hd435Pw8cE7xrsgbbeIX1Xi6X\_GNzTXSZYd5TaAtEu2msJN7nRcVbLADR14167Lg)
-
-The following commodities will be consumed during service delivery
-
-| <p>Visit Type</p><p>(Questionnaire type)</p> | Data Dictionary                                                            | <p>Commodity<br>to be (potentially) issued </p>                                                                                                                                     |
-| -------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Family planning visit                        | <ul><li>Family Planning enrollment</li><li>Family Planning visit</li></ul> | <ol><li>Male Condoms</li><li>Female Condom</li><li>Combined oral pill</li></ol>                                                                                                     |
-| Sick Child Visit                             | <ul><li>Sick child treatment and referral</li></ul>                        | <ol><li>Artesunate 100mg Suppository</li><li>ACT</li><li>Amoxicillin 250mg Dispersible Tablet</li><li>ORS Sachet</li><li>Zinc Sulfate</li><li>Rapid Diagnostic Test (RDT)</li></ol> |
-
-\
-
-
-Design Mocks&#x20;
-
-[Link to the interactive prototype](https://www.figma.com/proto/9BV8bl86crmntmHcT4xR54/Uganda-iCOHS?node-id=15057%3A23573\&scaling=min-zoom\&page-id=14757%3A17082\&starting-point-node-id=15057%3A23573)
-
-![](https://lh4.googleusercontent.com/AbBgpn93furrH3\_pkbsWuC\_do4Y0Z2o3e-LJlks9JaRxXX7UXuhU5ant84hfUYQ-eDHDPf03xLuKEUPWTYJ0-oO6cAufZRMkaXh3sSwoFDWsHqeW2aZRQr5GY9vSADaojRxI6JmsNcCZ8FEgGR\_I-4AUqcwnszE6dEcUhZyCxxfA2d\_IPeON-3tpSWTfVQ)![](https://lh6.googleusercontent.com/tGjGROn9P1Q\_3vAPBNwiokOte3\_cINEmSgvz8ZzJ502S3Ku30T22K5-skCcZeObN1dfx-qaUffKu\_Fo4d8aCQiiixspwNjAGchFfaLJId8r8EQ-nEAmFe19aVzQ8R0GcLR6cXjzaRVpmFT1N2l9HC2lCtIlBuzKEyfFPiw92NrIJtdfip3Gx\_3mYbkX0kA)![](https://lh4.googleusercontent.com/t2RGfSXtKATfjy\_jBM4\_2y9WWf0337sIGI80rPgtb0WMNibrBa8vY2NoBLzMWOLB4FhHxu2Ymq8CdkWm2PHZXLLp3Wh1pHklWil54tgyj6BK4VsMYOblKFx\_xprdXfXEvZeGcadh5Orkg6mbbYukfEUmfbNGKbZvmrHpC10fnia7rtO5m8A3NVZ\_SJ6FBg)
+<img src="https://lh4.googleusercontent.com/AbBgpn93furrH3_pkbsWuC_do4Y0Z2o3e-LJlks9JaRxXX7UXuhU5ant84hfUYQ-eDHDPf03xLuKEUPWTYJ0-oO6cAufZRMkaXh3sSwoFDWsHqeW2aZRQr5GY9vSADaojRxI6JmsNcCZ8FEgGR_I-4AUqcwnszE6dEcUhZyCxxfA2d_IPeON-3tpSWTfVQ" alt="" data-size="original">![](https://lh6.googleusercontent.com/tGjGROn9P1Q\_3vAPBNwiokOte3\_cINEmSgvz8ZzJ502S3Ku30T22K5-skCcZeObN1dfx-qaUffKu\_Fo4d8aCQiiixspwNjAGchFfaLJId8r8EQ-nEAmFe19aVzQ8R0GcLR6cXjzaRVpmFT1N2l9HC2lCtIlBuzKEyfFPiw92NrIJtdfip3Gx\_3mYbkX0kA)![](https://lh4.googleusercontent.com/t2RGfSXtKATfjy\_jBM4\_2y9WWf0337sIGI80rPgtb0WMNibrBa8vY2NoBLzMWOLB4FhHxu2Ymq8CdkWm2PHZXLLp3Wh1pHklWil54tgyj6BK4VsMYOblKFx\_xprdXfXEvZeGcadh5Orkg6mbbYukfEUmfbNGKbZvmrHpC10fnia7rtO5m8A3NVZ\_SJ6FBg)
 
 \
 
