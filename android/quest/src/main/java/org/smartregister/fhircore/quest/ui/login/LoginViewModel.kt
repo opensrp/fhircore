@@ -21,6 +21,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -269,7 +271,9 @@ constructor(
 
   fun downloadNowWorkflowConfigs() {
     val oneTimeWorkRequest: OneTimeWorkRequest =
-      OneTimeWorkRequestBuilder<ConfigDownloadWorker>().build()
+      OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
+        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+        .build()
     workManager.enqueue(oneTimeWorkRequest)
   }
 }
