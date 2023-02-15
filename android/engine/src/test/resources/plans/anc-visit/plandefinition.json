@@ -8,6 +8,93 @@
   "contained": [
     {
       "resourceType": "ActivityDefinition",
+      "id": "careplan-init-activity",
+      "title": "Sick Child Register Handler Activity",
+      "status": "active",
+      "description": "This action will assess careplan on registration to init careplan",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "CarePlan.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "CarePlan.intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "CarePlan.created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "CarePlan.subject",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+          }
+        },
+        {
+          "path": "CarePlan.author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "CarePlan.period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value"
+          }
+        },
+        {
+          "path": "CarePlan.period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 9 months"
+          }
+        },
+        {
+          "path": "CarePlan.activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "CarePlan.activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "CarePlan.activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on registration to init careplan'"
+          }
+        },
+        {
+          "path": "CarePlan.activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
       "id": "careplan-activity",
       "title": "ANC Follow Up Plan",
       "status": "active",
@@ -15,14 +102,10 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
+          "count": 8,
           "countMax": 8,
-          "duration": 2,
-          "durationMax": 4,
-          "durationUnit": "h",
           "frequency": 1,
-          "frequencyMax": 1,
           "period": 1,
-          "periodMax": 1,
           "periodUnit": "mo"
         }
       }

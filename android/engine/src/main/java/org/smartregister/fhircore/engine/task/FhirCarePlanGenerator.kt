@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -142,13 +143,29 @@ constructor(
           }
 
         if (action.hasTransform()) {
-          val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
-          structureMapUtilities.transform(
-            transformSupportServices.simpleWorkerContext,
-            source,
-            structureMap,
-            output
-          )
+          var i = 0
+          do {
+            val period = i*(definition.timingTiming.repeat.period?.toInt()?:0)
+            source.getParameter(Task.SP_PERIOD)?:source.addParameter().apply {
+              this.name = Task.SP_PERIOD
+              this.value = Period().apply {
+                start = fhirPathEngine.evaluate(output.period, "\$this.start + $period ${definition.timingTiming.repeat.periodUnit?.definition?:"days"}").firstOrNull()?.dateTimeValue()?.value
+              }
+            }
+
+            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+            structureMapUtilities.transform(
+              transformSupportServices.simpleWorkerContext,
+              source,
+              structureMap,
+              output
+            )
+            i++
+          }
+            // number of times to repeat the definition; count should be 1 if only one task should be generated per iteration
+          while (definition.hasTimingTiming() && definition.timingTiming.repeat.let {
+              it.count > i
+            })
         }
 
         if (definition.hasDynamicValue()) {
