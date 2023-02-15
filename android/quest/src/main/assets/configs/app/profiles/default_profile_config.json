@@ -189,7 +189,12 @@
                 {
                   "viewType": "LIST",
                   "id": "statusList",
-                  "listResource": "Condition",
+                  "resources": [
+                    {
+                      "id": "statuses",
+                      "resourceType": "Condition"
+                    }
+                  ],
                   "orientation": "HORIZONTAL",
                   "emptyList": {
                     "message": "No conditions available for the patient "
@@ -215,7 +220,8 @@
                         "borderRadius": 6
                       }
                     ]
-                  }},
+                  }
+                },
                 {
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "ID: #@{patientIdentifier}",

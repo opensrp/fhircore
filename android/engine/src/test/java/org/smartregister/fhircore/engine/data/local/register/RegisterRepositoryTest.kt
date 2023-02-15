@@ -328,8 +328,7 @@ class RegisterRepositoryTest : RobolectricTest() {
                 ),
             ),
           orientation = ListOrientation.VERTICAL,
-          viewType = ViewType.LIST,
-          listResource = "availablePlans"
+          viewType = ViewType.LIST
         ),
       )
     val relatedResourceMap = mockk<MutableMap<String, MutableList<Resource>>>()
@@ -340,7 +339,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     } returns resultMap
     registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
     verify { registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap) }
-    Assert.assertNotNull(resultMap.size)
+    Assert.assertNotNull(resultMap)
   }
 
   @Test
@@ -348,16 +347,22 @@ class RegisterRepositoryTest : RobolectricTest() {
     val views =
       listOf<ViewProperties>(
         ListProperties(
-          relatedResources =
+          resources =
             listOf(
-              ExtractedResource(
+              ListResource(
+                relatedResources =
+                  listOf(
+                    ExtractedResource(
+                      resourceType = ResourceType.Task,
+                      id = "relatedResource",
+                      fhirPathExpression =
+                        "data.put('conditionTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"
+                    )
+                  ),
                 resourceType = ResourceType.Task,
-                id = "relatedResource",
-                fhirPathExpression =
-                  "data.put('conditionTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"
+                id = "availablePlans"
               )
             ),
-          resources = emptyList(),
           registerCard =
             RegisterCardConfig(
               views = emptyList(),
@@ -374,7 +379,6 @@ class RegisterRepositoryTest : RobolectricTest() {
             ),
           orientation = ListOrientation.VERTICAL,
           viewType = ViewType.LIST,
-          listResource = "availablePlans",
         ),
       )
     val relatedResourceMap = mockk<MutableMap<String, MutableList<Resource>>>()
@@ -385,7 +389,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     } returns resultMap
     registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
     verify { registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap) }
-    Assert.assertNotNull(resultMap.size)
+    Assert.assertNotNull(resultMap)
   }
 
   companion object {
