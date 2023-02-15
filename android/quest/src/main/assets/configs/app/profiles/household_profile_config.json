@@ -205,23 +205,28 @@
       "content": [
         {
           "viewType": "LIST",
-          "listResource": "Patient",
-          "relatedResources": [
+          "resources": [
             {
-              "resourceType": "CarePlan",
-              "fhirPathExpression": "CarePlan.subject.reference"
-            },
-            {
-              "resourceType": "Condition",
-              "fhirPathExpression": "Condition.subject.reference"
-            },
-            {
-              "resourceType": "Task",
-              "fhirPathExpression": "Task.for.reference"
-            },
-            {
-              "resourceType": "Observation",
-              "fhirPathExpression": "Observation.subject.reference"
+              "id": "householdPatients",
+              "resourceType": "Patient",
+              "relatedResources": [
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                },
+                {
+                  "resourceType": "Condition",
+                  "fhirPathExpression": "Condition.subject.reference"
+                },
+                {
+                  "resourceType": "Task",
+                  "fhirPathExpression": "Task.for.reference"
+                },
+                {
+                  "resourceType": "Observation",
+                  "fhirPathExpression": "Observation.subject.reference"
+                }
+              ]
             }
           ],
           "registerCard": {

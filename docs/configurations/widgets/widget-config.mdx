@@ -35,7 +35,8 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
  ```
 
 ## Display other resources (List Resources) inside another list
-To display list resources inside a list and execute it's rules , add it's configurations as show below
+To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
+If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
 ``` json
 {
   "viewType": "LIST",
@@ -88,8 +89,17 @@ To display list resources inside a list and execute it's rules , add it's config
 }
  ```
 
-## Config properties
+## Config properties of list resources using the above json config
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
+relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
 
+
+
+## Config properties of a List Widget
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id | Unique identifier for the application | Yes | |
@@ -100,3 +110,53 @@ emptyList | empty list json with a message to show in case the resource data to 
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
+
+
+## How to use COMPOUND_TEXT
+Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
+
+ ``` json
+{
+                "viewType": "COMPOUND_TEXT",
+                "primaryTextBackgroundColor": "#F9CFD1",
+                "primaryText": "@{taskName}",
+                "primaryTextColor": "#000000",
+                "padding": 7,
+                "borderRadius": 6
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Start date: @{taskStartDate}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 20.0
+
+              }
+```
+
+
+## Config properties of COMPOUND_TEXT
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
+primaryTextBackgroundColor | The background color of the primary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color | No | Null |
+secondaryTextBackgroundColor | The background color of the secondary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color | No | Null |
+primaryText | The primary text to be displayed in the view. If the property text is null, no primary text will be displayed | Yes | |
+primaryTextColor |The color of the primary text to be displayed. This should be visible | Yes | |
+fontSize | The font size of the primary and secondary texts, in SP (scaled pixels) |  | 16 |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | Rounds the corners of the view's outer edge | | 2 |
+weight |  The weight of the view within its parent layout. This value is used to distribute the available space among multiple views.  | No | 0 |
+backgroundColor |The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+alignment | The alignment of the view withins its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Dertimines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | false |
+secondaryText | The primary text to be displayed in the view. If the property text is null, no primary text will be displayed | No |  |
+secondaryTextColor | The color of the secondary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's text color | No | Null |
+separator | The separator to display between the primary and secondary texts. If this property is null, no separator will be displayed | No | Null |
+primaryTextFontWeight | The font weight of the primary text | | [TextFontWeight.NORMAL] |
+secondaryTextFontWeight | The font weight of the secondary text | | [TextFontWeight.NORMAL] |
+primaryTextActions | The list of actions associated with the primary text. If the list is empty, no actions will be displayed | | |
+secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
+
+
