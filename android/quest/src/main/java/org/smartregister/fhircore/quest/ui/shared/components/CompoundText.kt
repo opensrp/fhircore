@@ -73,7 +73,8 @@ fun CompoundText(
           vertical = compoundTextProperties.padding.div(2).dp
         )
         .background(
-          compoundTextProperties.backgroundColor
+          compoundTextProperties
+            .backgroundColor
             ?.interpolate(resourceData.computedValuesMap)
             .parseColor()
         )

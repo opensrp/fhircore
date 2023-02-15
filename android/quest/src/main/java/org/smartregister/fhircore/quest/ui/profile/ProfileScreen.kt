@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.animation.AnimatedVisibility
@@ -42,7 +40,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -136,9 +133,7 @@ fun ProfileScreen(
       )
     },
   ) { innerPadding ->
-    Box(
-      modifier = modifier.background(Color.White).fillMaxHeight().padding(innerPadding)
-    ) {
+    Box(modifier = modifier.background(Color.White).fillMaxHeight().padding(innerPadding)) {
       LazyColumn(state = lazyListState) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
