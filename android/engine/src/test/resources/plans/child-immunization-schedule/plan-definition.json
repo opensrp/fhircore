@@ -91,6 +91,18 @@
             ]
           }
         }
+      ],
+      "reason": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)"
+            }
+          ],
+          "text":"Administration of vaccine to produce active immunity (procedure)"
+        }
       ]
     }
   ]

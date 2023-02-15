@@ -225,8 +225,7 @@ constructor(
             bundleOf(
               Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
             ),
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = null
+          questionnaireConfig = questionnaireConfig
         )
     }
   }
@@ -288,11 +287,15 @@ constructor(
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(workId = FhirTaskPlanWorker.WORK_ID)
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        requiresNetwork = false
+      )
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration)
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.

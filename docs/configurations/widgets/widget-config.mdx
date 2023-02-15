@@ -34,9 +34,72 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
    }
  ```
 
+## Display other resources (List Resources) inside another list
+To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
+If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
+``` json
+{
+  "viewType": "LIST",
+  "id": "readyTasksList",
+  "resources": [
+    {
+      "id": "availableTask",
+      "relatedResourceId": "availableTasks",
+      "resourceType": "Task",
+      "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+    }
+  ],
+  "emptyList": {
+    "message": "No visit tasks available for this patient at the moment"
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "BUTTON",
+        "smallSized": "true",
+        "text": "@{taskDescriptionWithStartDate}",
+        "status": "@{taskStatusColorCode}",
+        "visible": "true",
+        "enabled": "@{patientActive}",
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_QUESTIONNAIRE",
+            "questionnaire": {
+              "id": "@{taskQuestionnaireId}",
+              "title": "@{taskDescription}",
+              "saveButtonText": "Save",
+              "taskId": "@{taskId}",
+              "resourceIdentifier": "@{taskFor}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+ ```
 
-## Config properties
+## Config properties of list resources using the above json config
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
+relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
 
+
+
+## Config properties of a List Widget
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id | Unique identifier for the application | Yes | |
@@ -46,3 +109,4 @@ orientation | This is the direction you want to the widgets to flex | yes | VERT
 emptyList | empty list json with a message to show in case the resource data to display is empty | no but highly recommended | no visits |
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
+resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
