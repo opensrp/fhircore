@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
  * An abstract for view properties. This is needed so we can serialize/deserialize view properties

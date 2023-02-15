@@ -32,7 +32,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -69,7 +67,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     )
   }
 
-//  private val viewProperties =
+  //  private val viewProperties =
 
   @Before
   fun setUp() {
@@ -218,24 +216,14 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   fun testViewIsVisibleReturnsCorrectValue() {
     val computedValuesMap = mapOf("visible" to "true", "invisible" to "false")
     val visibleButtonProperties =
-      ButtonProperties(
-        status = "DUE",
-        text = "Button Text",
-        visible = "@{visible}"
-        )
+      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{visible}")
     val invisibleButtonProperties =
-      ButtonProperties(
-        status = "DUE",
-        text = "Button Text",
-        visible = "@{invisible}"
-      )
-
+      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{invisible}")
 
     val visible = visibleButtonProperties.isVisible(computedValuesMap)
     Assert.assertEquals(true, visible)
 
     val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
     Assert.assertEquals(false, invisible)
-
   }
 }
