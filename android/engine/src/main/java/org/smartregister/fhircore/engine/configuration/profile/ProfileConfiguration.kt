@@ -36,7 +36,7 @@ data class ProfileConfiguration(
   val managingEntity: ManagingEntityConfig? = null,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
-  val topBar: TopBarConfig? = null,
+  val topAppBar: TopBarConfig? = null,
   val views: List<ViewProperties> = emptyList(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList()

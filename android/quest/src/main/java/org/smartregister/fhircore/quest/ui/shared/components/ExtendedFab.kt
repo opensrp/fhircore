@@ -18,9 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -93,11 +91,10 @@ fun ExtendedFab(
         )
       }
       if (text.isNotEmpty()) {
-        Spacer(modifier = modifier.width(8.dp))
         AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
           Text(
             text = firstFabAction.display.uppercase(),
-            modifier.testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+            modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
           )
         }
       }

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -81,6 +82,7 @@ fun CompoundText(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
         text = compoundTextProperties.primaryText ?: "",
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.primaryTextColor,
         backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -108,6 +110,7 @@ fun CompoundText(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
         text = compoundTextProperties.secondaryText ?: "",
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.secondaryTextColor,
         backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -127,7 +130,9 @@ private fun CompoundTextPart(
   modifier: Modifier,
   viewAlignment: ViewAlignment,
   text: String,
+  maxLines: Int,
   textColor: String?,
+  colorOpacity: Float = 1f,
   backgroundColor: String?,
   borderRadius: Int,
   fontSize: Float,
@@ -139,7 +144,12 @@ private fun CompoundTextPart(
 ) {
   Text(
     text = text.interpolate(resourceData.computedValuesMap).removeExtraWhiteSpaces(),
-    color = textColor?.interpolate(resourceData.computedValuesMap)?.parseColor() ?: DefaultColor,
+    color =
+      textColor
+        ?.interpolate(resourceData.computedValuesMap)
+        ?.parseColor()
+        ?.copy(alpha = colorOpacity)
+        ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier
         .wrapContentWidth(Alignment.Start)
@@ -158,7 +168,9 @@ private fun CompoundTextPart(
         ViewAlignment.END -> TextAlign.End
         ViewAlignment.CENTER -> TextAlign.Center
         else -> TextAlign.Start
-      }
+      },
+    maxLines = maxLines,
+    overflow = TextOverflow.Ellipsis
   )
 }
 

@@ -44,6 +44,8 @@ data class CompoundTextProperties(
   val secondaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
   val primaryTextActions: List<ActionConfig> = emptyList(),
   val secondaryTextActions: List<ActionConfig> = emptyList(),
+  val maxLines: Int = Int.MAX_VALUE,
+  val colorOpacity: Float = 1f
 ) : ViewProperties()
 
 enum class TextFontWeight(val fontWeight: FontWeight) {

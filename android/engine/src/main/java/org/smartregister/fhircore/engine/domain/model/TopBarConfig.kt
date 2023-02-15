@@ -24,5 +24,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 data class TopBarConfig(
   val title: CompoundTextProperties? = null,
   val collapsible: Boolean = true,
-  val content: List<ViewProperties> = emptyList()
+  val content: List<ViewProperties> = emptyList(),
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+  val showOverflowMenu: Boolean = true
 )
