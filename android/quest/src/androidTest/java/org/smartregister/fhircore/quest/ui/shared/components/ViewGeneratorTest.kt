@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
