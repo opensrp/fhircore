@@ -357,9 +357,7 @@ constructor(
         ?: emptyList()
     }
 
-    /**
-     * This function combines all string indexes to comma separated
-     */
+    /** This function combines all string indexes to comma separated */
     fun joinToString(source: MutableList<String?>): String {
       source.removeIf { it == null }
       val inputString = source.joinToString()
