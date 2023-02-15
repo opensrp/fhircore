@@ -164,7 +164,7 @@
       "viewType": "COMPOUND_TEXT",
       "primaryText": "@{familyName} Family",
       "primaryTextColor": "#FFFFFF",
-      "fontSize": 16.0,
+      "fontSize": 20.0,
       "maxLines": 1,
       "primaryTextFontWeight": "BOLD"
     },
