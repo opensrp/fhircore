@@ -1,0 +1,79 @@
+{
+  "appId": "notice-f",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": true,
+    "display": "Add Household",
+    "actions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "id": "householdRegister",
+        "questionnaire": {
+          "id": "f210a832-857f-49e6-93f5-399eec4f4edb11",
+          "title": "Add Household",
+          "saveButtonText": "Add Household",
+          "setPractitionerDetails": true,
+          "setOrganizationDetails": true
+        }
+      }
+    ]
+  },
+  "clientRegisters": [
+    {
+      "id": "householdRegister",
+      "display": "All households",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_households"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "householdRegister"
+        }
+      ]
+    },
+    {
+      "id": "ancRegister",
+      "display": "ANC",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "ancRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "ancRegister"
+        }
+      ]
+    }
+  ],
+  "staticMenu": [
+    {
+      "id": "settings",
+      "visible": true,
+      "display": "Settings",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_settings"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ]
+}
