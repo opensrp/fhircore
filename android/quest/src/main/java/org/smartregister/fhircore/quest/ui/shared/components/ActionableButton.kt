@@ -192,7 +192,7 @@ fun ActionableButtonPreview() {
       ButtonProperties(
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
-        text = "ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit",
+        text = "ANC Visit Lorem ipsum for testing large text on the button",
         smallSized = false,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
