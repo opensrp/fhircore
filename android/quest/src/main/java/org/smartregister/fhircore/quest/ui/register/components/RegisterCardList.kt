@@ -93,6 +93,7 @@ fun RegisterCardList(
       }
     }
 
+    // Register pagination
     item {
       if (pagingItems.itemCount > 0) {
         RegisterFooter(
