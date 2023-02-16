@@ -66,7 +66,6 @@ fun ActionableButton(
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
   navController: NavController,
-  shouldTruncateLargeText: Boolean = false
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
@@ -121,7 +120,7 @@ fun ActionableButton(
       )
       val buttonText = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString()
       val truncatedText =
-        if (buttonText.length > MAX_CHARS && shouldTruncateLargeText)
+        if (buttonText.length > MAX_CHARS && buttonProperties.smallSized)
           "${buttonText.substring(0, MAX_CHARS)}..."
         else buttonText
 
@@ -194,11 +193,10 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit",
-        smallSized = true,
+        smallSized = false,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController(),
-    shouldTruncateLargeText = true
   )
 }
 
@@ -212,7 +210,7 @@ fun DisabledActionableButtonPreview() {
           visible = "true",
           status = ServiceStatus.COMPLETED.name,
           text = "Issuing of teenage pads and household due on 23-01-2023",
-          smallSized = true,
+          smallSized = false,
           enabled = "true"
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
@@ -227,14 +225,14 @@ fun SmallActionableButtonPreview() {
   Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
       modifier = Modifier.weight(1.0f),
-      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = true),
+      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = true, smallSized = true),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
       buttonProperties =
-        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = true),
+        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = true, smallSized = true),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
