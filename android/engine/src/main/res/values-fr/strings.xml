@@ -78,6 +78,7 @@
     <string name="clients">Clients</string>
     <string name="logout">Déconnexion</string>
     <string name="application_id">ID de l’application</string>
+    <string name="app_id_sample">par exemple ecbis, quest, cha</string>
     <string name="load_configurations">CHARGER LES CONFIGURATIONS</string>
     <string name="remember_app">Se souvenir de l\'application</string>
     <string name="done">Effectué</string>
