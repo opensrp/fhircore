@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
@@ -655,6 +656,21 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       updateViews()
 
       Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
+    }
+  }
+  @Test
+  fun testQuestionnaireSubmitButtonDisplayCorrectTitle() {
+    with(questionnaireActivity) {
+      questionnaireConfig.copy(type = QuestionnaireType.READ_ONLY)
+      val questionnaireConfig =
+        QuestionnaireConfig("form", "title", "form-id", type = QuestionnaireType.READ_ONLY)
+      ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
+
+      updateViews()
+      val button = findViewById<Button>(org.smartregister.fhircore.quest.R.id.submit_questionnaire)
+      if (button != null) {
+        Assert.assertEquals("${getString(R.string.done)}", button.text.toString())
+      }
     }
   }
 
