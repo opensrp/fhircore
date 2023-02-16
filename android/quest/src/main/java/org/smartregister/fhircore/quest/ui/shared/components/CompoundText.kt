@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -89,7 +90,8 @@ fun CompoundText(
         clickable = compoundTextProperties.clickable,
         actions = compoundTextProperties.primaryTextActions,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
+        maxLines = compoundTextProperties.maxLines
       )
     }
     // Separate the primary and secondary text
@@ -117,6 +119,7 @@ fun CompoundText(
         actions = compoundTextProperties.secondaryTextActions,
         navController = navController,
         resourceData = resourceData,
+        maxLines = compoundTextProperties.maxLines
       )
     }
   }
@@ -135,7 +138,8 @@ private fun CompoundTextPart(
   clickable: String,
   actions: List<ActionConfig>,
   navController: NavController,
-  resourceData: ResourceData
+  resourceData: ResourceData,
+  maxLines: Int? = null
 ) {
   Text(
     text = text.interpolate(resourceData.computedValuesMap).removeExtraWhiteSpaces(),
@@ -152,6 +156,8 @@ private fun CompoundTextPart(
         .padding(4.dp),
     fontSize = fontSize.sp,
     fontWeight = textFontWeight.fontWeight,
+    maxLines = maxLines ?: 99999,
+    overflow = TextOverflow.Ellipsis,
     textAlign =
       when (viewAlignment) {
         ViewAlignment.START -> TextAlign.Start

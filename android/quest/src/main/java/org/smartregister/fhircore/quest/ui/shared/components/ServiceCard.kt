@@ -604,6 +604,7 @@ private fun ServiceCardANCServiceOverduePreview() {
                     viewType = ViewType.COMPOUND_TEXT,
                     primaryText = "ANC service overdue overdue1 overdue2 overdue3",
                     primaryTextColor = "#000000",
+                    maxLines = 2
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,

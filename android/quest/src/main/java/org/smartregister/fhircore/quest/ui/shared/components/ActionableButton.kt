@@ -225,14 +225,20 @@ fun SmallActionableButtonPreview() {
   Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
       modifier = Modifier.weight(1.0f),
-      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = true, smallSized = true),
+      buttonProperties =
+        ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = true, smallSized = true),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
       buttonProperties =
-        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = true, smallSized = true),
+        ButtonProperties(
+          status = "COMPLETED",
+          text = "Completed Task",
+          fillMaxWidth = true,
+          smallSized = true
+        ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
