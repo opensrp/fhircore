@@ -41,6 +41,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.TextCase
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -48,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
@@ -82,6 +84,8 @@ fun CompoundText(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
         text = compoundTextProperties.primaryText ?: "",
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.primaryTextColor,
         backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -110,6 +114,8 @@ fun CompoundText(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
         text = compoundTextProperties.secondaryText ?: "",
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.secondaryTextColor,
         backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -130,7 +136,10 @@ private fun CompoundTextPart(
   modifier: Modifier,
   viewAlignment: ViewAlignment,
   text: String,
+  textCase: TextCase?,
+  maxLines: Int,
   textColor: String?,
+  colorOpacity: Float = 1f,
   backgroundColor: String?,
   borderRadius: Int,
   fontSize: Float,
@@ -141,9 +150,21 @@ private fun CompoundTextPart(
   resourceData: ResourceData,
   maxLines: Int? = null
 ) {
+  val interpolatedText = text.interpolate(resourceData.computedValuesMap)
   Text(
-    text = text.interpolate(resourceData.computedValuesMap).removeExtraWhiteSpaces(),
-    color = textColor?.interpolate(resourceData.computedValuesMap)?.parseColor() ?: DefaultColor,
+    text =
+      when (textCase) {
+        TextCase.UPPER_CASE -> interpolatedText.uppercase()
+        TextCase.LOWER_CASE -> interpolatedText.lowercase()
+        TextCase.CAMEL_CASE -> interpolatedText.camelCase()
+        null -> interpolatedText
+      }.removeExtraWhiteSpaces(),
+    color =
+      textColor
+        ?.interpolate(resourceData.computedValuesMap)
+        ?.parseColor()
+        ?.copy(alpha = colorOpacity)
+        ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier
         .wrapContentWidth(Alignment.Start)
@@ -164,7 +185,9 @@ private fun CompoundTextPart(
         ViewAlignment.END -> TextAlign.End
         ViewAlignment.CENTER -> TextAlign.Center
         else -> TextAlign.Start
-      }
+      },
+    maxLines = maxLines,
+    overflow = TextOverflow.Ellipsis
   )
 }
 
@@ -178,7 +201,8 @@ private fun CompoundTextNoSecondaryTextPreview() {
         CompoundTextProperties(
           primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
-          primaryTextFontWeight = TextFontWeight.SEMI_BOLD
+          primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
+          textCase = TextCase.UPPER_CASE
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController

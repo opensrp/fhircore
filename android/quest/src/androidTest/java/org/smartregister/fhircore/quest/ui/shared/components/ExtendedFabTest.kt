@@ -16,16 +16,15 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -62,7 +61,8 @@ class ExtendedFabTest {
             )
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
+        navController = navController,
+        lazyListState = rememberLazyListState()
       )
     }
   }
@@ -81,16 +81,6 @@ class ExtendedFabTest {
       .onNodeWithTag(FAB_BUTTON_ROW_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
-  }
-
-  @Test
-  @Ignore("Fix flaky test")
-  fun extendedFabButtonRendersRowTextCorrectly() {
-    composeRule
-      .onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeRule.onNodeWithText("FAB BUTTON").assertExists().assertIsDisplayed()
   }
 
   @Test

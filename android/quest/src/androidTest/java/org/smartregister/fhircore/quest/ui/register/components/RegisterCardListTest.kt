@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.register.components
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -36,6 +38,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 
 @HiltAndroidTest
 class RegisterCardListTest {
@@ -51,7 +54,11 @@ class RegisterCardListTest {
       RegisterCardList(
         registerCardConfig = mockk(),
         pagingItems = pagingItems,
-        navController = mockk()
+        navController = mockk(),
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
+        registerUiState = RegisterUiState(),
+        currentPage = mutableStateOf(1)
       )
     }
 
@@ -72,7 +79,11 @@ class RegisterCardListTest {
       RegisterCardList(
         registerCardConfig = config,
         pagingItems = pagingItems,
-        navController = mockk()
+        navController = mockk(),
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
+        registerUiState = RegisterUiState(),
+        currentPage = mutableStateOf(1)
       )
     }
 
