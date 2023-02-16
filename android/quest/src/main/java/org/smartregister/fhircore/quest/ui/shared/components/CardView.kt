@@ -74,7 +74,7 @@ fun CardView(
           .fillMaxWidth()
           .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
     ) {
-      Column(modifier = modifier.padding(16.dp)) {
+      Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
         ViewRenderer(
           viewProperties = viewProperties.content,
           resourceData = resourceData,

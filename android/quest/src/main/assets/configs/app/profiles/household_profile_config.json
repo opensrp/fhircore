@@ -202,9 +202,11 @@
         "fontSize": 18.0,
         "padding": 16
       },
+      "contentPadding": 0,
       "content": [
         {
           "viewType": "LIST",
+          "padding": 16,
           "resources": [
             {
               "id": "householdPatients",
