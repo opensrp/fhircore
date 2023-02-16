@@ -99,7 +99,7 @@ fun ServiceCard(
             serviceCardProperties.serviceButton == null &&
               serviceCardProperties.services.isNullOrEmpty(),
             { fillMaxWidth() },
-            { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) }
+            { weight(if (serviceCardProperties.showVerticalDivider) 0.6f else 0.5f) }
           )
           .conditional(
             serviceCardClickable,
@@ -158,7 +158,7 @@ fun ServiceCard(
     Box(
       modifier =
         modifier
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.45f else 0.5f)
           .padding(top = 12.dp, bottom = 12.dp),
       contentAlignment = Alignment.Center
     ) {
@@ -602,7 +602,7 @@ private fun ServiceCardANCServiceOverduePreview() {
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "ANC service overdue",
+                    primaryText = "ANC service overdue overdue1 overdue2 overdue3",
                     primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
@@ -625,7 +625,7 @@ private fun ServiceCardANCServiceOverduePreview() {
                   ButtonProperties(
                     visible = "true",
                     status = ServiceStatus.OVERDUE.name,
-                    text = "ANC Visit 2",
+                    text = "ANC Visit 2 skdfh sd sdf",
                     smallSized = true
                   )
                 )

@@ -58,13 +58,15 @@ import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
+const val MAX_CHARS = 16
 
 @Composable
 fun ActionableButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
+  shouldTruncateLargeText: Boolean = false
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
@@ -117,8 +119,14 @@ fun ActionableButton(
           else DefaultColor,
         modifier = Modifier.size(14.dp)
       )
+      val buttonText = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString()
+      val truncatedText =
+        if (buttonText.length > MAX_CHARS && shouldTruncateLargeText)
+          "${buttonText.substring(0, MAX_CHARS)}..."
+        else buttonText
+
       Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
+        text = truncatedText,
         fontWeight = FontWeight.Medium,
         color =
           if (buttonEnabled)
@@ -185,11 +193,12 @@ fun ActionableButtonPreview() {
       ButtonProperties(
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
-        text = "ANC Visit",
+        text = "ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit ANC Visit",
         smallSized = true,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
+    shouldTruncateLargeText = true
   )
 }
 
