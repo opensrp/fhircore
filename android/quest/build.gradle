@@ -178,10 +178,18 @@ android {
             versionName "0.0.1"
         }
 
-        sid {
+        bunda {
             dimension "apps"
-            applicationIdSuffix ".sid"
-            versionNameSuffix "-sid"
+            applicationIdSuffix ".bunda"
+            versionNameSuffix "-bunda"
+            versionCode 1
+            versionName "0.0.1"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
             versionCode 1
             versionName "0.0.1"
         }
