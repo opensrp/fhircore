@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -83,12 +84,10 @@ class ProfileScreenTest {
   @Test
   fun testFloatingActionButtonIsDisplayed() {
     // We wait for the text be drawn before we do the assertion
-    composeTestRule.waitUntilExists(hasText("ADD MEMBER"))
     composeTestRule.waitUntilExists(hasTestTag(FAB_BUTTON_TEST_TAG))
     composeTestRule
-      .onNodeWithText("ADD MEMBER", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
+      .onAllNodesWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
+      .assertCountEquals(3)
   }
 
   @Test
