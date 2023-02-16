@@ -195,23 +195,28 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Patient",
-              "relatedResources": [
+              "resources": [
                 {
-                  "resourceType": "CarePlan",
-                  "fhirPathExpression": "CarePlan.subject.reference"
-                },
-                {
-                  "resourceType": "Condition",
-                  "fhirPathExpression": "Condition.subject.reference"
-                },
-                {
-                  "resourceType": "Task",
-                  "fhirPathExpression": "Task.for.reference"
-                },
-                {
-                  "resourceType": "Observation",
-                  "fhirPathExpression": "Observation.subject.reference"
+                  "id": "householdPatients",
+                  "resourceType": "Patient",
+                  "relatedResources": [
+                    {
+                      "resourceType": "CarePlan",
+                      "fhirPathExpression": "CarePlan.subject.reference"
+                    },
+                    {
+                      "resourceType": "Condition",
+                      "fhirPathExpression": "Condition.subject.reference"
+                    },
+                    {
+                      "resourceType": "Task",
+                      "fhirPathExpression": "Task.for.reference"
+                    },
+                    {
+                      "resourceType": "Observation",
+                      "fhirPathExpression": "Observation.subject.reference"
+                    }
+                  ]
                 }
               ],
               "registerCard": {
@@ -339,7 +344,7 @@
                     "name": "getFamilyHeadStatus",
                     "condition": "true",
                     "actions": [
-                      "data.put('getFamilyHeadStatus', service.mapResourcesToLabeledCSV(RelatedPerson, \"RelatedPerson.relationship = '99990006'\", 'Family Head'))"
+                      "data.put('getFamilyHeadStatus', fhirPath.extractValue(service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0), 'relationship.coding.display'))"
                     ]
                   },
                   {
@@ -423,7 +428,7 @@
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', StringUtils:join([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient')], ', ').replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceFirst(\"^, \", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\").replaceAll(\", $\", \"\"))"
+                      "data.put('statuses', service.joinToString([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient'), data.get('getFamilyHeadStatus'), ...]))"
                     ]
                   }
                 ],

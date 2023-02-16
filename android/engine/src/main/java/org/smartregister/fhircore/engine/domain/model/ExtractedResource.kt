@@ -20,4 +20,8 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 
 @Serializable
-data class ExtractedResource(val resourceType: ResourceType, val fhirPathExpression: String)
+data class ExtractedResource(
+  val id: String? = null,
+  val resourceType: ResourceType,
+  val fhirPathExpression: String
+)
