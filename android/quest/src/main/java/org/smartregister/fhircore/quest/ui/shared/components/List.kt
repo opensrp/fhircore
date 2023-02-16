@@ -79,10 +79,6 @@ fun List(
           .background(
             viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
           )
-          .padding(
-            horizontal = viewProperties.padding.dp,
-            vertical = viewProperties.padding.div(4).dp
-          )
           .testTag(VERTICAL_ORIENTATION)
     ) {
       when (viewProperties.orientation) {
@@ -96,11 +92,19 @@ fun List(
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
+              Column(
+                modifier =
+                  Modifier.padding(
+                    horizontal = viewProperties.padding.dp,
+                    vertical = viewProperties.padding.div(4).dp
+                  )
+              ) {
+                ViewRenderer(
+                  viewProperties = viewProperties.registerCard.views,
+                  resourceData = listResourceData,
+                  navController = navController,
+                )
+              }
               Spacer(modifier = modifier.height(6.dp))
               if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
                 Divider(color = DividerColor, thickness = 0.5.dp)
