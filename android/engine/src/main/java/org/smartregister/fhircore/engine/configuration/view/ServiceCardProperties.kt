@@ -31,6 +31,7 @@ data class ServiceCardProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
+  override val visible: String = "true",
   val details: List<CompoundTextProperties> = emptyList(),
   val showVerticalDivider: Boolean = false,
   val serviceMemberIcons: String? = null,
