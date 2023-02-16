@@ -113,12 +113,12 @@ fun ServiceCard(
             }
           )
     ) {
-      // When show div
       Column(
         modifier =
           modifier
             .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f),
+        verticalArrangement = Arrangement.Center
       ) {
         serviceCardProperties.details.forEach {
           CompoundText(
@@ -187,7 +187,7 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
