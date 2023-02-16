@@ -35,5 +35,5 @@ data class RegisterConfiguration(
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
-  val pageSize: Int = 10 // Default, override this in the register_config json(s)
+  val pageSize: Int = 10
 ) : Configuration()
