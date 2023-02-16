@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,17 @@ data class ActionConfig(
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.map { Pair(it.key, it.value.interpolate(computedValuesMap)) }.forEach {
-        putString(it.first, it.second)
+      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
+        putString(it.key, it.value.interpolate(computedValuesMap))
       }
     }
 
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
+
+  companion object {
+    const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
+  }
 }
 
 @Serializable

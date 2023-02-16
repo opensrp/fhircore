@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -34,8 +35,23 @@ data class ListProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   val id: String = "listId",
-  val baseResource: ResourceType,
-  val relatedResources: List<ExtractedResource> = emptyList(),
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
+  val emptyList: NoResultsConfig? = null,
+  val orientation: ListOrientation = ListOrientation.VERTICAL,
+  val resources: List<ListResource> = emptyList()
 ) : ViewProperties()
+
+enum class ListOrientation {
+  VERTICAL,
+  HORIZONTAL
+}
+
+@Serializable
+data class ListResource(
+  val id: String,
+  val relatedResourceId: String? = null,
+  val resourceType: ResourceType,
+  val conditionalFhirPathExpression: String? = null,
+  val relatedResources: List<ExtractedResource> = emptyList()
+)
