@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,16 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
-val DividerColor = Color(0xFFdddddd)
+val DividerColor = Color(0xFFDDDDDD)
 val SubtitleTextColor = Color(0xFF7A7A7A)
 val GreyTextColor = Color(0xFF5A5A5A)
 val SuccessColor = Color(0xFF1DB11B)
-val DangerColor = Color(0xFFFF333F)
+val DangerColor = Color(0xFFDE0E1A)
 val InfoColor = Color(0xFF006EB8)
-val DefaultColor = Color(0xFF6F7274)
-val OverdueDarkRedColor = Color(0xFFDF0E1A)
-val OverdueLightColor = Color(0xFFF9CFD1)
-val WarningColor = Color(0xFFFFA500)
-val LoginBackgroundColor = Color(0xFF091D2B)
+val DefaultColor = Color(0xFF999999)
+val WarningColor = Color(0xFFFF8800)
 val LoginDarkColor = Color(0xFF272727)
 val LoginFieldBackgroundColor = Color(0xFF273844)
-val LoginButtonColor = Color(0xFF006EB8)
 val BlueTextColor = Color(0xFF006EB8)
 val LighterBlue = Color(0xFFE0F0FF)
 val ProgressBarBlueColor = Color(0xFF0075EB)
@@ -47,13 +43,11 @@ val ProfileBackgroundColor = Color(0xFFF2F4F7)
 val MenuActionButtonTextColor = Color(0xFF28B8F9)
 val MenuItemColor = Color(0xFFBFBFBF)
 val SearchHeaderColor = Color(0xFFF2F4F7)
-
 private val PrimaryColor = Color(0xFF005084)
 private val PrimaryVariantColor = Color(0xFF003D66)
-private val ErrorColor = Color(0xFFDD0000)
 
 val LightColors =
-  lightColors(primary = PrimaryColor, primaryVariant = PrimaryVariantColor, error = ErrorColor)
+  lightColors(primary = PrimaryColor, primaryVariant = PrimaryVariantColor, error = DangerColor)
 
 val DarkColors =
-  darkColors(primary = PrimaryColor, primaryVariant = PrimaryVariantColor, error = ErrorColor)
+  darkColors(primary = PrimaryColor, primaryVariant = PrimaryVariantColor, error = DangerColor)

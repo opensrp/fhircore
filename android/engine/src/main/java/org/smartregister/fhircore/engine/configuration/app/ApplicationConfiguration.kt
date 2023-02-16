@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,4 +35,5 @@ data class ApplicationConfiguration(
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",
   val taskExpireJobDuration: String = "PT01H",
+  val showLogo: Boolean = true
 ) : Configuration()

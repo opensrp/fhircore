@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ interface QuestionnaireHandler {
     context: Context,
     intentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,
-    computedValuesMap: Map<String, Any>?,
     actionParams: List<ActionParameter> = emptyList()
   ) {
     startForResult.launch(
@@ -42,7 +41,6 @@ interface QuestionnaireHandler {
         .putExtras(
           QuestionnaireActivity.intentArgs(
             questionnaireConfig = questionnaireConfig,
-            computedValuesMap = computedValuesMap,
             actionParams = actionParams
           )
         )

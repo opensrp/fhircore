@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,23 +203,18 @@ constructor(
     }
   }
 
-  suspend fun transitionTaskTo(id: String, status: TaskStatus) {
+  suspend fun transitionTaskTo(id: String, status: TaskStatus, reason: String? = null) {
     getTask(id)
       ?.apply {
         this.status = status
         this.lastModified = Date()
+        if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    getTask(id)
-      ?.apply {
-        this.status = TaskStatus.CANCELLED
-        this.lastModified = Date()
-        this.statusReason = CodeableConcept().apply { text = reason }
-      }
-      ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
+    transitionTaskTo(id, TaskStatus.CANCELLED, reason)
   }
 
   suspend fun getTask(id: String) =

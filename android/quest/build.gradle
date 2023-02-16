@@ -139,7 +139,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.6-rc1"
+            versionName "0.1.7-rc1"
         }
 
         g6pd {
@@ -269,7 +269,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.6.1-BUG-FIXES-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
     implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
         exclude group: 'xpp3'
@@ -309,7 +309,6 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestUtil 'androidx.test:orchestrator:1.4.2'
@@ -317,8 +316,8 @@ dependencies {
     androidTestImplementation deps.mockk_android
     androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
 
-//    debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+   // debugImplementation because LeakCanary should only run in debug builds.
+   // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
     testImplementation 'info.cqframework:cql-to-elm:2.2.0'
 }

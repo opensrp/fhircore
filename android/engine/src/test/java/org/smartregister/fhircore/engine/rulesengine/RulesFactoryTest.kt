@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,8 +151,8 @@ class RulesFactoryTest : RobolectricTest() {
     val result =
       rulesEngineService.retrieveRelatedResources(
         resource = populateTestPatient(),
-        relatedResourceType = ResourceType.CarePlan,
-        fhirPathExpression = "CarePlan.subject.reference"
+        relatedResourceKey = ResourceType.CarePlan.name,
+        referenceFhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
@@ -280,7 +280,8 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun filterResourceList() {
-    val fhirPathExpression = "Task.status"
+    val fhirPathExpression =
+      "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
     val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -291,16 +292,15 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertTrue(
       rulesEngineService.filterResources(
           resources = resources,
-          fhirPathExpression = fhirPathExpression,
-          value = "ready"
+          fhirPathExpression = fhirPathExpression
         )
-        .size == 1
+        .size == 2
     )
   }
 
   @Test
   fun fetchDescriptionFromReadyTasks() {
-    val fhirPathExpression = "Task.status"
+    val fhirPathExpression = "Task.status = 'ready'"
     val resources =
       listOf(
         Task().apply {
@@ -321,13 +321,15 @@ class RulesFactoryTest : RobolectricTest() {
         },
       )
 
-    val descriptionList = rulesEngineService.filterResources(resources, fhirPathExpression, "ready")
-    Assert.assertTrue((descriptionList.first() as Task).description == "plus")
+    val filteredTask = rulesEngineService.filterResources(resources, fhirPathExpression)
+    val descriptionList =
+      rulesEngineService.mapResourcesToExtractedValues(filteredTask, "Task.description")
+    Assert.assertTrue(descriptionList.first() == "plus")
   }
 
   @Test
   fun filterResourceListWithWrongExpression() {
-    val fhirPathExpression = "Task.status"
+    val fhirPathExpression = "Task.status = 'not ready'"
     val resources =
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
@@ -335,23 +337,64 @@ class RulesFactoryTest : RobolectricTest() {
         Task().apply { status = TaskStatus.CANCELLED }
       )
 
-    val results = rulesEngineService.filterResources(resources, fhirPathExpression, "ready")
+    val results = rulesEngineService.filterResources(resources, fhirPathExpression)
     Assert.assertTrue(results.isEmpty())
   }
 
   @Test
-  fun filterResourceListWithWrongAttributeValue() {
-    val fhirPathExpression = "Task.status"
+  fun pickNamesOfPatientFromCertainAge() {
+    val fhirPathExpression =
+      "(Patient.birthDate <= today() - 2 'years') and (Patient.birthDate >= today() - 4 'years')"
     val resources =
       listOf(
-        Task().apply { status = TaskStatus.COMPLETED },
-        Task().apply { status = TaskStatus.READY },
-        Task().apply { status = TaskStatus.CANCELLED }
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2019-10-03").toDate()
+          addName().apply { family = "rays" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2021-10-03").toDate()
+          addName().apply { family = "light" }
+        },
       )
 
-    Assert.assertTrue(
-      rulesEngineService.filterResources(resources, fhirPathExpression, "not ready").isEmpty()
-    )
+    val patientsList = rulesEngineService.filterResources(resources, fhirPathExpression)
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family")
+    Assert.assertTrue(names.isNotEmpty())
+  }
+
+  @Test
+  fun pickCodesFromCertainConditions() {
+    val resources =
+      listOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        }
+      )
+    val conditions =
+      rulesEngineService.filterResources(
+        resources,
+        "Condition.clinicalStatus.coding.display = 'Pregnant'"
+      )
+    val conditionIds = rulesEngineService.mapResourcesToExtractedValues(conditions, "Condition.id")
+    Assert.assertTrue(conditionIds.first() == "001")
   }
 
   @Test
@@ -417,7 +460,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun testFilterListShouldReturnMatchingResource() {
 
-    val listOfResources =
+    val resources =
       listOf(
         Condition().apply {
           id = "1"
@@ -429,7 +472,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterResources(listOfResources, "id", "2")
+    val result = rulesEngineService.filterResources(resources, "Condition.id = 2")
 
     Assert.assertTrue(result.size == 1)
     with(result.first() as Condition) {
@@ -450,7 +493,7 @@ class RulesFactoryTest : RobolectricTest() {
         }
       )
 
-    val result = rulesEngineService.filterResources(listOfResources, "unknown_field", "1")
+    val result = rulesEngineService.filterResources(listOfResources, "unknown_field")
 
     Assert.assertTrue(result.isEmpty())
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,9 +162,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
-    if (qrItems.isEmpty() || qItem.linkId != qrItems[index].linkId) {
+    if (qrItems.isEmpty() || (index < qrItems.size && qItem.linkId != qrItems[index].linkId)) {
       qrItems.add(index, qItem.createQuestionnaireResponseItem())
-    } else qItem.item.generateMissingItems(qrItems[index].item)
+    } else if (index < qrItems.size) {
+      qItem.item.generateMissingItems(qrItems[index].item)
+    }
   }
 }
 /**
@@ -178,7 +180,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly
+      item.readOnly = readOnly || item.readOnly
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly

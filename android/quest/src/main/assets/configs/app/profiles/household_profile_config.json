@@ -195,23 +195,28 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Patient",
-              "relatedResources": [
+              "resources": [
                 {
-                  "resourceType": "CarePlan",
-                  "fhirPathExpression": "CarePlan.subject.reference"
-                },
-                {
-                  "resourceType": "Condition",
-                  "fhirPathExpression": "Condition.subject.reference"
-                },
-                {
-                  "resourceType": "Task",
-                  "fhirPathExpression": "Task.for.reference"
-                },
-                {
-                  "resourceType": "Observation",
-                  "fhirPathExpression": "Observation.subject.reference"
+                  "id": "householdPatients",
+                  "resourceType": "Patient",
+                  "relatedResources": [
+                    {
+                      "resourceType": "CarePlan",
+                      "fhirPathExpression": "CarePlan.subject.reference"
+                    },
+                    {
+                      "resourceType": "Condition",
+                      "fhirPathExpression": "Condition.subject.reference"
+                    },
+                    {
+                      "resourceType": "Task",
+                      "fhirPathExpression": "Task.for.reference"
+                    },
+                    {
+                      "resourceType": "Observation",
+                      "fhirPathExpression": "Observation.subject.reference"
+                    }
+                  ]
                 }
               ],
               "registerCard": {
@@ -409,7 +414,7 @@
                     "name": "removalReason",
                     "condition": "true",
                     "actions": [
-                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code', '11112222').get(0), 'Observation.value.text'))"
+                      "data.put('removalReason', fhirPath.extractValue(service.filterResources(Observation, 'Observation.code.coding.code=\"11112222\"').get(0), 'Observation.value.text'))"
                     ]
                   },
                   {
@@ -530,6 +535,8 @@
     {
       "title": "Remove family",
       "titleColor": "#FF0000",
+      "backgroundColor": "dangerColor",
+      "confirmAction": true,
       "visible": "true",
       "showSeparator": "true",
       "actions": [
