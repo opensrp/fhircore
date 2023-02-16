@@ -210,8 +210,6 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     }
   }
 
-
-
   @Test
   fun testViewIsVisibleReturnsCorrectValue() {
     val computedValuesMap = mapOf("visible" to "true", "invisible" to "false")

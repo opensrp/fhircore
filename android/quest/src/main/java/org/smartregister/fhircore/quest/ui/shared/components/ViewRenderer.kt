@@ -50,7 +50,7 @@ fun ViewRenderer(
   navController: NavController
 ) {
   viewProperties.forEach { properties ->
-    if (properties.isVisible(resourceData.computedValuesMap)){
+    if (properties.isVisible(resourceData.computedValuesMap)) {
       GenerateView(
         modifier = generateModifier(properties),
         properties = properties,
