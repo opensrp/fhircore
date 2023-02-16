@@ -79,11 +79,18 @@ fun CompoundText(
             .parseColor()
         )
   ) {
-    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
+    val interpolatedPrimaryText =
+      compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSecondaryText =
+      compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSeparator =
+      compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
+
+    if (!interpolatedPrimaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.primaryText ?: "",
+        text = interpolatedPrimaryText,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.primaryTextColor,
@@ -98,21 +105,21 @@ fun CompoundText(
       )
     }
     // Separate the primary and secondary text
-    if (!compoundTextProperties.separator.isNullOrEmpty()) {
+    if (!interpolatedSeparator.isNullOrEmpty()) {
       Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
         Text(
-          text = compoundTextProperties.separator ?: "-",
+          text = interpolatedSeparator,
           fontSize = compoundTextProperties.fontSize.sp,
           color = DefaultColor,
           textAlign = TextAlign.Center
         )
       }
     }
-    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
+    if (!interpolatedSecondaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.secondaryText ?: "",
+        text = interpolatedSecondaryText,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.secondaryTextColor,
@@ -147,14 +154,13 @@ private fun CompoundTextPart(
   navController: NavController,
   resourceData: ResourceData
 ) {
-  val interpolatedText = text.interpolate(resourceData.computedValuesMap)
   Text(
     text =
       when (textCase) {
-        TextCase.UPPER_CASE -> interpolatedText.uppercase()
-        TextCase.LOWER_CASE -> interpolatedText.lowercase()
-        TextCase.CAMEL_CASE -> interpolatedText.camelCase()
-        null -> interpolatedText
+        TextCase.UPPER_CASE -> text.uppercase()
+        TextCase.LOWER_CASE -> text.lowercase()
+        TextCase.CAMEL_CASE -> text.camelCase()
+        null -> text
       }.removeExtraWhiteSpaces(),
     color =
       textColor

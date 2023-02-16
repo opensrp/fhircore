@@ -245,6 +245,14 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
+        .clickable {
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
+        }
         .width(140.dp)
         .height(80.dp)
         .padding(8.dp)
@@ -256,15 +264,7 @@ private fun BigServiceButton(
         )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        )
-        .clickable {
-          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
-        },
+        ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
