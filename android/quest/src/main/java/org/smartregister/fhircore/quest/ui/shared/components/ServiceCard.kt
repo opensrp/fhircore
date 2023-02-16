@@ -147,8 +147,7 @@ fun ServiceCard(
     } else {
       ServiceMemberIcons(
         serviceMemberIcons =
-          serviceCardProperties
-            .serviceMemberIcons
+          serviceCardProperties.serviceMemberIcons
             ?.replace("\\s+".toRegex(), "")
             ?.interpolate(resourceData.computedValuesMap)
       )
@@ -164,7 +163,8 @@ fun ServiceCard(
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
-        if (serviceCardProperties.serviceButton != null &&
+        if (
+          serviceCardProperties.serviceButton != null &&
             serviceCardProperties.serviceButton!!
               .visible
               .interpolate(resourceData.computedValuesMap)
@@ -173,7 +173,7 @@ fun ServiceCard(
           if (serviceCardProperties.serviceButton!!.smallSized) {
             Column {
               ActionableButton(
-                buttonProperties = serviceCardProperties.serviceButton!!,
+                buttonProperties = serviceCardProperties.serviceButton!!.copy(smallSized = true),
                 navController = navController,
                 resourceData = resourceData
               )
@@ -222,7 +222,9 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
         Box(
           contentAlignment = Alignment.Center,
           modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
-        ) { Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray) }
+        ) {
+          Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray)
+        }
       }
     }
   }

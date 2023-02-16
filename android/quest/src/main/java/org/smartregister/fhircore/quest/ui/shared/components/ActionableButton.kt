@@ -115,7 +115,7 @@ fun ActionableButton(
               else -> statusColor
             }
           else DefaultColor,
-        modifier = Modifier.size(14.dp)
+        modifier = Modifier.size(16.dp)
       )
       Text(
         text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
@@ -129,9 +129,9 @@ fun ActionableButton(
           else DefaultColor.copy(0.9f),
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
-        maxLines = 2,
+        maxLines = 1,
         modifier =
-          Modifier.padding(horizontal = 4.dp)
+          Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             .conditional(status == ServiceStatus.COMPLETED, { weight(1f) }),
         fontSize = buttonProperties.fontSize.sp
       )
