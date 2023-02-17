@@ -68,7 +68,12 @@ constructor(
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
       }
-      .count { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
+      .count {
+        it.status == Appointment.AppointmentStatus.BOOKED &&
+          it.hasStart() &&
+          it.patientRef() != null &&
+          it.practitionerRef() != null
+      }
       .toLong()
   }
 
@@ -85,7 +90,12 @@ constructor(
       }
 
     return appointments
-      .filter { it.hasStart() && it.patientRef() != null && it.practitionerRef() != null }
+      .filter {
+        it.status == Appointment.AppointmentStatus.BOOKED &&
+          it.hasStart() &&
+          it.patientRef() != null &&
+          it.practitionerRef() != null
+      }
       .map {
         val refPatient = it.patientRef()!!
         val patient = defaultRepository.loadResource(refPatient) as Patient

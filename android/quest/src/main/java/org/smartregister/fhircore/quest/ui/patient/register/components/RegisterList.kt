@@ -89,7 +89,9 @@ fun BoxedCircularProgressBar(progressMessage: String) {
 @Composable
 fun RegisterRowItem(registerViewData: RegisterViewData, onRowClick: (String) -> Unit) {
   when (registerViewData.registerType) {
-    RegisterData.HivRegisterData::class, RegisterData.TracingRegisterData::class -> {
+    RegisterData.HivRegisterData::class,
+    RegisterData.TracingRegisterData::class,
+    RegisterData.AppointmentRegisterData::class -> {
       HivPatientRegisterListRow(data = registerViewData, onItemClick = onRowClick)
     }
     else -> {
