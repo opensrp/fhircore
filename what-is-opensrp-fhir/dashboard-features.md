@@ -1,7 +1,7 @@
 ---
 description: >-
-  The main features of the OpenSRP FHIR Dashboard, which is used by health
-  officials, surveillance officers, and system administrators.
+  Features of the OpenSRP Dashboard, used by health officials and health system
+  administrators.
 ---
 
 # Dashboard features
@@ -16,7 +16,7 @@ The primary function of the dashboard is to drive feedback loops for people who 
 
 > Indicator definition
 
-### What is the purpose of OpenSRP FHIR reports?
+### What is the purpose of OpenSRP reports?
 
 \<what they are used for... this opportunity to push clients to show information used for a purpose in line with data this app is meant to collect>
 
@@ -32,35 +32,23 @@ The primary function of the dashboard is to drive feedback loops for people who 
 
 [https://docs.communityhealthtoolkit.org/apps/features/reports/](https://docs.communityhealthtoolkit.org/apps/features/reports/), [https://docs.simple.org/readme/dashboard-features#reports](https://docs.simple.org/readme/dashboard-features#reports),&#x20;
 
-### Interoperability
-
-## Facility health record system
-
-Another section of the Dashboard is used by facility health workers to track and record patient health services.
-
-## Drug stock
-
-OpenSRP can be used to track drug stock...
-
-Dashboard views
-
 ## Administrative tools
 
-### Create OpenSRP FHIR app users
+### Create practitioners
 
-\<what the OpenSRP FHIR app users are and how they are created>
+Enroll practitioners to use OpenSRP by capturing basic details such as name and username, then assigning roles and access permissions.
 
-\<benefits to this approach>
+### Manage locations
 
-### Facilities, districts, and blocks
+Add and edit locations based on the health system's prebuilt location hierarchy (the hierarchy is defined when the dashboard is initially set up and is not editable). Locations include name, the parent location, status (active or inactive), and type (jurisdiction or building).
 
-\<why and what>
+### Manage care teams
 
-### Dashboard admins & permissions
+A care team is a collection of practitioners that conduct similar activities. OpenSRP Dashboard allows the ability to create a care team, add teams to an organization, mark the care team as active or inactive, and add practitioners to a care team.&#x20;
 
-Dashboard admins can have different levels of permissions. Admins can add new admins. New admins are given permission to view or manage a set of facilities and can have permissions such as:
+It is required to assign care teams to locations. We assign caregiving practitioners to care teams, these care teams are assigned a managing organization. The Organization is the team. Organizations are then assigned to locations.
 
-* **Role.** permission
-* **Role.** permission
-* **Role.** permission
-* **Role.** permission
+### Manage and assign teams
+
+Practitioners work at locations such as health facilities. Team assignment ensures navigation through the hierarchy of a country to the location where a team is to be assigned and assigning a team to a location.
+
