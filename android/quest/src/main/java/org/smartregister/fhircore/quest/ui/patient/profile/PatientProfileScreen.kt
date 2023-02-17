@@ -118,7 +118,7 @@ fun PatientProfileScreen(
                 )
               }
             ) {
-              Text(text = "Tracing Stuff") //
+              Text(text = "Tr/App Debug") //
             }
             viewState.visibleOverflowMenuItems().forEach {
               DropdownMenuItem(

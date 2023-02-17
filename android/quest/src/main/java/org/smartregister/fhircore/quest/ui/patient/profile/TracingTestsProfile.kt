@@ -71,7 +71,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
               Icon(Icons.Default.ArrowBack, contentDescription = "")
             }
           },
-          title = { Text(text = "Tracing Stuff") }
+          title = { Text(text = "Tracing and Appointments Debug") }
         )
       },
       bottomBar = {
