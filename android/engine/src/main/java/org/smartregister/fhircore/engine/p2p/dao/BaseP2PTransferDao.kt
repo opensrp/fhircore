@@ -24,6 +24,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
@@ -38,6 +39,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.sync.DataType
+import timber.log.Timber
 
 open class BaseP2PTransferDao
 constructor(
@@ -90,6 +92,7 @@ constructor(
     offset: Int,
     classType: Class<out Resource>
   ): List<Resource> {
+    Timber.e("loadResources() before dispatcher")
     return withContext(dispatcherProvider.io()) {
       // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
 
@@ -113,7 +116,8 @@ constructor(
 
       fhirEngine.search(searchQuery)*/
 
-      val search =
+      Timber.e("loadResources() after dispatcher")
+      /*val search =
         Search(type = classType.newInstance().resourceType).apply {
           filter(
             DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
@@ -126,8 +130,32 @@ constructor(
           sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
           from = offset
           count = batchSize
-        }
-      fhirEngine.search(search)
+        }*/
+
+      Timber.e("loadResources starting search")
+      //fhirEngine.search(search)
+
+      val searchQuery =
+        SearchQuery(
+          """
+            SELECT a.serializedResource
+            FROM ResourceEntity a
+            LEFT JOIN DateTimeIndexEntity c
+            ON a.resourceUuid = c.resourceUuid
+            WHERE a.resourceUuid IN (
+            SELECT resourceUuid FROM DateTimeIndexEntity
+            WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ? ORDER BY index_from ASC, id ASC LIMIT ? OFFSET ?
+            )
+            AND (
+            c.index_name = "_lastUpdated")
+            ORDER BY 
+            c.index_from ASC, a.id ASC
+            LIMIT ? OFFSET ?
+          """.trimIndent(),
+          listOf(lastRecordUpdatedAt, batchSize, offset, batchSize, offset)
+        )
+
+      fhirEngine.search(searchQuery)
     }
   }
 
