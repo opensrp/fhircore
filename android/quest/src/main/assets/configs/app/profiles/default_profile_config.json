@@ -1,5 +1,5 @@
 {
-  "appId": "app",
+  "appId": "cha",
   "configType": "profile",
   "id": "defaultProfile",
   "fhirResource": {
@@ -195,24 +195,24 @@
       ]
     },
     {
-      "name": "latestObservations",
+      "name": "aaLatestObservations",
       "condition": "true",
       "actions": [
-        "data.put('latestObservations', service.filterResources(stockObservations, \"Observation.status = 'preliminary'\"))"
+        "data.put('aaLatestObservations', service.filterResources(stockObservations, \"Observation.status = 'preliminary'\"))"
       ]
     },
     {
-      "name": "activeFlags",
+      "name": "aaActiveFlags",
       "condition": "true",
       "actions": [
-        "data.put('activeFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
+        "data.put('aaActiveFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
       ]
     },
     {
       "name": "maleCondomObservation",
       "condition": "true",
       "actions": [
-        "data.put('maleCondomObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76'\").get(0) )"
+        "data.put('maleCondomObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76'\").get(0) )"
       ]
     },
     {
@@ -233,14 +233,14 @@
       "name": "maleCondomStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('maleCondomStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('maleCondomStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "femaleCondomObservation",
       "condition": "true",
       "actions": [
-        "data.put('femaleCondomObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc'\").get(0) )"
+        "data.put('femaleCondomObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc'\").get(0) )"
       ]
     },
     {
@@ -261,14 +261,14 @@
       "name": "femaleCondomStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('femaleCondomStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('femaleCondomStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "mnpObservation",
       "condition": "true",
       "actions": [
-        "data.put('mnpObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0) )"
+        "data.put('mnpObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0) )"
       ]
     },
     {
@@ -289,14 +289,14 @@
       "name": "mnpStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('mnpStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('mnpStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "albendazole400mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('albendazole400mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0) )"
+        "data.put('albendazole400mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/6f3980e0-d1d6-4a7a-a950-939f3ca7b301'\").get(0) )"
       ]
     },
     {
@@ -317,14 +317,14 @@
       "name": "albendazole400mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('albendazole400mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('albendazole400mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/6f3980e0-d1d6-4a7a-a950-939f3ca7b301'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "microgynonObservation",
       "condition": "true",
       "actions": [
-        "data.put('microgynonObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c'\").get(0) )"
+        "data.put('microgynonObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c'\").get(0) )"
       ]
     },
     {
@@ -345,14 +345,14 @@
       "name": "microgynonStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('microgynonStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('microgynonStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "microlutObservation",
       "condition": "true",
       "actions": [
-        "data.put('microlutObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681'\").get(0) )"
+        "data.put('microlutObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681'\").get(0) )"
       ]
     },
     {
@@ -373,14 +373,14 @@
       "name": "microlutStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('microlutStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('microlutStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "sayanaPressObservation",
       "condition": "true",
       "actions": [
-        "data.put('sayanaPressObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546'\").get(0) )"
+        "data.put('sayanaPressObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546'\").get(0) )"
       ]
     },
     {
@@ -401,14 +401,14 @@
       "name": "sayanaPressStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('sayanaPressStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('sayanaPressStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "amoxicillin250mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0) )"
+        "data.put('amoxicillin250mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0) )"
       ]
     },
     {
@@ -429,14 +429,14 @@
       "name": "amoxicillin250mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('amoxicillin250mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "amoxicillin250mg2TabletsObservation",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mg2TabletsObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0) )"
+        "data.put('amoxicillin250mg2TabletsObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0) )"
       ]
     },
     {
@@ -457,14 +457,14 @@
       "name": "amoxicillin250mg2TabletsStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('amoxicillin250mg2TabletsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('amoxicillin250mg2TabletsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/e50eb835-7827-4001-b233-e1dda721d4e8'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "artemetherLumefatrine1x6Observation",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine1x6Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'\").get(0) )"
+        "data.put('artemetherLumefatrine1x6Observation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'\").get(0) )"
       ]
     },
     {
@@ -485,14 +485,14 @@
       "name": "artemetherLumefatrine1x6StockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine1x6StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('artemetherLumefatrine1x6StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/90b10fdb-592c-47b6-a265-c8806a15d77c'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "artemetherLumefatrine2x6Observation",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine2x6Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'\").get(0) )"
+        "data.put('artemetherLumefatrine2x6Observation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'\").get(0) )"
       ]
     },
     {
@@ -513,14 +513,14 @@
       "name": "artemetherLumefatrine2x6StockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('artemetherLumefatrine2x6StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('artemetherLumefatrine2x6StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "as25mg-aq67-5mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('as25mg-aq67-5mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
       ]
     },
     {
@@ -541,14 +541,14 @@
       "name": "as25mg-aq67-5mg2MonthsStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mg2MonthsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('as25mg-aq67-5mg2MonthsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "as25mg-aq67-5mg2MonthsObservation",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mg2MonthsObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('as25mg-aq67-5mg2MonthsObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
       ]
     },
     {
@@ -569,14 +569,14 @@
       "name": "as25mg-aq67-5mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('as25mg-aq67-5mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('as25mg-aq67-5mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "as50mg-aq135mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('as50mg-aq135mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('as50mg-aq135mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4'\").get(0) )"
       ]
     },
     {
@@ -597,14 +597,14 @@
       "name": "as50mg-aq135mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('as50mg-aq135mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('as50mg-aq135mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "artesunate100mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('artesunate100mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0) )"
       ]
     },
     {
@@ -625,14 +625,14 @@
       "name": "artesunate100mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('artesunate100mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "artesunate100mg2tabletsObservation",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mg2tabletsObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('artesunate100mg2tabletsObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0) )"
       ]
     },
     {
@@ -653,14 +653,14 @@
       "name": "artesunate100mgtabletsStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('artesunate100mgtabletsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('artesunate100mgtabletsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/592181bc-0a68-47bc-8275-ac853bba1b09'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "orsObservation",
       "condition": "true",
       "actions": [
-        "data.put('orsObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('orsObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0) )"
       ]
     },
     {
@@ -681,14 +681,14 @@
       "name": "orsStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('orsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('orsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "ors3SacketsObservation",
       "condition": "true",
       "actions": [
-        "data.put('ors3SacketsObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('ors3SacketsObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0) )"
       ]
     },
     {
@@ -709,14 +709,14 @@
       "name": "ors3SacketsStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('ors3SacketsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('ors3SacketsStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/6a59c142-1c87-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "zincSulphate10mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate10mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('zincSulphate10mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002'\").get(0) )"
       ]
     },
     {
@@ -737,14 +737,14 @@
       "name": "zincSulphate10mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate10mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('zincSulphate10mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "zincSulphate20mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate20mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('zincSulphate20mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/6815d390-1c8b-11ed-861d-0242ac120002'\").get(0) )"
       ]
     },
     {
@@ -765,14 +765,14 @@
       "name": "zincSulphate20mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('zincSulphate20mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/6815d390-1c8b-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('zincSulphate20mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/6815d390-1c8b-11ed-861d-0242ac120002'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "paracetamol100mgObservation",
       "condition": "true",
       "actions": [
-        "data.put('paracetamol100mgObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('paracetamol100mgObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/567ec5f2-db90-4fac-b578-6e07df3f48de'\").get(0) )"
       ]
     },
     {
@@ -793,14 +793,14 @@
       "name": "paracetamol100mgStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('paracetamol100mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/567ec5f2-db90-4fac-b578-6e07df3f48de'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('paracetamol100mgStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/567ec5f2-db90-4fac-b578-6e07df3f48de'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     },
     {
       "name": "rdtObservation",
       "condition": "true",
       "actions": [
-        "data.put('rdtObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b339a63b-84db-45e8-b357-7fcce3bddc34'\").get(0) )"
+        "data.put('rdtObservation', service.filterResources(data.get('aaLatestObservations'), \"Observation.subject.reference = 'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'\").get(0) )"
       ]
     },
     {
@@ -821,7 +821,7 @@
       "name": "rdtStockOutFlagId",
       "condition": "true",
       "actions": [
-        "data.put('rdtStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        "data.put('rdtStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('aaActiveFlags'), \"Flag.subject.reference = 'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     }
   ],
@@ -844,7 +844,7 @@
                 {
                   "viewType": "LIST",
                   "id": "statusList",
-                  "listResource": "Condition",
+                  "baseResource": "Condition",
                   "orientation": "HORIZONTAL",
                   "emptyList": {
                     "message": ""
@@ -870,7 +870,8 @@
                         "borderRadius": 6
                       }
                     ]
-                  }},
+                  }
+                },
                 {
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "ID: #@{patientIdentifier}",
@@ -951,7 +952,7 @@
                   "id": "availableTask",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+                  "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed' or Task.status = 'requested') and (Task.code.empty()))"
                 }
               ],
               "emptyList": {
@@ -1053,6 +1054,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1172,6 +1174,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1291,6 +1294,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1410,6 +1414,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1529,6 +1534,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1648,6 +1654,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1767,6 +1774,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1886,6 +1894,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -2072,6 +2081,27 @@
             },
             {
               "paramType": "PREPOPULATE",
+              "linkId": "da3a03fa-dc1a-479a-9bac-557a03e03bc7",
+              "dataType": "INTEGER",
+              "key": "artemetherLumefatrine1x6PreviousBalancePage2",
+              "value": "@{artemetherLumefatrine1x6PreviousBalance}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "8a3806e1-323e-48dc-99ca-9555f5e8051a",
+              "dataType": "STRING",
+              "key": "artemetherLumefatrine1x6ObservationIdPage2",
+              "value": "@{artemetherLumefatrine1x6ObservationId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "9cf1515b-a7b9-4253-9050-22592661eff5",
+              "dataType": "STRING",
+              "key": "artemetherLumefatrine1x6StockOutFlagIdPage2",
+              "value": "@{artemetherLumefatrine1x6StockOutFlagId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
               "linkId": "688e8eeb-068b-40d7-97a2-ac434855ee4f",
               "dataType": "INTEGER",
               "key": "artemetherLumefatrine2x6PreviousBalance",
@@ -2219,6 +2249,48 @@
             },
             {
               "paramType": "PREPOPULATE",
+              "linkId": "71e7a42c-00a8-467f-bb05-43d0078d5af8",
+              "dataType": "INTEGER",
+              "key": "amoxicillin250mgPreviousBalancePneomonia",
+              "value": "@{amoxicillin250mgPreviousBalance}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "8241e4ac-db83-49a4-bdb7-95fc6c5a2110",
+              "dataType": "STRING",
+              "key": "amoxicillin250mgObservationIdPneomonia",
+              "value": "@{amoxicillin250mgObservationId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "810e0b66-7fdf-4c74-bba9-25286dbfb9dc",
+              "dataType": "STRING",
+              "key": "amoxicillin250mgStockOutFlagIdPneomonia",
+              "value": "@{amoxicillin250mgStockOutFlagId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "49c80c12-65e1-44ea-844b-0da9af87e6a6",
+              "dataType": "INTEGER",
+              "key": "amoxicillin250mg2TabletsPreviousBalancePneomonia",
+              "value": "@{amoxicillin250mg2TabletsPreviousBalance}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "b3105315-2045-455a-8709-4b74b29f714b",
+              "dataType": "STRING",
+              "key": "amoxicillin250mg2TabletsObservationIdPneomonia",
+              "value": "@{amoxicillin250mg2TabletsObservationId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "80859bac-05cf-4087-8689-d8b1b6614f99",
+              "dataType": "STRING",
+              "key": "amoxicillin250mg2TabletsStockOutFlagIdPneomonia",
+              "value": "@{amoxicillin250mg2TabletsStockOutFlagId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
               "linkId": "216147dd-72fa-43eb-811f-bd8bb0e9f26c",
               "dataType": "INTEGER",
               "key": "orsPreviousBalance",
@@ -2226,14 +2298,14 @@
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "9ce85751-8403-49fd-b1b1-552449cf252b",
+              "linkId": "8afce0d8-a7cc-4454-9534-289c6ceb97f0",
               "dataType": "STRING",
               "key": "orsObservationId",
               "value": "@{orsObservationId}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "8afce0d8-a7cc-4454-9534-289c6ceb97f0",
+              "linkId": "9ce85751-8403-49fd-b1b1-552449cf252b",
               "dataType": "STRING",
               "key": "orsStockOutFlagId",
               "value": "@{orsStockOutFlagId}"
@@ -2345,42 +2417,63 @@
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "927f0a45-2e37-4f8b-8608-005b266ca961",
+              "linkId": "8f62fce7-6a78-460b-9a5b-6feae7aa1818",
               "dataType": "INTEGER",
-              "key": "zincSulphate10mgPreviousBalance",
+              "key": "zincSulphate10mgPreviousBalance20Tabs",
               "value": "@{zincSulphate10mgPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "37bbf711-8f65-4244-b75d-9d5e9f76c501",
+              "linkId": "8304199b-a549-440b-b3c6-e132d2e7a20f",
               "dataType": "STRING",
-              "key": "zincSulphate10mgObservationId",
+              "key": "zincSulphate10mgObservationId20Tabs",
               "value": "@{zincSulphate10mgObservationId}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "7d33a5c2-53f5-44ac-8ccb-b162d2d6db2c",
+              "linkId": "67f81318-5940-412e-8de9-8b9dd8cbafbd",
               "dataType": "STRING",
-              "key": "zincSulphate10mgStockOutFlagId",
+              "key": "zincSulphate10mgStockOutFlagId20Tabs",
               "value": "@{zincSulphate10mgStockOutFlagId}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "8f62fce7-6a78-460b-9a5b-6feae7aa1818",
+              "linkId": "3f189686-0af2-44ec-bcf8-a6cfa42c553f",
+              "dataType": "INTEGER",
+              "key": "zincSulphate10mgPreviousBalance10Tabs",
+              "value": "@{zincSulphate10mgPreviousBalance}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "13cda66b-0a66-4708-983a-4fd193471a1d",
+              "dataType": "STRING",
+              "key": "zincSulphate10mgObservationId10Tabs",
+              "value": "@{zincSulphate10mgObservationId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "50ae608c-f3d9-4324-8866-c29459083df9",
+              "dataType": "STRING",
+              "key": "zincSulphate10mgStockOutFlagId10Tabs",
+              "value": "@{zincSulphate10mgStockOutFlagId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "927f0a45-2e37-4f8b-8608-005b266ca961",
               "dataType": "INTEGER",
               "key": "zincSulphate20mgPreviousBalance",
               "value": "@{zincSulphate20mgPreviousBalance}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "8304199b-a549-440b-b3c6-e132d2e7a20f",
+              "linkId": "37bbf711-8f65-4244-b75d-9d5e9f76c501",
               "dataType": "STRING",
               "key": "zincSulphate20mgObservationId",
               "value": "@{zincSulphate20mgObservationId}"
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "67f81318-5940-412e-8de9-8b9dd8cbafbd",
+              "linkId": "7d33a5c2-53f5-44ac-8ccb-b162d2d6db2c",
               "dataType": "STRING",
               "key": "zincSulphate20mgStockOutFlagId",
               "value": "@{zincSulphate20mgStockOutFlagId}"
