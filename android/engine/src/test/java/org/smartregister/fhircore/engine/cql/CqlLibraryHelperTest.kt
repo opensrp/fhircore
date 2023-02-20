@@ -25,9 +25,9 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
+import java.io.ByteArrayInputStream
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
-import java.io.ByteArrayInputStream
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before

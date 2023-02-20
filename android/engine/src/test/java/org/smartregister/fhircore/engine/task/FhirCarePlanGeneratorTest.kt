@@ -38,6 +38,9 @@ import java.time.LocalDate
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
@@ -72,7 +75,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.formatDate
-import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -574,155 +576,191 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun testGenerateCarePlanForANCVisit() = runTest {
-    val plandefinition =
-      "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
+  fun `generateOrUpdateCarePlan should generate full careplan for 8 visits when lmp is today`() =
+      runTest {
+    val planDefinitionResources = loadPlanDefinitionResources("anc-visit")
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponse = planDefinitionResources.questionnaireResponse
+    val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    val patient =
-      "plans/anc-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
-
-    val questionnaireResponse =
-      "plans/anc-visit/sample/questionnaire-response-register.json"
-        .readFile()
-        .decodeResourceFromString<QuestionnaireResponse>()
-
-    // start of plan is lmp date | set lmp date to 4 months , and 15th of month
-    val lmp = Date().plusMonths(-4).apply { date = 15 }
+    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+    val lmp = Date() // .plusMonths(-4).plusDays(9)
 
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
 
-    val structureMapRegister =
-      structureMapUtilities.parse(
-          "plans/anc-visit/structure-map-register.txt".readFile(),
-          "ANCCarePlan"
-        )
-        .also { println(it.encodeResourceToString()) }
-
-    val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
-        .also { println(it.encodeResourceToString()) }
-
-    val resourcesSlot = mutableListOf<Resource>()
-    val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
-      emptyList()
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-    coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
-    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
-
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        plandefinition,
+        planDefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
-        Assert.assertNotNull(UUID.fromString(carePlan.id))
-        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
-        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
-        Assert.assertEquals("ANC Follow Up Plan", carePlan.title)
-        Assert.assertEquals(
-          "This defines the schedule of care for pregnant women",
-          carePlan.description
-        )
-        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
-        Assert.assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
-        Assert.assertEquals(
-          patient.generalPractitionerFirstRep.extractId(),
-          carePlan.author.extractId()
-        )
+        assertNotNull(UUID.fromString(carePlan.id))
+        assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        assertEquals("ANC Follow Up Plan", carePlan.title)
+        assertEquals("This defines the schedule of care for pregnant women", carePlan.description)
+        assertEquals(patient.logicalId, carePlan.subject.extractId())
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
 
-        Assert.assertEquals(
-          questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!
-            .answer
-            .first()
-            .valueDateType
-            .value
-            .makeItReadable(),
+        assertEquals(
+          questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answerFirstRep
+            .valueDateType.value.makeItReadable(),
           lmp.makeItReadable()
         )
-        Assert.assertEquals(
-          lmp.plusMonths(9).makeItReadable(),
-          carePlan.period.end.makeItReadable()
-        )
-        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        Assert.assertEquals(
-          6,
-          carePlan.activityFirstRep.outcomeReference.size
-        ) // 6 visits as 4th month is passing (15th day) as per lmp
+        assertEquals(lmp.plusMonths(9).makeItReadable(), carePlan.period.end.makeItReadable())
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
-        val careplan = resourcesSlot.first() as CarePlan
+        assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        assertEquals(8, carePlan.activityFirstRep.outcomeReference.size) // 8 visits and tasks
+
+        assertTrue(resourcesSlot.first() is CarePlan)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
-          .also { Assert.assertEquals(7, it.size) } // 6 for visit, 1 for referral
+          .also { assertEquals(9, it.size) } // 8 for visit, 1 for referral
           .also {
-            Assert.assertTrue(it.all { it.status == TaskStatus.READY })
-            Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+            assertTrue(it.all { it.status == TaskStatus.READY })
+            assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
-          .also { tasks ->
-            tasks.take(6).run {
-              Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
-              Assert.assertTrue(
-                this.all {
-                  it.executionPeriod.end.asYyyyMmDd() ==
-                    it.executionPeriod.start.lastDayOfMonth().asYyyyMmDd()
-                }
-              )
-              Assert.assertTrue(
-                this.all { it.basedOn.first().reference == careplan.asReference().reference }
-              )
-            }
-          }
+          // last task is referral
           .also {
             it.last().let { task ->
-              Assert.assertTrue(task.reasonReference.reference == "Questionnaire/132049")
-              Assert.assertTrue(
-                task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd()
+              assertTrue(task.reasonReference.reference == "Questionnaire/132049")
+              assertTrue(task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd())
+            }
+          }
+          // first 8 tasks are anc visit for each month start
+          .take(8)
+          .run {
+            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+            assertTrue(
+              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
+            )
+
+            // first visit is lmp plus 1 month and subsequent visit are every month after that until
+            // delivery
+            val pregnancyStart = lmp.clone() as Date
+            this.forEachIndexed { index, task ->
+              assertEquals(
+                pregnancyStart.plusMonths(index + 1).asYyyyMmDd(),
+                task.executionPeriod.start.asYyyyMmDd()
               )
             }
           }
+      }
+  }
+
+  @Test
+  fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
+      runTest {
+    val planDefinitionResources = loadPlanDefinitionResources("anc-visit")
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponse = planDefinitionResources.questionnaireResponse
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+
+    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+    // anc registered late so skip the tasks which passed due date
+    val lmp = Date().plusMonths(-4)
+
+    questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
+      DateType(lmp)
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+        // 5 visits and tasks
+        assertEquals(5, carePlan.activityFirstRep.outcomeReference.size)
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
           .also {
-            it.elementAt(0).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() ==
-                  Date().asYyyyMmDd() // first task is today | 4th month
+            assertTrue(it.all { it.status == TaskStatus.READY })
+            assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+          }
+          // first 5 tasks are anc visit for each month of pregnancy
+          .take(5)
+          .run {
+            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+            assertTrue(
+              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
+            )
+
+            // first visit is lmp plus 1 month and subsequent visit are every month after that until
+            // delivery
+            // skip tasks for past 3 months of late registration
+            val ancStart = lmp.plusMonths(3).clone() as Date
+            this.forEachIndexed { index, task ->
+              assertEquals(
+                ancStart.plusMonths(index + 1).asYyyyMmDd(),
+                task.executionPeriod.start.asYyyyMmDd()
               )
             }
-            it.elementAt(1).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() ==
-                  lmp.plusMonths(5, true).asYyyyMmDd() // 5th month
+          }
+      }
+  }
+
+  @Test
+  fun `generateOrUpdateCarePlan should generate careplan for next visit when ondemand task is required`() =
+      runTest {
+    val planDefinitionResources = loadPlanDefinitionResources("anc-visit-ondemand")
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponse = planDefinitionResources.questionnaireResponse
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+
+    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+    // anc registered late so skip the tasks which passed due date
+    val lmp = Date().plusMonths(-4)
+
+    questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
+      DateType(lmp)
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+        assertEquals(1, carePlan.activityFirstRep.outcomeReference.size)
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { assertEquals(2, it.size) } // 1 for visit, 1 for referral
+          .also {
+            assertTrue(it.all { it.status == TaskStatus.READY })
+            assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+          }
+          // first 5 tasks are anc visit for each month of pregnancy
+          .take(1)
+          .run {
+            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+            assertTrue(
+              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
+            )
+
+            this.forEachIndexed { index, task ->
+              assertEquals(
+                Date().plusMonths(1).asYyyyMmDd(),
+                task.executionPeriod.start.asYyyyMmDd()
               )
-            }
-            it.elementAt(2).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() ==
-                  lmp.plusMonths(6, true).asYyyyMmDd() // 6th month
-              )
-            }
-            it.elementAt(3).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(7, true).asYyyyMmDd()
-              ) // 7th month
-            }
-            it.elementAt(4).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(8, true).asYyyyMmDd()
-              ) // 8th month
-            }
-            it.elementAt(5).let {
-              Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(9, true).asYyyyMmDd()
-              ) // 9th month
             }
           }
       }
@@ -918,6 +956,57 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
 
     Assert.assertEquals(TaskStatus.COMPLETED, task.captured.status)
+  }
+
+  data class PlanDefinitionResources(
+    val planDefinition: PlanDefinition,
+    val patient: Patient,
+    val questionnaireResponse: QuestionnaireResponse,
+    val structureMap: StructureMap,
+    val structureMapReferral: StructureMap,
+    val resourcesSlot: MutableList<Resource>
+  )
+
+  fun loadPlanDefinitionResources(planName: String): PlanDefinitionResources {
+    val planDefinition =
+      "plans/$planName/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/$planName/sample/patient.json".readFile().decodeResourceFromString<Patient>()
+
+    val questionnaireResponse =
+      "plans/$planName/sample/questionnaire-response-register.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapRegister =
+      structureMapUtilities.parse(
+          "plans/$planName/structure-map-register.txt".readFile(),
+          "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
+        )
+        .also { println(it.encodeResourceToString()) }
+
+    val structureMapReferral =
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+        .also { println(it.encodeResourceToString()) }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    coEvery { fhirEngine.get<StructureMap>(structureMapRegister.logicalId) } returns
+      structureMapRegister
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+
+    return PlanDefinitionResources(
+      planDefinition,
+      patient,
+      questionnaireResponse,
+      structureMapRegister,
+      structureMapReferral,
+      resourcesSlot
+    )
   }
 }
 

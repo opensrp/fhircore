@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.task
 
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -30,6 +32,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Parameters
@@ -48,7 +51,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
-import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -143,15 +145,37 @@ constructor(
           }
 
         if (action.hasTransform()) {
-          var i = 0
+          var i = 1 // task current count or offset
           do {
-            val period = i*(definition.timingTiming.repeat.period?.toInt()?:0)
-            source.getParameter(Task.SP_PERIOD)?:source.addParameter().apply {
-              this.name = Task.SP_PERIOD
-              this.value = Period().apply {
-                start = fhirPathEngine.evaluate(output.period, "\$this.start + $period ${definition.timingTiming.repeat.periodUnit?.definition?:"days"}").firstOrNull()?.dateTimeValue()?.value
+            source.setParameter(
+              Task.SP_PERIOD,
+              let {
+                val period = definition.timingTiming.repeat.period?.toInt()
+                val periodUnit = definition.timingTiming.repeat.periodUnit?.display ?: "day"
+                val count = definition.timingTiming.repeat.count
+                Period().apply {
+                  val periodOffset = period?.times(i) ?: 0
+                  start =
+                    fhirPathEngine
+                      .evaluate(
+                        DateType(if (count == 1) Date() else output.period.start),
+                        "\$this + $periodOffset '$periodUnit'"
+                      )
+                      .firstOrNull()
+                      ?.dateTimeValue()
+                      ?.value
+
+                  if (period != null
+                  ) // if period has been defined; end date is period added to start calculated
+                    end =
+                      fhirPathEngine
+                        .evaluate(this, "\$this.start + $period '$periodUnit'")
+                        .firstOrNull()
+                        ?.dateTimeValue()
+                        ?.value
+                }
               }
-            }
+            )
 
             val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
@@ -162,21 +186,23 @@ constructor(
             )
             i++
           }
-            // number of times to repeat the definition; count should be 1 if only one task should be generated per iteration
-          while (definition.hasTimingTiming() && definition.timingTiming.repeat.let {
-              it.count > i
-            })
+          // number of times to repeat the definition; count should be 1 if only one task should be
+          // generated per iteration
+          while (definition.hasTimingTiming() &&
+            definition.timingTiming.repeat.let { it.count >= i })
         }
 
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
               dynamicValue.expression.expression
-                .let { fhirPathEngine.evaluate(null, source, null, subject, it).firstOrNull() }
-                ?.run {
-                  output.setPropertySafely(
-                    dynamicValue.path.removePrefix("${definition.kind.toCode()}."),
-                    this
+                .let { fhirPathEngine.evaluate(null, input, null, subject, it) }
+                ?.let { evaluatedValue ->
+                  TerserUtil.setFieldByFhirPath(
+                    FhirContext.forR4Cached(),
+                    dynamicValue.path,
+                    output,
+                    evaluatedValue.firstOrNull()
                   )
                 }
             else throw UnsupportedOperationException("${definition.kind} not supported")
