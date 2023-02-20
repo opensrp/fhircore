@@ -404,6 +404,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -523,6 +524,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -642,6 +644,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -761,6 +764,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -880,6 +884,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -999,6 +1004,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1118,6 +1124,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1237,6 +1244,7 @@
         },
         {
           "viewType": "CARD",
+          "visible": "@{isChild}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
