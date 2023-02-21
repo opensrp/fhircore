@@ -204,6 +204,22 @@ constructor(
           }
         resourceDataMap[listProperties.id] = resourceDataList
       }
+      if (listProperties.practitionerList.isNotEmpty()) {
+        val resourceDataList: List<ResourceData> =
+          listProperties.resources.flatMap { resource ->
+            filteredResourcesPerPractitioner(
+              relatedResourcesMap,
+              resource
+            )
+              .mapToResourceData(
+                relatedResourcesMap = relatedResourcesMap,
+                ruleConfigs = listProperties.registerCard.rules,
+                listRelatedResources = resource.relatedResources,
+                computedValuesMap = computedValuesMap
+              )
+          }
+        resourceDataMap[listProperties.id] = resourceDataList
+      }
     }
     return resourceDataMap
   }
@@ -270,6 +286,33 @@ constructor(
     }
 
     return newListRelatedResources ?: mutableListOf()
+  }
+
+  /**
+   * This function returns a list of filtered resources. The required list is obtained from
+   * [relatedResourceMap], then a filter is applied based on the condition returned from the
+   * extraction of the [ListResource] conditional FHIR path expression
+   */
+  private fun filteredResourcesPerPractitioner(
+    relatedResourceMap: MutableMap<String, MutableList<Resource>>,
+    listResource: ListResource
+  ): MutableList<Resource> {
+    val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
+    val resultingPractitionerFilteredResource = relatedResourceMap[relatedResourceKey]
+
+    // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
+    if (resultingPractitionerFilteredResource != null && !listResource.practitionerFhirPathExpression.isNullOrEmpty()
+    ) {
+      return rulesFactory
+        .rulesEngineService
+        .filterResources(
+          resources = resultingPractitionerFilteredResource,
+          fhirPathExpression = listResource.practitionerFhirPathExpression
+        )
+        .toMutableList()
+    }
+
+    return resultingPractitionerFilteredResource ?: mutableListOf()
   }
 
   /**
@@ -451,7 +494,8 @@ constructor(
   override suspend fun loadProfileData(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig?
+    fhirResourceConfig: FhirResourceConfig?,
+    practitionerId: String?
   ): ResourceData {
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(

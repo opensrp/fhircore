@@ -44,6 +44,7 @@ interface Repository {
   suspend fun loadProfileData(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
+    fhirResourceConfig: FhirResourceConfig? = null,
+    practitionerId: String?=null
   ): ResourceData?
 }

@@ -79,7 +79,8 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId"
+      "familyId",
+      "practitionerId"
     ]
   },
   "registerCard": {
@@ -96,6 +97,13 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
         ]
       }
     ],

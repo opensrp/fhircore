@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -82,11 +83,12 @@ constructor(
   suspend fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
+    fhirResourceConfig: FhirResourceConfig? = null,
+    practitionerId: String? = null
   ) {
     if (resourceId.isNotEmpty()) {
       val resourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig,practitionerId)
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
