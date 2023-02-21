@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import java.time.Duration
 import java.time.format.DateTimeParseException
 import kotlin.time.Duration as KotlinDuration
+import org.hl7.fhir.r4.model.Timing
 
 /**
  * Parses a string that represents a duration in ISO-8601 format and returns the parsed Duration
@@ -31,3 +32,6 @@ fun KotlinDuration.Companion.tryParse(durationString: String): Duration {
     return Duration.ofDays(1)
   }
 }
+
+fun Timing.extractFhirpathPeriod() =
+  this.repeat.let { if (it.hasPeriod()) "${it.period} '${it.periodUnit.display}'" else "" }

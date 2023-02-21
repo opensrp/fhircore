@@ -28,6 +28,8 @@ import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ActivityDefinition
+import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -48,6 +50,7 @@ import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -145,35 +148,27 @@ constructor(
           }
 
         if (action.hasTransform()) {
-          var i = 1 // task current count or offset
+          val count = definition.timingTiming.repeat.count
+          var i = 1 // task index
+          val periodExpression = definition.timingTiming.extractFhirpathPeriod()
+
+          // offset date for current task period; careplan start if all tasks generated at once
+          // otherwise today
+          var offsetDate: BaseDateTimeType =
+            DateType(if (count > 1) output.period.start else Date())
           do {
+            if (periodExpression.isNotBlank())
+              evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+
             source.setParameter(
               Task.SP_PERIOD,
-              let {
-                val period = definition.timingTiming.repeat.period?.toInt()
-                val periodUnit = definition.timingTiming.repeat.periodUnit?.display ?: "day"
-                val count = definition.timingTiming.repeat.count
-                Period().apply {
-                  val periodOffset = period?.times(i) ?: 0
-                  start =
-                    fhirPathEngine
-                      .evaluate(
-                        DateType(if (count == 1) Date() else output.period.start),
-                        "\$this + $periodOffset '$periodUnit'"
-                      )
-                      .firstOrNull()
-                      ?.dateTimeValue()
-                      ?.value
+              Period().apply {
+                start = offsetDate.value
 
-                  if (period != null
-                  ) // if period has been defined; end date is period added to start calculated
-                    end =
-                      fhirPathEngine
-                        .evaluate(this, "\$this.start + $period '$periodUnit'")
-                        .firstOrNull()
-                        ?.dateTimeValue()
-                        ?.value
-                }
+                end =
+                  if (periodExpression.isNotBlank())
+                    evaluateToDate(offsetDate, "\$this + $periodExpression")?.value
+                  else output.period.end
               }
             )
 
@@ -188,8 +183,7 @@ constructor(
           }
           // number of times to repeat the definition; count should be 1 if only one task should be
           // generated per iteration
-          while (definition.hasTimingTiming() &&
-            definition.timingTiming.repeat.let { it.count >= i })
+          while (definition.hasTimingTiming() && count >= i)
         }
 
         if (definition.hasDynamicValue()) {
@@ -262,4 +256,7 @@ constructor(
 
   suspend fun getTask(id: String) =
     kotlin.runCatching { fhirEngine.get<Task>(id) }.onFailure { Timber.e(it) }.getOrNull()
+
+  private fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
+    base?.let { fhirPathEngine.evaluate(it, expression).firstOrNull()?.dateTimeValue() }
 }

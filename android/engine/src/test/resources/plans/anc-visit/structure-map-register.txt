@@ -44,7 +44,7 @@ group ExtractTask(
                } "r_cp_acti";
 
         // add task to careplan only if its valid and not expired
-        subject where(task.executionPeriod.start >= today() or task.executionPeriod.end >= today()) then {
+        subject where(task.executionPeriod.start <= careplan.period.end and (task.executionPeriod.start >= today() or task.executionPeriod.end >= today())) then {
                  subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
                             activity.outcomeReference = reference(task) "r_cp_task_ref";
                  subject -> careplan.contained = task  "r_add_task";

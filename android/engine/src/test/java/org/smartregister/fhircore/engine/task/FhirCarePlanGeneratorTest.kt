@@ -585,7 +585,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
     // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-    val lmp = Date() // .plusMonths(-4).plusDays(9)
+    val lmp = Date()
 
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
