@@ -35,3 +35,6 @@ fun KotlinDuration.Companion.tryParse(durationString: String): Duration {
 
 fun Timing.extractFhirpathPeriod() =
   this.repeat.let { if (it.hasPeriod()) "${it.period} '${it.periodUnit.display}'" else "" }
+
+fun Timing.extractFhirpathDuration() =
+  this.repeat.let { if (it.hasDuration()) "${it.duration} '${it.durationUnit.display}'" else "" }

@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -151,6 +152,7 @@ constructor(
           val count = definition.timingTiming.repeat.count
           var i = 1 // task index
           val periodExpression = definition.timingTiming.extractFhirpathPeriod()
+          val durationExpression = definition.timingTiming.extractFhirpathDuration()
 
           // offset date for current task period; careplan start if all tasks generated at once
           // otherwise today
@@ -166,8 +168,8 @@ constructor(
                 start = offsetDate.value
 
                 end =
-                  if (periodExpression.isNotBlank())
-                    evaluateToDate(offsetDate, "\$this + $periodExpression")?.value
+                  if (durationExpression.isNotBlank())
+                    evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
                   else output.period.end
               }
             )

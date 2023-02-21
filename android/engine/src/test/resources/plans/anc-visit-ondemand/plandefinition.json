@@ -103,6 +103,8 @@
       "timingTiming": {
         "repeat": {
           "count": 1,
+          "duration": 1,
+          "durationUnit": "mo",
           "period": 1,
           "periodUnit": "mo"
         }
@@ -195,7 +197,7 @@
         }
       ],
       "definitionCanonical": "#careplan-referral-activity",
-      "transform": "http://hl7.org/fhir/StructureMap/132067"
+      "transform": "http://hl7.org/fhir/StructureMap/528a8603-2e43-4a2e-a33d-1ec2563ffd3e"
     }
   ]
 }

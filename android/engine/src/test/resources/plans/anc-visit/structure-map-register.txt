@@ -51,11 +51,3 @@ group ExtractTask(
         } "r_cp_task";
     } "r_task";
 }
-
-group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
-    start -> period.start = create('dateTime') as dt,
-             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
-
-    end -> period.end = create('dateTime') as dt,
-           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
-}

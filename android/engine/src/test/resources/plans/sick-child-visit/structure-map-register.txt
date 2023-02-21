@@ -1,65 +1,23 @@
-map "http://hl7.org/fhir/StructureMap/131900" = 'SickChildCarePlan'
+map "http://hl7.org/fhir/StructureMap/737a86d6-ad63-4345-8753-1e605438d1ee" = 'SickChildCarePlan'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 
 group SickChildCarePlan(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
-            evaluate(src, $this.parameter.where(name='definition').resource) as definition
-            then ExtractCarePlan(subject, definition, tgt), ExtractActivityDetail(subject, definition, tgt) "r_careplan";
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.resource) as questionnaireResponse,
+            evaluate(src, $this.parameter.where(name='period').value) as period
+            then ExtractTask(period, subject, tgt) "r_careplan";
 }
 
-group ExtractCarePlan(source subject: Patient, source definition: ActivityDefinition, target careplan : CarePlan) {
-    subject -> careplan.id = uuid() ,
-           careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-           careplan.status = 'active',
-           careplan.intent = 'plan',
-           careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
-           careplan.created = evaluate(subject, now()),
-           careplan.author = evaluate(subject, $this.generalPractitioner.first()),
-           careplan.period = create('Period') as period, evaluate(subject, today()) as offset then ExtractPeriod_7d(offset, period) "r_cp_data";
-}
-
-group ExtractActivityDetail(source subject : Patient,
-    source definition: ActivityDefinition, target careplan : CarePlan){
-    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
-        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
-            subject -> det.kind = 'Task',
-                   det.status = 'in-progress',
-                   det.description = evaluate(definition, $this.title),
-                   det.performer = evaluate(subject, $this.generalPractitioner.first()),
-                   det.code = create('CodeableConcept') as concept then ExtractTimingCode(subject, concept) "r_act_det_data";
-
-            subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
-                   evaluate(timing, $this.repeat) as repeat then {
-
-                subject -> evaluate(subject, today() + '1 \'days\''.toQuantity()) as dueDate
-                   then ExtractTasks(dueDate, repeat, subject, careplan, activity, timing) "r_tasks";
-
-                subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
-
-            } "r_tim_repeat";
-        } "r_act_det";
-
-    } "r_cp_acti";
-}
-
-group ExtractTasks(
-    source dueDate: DateType,
-    source repeat: TimingRepeat,
+group ExtractTask(
+    source period: Period,
     source subject : Patient,
-    target careplan: CarePlan,
-    target activity : CarePlan_Activity,
-    target timing: Timing){
+    target careplan: CarePlan){
 
-    // today + total * gap
-    repeat where( (today() + ((countMax.toDecimal() * period).toString()+' \'days\'').toQuantity()) >= dueDate) -> dueDate as start,
-                evaluate(careplan, $this.period.end) as end,
-                create('Period') as period,
-                careplan.contained = create('Task') as task then {
-
-        subject then ExtractPeriod(start, end, period) "r_task_period_extr";
-
+    // fill task into careplan contained and add reference in activity.outcome
+    subject -> create('Task') as task then {
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
                task.status = 'ready',
@@ -76,31 +34,19 @@ group ExtractTasks(
         // sick child followup form
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/131898' "r_task_reason_ref";
 
-        subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
-        subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'Task').exists().not())
+                -> careplan.activity = create('CarePlan_Activity') as activity then {
+                   subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+                       subject -> det.kind = 'Task' "r_act_det_data";
+                   } "r_act_det";
+               } "r_cp_acti";
 
-        repeat -> evaluate(period, $this.start + (repeat.period.toString() + ' \'days\'').toQuantity()) as nextDueDate
-                  then ExtractTasks(nextDueDate, repeat, subject, careplan, activity, timing) "r_task_repeat";
-    } "r_cp_acti_outcome";
-}
-
-group ExtractTimingCode(source subject : Patient, target concept: CodeableConcept){
-    subject -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation", "QD") as coding then {
-        subject -> coding.display = 'QD' "r_cp_cod_disp";
-    } "r_cp_cc_cod";
-    subject -> concept.text = 'QD' "r_cp_cc_txt";
-}
-
-group ExtractPeriod_7d(source offset: DateType, target period: Period){
-    offset -> offset as start,
-              evaluate(offset, $this + '7 \'days\''.toQuantity()) as end then
-              ExtractPeriod(start, end, period) "r_period";
-}
-
-group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
-    start -> period.start = create('dateTime') as dt,
-             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
-
-    end -> period.end = create('dateTime') as dt,
-           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
+        // add task to careplan only if its valid and not expired
+        subject where(task.executionPeriod.start <= careplan.period.end and (task.executionPeriod.start >= today() or task.executionPeriod.end >= today())) then {
+                 subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
+                            activity.outcomeReference = reference(task) "r_cp_task_ref";
+                 subject -> careplan.contained = task  "r_add_task";
+        } "r_cp_task";
+    } "r_task";
 }
