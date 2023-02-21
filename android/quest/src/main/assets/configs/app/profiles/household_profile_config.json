@@ -156,7 +156,7 @@
       "name": "familyVillage",
       "condition": "true",
       "actions": [
-        "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+        "data.put('familyVillage', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='hh_village').code.text\"))"
       ]
     },
     {
