@@ -139,20 +139,20 @@ constructor(
         SearchQuery(
           """
             SELECT a.serializedResource
-            FROM ResourceEntity a
-            LEFT JOIN DateTimeIndexEntity c
-            ON a.resourceUuid = c.resourceUuid
-            WHERE a.resourceUuid IN (
-            SELECT resourceUuid FROM DateTimeIndexEntity
-            WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ? ORDER BY index_from ASC, id ASC LIMIT ? OFFSET ?
-            )
-            AND (
-            c.index_name = "_lastUpdated")
-            ORDER BY 
-            c.index_from ASC, a.id ASC
-            LIMIT ? OFFSET ?
+              FROM ResourceEntity a
+              LEFT JOIN DateIndexEntity b
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid 
+              LEFT JOIN DateTimeIndexEntity c
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid
+              WHERE a.resourceUuid IN (
+              SELECT resourceUuid FROM DateTimeIndexEntity
+              WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
+              )
+              AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
+              ORDER BY b.index_from ASC, c.index_from ASC, a.id ASC
+              LIMIT ? OFFSET ?
           """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize, offset, batchSize, offset)
+          listOf(lastRecordUpdatedAt, batchSize, offset)
         )
 
       fhirEngine.search(searchQuery)
