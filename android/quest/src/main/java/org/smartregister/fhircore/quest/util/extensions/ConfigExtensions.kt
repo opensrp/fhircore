@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -41,12 +43,24 @@ fun List<ActionConfig>.handleClickEvent(
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
+          val questionnaireConfigInterpolated =
+            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+          val actionParams =
+            actionConfig.params.map {
+              ActionParameter(
+                key = it.key,
+                paramType = it.paramType,
+                dataType = it.dataType,
+                linkId = it.linkId,
+                value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+              )
+            }
+
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              questionnaireConfig = questionnaireConfig,
-              computedValuesMap = resourceData?.computedValuesMap,
-              actionParams = actionConfig.params
+              questionnaireConfig = questionnaireConfigInterpolated,
+              actionParams = actionParams
             )
           }
         }
@@ -105,3 +119,6 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
+
+fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
+  this.visible.interpolate(computedValuesMap).toBoolean()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,9 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -414,6 +417,54 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("patient-first-name", result.item[0].linkId)
     Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
     Assert.assertTrue(result.item[1].readOnly)
+  }
+
+  @Test
+  fun testLoadQuestionnaireShouldPrepopulateFieldsWithPrepopulationParams() {
+
+    val prePopulationParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age",
+          dataType = DataType.INTEGER,
+          key = "patientAge",
+          value = "100"
+        )
+      )
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertEquals("100", result.item[1].initial[0].value.valueToString())
   }
 
   @Test

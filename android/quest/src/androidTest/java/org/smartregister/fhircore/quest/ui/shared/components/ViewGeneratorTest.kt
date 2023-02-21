@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -351,14 +351,26 @@ class ViewGeneratorTest {
   @Test
   fun testGenerateViewRendersVerticalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = 16F, width = null)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(VERTICAL_SPACER_TEST_TAG).assertExists()
   }
 
   @Test
   fun testGenerateViewRendersHorizontalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = null, width = 16F)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
   }
 }

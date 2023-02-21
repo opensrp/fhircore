@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -62,7 +61,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -75,23 +73,13 @@ import timber.log.Timber
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
   @Inject lateinit var parser: IParser
-
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-
-  protected lateinit var questionnaire: Questionnaire
-
-  private lateinit var computedValuesMap: Map<String, Any>
-
+  private lateinit var questionnaire: Questionnaire
   private lateinit var fragment: QuestQuestionnaireFragment
-
   private lateinit var saveProcessingAlertDialog: AlertDialog
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
-
   private lateinit var actionParams: List<ActionParameter>
-
   private lateinit var prePopulationParams: List<ActionParameter>
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -104,49 +92,47 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    computedValuesMap =
-      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP) as Map<String, Any>?
-        ?: emptyMap()
-
-    questionnaireConfig =
-      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig).interpolate(
-        computedValuesMap
-      )
+    questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
 
     actionParams =
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
         ?: emptyList()
 
-    actionParams =
-      actionParams.map {
-        ActionParameter(
-          key = it.key,
-          paramType = it.paramType,
-          dataType = it.dataType,
-          linkId = it.linkId,
-          value = it.value.interpolate(computedValuesMap)
+    prePopulationParams =
+      actionParams.filter {
+        it.paramType == ActionParameterType.PREPOPULATE &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(STRING_INTERPOLATION_PREFIX)
+      }
+
+    val questionnaireActivity = this@QuestionnaireActivity
+    questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
+
+    val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
+
+    lifecycleScope.launch {
+      questionnaireViewModel.loadQuestionnaire(
+          questionnaireConfig.id,
+          questionnaireConfig.type,
+          prePopulationParams
         )
-      }
+        .let { thisQuestionnaire ->
+          if (thisQuestionnaire == null) {
+            questionnaireActivity.showToast(
+              questionnaireActivity.getString(R.string.questionnaire_missing)
+            )
+            finish()
+          } else {
+            questionnaire = thisQuestionnaire
+            // Only add the fragment once, when the activity is first created.
+            if (savedInstanceState == null) renderFragment()
 
-    prePopulationParams = actionParams.filter { it.paramType == ActionParameterType.PREPOPULATE }
-
-    questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
-
-    val loadProgress = showProgressAlert(this, R.string.loading)
-
-    lifecycleScope.launch(dispatcherProvider.io()) {
-      questionnaireViewModel.run {
-        questionnaire =
-          loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type, prePopulationParams)!!
-      }
-
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) renderFragment()
-
-      withContext(dispatcherProvider.main()) {
-        updateViews()
-        fragment.whenStarted { loadProgress.dismiss() }
-      }
+            withContext(dispatcherProvider.main()) {
+              updateViews()
+              fragment.whenStarted { loadProgress.dismiss() }
+            }
+          }
+        }
     }
   }
 
@@ -204,9 +190,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 if (questionnaireResponse == null) {
                   questionnaireResponse =
                     questionnaireViewModel.generateQuestionnaireResponse(
-                      questionnaire,
-                      intent,
-                      questionnaireConfig
+                      questionnaire = questionnaire,
+                      intent = intent,
+                      questionnaireConfig = questionnaireConfig
                     )
                 }
                 this.putString(
@@ -470,8 +456,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
-    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
+    const val STRING_INTERPOLATION_PREFIX = "@{"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -481,12 +467,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      computedValuesMap: Map<String, Any>?,
       actionParams: List<ActionParameter> = emptyList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap),
         Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
       )
         .apply {
