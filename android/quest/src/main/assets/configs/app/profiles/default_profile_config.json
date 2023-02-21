@@ -8,6 +8,7 @@
     },
     "relatedResources": [
       {
+        "id": "availableConditions",
         "resource": "Condition",
         "searchParameter": "subject"
       },
@@ -143,6 +144,20 @@
       "condition": "true",
       "actions": [
         "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+      ]
+    },
+    {
+      "name": "is9Years",
+      "condition": "true",
+      "actions": [
+        "data.put('is9Years', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 9 'years')\"))"
+      ]
+    },
+    {
+      "name": "is9andHalfYears",
+      "condition": "true",
+      "actions": [
+        "data.put('is9andHalfYears', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 9.5 'years')\"))"
       ]
     },
     {
@@ -844,10 +859,17 @@
                 {
                   "viewType": "LIST",
                   "id": "statusList",
-                  "baseResource": "Condition",
+                  "resources": [
+                    {
+                      "id": "availableConditions",
+                      "relatedResourceId": "availableConditions",
+                      "resourceType": "Condition",
+                      "conditionalFhirPathExpression": "Condition.where(clinicalStatus.coding.where(code = 'active').exists()).exists()"
+                    }
+                  ],
                   "orientation": "HORIZONTAL",
                   "emptyList": {
-                    "message": ""
+                    "message": "No conditions available for the patient "
                   },
                   "registerCard": {
                     "rules": [
@@ -1774,7 +1796,7 @@
         },
         {
           "viewType": "CARD",
-          "visible": "@{isChild}",
+          "visible": "@{is9Years}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
@@ -1894,7 +1916,7 @@
         },
         {
           "viewType": "CARD",
-          "visible": "@{isChild}",
+          "visible": "@{is9andHalfYears}",
           "padding": 16,
           "header": {
             "viewType": "COMPOUND_TEXT",
