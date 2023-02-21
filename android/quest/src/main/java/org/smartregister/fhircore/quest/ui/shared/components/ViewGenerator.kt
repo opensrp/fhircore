@@ -106,7 +106,7 @@ fun GenerateView(
             else properties.arrangement?.position ?: Arrangement.Top
         ) {
           for (child in children) {
-            if (child.visible == "true") {
+            if (child.isVisible(resourceData.computedValuesMap)) {
               GenerateView(
                 modifier = generateModifier(child),
                 properties = child,
