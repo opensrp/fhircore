@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 @Composable
 fun CardView(
@@ -51,38 +50,36 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (viewProperties.isVisible(resourceData.computedValuesMap)) {
-    Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
-      // Header section
-      Column(modifier = modifier.fillMaxWidth()) {
-        if (viewProperties.header != null) {
-          Spacer(modifier = modifier.height(8.dp))
-          CompoundText(
-            modifier = modifier.wrapContentWidth(Alignment.Start),
-            compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
-            resourceData = resourceData,
-            navController = navController
-          )
-          // TODO Display viewAll action text
-          Spacer(modifier = modifier.height(8.dp))
-        }
+  Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
+    // Header section
+    Column(modifier = modifier.fillMaxWidth()) {
+      if (viewProperties.header != null) {
+        Spacer(modifier = modifier.height(8.dp))
+        CompoundText(
+          modifier = modifier.wrapContentWidth(Alignment.Start),
+          compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
+          resourceData = resourceData,
+          navController = navController
+        )
+        // TODO Display viewAll action text
+        Spacer(modifier = modifier.height(8.dp))
       }
-      // Card section
-      Card(
-        elevation = viewProperties.elevation.dp,
-        modifier =
-          modifier
-            .padding(horizontal = viewProperties.padding.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-      ) {
-        Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
-          ViewRenderer(
-            viewProperties = viewProperties.content,
-            resourceData = resourceData,
-            navController = navController
-          )
-        }
+    }
+    // Card section
+    Card(
+      elevation = viewProperties.elevation.dp,
+      modifier =
+        modifier
+          .padding(horizontal = viewProperties.padding.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+    ) {
+      Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
+        ViewRenderer(
+          viewProperties = viewProperties.content,
+          resourceData = resourceData,
+          navController = navController
+        )
       }
     }
   }
