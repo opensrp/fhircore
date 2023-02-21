@@ -28,7 +28,6 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
