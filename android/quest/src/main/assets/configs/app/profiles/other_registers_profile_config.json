@@ -916,7 +916,12 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Task",
+              "resources": [
+                {
+                  "id": "tasks",
+                  "resourceType": "Task"
+                }
+              ],
               "registerCard": {
                 "rules": [
                   {

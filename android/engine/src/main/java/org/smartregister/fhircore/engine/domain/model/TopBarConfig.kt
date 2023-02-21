@@ -17,11 +17,14 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 
 @Serializable
-data class ExtractedResource(
-  val id: String? = null,
-  val resourceType: ResourceType,
-  val fhirPathExpression: String
+data class TopBarConfig(
+  val title: CompoundTextProperties? = null,
+  val collapsible: Boolean = true,
+  val content: List<ViewProperties> = emptyList(),
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+  val showOverflowMenu: Boolean = true
 )

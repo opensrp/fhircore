@@ -32,6 +32,7 @@ data class CompoundTextProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
+  override val visible: String = "true",
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
@@ -44,6 +45,9 @@ data class CompoundTextProperties(
   val secondaryTextFontWeight: TextFontWeight = TextFontWeight.NORMAL,
   val primaryTextActions: List<ActionConfig> = emptyList(),
   val secondaryTextActions: List<ActionConfig> = emptyList(),
+  val maxLines: Int = Int.MAX_VALUE,
+  val colorOpacity: Float = 1f,
+  val textCase: TextCase? = null
 ) : ViewProperties()
 
 enum class TextFontWeight(val fontWeight: FontWeight) {
@@ -56,4 +60,10 @@ enum class TextFontWeight(val fontWeight: FontWeight) {
   BLACK(FontWeight.Black),
   EXTRA_LIGHT(FontWeight.ExtraLight),
   SEMI_BOLD(FontWeight.SemiBold),
+}
+
+enum class TextCase {
+  UPPER_CASE,
+  LOWER_CASE,
+  CAMEL_CASE,
 }
