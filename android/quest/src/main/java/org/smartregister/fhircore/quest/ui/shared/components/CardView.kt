@@ -70,10 +70,10 @@ fun CardView(
       Card(
         elevation = viewProperties.elevation.dp,
         modifier =
-        modifier
-          .padding(horizontal = viewProperties.padding.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+          modifier
+            .padding(horizontal = viewProperties.padding.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
       ) {
         Column(modifier = modifier.padding(16.dp)) {
           ViewRenderer(
