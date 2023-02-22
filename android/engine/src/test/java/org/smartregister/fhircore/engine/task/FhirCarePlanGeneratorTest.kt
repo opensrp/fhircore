@@ -350,47 +350,29 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun testGenerateCarePlanForSickChildUnder2m() = runTest {
-    val plandefinition =
-      "plans/sick-child-visit/plandefinition.json"
-        .readFile()
-        .decodeResourceFromString<PlanDefinition>()
-
-    val patient =
-      "plans/sick-child-visit/sample/patient.json"
-        .readFile()
-        .decodeResourceFromString<Patient>()
-        .apply { this.birthDate = Date() }
-    val questionnaireResponse =
-      "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
-        .readFile()
-        .decodeResourceFromString<QuestionnaireResponse>()
-
-    val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
-        .also { println(it.encodeResourceToString()) }
-
-    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+    val planDefinitionResources =
+      loadPlanDefinitionResources("sick-child-visit", listOf("register-under2m"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient.apply { this.birthDate = Date().plusMonths(-1) }
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        plandefinition,
-        patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-      )
+      planDefinition,
+      patient,
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+        )
+    )!!
       .also {
         Assert.assertNull(it)
-
-        val resourcesSlot = mutableListOf<Resource>()
-        val booleanSlot = slot<Boolean>()
-
-        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
           Assert.assertTrue(it.status == TaskStatus.READY)
-          Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
+          Assert.assertTrue(it.basedOn.first().reference == planDefinition.asReference().reference)
           Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
           Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
         }
@@ -732,12 +714,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<PlanDefinition>()
 
     val patient =
-      "plans/child-immunization-schedule/patient.json"
+      "plans/child-immunization-schedule/sample/patient.json"
         .readFile()
         .decodeResourceFromString<Patient>()
 
     val structureMapScript =
-      "plans/child-immunization-schedule/structure-map-child-immunization-schedule.txt".readFile()
+      "plans/child-immunization-schedule/structure-map-register.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
         println(it.encodeResourceToString())

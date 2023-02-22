@@ -24,14 +24,10 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import java.util.Date
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateType
@@ -45,10 +41,12 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
+import org.hl7.fhir.r4.model.Timing
+import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
@@ -57,6 +55,9 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
+import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class FhirCarePlanGenerator
@@ -75,7 +76,7 @@ constructor(
   suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,
     subject: Resource,
-    data: Bundle? = null
+    data: Bundle = Bundle()
   ): CarePlan? {
     return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
   }
@@ -83,7 +84,7 @@ constructor(
   suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
-    data: Bundle? = null
+    data: Bundle = Bundle()
   ): CarePlan? {
     // Only one CarePlan per plan , update or init a new one if not exists
     val output =
@@ -92,87 +93,29 @@ constructor(
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
         }
         .firstOrNull()
-        ?: CarePlan().apply {
-          this.title = planDefinition.title
-          this.description = planDefinition.description
-          this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
-        }
+        ?: CarePlan()
 
     var carePlanModified = false
 
     planDefinition.action.forEach { action ->
-      val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
+      val input = Bundle().apply { entry.addAll(data.entry) }
 
-      if (action.condition.all {
-          if (it.kind != PlanDefinition.ActionConditionKind.APPLICABILITY)
-            throw UnsupportedOperationException(
-              "PlanDefinition.action.kind=${it.kind} not supported"
-            )
-
-          if (it.expression.language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode())
-            throw UnsupportedOperationException(
-              "PlanDefinition.expression.language=${it.expression.language} not supported"
-            )
-
-          fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
-        }
-      ) {
-        val definition =
-          planDefinition.contained.first {
-            it.id.substringBefore("/_history") == action.definitionCanonicalType.value
-          } as
-            ActivityDefinition
+      if (action.passesConditions(input, planDefinition, subject)) {
+        val definition = action.activityDefinition(planDefinition)
 
         val source =
           Parameters().apply {
-            addParameter(
-              Parameters.ParametersParameterComponent().apply {
-                this.name = CarePlan.SP_SUBJECT
-                this.resource = subject
-              }
-            )
-
-            addParameter(
-              Parameters.ParametersParameterComponent().apply {
-                this.name = PlanDefinition.SP_DEFINITION
-                this.resource = definition
-              }
-            )
-
+            addResourceParameter(CarePlan.SP_SUBJECT,subject)
+            addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
             // TODO find some other way (activity definition based) to pass additional data
-            addParameter(
-              Parameters.ParametersParameterComponent().apply {
-                this.name = PlanDefinition.SP_DEPENDS_ON
-                this.resource = data
-              }
-            )
+            addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
           }
 
         if (action.hasTransform()) {
-          val count = definition.timingTiming.repeat.count
-          var i = 1 // task index
-          val periodExpression = definition.timingTiming.extractFhirpathPeriod()
-          val durationExpression = definition.timingTiming.extractFhirpathDuration()
+          val taskPeriods = action.taskPeriods(definition.timingTiming, output)
 
-          // offset date for current task period; careplan start if all tasks generated at once
-          // otherwise today
-          var offsetDate: BaseDateTimeType =
-            DateType(if (count > 1) output.period.start else Date())
-          do {
-            if (periodExpression.isNotBlank())
-              evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
-
-            source.setParameter(
-              Task.SP_PERIOD,
-              Period().apply {
-                start = offsetDate.value
-
-                end =
-                  if (durationExpression.isNotBlank())
-                    evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-                  else output.period.end
-              }
-            )
+          taskPeriods.forEach {
+            source.setParameter(Task.SP_PERIOD, it)
 
             val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
@@ -181,18 +124,14 @@ constructor(
               structureMap,
               output
             )
-            i++
           }
-          // number of times to repeat the definition; count should be 1 if only one task should be
-          // generated per iteration
-          while (definition.hasTimingTiming() && count >= i)
         }
 
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
               dynamicValue.expression.expression
-                .let { fhirPathEngine.evaluate(null, input, null, subject, it) }
+                .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
                 ?.let { evaluatedValue ->
                   TerserUtil.setFieldByFhirPath(
                     FhirContext.forR4Cached(),
@@ -261,4 +200,60 @@ constructor(
 
   private fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
     base?.let { fhirPathEngine.evaluate(it, expression).firstOrNull()?.dateTimeValue() }
+
+  private fun PlanDefinition.PlanDefinitionActionComponent.passesConditions(focus: Resource?, root: Resource?, base: Base)=
+    this.condition.all {
+      require (it.kind == PlanDefinition.ActionConditionKind.APPLICABILITY) {
+        "PlanDefinition.action.kind=${it.kind} not supported"
+      }
+
+      require (it.expression.language == Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode()) {
+          "PlanDefinition.expression.language=${it.expression.language} not supported"
+      }
+
+      fhirPathEngine.evaluateToBoolean(focus, root, base, it.expression.expression)
+    }
+
+  private fun PlanDefinition.PlanDefinitionActionComponent.activityDefinition(planDefinition: PlanDefinition) =
+    planDefinition.contained.filter { it.resourceType == ResourceType.ActivityDefinition }
+      .first { it.logicalId == this.definitionCanonicalType.value } as
+            ActivityDefinition
+
+  private fun PlanDefinition.PlanDefinitionActionComponent.taskPeriods(timing: Type, carePlan: CarePlan): List<Period> {
+    val taskPeriods = mutableListOf<Period>()
+
+    require(timing is Timing) {
+      "Timing component should only be Timing. Can not handle ${timing.fhirType()}"
+    }
+
+    val count = timing.repeat.count
+    val periodExpression = timing.extractFhirpathPeriod()
+    val durationExpression = timing.extractFhirpathDuration()
+
+    // offset date for current task period; careplan start if all tasks generated at once
+    // otherwise today means that tasks are generated on demand
+    var offsetDate: BaseDateTimeType =
+      DateType(if (count > 1) carePlan.period.start else Date())
+
+    var i = 1 // task index
+    do {
+      if (periodExpression.isNotBlank())
+        evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+
+      Period().apply {
+        start = offsetDate.value
+
+        end =
+          if (durationExpression.isNotBlank())
+            evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
+          else carePlan.period.end
+      }
+        .also { taskPeriods.add(it) }
+
+      i++
+    }
+    while (count >= i)
+
+    return taskPeriods
+  }
 }
