@@ -660,7 +660,7 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `QuestionnaireItemComponent#generateMissingItem() should not throw exception`() {
+  fun testGenerateMissingItemsFromQuestionnaireShouldNotThrowException() {
 
     val patientRegistrationQuestionnaire =
       "register-patient-missingitems/missingitem-questionnaire.json".readFile()
@@ -685,7 +685,7 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `QuestionnaireResponse#generateMissingItems() should not throw exception`() {
+  fun testGenerateMissingItemsFromQuestionnaireResponseShouldNotThrowException() {
 
     val patientRegistrationQuestionnaire =
       "register-patient-missingitems/missingitem-questionnaire.json".readFile()
