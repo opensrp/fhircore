@@ -38,6 +38,7 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
@@ -113,10 +115,14 @@ fun AppDrawer(
         items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule.name}" }) { sideMenuOption
           ->
           val title = stringResource(sideMenuOption.titleResource)
+
+          val (countValue, setCountValue) = remember { mutableStateOf(0L) }
+          LaunchedEffect(key1 = sideMenuOption.count) { setCountValue(sideMenuOption.count()) }
+
           SideMenuItem(
             iconResource = sideMenuOption.iconResource,
             title = title,
-            endText = sideMenuOption.count.toString(),
+            endText = countValue.toString(),
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
               openDrawer(false)
@@ -270,14 +276,14 @@ fun AppDrawerPreview() {
           appFeatureName = "AllFamilies",
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
-          count = 4,
+          count = suspend { 4 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
-          count = 16,
+          count = suspend { 16 },
           showCount = true
         ),
         SideMenuOption(
@@ -312,14 +318,14 @@ fun AppDrawerPreviewSyncDisabled() {
           appFeatureName = "AllFamilies",
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
-          count = 4,
+          count = suspend { 4 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
-          count = 16,
+          count = suspend { 16 },
           showCount = true
         ),
         SideMenuOption(

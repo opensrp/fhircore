@@ -181,6 +181,8 @@ dependencies {
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
     implementation deps.accompanist.swiperefresh
 
+    implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
+
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"

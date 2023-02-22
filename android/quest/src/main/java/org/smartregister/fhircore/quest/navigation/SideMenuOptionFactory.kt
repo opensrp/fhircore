@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.navigation
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -41,7 +40,7 @@ constructor(
       titleResource = R.string.all_clients,
       showCount = true,
       count =
-        runBlocking {
+        suspend {
           patientRegisterRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
             healthModule = HealthModule.DEFAULT
@@ -81,7 +80,7 @@ constructor(
             },
           showCount = true,
           count =
-            runBlocking {
+            suspend {
               patientRegisterRepository.countRegisterData(
                 appFeatureName = it.feature,
                 healthModule = it.healthModule!!

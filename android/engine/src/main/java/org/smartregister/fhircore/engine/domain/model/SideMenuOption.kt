@@ -24,7 +24,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
  * @property healthModule Optional healthModule property
  * @property iconResource Android drawable resource used as icon for menu option
  * @property titleResource Android translatable string resource used as the menu option title
- * @property count The current count for the menu item. Default is 0
+ * @property count Gets the current count for the menu item. Default is 0
  * @property showCount Show clients count against the menu option queries for resources other than
  * Patient
  */
@@ -34,6 +34,6 @@ data class SideMenuOption(
   val healthModule: HealthModule = HealthModule.DEFAULT,
   val iconResource: Int,
   val titleResource: Int,
-  val count: Long = 0,
+  val count: suspend () -> Long = suspend { 0 },
   val showCount: Boolean = true,
 )
