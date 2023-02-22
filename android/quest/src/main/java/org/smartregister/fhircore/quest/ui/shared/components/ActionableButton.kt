@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
+const val MAX_CHARS = 16
 
 @Composable
 fun ActionableButton(
@@ -117,8 +119,15 @@ fun ActionableButton(
           else DefaultColor,
         modifier = Modifier.size(16.dp)
       )
+
+      val buttonText = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString()
+      val truncatedText =
+        if (buttonText.length > MAX_CHARS && buttonProperties.buttonType != ButtonType.BIG)
+          "${buttonText.substring(0, MAX_CHARS)}..."
+        else buttonText
+
       Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
+        text = truncatedText,
         fontWeight = FontWeight.Medium,
         color =
           if (buttonEnabled)
@@ -187,6 +196,7 @@ fun ActionableButtonPreview() {
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
         smallSized = true,
+        buttonType = ButtonType.BIG
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
@@ -204,7 +214,8 @@ fun DisabledActionableButtonPreview() {
           status = ServiceStatus.COMPLETED.name,
           text = "Issuing of teenage pads and household due on 23-01-2023",
           smallSized = true,
-          enabled = "true"
+          enabled = "true",
+          buttonType = ButtonType.BIG
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
@@ -218,14 +229,25 @@ fun SmallActionableButtonPreview() {
   Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
       modifier = Modifier.weight(1.0f),
-      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task", fillMaxWidth = true),
+      buttonProperties =
+        ButtonProperties(
+          status = "DUE",
+          text = "Due Task",
+          fillMaxWidth = true,
+          buttonType = ButtonType.TINY
+        ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
       buttonProperties =
-        ButtonProperties(status = "COMPLETED", text = "Completed Task", fillMaxWidth = true),
+        ButtonProperties(
+          status = "COMPLETED",
+          text = "Completed Task",
+          fillMaxWidth = true,
+          buttonType = ButtonType.TINY
+        ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = rememberNavController()
     )

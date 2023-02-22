@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
@@ -147,7 +148,8 @@ fun ServiceCard(
     } else {
       ServiceMemberIcons(
         serviceMemberIcons =
-          serviceCardProperties.serviceMemberIcons
+          serviceCardProperties
+            .serviceMemberIcons
             ?.replace("\\s+".toRegex(), "")
             ?.interpolate(resourceData.computedValuesMap)
       )
@@ -163,8 +165,7 @@ fun ServiceCard(
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
-        if (
-          serviceCardProperties.serviceButton != null &&
+        if (serviceCardProperties.serviceButton != null &&
             serviceCardProperties.serviceButton!!
               .visible
               .interpolate(resourceData.computedValuesMap)
@@ -173,7 +174,8 @@ fun ServiceCard(
           if (serviceCardProperties.serviceButton!!.smallSized) {
             Column {
               ActionableButton(
-                buttonProperties = serviceCardProperties.serviceButton!!.copy(smallSized = true),
+                buttonProperties =
+                  serviceCardProperties.serviceButton!!.copy(buttonType = ButtonType.TINY),
                 navController = navController,
                 resourceData = resourceData
               )
@@ -190,7 +192,7 @@ fun ServiceCard(
           Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
-                buttonProperties = buttonProperties,
+                buttonProperties = buttonProperties.copy(buttonType = ButtonType.TINY),
                 navController = navController,
                 resourceData = resourceData
               )
@@ -222,9 +224,7 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
         Box(
           contentAlignment = Alignment.Center,
           modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
-        ) {
-          Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray)
-        }
+        ) { Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray) }
       }
     }
   }
