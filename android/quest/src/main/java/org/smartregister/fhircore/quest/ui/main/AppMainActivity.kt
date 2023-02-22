@@ -61,8 +61,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   lateinit var navHostFragment: NavHostFragment
 
-  //  private lateinit var syncStartedAt: OffsetDateTime
-
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
       if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
@@ -105,6 +103,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           )
       }
     }
+
+    // Register sync listener then run sync in that order
+    syncListenerManager.registerSyncListener(this, lifecycle)
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
@@ -156,23 +157,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
       }
-      is SyncJobStatus.Failed -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            syncJobStatus,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              appMainViewModel.retrieveLastSyncTimestamp()
-            else getString(R.string.syncing_failed)
-          )
-        )
-      }
-      is SyncJobStatus.Finished -> {
-
-        //        val totalTime = ChronoUnit.SECONDS.between(syncStartedAt, syncJobStatus.timestamp)
-        //        //this.showToast(getString(R.string.sync_completed) + " in "+totalTime + "
-        // seconds")
-        //        Timber.d(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
-
+      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -181,9 +166,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             )
           )
         }
-      }
-      is SyncJobStatus.Started -> {
-        // syncStartedAt = OffsetDateTime.now()
       }
       else -> {
         /*Do nothing */
