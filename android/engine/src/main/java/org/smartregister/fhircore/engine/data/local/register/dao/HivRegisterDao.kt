@@ -174,7 +174,6 @@ constructor(
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
-      observations = patient.observations(),
       practitioners = patient.practitioners()
     )
   }

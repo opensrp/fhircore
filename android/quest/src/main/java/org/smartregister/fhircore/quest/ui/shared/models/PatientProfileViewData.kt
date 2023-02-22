@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -58,7 +57,6 @@ sealed class ProfileViewData(
     val otherPatients: List<Resource> = emptyList(),
     val viewChildText: String = "",
     val guardians: List<Guardian> = emptyList(),
-    val observations: List<Observation> = emptyList(),
     val tracingTask: Task = Task(),
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
@@ -74,7 +72,7 @@ sealed class ProfileViewData(
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
 
     val populationResources: ArrayList<Resource> by lazy {
-      val resources = conditions + guardiansRelatedPersonResource + observations
+      val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
@@ -108,13 +106,12 @@ sealed class ProfileViewData(
     val tracingTasks: List<Task> = emptyList(),
     val carePlans: List<CarePlan> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
-    val observations: List<Observation> = emptyList(),
     val practitioners: List<Practitioner> = emptyList(),
     val conditions: List<Condition> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name) {
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
     val populationResources: ArrayList<Resource> by lazy {
-      val resources = conditions + guardiansRelatedPersonResource + observations
+      val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }

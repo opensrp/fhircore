@@ -69,8 +69,7 @@ class QuestApplication :
   override fun onCreate() {
     super<Application>.onCreate()
 
-    // Detect input timeout ANRs
-    ANRWatchDog().start()
+    initANRWatcher()
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
@@ -128,6 +127,11 @@ class QuestApplication :
         }
       )
     }
+  }
+
+  private fun initANRWatcher() {
+    // Detect input timeout ANRs
+    ANRWatchDog().setANRListener { Timber.e(it) }.start()
   }
 
   override fun getWorkManagerConfiguration(): Configuration =
