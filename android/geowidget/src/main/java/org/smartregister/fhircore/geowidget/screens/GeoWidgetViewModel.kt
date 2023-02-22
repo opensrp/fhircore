@@ -21,6 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import com.mapbox.geojson.FeatureCollection
@@ -31,10 +32,12 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
+import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetViewModel
@@ -76,29 +79,33 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
           // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
           it.characteristic.firstOrNull { characteristic ->
             characteristic.value is Reference &&
-              characteristic.valueReference.reference.contains("Location")
+              characteristic.valueReference.reference.contains(ResourceType.Location.name)
           } != null
         }
 
     val familiesList = ArrayList<Pair<Group, Location>>()
 
     familiesWithLocations.forEach { family ->
-      val familyLocation =
-        defaultRepository.fhirEngine.get<Location>(
-          family.characteristic.firstOrNull { characteristic ->
-              characteristic.value is Reference &&
-                characteristic.valueReference.reference.contains("Location")
-            }!!
-            .valueReference
-            .referenceElement
-            .idPart
-        )
+      try {
+        val familyLocation = defaultRepository.fhirEngine.get<Location>(familyLocationId(family))
 
-      familiesList.add(Pair(family, familyLocation))
+        familiesList.add(Pair(family, familyLocation))
+      } catch (ex: ResourceNotFoundException) {
+        Timber.e(ex)
+      }
     }
 
     return familiesList
   }
+
+  private fun familyLocationId(family: Group) =
+    family.characteristic.firstOrNull { characteristic ->
+        characteristic.value is Reference &&
+          characteristic.valueReference.reference.contains("Location")
+      }!!
+      .valueReference
+      .referenceElement
+      .idPart
 
   fun saveLocation(location: Location): LiveData<Boolean> {
     val liveData = MutableLiveData<Boolean>()

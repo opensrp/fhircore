@@ -25,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -176,33 +177,51 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
           bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-            .apply {
-              var questionnaireResponse =
-                intent
-                  .getStringExtra(QUESTIONNAIRE_RESPONSE)
-                  ?.decodeResourceFromString<QuestionnaireResponse>()
-                  ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
-
-              if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
-
-              if (questionnaireConfig.resourceIdentifier != null) {
-                setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-                if (questionnaireResponse == null) {
-                  questionnaireResponse =
-                    questionnaireViewModel.generateQuestionnaireResponse(
-                      questionnaire = questionnaire,
-                      intent = intent,
-                      questionnaireConfig = questionnaireConfig
-                    )
-                }
-                this.putString(
-                  QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                  questionnaireResponse.encodeResourceToString()
-                )
-              }
-            }
+            .apply { attachQuestionnaireResponse(this, intent, questionnaireConfig) }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+  }
+
+  @VisibleForTesting
+  internal suspend fun attachQuestionnaireResponse(
+    bundle: Bundle,
+    intent: Intent,
+    questionnaireConfig: QuestionnaireConfig
+  ) {
+    var questionnaireResponse =
+      intent
+        .getStringExtra(QUESTIONNAIRE_RESPONSE)
+        ?.decodeResourceFromString<QuestionnaireResponse>()
+        ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+
+    if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
+
+    if (questionnaireConfig.resourceIdentifier != null) {
+      setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
+    }
+
+    if (questionnaireResponse == null && intentHasPopulationResources(intent)) {
+      questionnaireResponse =
+        questionnaireViewModel.generateQuestionnaireResponse(
+          questionnaire = questionnaire,
+          intent = intent,
+          questionnaireConfig = questionnaireConfig
+        )
+    }
+
+    if (questionnaireResponse != null) {
+      bundle.putString(
+        QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
+        questionnaireResponse.encodeResourceToString()
+      )
+    }
+  }
+
+  @VisibleForTesting
+  internal fun intentHasPopulationResources(intent: Intent): Boolean {
+    val resourceList =
+      intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+    return resourceList != null && resourceList.size > 0
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
