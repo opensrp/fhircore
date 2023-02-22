@@ -34,7 +34,6 @@ interface QuestionnaireHandler {
     context: Context,
     intentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,
-    computedValuesMap: Map<String, Any>?,
     actionParams: List<ActionParameter> = emptyList()
   ) {
     startForResult.launch(
@@ -42,7 +41,6 @@ interface QuestionnaireHandler {
         .putExtras(
           QuestionnaireActivity.intentArgs(
             questionnaireConfig = questionnaireConfig,
-            computedValuesMap = computedValuesMap,
             actionParams = actionParams
           )
         )

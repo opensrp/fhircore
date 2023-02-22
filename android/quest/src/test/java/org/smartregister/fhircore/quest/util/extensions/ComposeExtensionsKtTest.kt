@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.quest.util.extensions
 
-import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import io.mockk.spyk
+import io.mockk.verify
+import org.junit.Test
 
-@Serializable
-data class ExtractedResource(
-  val id: String? = null,
-  val resourceType: ResourceType,
-  val fhirPathExpression: String
-)
+class ComposeExtensionsKtTest {
+
+  @Test
+  fun testConditionalModifier() {
+    val modifier = spyk(Modifier)
+    modifier.conditional(true, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxWidth() }
+    modifier.conditional(false, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxHeight() }
+  }
+}

@@ -113,12 +113,12 @@ fun ServiceCard(
             }
           )
     ) {
-      // When show div
       Column(
         modifier =
           modifier
             .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f),
+        verticalArrangement = Arrangement.Center
       ) {
         serviceCardProperties.details.forEach {
           CompoundText(
@@ -187,7 +187,7 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
@@ -245,6 +245,14 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
+        .clickable {
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
+        }
         .width(140.dp)
         .height(80.dp)
         .padding(8.dp)
@@ -256,15 +264,7 @@ private fun BigServiceButton(
         )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        )
-        .clickable {
-          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
-        },
+        ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
