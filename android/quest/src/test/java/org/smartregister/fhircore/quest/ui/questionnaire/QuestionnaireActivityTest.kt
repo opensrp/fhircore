@@ -778,7 +778,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     assertTrue { questionnaireActivity.intentHasPopulationResources(intent) }
   }
-  
+
   @Test
   fun testFragmentQuestionnaireSubmitHandlesQuestionnaireSubmit() {
 
