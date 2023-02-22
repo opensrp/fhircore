@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 @Composable
 fun CardView(
@@ -50,7 +49,6 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (viewProperties.isVisible(resourceData.computedValuesMap)) {
     Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
       // Header section
       Column(modifier = modifier.fillMaxWidth()) {
@@ -84,7 +82,6 @@ fun CardView(
         }
       }
     }
-  }
 }
 
 @PreviewWithBackgroundExcludeGenerated

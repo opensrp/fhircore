@@ -66,7 +66,6 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
     val buttonEnabled =
@@ -144,7 +143,6 @@ fun ActionableButton(
         )
       }
     }
-  }
 }
 
 /**
