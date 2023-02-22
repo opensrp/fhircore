@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.report.measure.models
+package org.smartregister.fhircore.quest.util.extensions
 
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import io.mockk.spyk
+import io.mockk.verify
+import org.junit.Test
 
-@Stable
-@Serializable
-data class MeasureReportPopulationResult(
-  val title: String = "",
-  val count: String = "",
-  val dataList: List<MeasureReportIndividualResult> = emptyList(),
-  val indicatorTitle: String = "",
-  val measureReportDenominator: Int? = null
-)
+class ComposeExtensionsKtTest {
+
+  @Test
+  fun testConditionalModifier() {
+    val modifier = spyk(Modifier)
+    modifier.conditional(true, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxWidth() }
+    modifier.conditional(false, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxHeight() }
+  }
+}

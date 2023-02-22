@@ -134,14 +134,27 @@ dependencies {
    // implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
 //    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
 
-    def cqlEngineVersion = '2.1.0'
+    def cqlEngineVersion = '2.4.0'
     implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
     implementation "org.opencds.cqf.cql:engine.jackson:$cqlEngineVersion"
 
-    def cqlEvaluatorVersion = '2.1.0'
-    implementation "org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"
-    implementation "org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"
-    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion")
+    def cqlEvaluatorVersion = '2.4.0'
+    implementation("org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"){
+        exclude group: 'com.github.ben-manes.caffeine'
+        exclude group: 'ca.uhn.hapi.fhir'
+    }
+    implementation("org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"){
+        exclude group: 'com.github.ben-manes.caffeine'
+        exclude group: 'ca.uhn.hapi.fhir'
+    }
+    implementation("org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"){
+        exclude group: 'com.github.ben-manes.caffeine'
+        exclude group: 'ca.uhn.hapi.fhir'
+    }
+    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion"){
+        exclude group: 'com.github.ben-manes.caffeine'
+        exclude group: 'ca.uhn.hapi.fhir'
+    }
 
     // Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
@@ -168,8 +181,8 @@ dependencies {
     api("androidx.navigation:navigation-testing:$navigationVersion")
     api("androidx.compose.material:material-icons-extended:1.3.1")
     api("androidx.compose.material:material-icons-core:1.3.1")
+    api("androidx.compose.material3:material3:1.0.1")
     api("androidx.compose.foundation:foundation:1.3.1")
-    api("androidx.compose.material:material:1.3.1")
     api("androidx.hilt:hilt-navigation-compose:1.0.0")
     api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
     api("androidx.paging:paging-compose:1.0.0-alpha17")
@@ -185,6 +198,9 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
+
+    api('javax.xml.stream:stax-api:1.0')
+    api('com.github.ben-manes.caffeine:caffeine:2.9.1')
     
     api('org.smartregister:data-capture:0.1.0-beta06-preview7-SNAPSHOT') {
         transitive = true
@@ -194,7 +210,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:workflow:0.1.0-alpha02-preview5-SNAPSHOT') {
+    api('org.smartregister:workflow:0.1.0-alpha02-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -202,10 +218,12 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
+        exclude group: 'com.github.ben-manes.caffeine'
     }
 
     api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {
         transitive = true
+        exclude group: 'ca.uhn.hapi.fhir'
     }
 
     api('org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT') {
@@ -218,6 +236,7 @@ dependencies {
     api('org.smartregister:engine:0.1.0-beta02-preview10-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.github.ben-manes.caffeine'
     }
 
     api 'com.google.code.gson:gson:2.9.1'

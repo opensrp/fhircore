@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.report.measure.models
+package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 
-@Stable
 @Serializable
-data class MeasureReportPopulationResult(
-  val title: String = "",
-  val count: String = "",
-  val dataList: List<MeasureReportIndividualResult> = emptyList(),
-  val indicatorTitle: String = "",
-  val measureReportDenominator: Int? = null
+data class TopBarConfig(
+  val title: CompoundTextProperties? = null,
+  val collapsible: Boolean = true,
+  val content: List<ViewProperties> = emptyList(),
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+  val showOverflowMenu: Boolean = true
 )
