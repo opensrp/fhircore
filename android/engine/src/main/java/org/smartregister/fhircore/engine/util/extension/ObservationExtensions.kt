@@ -16,20 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Observation
 
-fun Reference.extractId(): String =
-  if (this.reference.isNullOrEmpty()) "" else this.reference.extractLogicalIdUuid()
+fun Observation.codingOf(code: String) = this.code.coding.find { it.code == code }
 
-fun Reference.extractType(): ResourceType? =
-  if (this.reference.isNullOrEmpty()) null
-  else
-    this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/").let {
-      ResourceType.fromCode(it)
-    }
+fun Observation.defaultCode() = this.code.codingFirstRep.code
 
-fun String.asReference(resourceType: ResourceType): Reference {
-  val resourceId = this
-  return Reference().apply { reference = "${resourceType.name}/$resourceId" }
-}
+fun Observation.valueCode() =
+  if (this.hasValueCodeableConcept()) this.valueCodeableConcept.codingFirstRep.code else null

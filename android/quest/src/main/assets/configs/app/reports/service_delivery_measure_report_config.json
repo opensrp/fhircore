@@ -1,10 +1,10 @@
 {
   "appId": "app",
   "configType": "measureReport",
+  "id": "serviceDeliveryMeasureReport",
+  "registerId": "patientRegister",
   "registerDate": "2020-10-27",
   "showFixedRangeSelection": true,
-  "id": "defaultMeasureReport",
-  "registerId": "patientRegister",
   "reports": [
     {
       "title": "Household Members",
@@ -77,12 +77,6 @@
       "description": "HIV Clients disaggregated by age, gender, and months",
       "url": "https://fhir.labs.smartregister.org/fhir/Measure/HIVCLIENTSIND01",
       "module": "Module 4"
-    },
-    {
-      "title": "Stock Consumption",
-      "description": "Stock Consumption Report",
-      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND01",
-      "module": "Stock"
     }
   ]
 }
