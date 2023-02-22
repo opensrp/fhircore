@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.tracing.register
+package org.smartregister.fhircore.quest.ui.appointment.register
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,11 +23,11 @@ import androidx.navigation.NavHostController
 import org.smartregister.fhircore.quest.ui.PageRegisterScreen
 
 @Composable
-fun TracingRegisterScreen(
+fun AppointmentRegisterScreen(
   modifier: Modifier = Modifier,
   screenTitle: String,
   navController: NavHostController,
-  registerViewModel: TracingRegisterViewModel = hiltViewModel()
+  registerViewModel: AppointmentRegisterViewModel = hiltViewModel()
 ) {
   PageRegisterScreen(
     modifier = modifier,

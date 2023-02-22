@@ -33,6 +33,8 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -41,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -59,6 +62,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -129,6 +133,8 @@ constructor(
       decodeFhirResource = true
     )
   }
+
+  private var currentFormName = ""
 
   fun updateSaveButtonEnableState(enabled: Boolean) =
     saveButtonEnabledMutableLiveData.postValue(enabled)
@@ -507,6 +513,48 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadScheduledAppointments(patientId: String): Iterable<Appointment> {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filter {
+        it.status == Appointment.AppointmentStatus.BOOKED &&
+          it.hasStart() &&
+          it.start.after(
+            Date.from(
+              LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30)
+            )
+          )
+      }
+  }
+
+  suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filterNot { it.hasStart() && it.status == Appointment.AppointmentStatus.BOOKED }
+      .sortedBy { it.created }
+      .firstOrNull()
+  }
+
   suspend fun loadTracing(patientId: String): List<Task> {
     val tasks =
       fhirEngine.search<Task> {
@@ -532,7 +580,7 @@ constructor(
           }
         )
       }
-    return tasks
+    return tasks.filter { it.status in arrayOf(TaskStatus.READY, TaskStatus.INPROGRESS) }
   }
 
   fun saveResource(resource: Resource) {
@@ -564,11 +612,11 @@ constructor(
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
-      if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
-        val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+      val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+      if (bundleIndex != -1) {
+        val currentBundle = resourcesList[bundleIndex] as Bundle
 
-        if (bundleIndex != -1) {
-          val currentBundle = resourcesList[bundleIndex] as Bundle
+        if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
           val bundle = Bundle()
           bundle.id = TracingHelpers.tracingBundleId
           val tasks = loadTracing(patientId)
@@ -578,8 +626,17 @@ constructor(
               id = TracingHelpers.tracingBundleId
             }
           )
-          resourcesList[bundleIndex] = currentBundle
         }
+
+        val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
+        if (appointmentToPopulate != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
+        // Add appointments that may need to be closed
+        loadScheduledAppointments(patientId).forEach {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
+        }
+        resourcesList[bundleIndex] = currentBundle
       }
 
       // for situations where patient RelatedPersons not passed through intent extras
