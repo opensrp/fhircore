@@ -59,9 +59,7 @@ constructor(
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
     JexlBuilder()
       .namespaces(
@@ -76,6 +74,9 @@ constructor(
       .strict(false)
       .create()
 
+  private var facts: Facts = Facts()
+  private var computedValuesMap = mutableMapOf<String, Any>()
+
   init {
     rulesEngine.registerRuleListener(this)
   }
@@ -84,7 +85,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
-      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
+      //      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
 
@@ -114,42 +115,44 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  fun fireRule(
-    ruleConfigs: List<RuleConfig>,
+  fun fireRules(
+    rules: Rules,
     baseResource: Resource,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
+
     // Reset previously computed values and init facts
-    computedValuesMap.clear()
+    computedValuesMap = mutableMapOf()
+    facts = Facts()
+
     facts.apply {
-      clear()
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)
       put(SERVICE, rulesEngineService)
+      put(baseResource.resourceType.name, baseResource)
+      relatedResourcesMap.forEach { put(it.key, it.value) }
     }
 
-    val customRules = mutableSetOf<Rule>()
-    ruleConfigs.forEach { ruleConfig ->
+    rulesEngine.fire(rules, facts)
+    return computedValuesMap
+  }
 
-      // Create JEXL rule
-      val customRule: JexlRule =
-        JexlRule(jexlEngine)
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .priority(ruleConfig.priority)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules {
+    val customRules =
+      ruleConfigs
+        .map { ruleConfig ->
+          val customRule: JexlRule =
+            JexlRule(jexlEngine)
+              .name(ruleConfig.name)
+              .description(ruleConfig.description)
+              .priority(ruleConfig.priority)
+              .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-      ruleConfig.actions.forEach { customRule.then(it) }
-      customRules.add(customRule)
-    }
-
-    // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    facts.put(baseResource.resourceType.name, baseResource)
-
-    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
-    rulesEngine.fire(Rules(customRules), facts)
-
-    return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
+          ruleConfig.actions.forEach { customRule.then(it) }
+          customRule
+        }
+        .toSet()
+    return Rules(customRules)
   }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */

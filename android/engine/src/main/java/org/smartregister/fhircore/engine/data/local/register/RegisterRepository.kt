@@ -137,7 +137,7 @@ constructor(
           relatedResources = currentRelatedResources,
           baseResource = baseResource,
           views = registerConfiguration.registerCard.views,
-          rules = registerConfiguration.registerCard.rules
+          ruleConfigs = registerConfiguration.registerCard.rules
         )
 
       resourceData.add(currentResourceData)
@@ -149,16 +149,18 @@ constructor(
   private fun processResourceData(
     relatedResources: LinkedList<RelatedResourceData>,
     baseResource: Resource,
-    rules: List<RuleConfig>,
+    ruleConfigs: List<RuleConfig>,
     views: List<ViewProperties>
   ): ResourceData {
 
     val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
+
+    val rules = rulesFactory.generateRules(ruleConfigs)
     val computedValuesMap =
-      rulesFactory.fireRule(
-        ruleConfigs = rules,
+      rulesFactory.fireRules(
+        rules = rules,
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
       )
@@ -228,9 +230,10 @@ constructor(
         }
 
       // Values computed from the rules defined in LIST view RegisterCard
+      val rules = rulesFactory.generateRules(ruleConfigs)
       val listComputedValuesMap =
-        rulesFactory.fireRule(
-          ruleConfigs = ruleConfigs,
+        rulesFactory.fireRules(
+          rules = rules,
           baseResource = resource,
           relatedResourcesMap = listItemRelatedResources
         )
@@ -493,7 +496,7 @@ constructor(
       relatedResources = relatedResources,
       baseResource = baseResource,
       views = profileConfiguration.views,
-      rules = profileConfiguration.rules
+      ruleConfigs = profileConfiguration.rules
     )
   }
 

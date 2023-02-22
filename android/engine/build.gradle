@@ -131,8 +131,6 @@ dependencies {
     // CQL
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.2'
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
-   // implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
-//    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
 
     def cqlEngineVersion = '2.1.0'
     implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
@@ -218,6 +216,7 @@ dependencies {
     api('org.smartregister:engine:0.1.0-beta02-preview10-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'ca.uhn.hapi.fhir'
     }
 
     api 'com.google.code.gson:gson:2.9.1'

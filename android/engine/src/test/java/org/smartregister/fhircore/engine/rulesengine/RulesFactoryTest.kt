@@ -120,7 +120,7 @@ class RulesFactoryTest : RobolectricTest() {
 
     ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
     every { rulesEngine.fire(any(), any()) } just runs
-    rulesFactory.fireRule(
+    rulesFactory.fireRules(
       ruleConfigs = ruleConfigs,
       baseResource = baseResource,
       relatedResourcesMap = relatedResourcesMap
