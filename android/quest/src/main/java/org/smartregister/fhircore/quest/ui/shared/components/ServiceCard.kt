@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -65,11 +65,14 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
+
+const val DIVIDER_TEST_TAG = "dividerTestTag"
 
 @Composable
 fun ServiceCard(
@@ -110,12 +113,12 @@ fun ServiceCard(
             }
           )
     ) {
-      // When show div
       Column(
         modifier =
           modifier
             .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f),
+        verticalArrangement = Arrangement.Center
       ) {
         serviceCardProperties.details.forEach {
           CompoundText(
@@ -137,7 +140,7 @@ fun ServiceCard(
     // When divider is displayed member icons will not show
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
-        modifier = modifier.fillMaxHeight().width(1.dp),
+        modifier = modifier.fillMaxHeight().width(1.dp).testTag(DIVIDER_TEST_TAG),
         thickness = 0.5.dp,
         color = DividerColor
       )
@@ -184,7 +187,7 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
@@ -242,6 +245,14 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
+        .clickable {
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
+        }
         .width(140.dp)
         .height(80.dp)
         .padding(8.dp)
@@ -253,15 +264,7 @@ private fun BigServiceButton(
         )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        )
-        .clickable {
-          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
-        },
+        ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -286,7 +289,7 @@ private fun BigServiceButton(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
@@ -340,7 +343,7 @@ private fun ServiceCardServiceOverduePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceDuePreview() {
   val viewProperties =
@@ -394,7 +397,7 @@ private fun ServiceCardServiceDuePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
@@ -448,7 +451,7 @@ private fun ServiceCardServiceUpcomingPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceFamilyMemberPreview() {
   val viewProperties =
@@ -483,7 +486,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
@@ -536,7 +539,7 @@ private fun ServiceCardServiceCompletedPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
@@ -584,7 +587,7 @@ private fun ServiceCardANCServiceDuePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =

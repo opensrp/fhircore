@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -67,13 +65,12 @@ constructor(
   open val configService: ConfigService
 ) {
 
-  val appConfig: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
-  }
-
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
+
+  suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
+    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
 
   suspend fun loadResource(reference: Reference) =
     withContext(dispatcherProvider.io()) {
@@ -192,7 +189,7 @@ constructor(
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.first().family
+        name = relatedPerson.name.firstOrNull()?.family
       }
     fhirEngine.update(group)
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.concurrent.TimeUnit
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 
 @HiltWorker
 class FhirTaskExpireWorker
@@ -37,55 +36,33 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val fhirTaskExpireUtil: FhirTaskExpireUtil
+  val fhirTaskExpireUtil: FhirTaskExpireUtil,
+  val sharedPreferences: SharedPreferencesHelper
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
-    var dateTasks = fhirTaskExpireUtil.fetchOverdueTasks()
-    var maxDate = dateTasks.first
-    var tasks = dateTasks.second
+    val lastAuthoredOnDate =
+      sharedPreferences
+        .read(SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name, null)
+        ?.parseDate(SDF_YYYY_MM_DD)
 
-    while (tasks.size > 0) {
-      fhirTaskExpireUtil.markTaskExpired(tasks)
-      dateTasks = fhirTaskExpireUtil.fetchOverdueTasks(from = maxDate)
-      maxDate = dateTasks.first
-      tasks = dateTasks.second
+    var (maxDate, tasks) =
+      fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = lastAuthoredOnDate)
+
+    while (tasks.isNotEmpty()) {
+      val resultPair = fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = maxDate)
+      maxDate = resultPair.first
+      tasks = resultPair.second
     }
 
+    sharedPreferences.write(
+      SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name,
+      maxDate?.formatDate(SDF_YYYY_MM_DD)
+    )
     return Result.success()
   }
 
   companion object {
-    const val TAG = "FhirTaskExpire"
-
-    fun schedule(
-      workManager: WorkManager,
-      sharedPreferencesHelper: SharedPreferencesHelper,
-      durationInMins: Long,
-      version: Long = 1
-    ) {
-      val currVersion =
-        sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name, 0)
-      var existingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
-      if (currVersion != version) {
-        existingWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
-        sharedPreferencesHelper.write(
-          SharedPreferenceKey.FHIR_TASK_EXPIRE_WORKER_VERSION.name,
-          version
-        )
-      }
-
-      val periodicWorkRequest =
-        PeriodicWorkRequestBuilder<FhirTaskExpireWorker>(
-            repeatInterval = durationInMins,
-            repeatIntervalTimeUnit = TimeUnit.MINUTES,
-            flexTimeInterval = 5,
-            flexTimeIntervalUnit = TimeUnit.MINUTES
-          )
-          .setInitialDelay(durationInMins, TimeUnit.MINUTES)
-          .build()
-
-      workManager.enqueueUniquePeriodicWork(TAG, existingWorkPolicy, periodicWorkRequest)
-    }
+    const val WORK_ID = "FhirTaskExpire"
   }
 }

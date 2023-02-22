@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.smartregister.fhircore.quest.util.mappers
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.time.LocalDate
+import java.time.Period
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
@@ -53,6 +55,25 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
         listResourceDataMap = emptyMap()
       )
     val profileViewDataHiv = measureReportPatientViewDataMapper.transformInputToOutputModel(dto)
+    with(profileViewDataHiv) {
+      // TODO Update expected values once refactors in
+      //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
+      Assert.assertEquals("TEST_PATIENT", logicalId)
+      Assert.assertEquals("", name)
+      Assert.assertEquals("", getTestPatientAge())
+      Assert.assertEquals("", family)
+      Assert.assertEquals("", gender)
+    }
     Assert.assertEquals("TEST_PATIENT", profileViewDataHiv.logicalId)
+  }
+
+  private fun getTestPatientAge(): String {
+    // Update this according to value in patient-registration-questionnaire/sample/patient.json file
+    val dob: LocalDate = LocalDate.of(1998, 12, 14)
+    val period: Period = Period.between(dob, LocalDate.now())
+    // TODO Update expected values once refactors in
+    //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
+    // return "${period.years}y"
+    return ""
   }
 }

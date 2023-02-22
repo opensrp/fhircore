@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.util.Pair
@@ -70,7 +69,7 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.R
@@ -458,9 +457,8 @@ fun GenerateReportButton(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun PatientSelectionAllPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }
   PatientSelectionBox(
@@ -481,9 +479,8 @@ fun PatientSelectionAllPreview() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun PatientSelectionIndividualPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.INDIVIDUAL) }
   PatientSelectionBox(
@@ -504,9 +501,8 @@ fun PatientSelectionIndividualPreview() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun FixedRangeListPreview() {
   val ranges = HashMap<String, List<ReportRangeSelectionData>>()
   val months = mutableListOf<ReportRangeSelectionData>()
@@ -528,9 +524,8 @@ fun FixedRangeListPreview() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun ReportFilterPreview() {
   val reportTypeState = remember { mutableStateOf(MeasureReport.MeasureReportType.SUMMARY) }
   val dateRange = remember {

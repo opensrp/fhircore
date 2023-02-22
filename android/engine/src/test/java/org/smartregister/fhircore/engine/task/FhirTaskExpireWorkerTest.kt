@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.ListenableWorker
-import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
@@ -32,107 +31,69 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.plusDays
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
 class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  @Inject lateinit var fhirEngine: FhirEngine
+  private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
-  lateinit var context: Context
 
   @Before
   fun setup() {
     hiltRule.inject()
-
-    context = ApplicationProvider.getApplicationContext()
     initializeWorkManager()
     fhirTaskExpireWorker =
-      TestListenableWorkerBuilder<FhirTaskExpireWorker>(context)
+      TestListenableWorkerBuilder<FhirTaskExpireWorker>(ApplicationProvider.getApplicationContext())
         .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
         .build()
   }
 
   @Test
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
-    val date1 = DateTime().minusDays(4).toDate()
-    val date2 = Date()
-    val firstBatchTasks = mutableListOf(Task())
-    val secondBatchTasks = mutableListOf(Task())
+    val taskDate = Date()
 
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks() } returns Pair(date1, firstBatchTasks)
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks(from = date1) } returns
-      Pair(date2, secondBatchTasks)
-    coEvery { fhirTaskExpireUtil.fetchOverdueTasks(from = date2) } returns
-      Pair(null, mutableListOf())
-    coEvery { fhirTaskExpireUtil.markTaskExpired(any()) } just runs
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = null) } returns
+      Pair(
+        taskDate,
+        listOf(
+          Task().apply {
+            id = UUID.randomUUID().toString()
+            status = Task.TaskStatus.CANCELLED
+            authoredOn = taskDate
+            restriction =
+              Task.TaskRestrictionComponent().apply {
+                period = Period().apply { end = DateTime().plusDays(2).toDate() }
+              }
+          }
+        )
+      )
+
+    // End the job successfully when an empty list is returned
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = taskDate) } returns
+      Pair(taskDate.plusDays(3), emptyList())
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
-    assertEquals(androidx.work.ListenableWorker.Result.success(), result)
-
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks() }
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks(from = date1) }
-    coVerify { fhirTaskExpireUtil.fetchOverdueTasks(from = date2) }
-
-    coVerify { fhirTaskExpireUtil.markTaskExpired(firstBatchTasks) }
-    coVerify { fhirTaskExpireUtil.markTaskExpired(secondBatchTasks) }
-  }
-
-  @Test
-  fun scheduleShouldCallEnqueueWithReplaceWhenVersionIsNewer() {
-    // Schedule the first job of version 1
-    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
-
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
-
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 2)
-
-    val workInfo2 =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
-        .get()[0]
-
-    assertNotEquals(workInfo.id, workInfo2.id)
-  }
-
-  @Test
-  fun scheduleShouldCallEnqueueWithKeepWhenVersionIsSimilar() {
-    // Schedule the first job of version 1
-    val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 56, 1)
-
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG).get()[0]
-
-    FhirTaskExpireWorker.schedule(workManager, sharedPreferencesHelper, 45, 1)
-
-    val workInfo2 =
-      WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-        .getWorkInfosForUniqueWork(FhirTaskExpireWorker.TAG)
-        .get()[0]
-
-    assertEquals(workInfo.id, workInfo2.id)
+    assertEquals(ListenableWorker.Result.success(), result)
   }
 
   private fun initializeWorkManager() {
@@ -143,7 +104,10 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         .build()
 
     // Initialize WorkManager for instrumentation tests.
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+    WorkManagerTestInitHelper.initializeTestWorkManager(
+      ApplicationProvider.getApplicationContext(),
+      config
+    )
   }
 
   inner class FhirTaskExpireJobWorkerFactory : WorkerFactory() {
@@ -152,7 +116,13 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       workerClassName: String,
       workerParameters: WorkerParameters
     ): ListenableWorker {
-      return FhirTaskExpireWorker(appContext, workerParameters, fhirEngine, fhirTaskExpireUtil)
+      return FhirTaskExpireWorker(
+        context = appContext,
+        workerParams = workerParameters,
+        fhirEngine = fhirEngine,
+        fhirTaskExpireUtil = fhirTaskExpireUtil,
+        sharedPreferences = sharedPreferencesHelper
+      )
     }
   }
 }
