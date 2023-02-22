@@ -254,7 +254,7 @@ dependencies {
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
     // JEXL
-    api ('org.jeasy:easy-rules-jexl:4.1.0') {
+    api("io.github.dvgaba:easy-rules-core:1.0.7") {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
 
