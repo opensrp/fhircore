@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,4 +18,9 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
 
-@Serializable data class LoginConfig(val showLogo: Boolean = true, val enablePin: Boolean? = false)
+@Serializable
+data class LoginConfig(
+  val showLogo: Boolean = true,
+  val enablePin: Boolean? = false,
+  val pinLength: Int = 4
+)

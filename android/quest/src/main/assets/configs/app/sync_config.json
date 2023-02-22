@@ -34,18 +34,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "publisher",
-        "code": "publisher",
-        "base": [
-          "Questionnaire"
-        ],
-        "type": "token",
-        "expression": "#publisher"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
@@ -81,6 +69,18 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "_tag",
+        "base": [
+          "MeasureReport"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "count",
         "code": "_count",
         "base": [
@@ -90,7 +90,6 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Questionnaire",
           "StructureMap",
           "Task",
           "Group",

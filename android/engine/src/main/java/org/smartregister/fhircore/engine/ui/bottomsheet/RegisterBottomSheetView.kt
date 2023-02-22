@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
@@ -47,7 +46,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val REGISTER_BOTTOM_SHEET_LIST = "registerBottomSheetList"
 
@@ -124,8 +123,7 @@ fun RegisterListItem(
   }
 }
 
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
@@ -136,8 +134,7 @@ fun RegisterListItemPreview() {
   )
 }
 
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 fun RegisterBottomSheetPreview() {
   RegisterBottomSheetView(

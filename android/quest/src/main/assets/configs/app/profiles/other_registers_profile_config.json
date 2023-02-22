@@ -17,7 +17,13 @@
           },
           {
             "resource": "Task",
-            "searchParameter": "subject"
+            "searchParameter": "subject",
+            "sortConfigs": [
+              {
+                "paramName": "period",
+                "dataType": "DATE"
+              }
+            ]
           }
         ]
       }
@@ -98,42 +104,70 @@
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient.get(0), 'dd/MM/YY'))"
+        "data.put('patientDOB', service.extractDOB(Patient.get(0), 'MM/dd/YY'))"
+      ]
+    },
+    {
+      "name": "isChild",
+      "condition": "true",
+      "actions": [
+        "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
       ]
     },
     {
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
-      "name": "canHavePregnancyOutcome",
+      "name": "isEligibleForFP",
       "condition": "true",
       "actions": [
-        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
+        "data.put('isEligibleForFP',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
-      "name": "canEnrollToFp",
+      "name": "isPregnant",
       "condition": "true",
       "actions": [
-        "data.put('canEnrollToFp', data.get('canBearChild'))"
+        "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.coding.code = '77386006' and Condition.clinicalStatus.coding.code = 'active'\", false))"
+      ]
+    },
+    {
+      "name": "canRegisterPregnancy",
+      "condition": "true",
+      "actions": [
+        "data.put('canRegisterPregnancy', data.get('canBearChild') and data.get('isPregnant'))"
       ]
     },
     {
       "name": "isChildUnder2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildUnder2months',  fhirPath.extractValue(Patient.get(0), \"Patient.active and (Patient.birthDate >= today() - 2 'months')\"))"
+        "data.put('isChildUnder2months', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate > today() - 2 'months')\"))"
       ]
     },
     {
       "name": "isChildOver2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildOver2months',  fhirPath.extractValue(Patient.get(0), \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
+        "data.put('isChildOver2months', fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
+      ]
+    },
+    {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome', data.get('canBearChild'))"
+      ]
+    },
+    {
+      "name": "fpConditionId",
+      "condition": "true",
+      "actions": [
+        "data.put('fpConditionId', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code', '99998888').get(0), 'Condition.id.replace(\"Condition/\",\"\")') )"
       ]
     }
   ],
@@ -227,7 +261,12 @@
           "content": [
             {
               "viewType": "LIST",
-              "baseResource": "Task",
+              "resources": [
+                {
+                  "id": "tasks",
+                  "resourceType": "Task"
+                }
+              ],
               "registerCard": {
                 "rules": [
                   {
@@ -245,10 +284,32 @@
                     ]
                   },
                   {
+                    "name": "taskExecutionStartDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+                    ]
+                  },
+                  {
+                    "name": "taskPeriodDueDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                    ]
+                  },
+                  {
                     "name": "taskDescription",
                     "condition": "true",
                     "actions": [
                       "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskDescriptionWithStartDate",
+                    "condition": "true",
+                    "priority": 2,
+                    "actions": [
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -277,7 +338,7 @@
                   {
                     "viewType": "BUTTON",
                     "smallSized": "true",
-                    "text": "@{taskDescription}",
+                    "text": "@{taskDescriptionWithStartDate}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",
                     "enabled": "@{patientActive}",
@@ -294,7 +355,16 @@
                           "planDefinitions": [
                             "9fac39bd-9750-4c1d-b355-1961de4e37f3"
                           ]
-                        }
+                        },
+                        "params": [
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "772e0f8a-829a-11ed-a1eb-0242ac120002",
+                            "dataType": "STRING",
+                            "key": "fpConditionId",
+                            "value": "@{fpConditionId}"
+                          }
+                        ]
                       }
                     ]
                   }
@@ -326,26 +396,6 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "9fac39bd-9750-4c1d-b355-1961de4e37f3"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "title": "Pregnancy Outcome",
-      "titleColor": "@{patientTextColor}",
-      "visible": "@{canHavePregnancyOutcome}",
-      "enabled": "@{patientActive}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "405619ff-cde8-4379-b674-0a4735098b33",
-            "title": "Pregnancy outcome",
-            "resourceIdentifier": "@{patientId}",
-            "planDefinitions": [
-              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
             ]
           }
         }
@@ -392,9 +442,58 @@
       ]
     },
     {
+      "title": "Register Pregnancy",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canBearChild}",
+      "enabled": "@{patientActive}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "9b22f3ed-e7e1-4222-bf72-1ced42696189",
+            "title": "Record to ANC",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "a881d53a-590c-4d52-ae0f-c87b7ff04148"
+            ]
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "e152df80-7f89-11ed-a1eb-0242ac120002",
+              "dataType": "STRING",
+              "key": "fpConditionId",
+              "value": "@{fpConditionId}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canBearChild}",
+      "enabled": "@{patientActive}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
+            "title": "Pregnancy outcome",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "title": "Enroll to FP",
       "titleColor": "@{patientTextColor}",
-      "visible": "@{canEnrollToFp}",
+      "visible": "@{isEligibleForFP}",
       "enabled": "@{patientActive}",
       "actions": [
         {
@@ -436,6 +535,8 @@
     {
       "title": "Remove this person",
       "titleColor": "#FF0000",
+      "backgroundColor": "dangerColor",
+      "confirmAction": true,
       "visible": "@{patientActive}",
       "enabled": "@{patientActive}",
       "showSeparator": "true",

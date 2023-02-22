@@ -12,9 +12,8 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
-    <string name="username_input_hint">Enter username</string>
-    <string name="password_input_hint">Enter password</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from the server. Check your internet connection</string>
     <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
     <string name="select_language">Select Language</string>
@@ -24,6 +23,7 @@
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
+    <string name="refresh_token_fail_error_message">Failed to retrieve credentials from the server. Please check your internet connection.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>
@@ -51,7 +51,9 @@
     <string name="loading">Loading</string>
     <string name="error_logging_out">Logout error message: %1$s</string>
     <string name="cannot_logout_user">Unable to logout: Already logged out or device is offline.</string>
-    <string name="error_loading_config">Error loading configuration. Details: %1$s</string>
+    <string name="error_loading_config_http_error">Could not load configuration. Please try again later</string>
+    <string name="error_loading_config_no_internet">Could not load configuration. Please check your internet connection</string>
+    <string name="error_loading_config_general">Error connecting to the server. Please contact the system administrator</string>
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="form_progress_message">Processing data. Please wait</string>
@@ -60,17 +62,11 @@
     <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
     <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
-    <string name="questionnaire_alert_submit_message">Please confirm that you have all details filled in before submission</string>
-    <string name="questionnaire_alert_submit_title">Submit details</string>
-    <string name="questionnaire_alert_submit_button_title">Save</string>
-    <string name="questionnaire_alert_test_only_message">Confirm that you are finished filling out the data. Note this is test only form and does not save any data</string>
-    <string name="questionnaire_alert_test_only_title">Process form data</string>
-    <string name="questionnaire_alert_test_only_button_title">Process</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
     <string name="questionnaire_alert_invalid_title">Validation Failed</string>
-    <string name="questionnaire_alert_ack_button_title">Ok</string>
+    <string name="questionnaire_alert_ack_button_title">OK</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot Password</string>
@@ -89,8 +85,7 @@
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
     <string name="application_id">Application ID</string>
-    <string name="enter_app_id">Enter Application ID</string>
-    <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
+    <string name="app_id_sample">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
     <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
@@ -105,13 +100,12 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
-    <string name="set_pin">Set Pin</string>
-    <string name="set_pin_message">CHA will use this pin to login</string>
-    <string name="enter_login_pin">Enter the user\'s pin</string>
-    <string name="enter_pin_for_user">Enter pin for %1$s</string>
-    <string name="incorrect_pin_please_retry">Incorrect pin, please try again</string>
+    <string name="set_pin">Set PIN</string>
+    <string name="set_pin_message">CHA will use this PIN to login</string>
+    <string name="enter_pin_for_user">Enter PIN for %1$s</string>
+    <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
     <string name="pin_menu_login">Login</string>
-    <string name="forgot_pin">Forgot pin?</string>
+    <string name="forgot_pin">Forgot PIN?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
@@ -130,9 +124,10 @@
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
     <string name="please_wait">Please wait…</string>
     <string name="clear_database">Reset data</string>
+    <string name="transfer_data">Transfer Data</string>
     <string name="clear_database_title">Reset Database!</string>
     <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
-    <string name="resetting_app">Resetting Application...</string>
+    <string name="resetting_app">Resetting Application…</string>
     <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/</string>
     <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/</string>
     <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/</string>
@@ -146,4 +141,5 @@
     <string name="weeks">Week(s)</string>
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
+    <string name="username_sample" translatable="false">e.g JohnDoe</string>
 </resources>

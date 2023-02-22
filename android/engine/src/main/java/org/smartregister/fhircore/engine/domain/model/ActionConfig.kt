@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Bundle
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -31,19 +32,24 @@ data class ActionConfig(
   val display: String? = null,
   val rules: List<RuleConfig>? = null,
   val questionnaire: QuestionnaireConfig? = null,
+  val managingEntity: ManagingEntityConfig? = null,
   val params: List<ActionParameter> = emptyList(),
   val resourceConfig: FhirResourceConfig? = null,
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.map { Pair(it.key, it.value.interpolate(computedValuesMap)) }.forEach {
-        putString(it.first, it.second)
+      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
+        putString(it.key, it.value.interpolate(computedValuesMap))
       }
     }
 
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
+
+  companion object {
+    const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
+  }
 }
 
 @Serializable

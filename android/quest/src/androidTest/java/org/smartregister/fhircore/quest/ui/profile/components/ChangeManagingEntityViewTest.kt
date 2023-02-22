@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
 class ChangeManagingEntityViewTest {
@@ -49,12 +48,13 @@ class ChangeManagingEntityViewTest {
         onDismiss = {},
         managingEntity =
           ManagingEntityConfig(
-            infoFhirPathExpression = "Patient.name",
-            fhirPathResource =
-              ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+            resourceType = ResourceType.Patient,
+            nameFhirPathExpression = "Patient.name",
             dialogTitle = "Assign new family head",
             dialogWarningMessage = "Are you sure you want to abort this operation?",
-            dialogContentMessage = "Select a new family head"
+            dialogContentMessage = "Select a new family head",
+            eligibilityCriteriaFhirPathExpression = "Patient.active",
+            noMembersErrorMessage = "No family member"
           )
       )
     }
@@ -75,11 +75,13 @@ class ChangeManagingEntityViewTest {
 
   @Test
   fun testChangeManagingEntityViewDisplaysSelectNewFamilyHeadTitle() {
-    composeTestRule.onNodeWithText("Select a new family head").assertExists().assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Select a new family head", ignoreCase = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
-  @Ignore("Flaky test to be fixed")
   fun testChangeManagingEntityViewDisplaysCancelAndSaveButtons() {
     composeTestRule.onNodeWithTag(TEST_TAG_CANCEL).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(TEST_TAG_SAVE).assertExists().assertIsDisplayed()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,11 @@ data class RegisterConfiguration(
   val id: String,
   val registerTitle: String? = null,
   val fhirResource: FhirResourceConfig,
+  val secondaryResources: List<FhirResourceConfig>? = null,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
-  val pageSize: Int = 20
+  val pageSize: Int = 10
 ) : Configuration()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -43,10 +44,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -54,6 +59,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
@@ -139,7 +145,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -152,6 +168,10 @@ class ProfileViewModelTest : RobolectricTest() {
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
         )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
       }
     } returns listOf(questionnaireResponse)
 
@@ -163,13 +183,27 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     profileViewModel.onEvent(event)
 
+    coVerify {
+      registerRepository.fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${ResourceType.Patient.name}/999" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
+      }
+    }
+
     val slot = slot<Bundle>()
     verify {
       (context as QuestionnaireHandler).launchQuestionnaire<Any>(
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -193,8 +227,19 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
+
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
 
@@ -204,6 +249,10 @@ class ProfileViewModelTest : RobolectricTest() {
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
         )
       }
     } returns listOf()
@@ -222,7 +271,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -245,7 +294,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -270,7 +329,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -289,7 +358,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = event.resourceData?.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -299,7 +368,19 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testProfileEventOnChangeManagingEntity() {
-    profileViewModel.onEvent(ProfileEvent.OnChangeManagingEntity("newId", "groupId"))
+    profileViewModel.onEvent(
+      ProfileEvent.OnChangeManagingEntity(
+        ApplicationProvider.getApplicationContext(),
+        eligibleManagingEntity =
+          EligibleManagingEntity("groupId", "newId", memberInfo = "James Doe"),
+        managingEntityConfig =
+          ManagingEntityConfig(
+            eligibilityCriteriaFhirPathExpression = "Patient.active",
+            resourceType = ResourceType.Patient,
+            nameFhirPathExpression = "Patient.name.given"
+          )
+      )
+    )
     coVerify { registerRepository.changeManagingEntity(any(), any()) }
   }
 }

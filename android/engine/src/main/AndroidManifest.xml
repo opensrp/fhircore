@@ -4,48 +4,17 @@
     package="org.smartregister.fhircore.engine">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission
-        android:name="android.permission.AUTHENTICATE_ACCOUNTS"
-        android:maxSdkVersion="21" />
-    <uses-permission
-        android:name="android.permission.GET_ACCOUNTS"
-        android:maxSdkVersion="21" />
-    <uses-permission
-        android:name="android.permission.MANAGE_ACCOUNTS"
-        android:maxSdkVersion="21" />
-    <uses-permission
-        android:name="android.permission.USE_CREDENTIALS"
-        android:maxSdkVersion="21" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application>
 
-        <activity
-            android:name=".ui.appsetting.AppSettingActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ui.login.LoginActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ui.pin.PinLoginActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ui.pin.PinSetupActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".HiltActivityForTest"
             android:exported="false"
