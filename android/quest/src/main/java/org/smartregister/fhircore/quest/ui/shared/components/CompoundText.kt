@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,12 +41,15 @@ import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.TextCase
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
@@ -76,11 +79,20 @@ fun CompoundText(
             .parseColor()
         )
   ) {
-    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
+    val interpolatedPrimaryText =
+      compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSecondaryText =
+      compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSeparator =
+      compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
+
+    if (!interpolatedPrimaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.primaryText ?: "",
+        text = interpolatedPrimaryText,
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.primaryTextColor,
         backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -93,21 +105,23 @@ fun CompoundText(
       )
     }
     // Separate the primary and secondary text
-    if (!compoundTextProperties.separator.isNullOrEmpty()) {
+    if (!interpolatedSeparator.isNullOrEmpty()) {
       Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
         Text(
-          text = compoundTextProperties.separator ?: "-",
+          text = interpolatedSeparator,
           fontSize = compoundTextProperties.fontSize.sp,
           color = DefaultColor,
           textAlign = TextAlign.Center
         )
       }
     }
-    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
+    if (!interpolatedSecondaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.secondaryText ?: "",
+        text = interpolatedSecondaryText,
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
         textColor = compoundTextProperties.secondaryTextColor,
         backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
@@ -127,7 +141,10 @@ private fun CompoundTextPart(
   modifier: Modifier,
   viewAlignment: ViewAlignment,
   text: String,
+  textCase: TextCase?,
+  maxLines: Int,
   textColor: String?,
+  colorOpacity: Float = 1f,
   backgroundColor: String?,
   borderRadius: Int,
   fontSize: Float,
@@ -138,8 +155,19 @@ private fun CompoundTextPart(
   resourceData: ResourceData
 ) {
   Text(
-    text = text.interpolate(resourceData.computedValuesMap).removeExtraWhiteSpaces(),
-    color = textColor?.interpolate(resourceData.computedValuesMap)?.parseColor() ?: DefaultColor,
+    text =
+      when (textCase) {
+        TextCase.UPPER_CASE -> text.uppercase()
+        TextCase.LOWER_CASE -> text.lowercase()
+        TextCase.CAMEL_CASE -> text.camelCase()
+        null -> text
+      }.removeExtraWhiteSpaces(),
+    color =
+      textColor
+        ?.interpolate(resourceData.computedValuesMap)
+        ?.parseColor()
+        ?.copy(alpha = colorOpacity)
+        ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier
         .wrapContentWidth(Alignment.Start)
@@ -158,11 +186,13 @@ private fun CompoundTextPart(
         ViewAlignment.END -> TextAlign.End
         ViewAlignment.CENTER -> TextAlign.Center
         else -> TextAlign.Start
-      }
+      },
+    maxLines = maxLines,
+    overflow = TextOverflow.Ellipsis
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextNoSecondaryTextPreview() {
   val navController = rememberNavController()
@@ -172,7 +202,8 @@ private fun CompoundTextNoSecondaryTextPreview() {
         CompoundTextProperties(
           primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
-          primaryTextFontWeight = TextFontWeight.SEMI_BOLD
+          primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
+          textCase = TextCase.UPPER_CASE
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
       navController = navController
@@ -189,7 +220,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
   val navController = rememberNavController()

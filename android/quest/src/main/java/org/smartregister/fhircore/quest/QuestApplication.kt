@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.database.CursorWindow
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
+import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -32,6 +35,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
+  @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -39,17 +44,32 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+
+    // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
+    try {
+      val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+      field.apply {
+        isAccessible = true
+        set(null, 10 * 1024 * 1024) // 10MB
+      }
+    } catch (e: Exception) {
+      Timber.e(e)
+    }
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
     configuration =
-      configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+      configuration
+        ?: DataCaptureConfig(
+          attachmentResolver = referenceAttachmentResolver,
+          xFhirQueryResolver = xFhirQueryResolver
+        )
     return configuration as DataCaptureConfig
   }
 
   override fun getWorkManagerConfiguration(): Configuration =
     Configuration.Builder()
-      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(workerFactory)
       .build()
 }

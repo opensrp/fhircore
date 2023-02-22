@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure
 
 import android.annotation.SuppressLint
-import android.database.CursorWindow
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
@@ -30,6 +29,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,6 +42,9 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Group.GroupType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -102,17 +105,6 @@ constructor(
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
-
-  // TODO remove this code once SDK fixes cursor size issue
-  init {
-    try {
-      val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
-      field.isAccessible = true
-      field.set(null, 10 * 1024 * 1024) // the 10MB is the new size
-    } catch (e: Exception) {
-      Timber.e(e)
-    }
-  }
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
 
@@ -361,17 +353,49 @@ constructor(
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
         try {
-          fhirOperator.evaluateMeasure(
-            measureUrl = measureUrl,
-            start = startDateFormatted,
-            end = endDateFormatted,
-            reportType = POPULATION,
-            subject = null,
-            practitioner = null
-            /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-            practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-            lastReceivedOn = null // Non-null value not supported yet
-          )
+          if (measureUrl.contains("Stock")) {
+            fhirEngine
+              .search<Group> {
+                filter(
+                  Group.TYPE,
+                  {
+                    value =
+                      of(
+                        Coding(
+                          GroupType.MEDICATION.system,
+                          GroupType.MEDICATION.toCode(),
+                          GroupType.MEDICATION.display
+                        )
+                      )
+                  }
+                )
+              }
+              .map {
+                fhirOperator.evaluateMeasure(
+                  measureUrl = measureUrl,
+                  start = startDateFormatted,
+                  end = endDateFormatted,
+                  reportType = POPULATION,
+                  subject = it.id,
+                  practitioner = null
+                  /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+                  practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+                  lastReceivedOn = null // Non-null value not supported yet
+                )
+              }
+              .first()
+          } else
+            fhirOperator.evaluateMeasure(
+              measureUrl = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = POPULATION,
+              subject = null,
+              practitioner = null
+              /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
+              practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+              lastReceivedOn = null // Non-null value not supported yet
+            )
         } catch (exception: IllegalArgumentException) {
           Timber.e(exception)
           null

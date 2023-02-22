@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,5 +25,7 @@ enum class SharedPreferenceKey {
   PRACTITIONER_LOCATION_HIERARCHIES,
   THEME,
   REMOTE_SYNC_RESOURCES,
-  FHIR_TASK_EXPIRE_WORKER_VERSION
+  OVERDUE_TASK_LAST_AUTHORED_ON_DATE,
+  LOGIN_CREDENTIAL_KEY,
+  LOGIN_PIN_KEY
 }

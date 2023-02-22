@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ constructor(
           // replace the evaluated value into expression for complex expressions
           // e.g. #organization -> 123
           // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
+          paramExpression?.replace(paramLiteral, it)
         }
 
       // for each entity in base create and add param map

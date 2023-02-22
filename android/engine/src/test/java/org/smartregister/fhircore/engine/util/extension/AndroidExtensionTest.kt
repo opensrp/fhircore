@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,29 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Looper
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -45,12 +52,12 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Before
   fun setup() {
-    context = ApplicationProvider.getApplicationContext<Application>()
+    context = ApplicationProvider.getApplicationContext()
   }
 
   @Test
   fun `Activity#refresh() should call startActivity and finish()`() {
-    val activity = spyk(LoginActivity())
+    val activity = spyk(AppCompatActivity())
     val intentCapture = slot<Intent>()
 
     every { activity.packageName } returns "package-name"
@@ -88,5 +95,43 @@ class AndroidExtensionTest : RobolectricTest() {
     assertEquals(InfoColor, INFO_COLOR.parseColor())
     assertEquals(SuccessColor, SUCCESS_COLOR.parseColor())
     assertEquals(DefaultColor, DEFAULT_COLOR.parseColor())
+  }
+
+  @Test
+  fun testIsDeviceOfflineShouldReturnTrueWhenOnline() {
+    val activity = mockk<HiltActivityForTest>()
+    val connectivityManager = mockk<ConnectivityManager>()
+
+    val network = mockk<Network>()
+    every { connectivityManager.activeNetwork } returns network
+
+    val networkCapabilities = spyk(NetworkCapabilities())
+    every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
+    every { networkCapabilities.capabilities } returns
+      intArrayOf(NetworkCapabilities.TRANSPORT_WIFI)
+
+    every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+    every { activity.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
+
+    val isDeviceOnline = activity.isDeviceOnline()
+    Assert.assertTrue(isDeviceOnline)
+  }
+
+  @Test
+  fun testIsDeviceOfflineShouldReturnFalseWhenOffline() {
+    val activity = mockk<HiltActivityForTest>()
+    val connectivityManager = mockk<ConnectivityManager>()
+
+    val network = mockk<Network>()
+    every { connectivityManager.activeNetwork } returns network
+
+    val networkCapabilities = spyk(NetworkCapabilities())
+    every { networkCapabilities.capabilities } returns intArrayOf()
+
+    every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+    every { activity.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
+
+    val isDeviceOnline = activity.isDeviceOnline()
+    Assert.assertFalse(isDeviceOnline)
   }
 }

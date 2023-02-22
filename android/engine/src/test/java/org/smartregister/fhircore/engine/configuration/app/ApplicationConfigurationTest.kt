@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,5 +58,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)
+    Assert.assertEquals("PT01H", appConfig.taskExpireJobDuration)
   }
 }

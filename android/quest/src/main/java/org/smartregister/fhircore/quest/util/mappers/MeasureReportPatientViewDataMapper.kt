@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ constructor(
 
   override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportPatientViewData {
     // TODO Refactor measure reporting register to use register configuration
+    //  and update MeasureReportPatientViewDataMapperTest#testMapToOutputModelPatient()
+    //  once refactor is complete
     /*
     // Patient resource can be the baseResource or any of the relatedResources of the resourceData
     // Ensure the register is configured to return a Patient resource; app will crash otherwise

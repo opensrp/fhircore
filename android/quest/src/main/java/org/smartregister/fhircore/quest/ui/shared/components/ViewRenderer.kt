@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,6 +31,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -49,16 +50,18 @@ fun ViewRenderer(
   navController: NavController
 ) {
   viewProperties.forEach { properties ->
-    GenerateView(
-      modifier = generateModifier(properties),
-      properties = properties,
-      resourceData = resourceData,
-      navController = navController
-    )
+    if (properties.isVisible(resourceData.computedValuesMap)) {
+      GenerateView(
+        modifier = generateModifier(properties),
+        properties = properties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewWeightedViewsInRow() {
   ViewRenderer(
@@ -91,7 +94,7 @@ private fun PreviewWeightedViewsInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewWrappedViewsInRow() {
   ViewRenderer(
@@ -146,7 +149,7 @@ private fun PreviewWrappedViewsInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewSameSizedViewInRow() {
   ViewRenderer(
@@ -183,7 +186,7 @@ private fun PreviewSameSizedViewInRow() {
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewCardViewWithRows() {
   ViewRenderer(

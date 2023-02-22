@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -27,8 +26,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,8 +34,8 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,7 +43,6 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -73,18 +69,19 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
 class AppMainViewModel
 @Inject
 constructor(
-  val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
@@ -147,7 +144,6 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      AppMainEvent.Logout -> accountAuthenticator.logout()
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
@@ -156,17 +152,6 @@ constructor(
         }
       }
       AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
-      is AppMainEvent.RefreshAuthToken -> {
-        viewModelScope.launch {
-          accountAuthenticator.refreshSessionAuthToken().let { bundle ->
-            if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              // syncBroadcaster.runSync()
-              return@let
-            }
-            accountAuthenticator.logout()
-          }
-        }
-      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
@@ -240,8 +225,7 @@ constructor(
             bundleOf(
               Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
             ),
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = null
+          questionnaireConfig = questionnaireConfig
         )
     }
   }
@@ -299,35 +283,29 @@ constructor(
     )
   }
 
-  fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      formatLastSyncTimestamp(timestamp)
-    )
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
-    workManager.enqueueUniquePeriodicWork(
-      FhirTaskPlanWorker.WORK_ID,
-      ExistingPeriodicWorkPolicy.REPLACE,
-      PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
-    )
+    workManager.run {
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        requiresNetwork = false
+      )
 
-    // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-    /* // Schedule job for generating measure report in the background
-     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-    */
+      schedulePeriodically<FhirTaskExpireWorker>(
+        workId = FhirTaskExpireWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
+      )
 
-    FhirTaskExpireWorker.schedule(
-      workManager,
-      sharedPreferencesHelper,
-      applicationConfiguration.taskExpireJobRepeatIntervalMinutes
-    )
+      // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+      /* // Schedule job for generating measure report in the background
+       MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+      */
+    }
   }
 
-  suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
+  suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {
