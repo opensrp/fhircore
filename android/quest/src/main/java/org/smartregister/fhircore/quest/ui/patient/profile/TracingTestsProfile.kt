@@ -125,7 +125,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
                     QuestContainer("Tracing", item.tracingList)
                   }
                   if (item.appointmentList.isNotEmpty()) {
-                    QuestContainer("Appointments", item.tracingList)
+                    QuestContainer("Appointments", item.appointmentList)
                   }
                 }
               }

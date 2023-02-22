@@ -1,0 +1,767 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "art-client-welcome-service",
+  "meta": {
+    "versionId": "9",
+    "lastUpdated": "2022-07-15T11:45:49.498+03:00",
+    "source": "#XvPsooocUzcFvoMO"
+  },
+  "language": "en",
+  "title": "Welcome Service",
+  "status": "active",
+  "subjectType": ["Patient"],
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 1"
+              }
+            ],
+            "text": "Page 1"
+          }
+        }
+      ],
+      "linkId": "page-1",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "introduction",
+          "text": "<h4>Welcome the client to care and provide welcome service counselling.</h4>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box",
+                    "display": "Check-box"
+                  }
+                ],
+                "text": "Check-box"
+              }
+            }
+          ],
+          "linkId": "challenges",
+          "text": "* Select the challenges the client is experiencing and discuss possible solutions",
+          "type": "choice",
+          "required": true,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "lack-of-support-system",
+                "display": "Lack of support system"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "traditional-medicine",
+                "display": "Using traditional medicine for healing"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "religious-reasons",
+                "display": "Religious reasons (faith healing)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lack-of-or-delayed-disclosure",
+                "display": "Lack of or delayed disclosure"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "experienced-discrimination",
+                "display": "Experienced discrimination or stigma because of their HIV status"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "experienced-discrimination-iit",
+                "display": "Experienced discrimination or stigma because they have previously disengaged or had IIT"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unstable-home",
+                "display": "Multiple caregivers or unstable homes for children/OVC"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "side-effects",
+                "display": "Side effects that impact adherence"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forgetfullness",
+                "display": "Forget when their next appointment is"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unable-to-get-time-off",
+                "display": "Unable to get time off work/school"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "competing-priorities",
+                "display": "Competing priorities - e.g. business, working for difficult employers"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lack-of-transport",
+                "display": "Lack of transport"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "travel",
+                "display": "Travel (in and out of area or over holidays)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "temporarily-relocated",
+                "display": "Temporarily relocated (e.g. fishermen, sex workers, marital separation, teacher, pregnancy, etc)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "clinic-date-before-payment",
+                "display": "Clinic date before client gets paid"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-fatigue",
+                "display": "Treatment fatigue. Client is tired of taking treatment everyday"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mental-health-issues",
+                "display": "Mental health issues - worries, fears, saddness, suicidal thoughts, etc"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "emr-wrong",
+                "display": "Had meds from this clinic (ie EMR was wrong)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "borrowed-meds",
+                "display": "Borrowed meds"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other not listed"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other",
+          "text": "* Other",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 2"
+              }
+            ],
+            "text": "Page 2"
+          }
+        }
+      ],
+      "linkId": "page-2",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "lack-of-support-system-action",
+          "text": "<u>LACK OF SUPPORT SYSTEM</u><br><b>Action:</b><br>-Counsel on benefits of disclosure. Discuss fears and concerns about disclosure.<br>-Explore self and assisted disclosure.<br>Identify support system.<br>-Refer to PSC<br>-Refer to support groups<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "lack-of-support-system"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "traditional-medicine-action",
+          "text": "<u>USING TRADITIONAL MEDICINE FOR HEALING</u><br><b>Action:</b><br>- Discuss HIV, traditional medicine and ART with the client.<br>- Explain that, although traditional medicine plays a vital role in healing many ailments - diarrhoea and pain, and it can boost immunity, it cannot cure HIV.<br>- Explain that taking ART with traditional medicine reduces the effect of ART in the body<br>- Refer to a clinical provider<br>- Refer to PSC if client needs more support<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "traditional-medicine"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "religious-reasons-action",
+          "text": "<u>RELIGIOUS REASONS</u><br><b>Action:</b><br>- Counsel: Review “Faith is an important part of healing and health and it is so important that you have this support.  God cares for us in many ways.  Just as God provides us food on this earth and we don't depend on God to keep us nourished but knows he has put food here for us to eat, God has also provided people on this earth who make ART that controls the virus, God is giving us what we need to stay healthy. Do you think God would want you to use these medications with your prayers and faith and community to stay healthy?”<br>- Refer to a clinical provider<br>- Refer to PSC if client needs more support",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "religious-reasons"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "lack-of-or-delayed-disclosure-action",
+          "text": "<u>LACK OF OR DELAYED DISCLOSURE</u><br><b>Action:</b><br>- Discuss benefits of disclosure and initiate disclosure if ok with the guardian<br>- Enrol in teen club/ youth supporter program/ OVC program after FULL disclosure confirmed<br>- Continue supporting the disclosure process throughout adolescence<br>- Reinforce guardian support for the child after disclosure<br>- LINK to OVC program (APA or other)<br>- Refer to PSC if declines to start disclosure or any other needs.<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "lack-of-or-delayed-disclosure"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "experienced-discrimination-action",
+          "text": "<u>EXPERIENCED DISCRIMINATION</u><br><b>Action:</b><br>- Tell the client:  It is NOT YOUR FAULT that someone was mean to you and discriminated against you. You did not do anything to deserve this. (It's important to identify and validate the client).<br>- Ask the client what do they think they can do to cope with discrimination if it happens again? Sometimes we cannot change others behaviour but we can minimise its effect on us.<br>- Refer to clinical provider<br>- Refer to PSC<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "experienced-discrimination"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "experienced-discrimination-iit-action",
+          "text": "<u>EXPERIENCED DISCRIMINATION - IIT</u><br><b>Action:</b><br>- Tell the client:  It is NOT YOUR FAULT that someone was mean to you and discriminated against you.  You did not do anything to deserve this.<br>- Accompany client to provider<br>- Refer to PSC<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "experienced-discrimination-iit"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "unstable-home-action",
+          "text": "<u>MULTIPLE CAREGIVERS OR UNSTABLE HOMES</u><br><b>Action:</b><br>- Counselling  Children are VULNERABLE and completely dependent on adults.<br>-> We KNOW that it is hard to always remember ART for children and that sometimes emergencies happen and we are not available.<br>-> This is why it is SO IMPORTANT that AT LEAST 2 people know and check every day that ART is given.<br>-> Who are the 2 caregivers for this child?  How do you work together to give the ART daily?<br>- Identify 2+ care givers and help guardian think about how other caregivers can help them. Plan preART for all guardians<br>- If complex refer to clinician or PSC<br>- LINK TO OVC program available (APA or other)<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unstable-home"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "unstable-home-action",
+          "text": "<u>SIDE EFFECTS THAT IMPACT ADHERENCE</u><br><b>Action:</b><br>- Escort client to clinical provider<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "side-effects"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "forgetfullness-action",
+          "text": "<u>FORGETS WHEN THEIR NEXT APPOINTMENT IS</u><br><b>Action:</b><br>- Set appointment reminder on phone<br>- Use a calendar to set a reminder<br>- Ask guardian to remind them of the appointment<br>- CHW can call if the client has a phone<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "forgetfullness"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "unable-to-attend-action",
+          "text": "<u>UNABLE TO GET TIME OFF</u><br><b>Action:</b><br>- Attend appt before scheduled date<br>- Weekend appointment<br>- Early morning or lunch hour clinic if available<br>- Call clinic to notify of missing appt but has enough meds<br>- Discuss with providers when is best time of the week or month to set appt<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unable-to-get-time-off"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "competing-priorities-action",
+          "text": "<u>COMPETING PRIORITIES</u><br><b>Action:</b><br>- Attend appt before scheduled date<br>- Weekend appointment<br>- Early morning or lunch hour clinic if available<br>- Call clinic to notify of missing appt but has enough meds<br>- Discuss with providers when is best time of the week or month to set appt<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "competing-priorities"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "lack-of-transport-action",
+          "text": "<u>LACK OF TRANSPORT</u><br><b>Action:</b><br>- Discuss with providers when is best time of the week or month to set appt<br>- Call clinic to notify of missing appt but has enough meds<br>- MMS<br>- Move to clinic closer to home<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "lack-of-transport"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "travel-action",
+          "text": "<u>TRAVEL</u><br><b>Action:</b><br>- Attend appt before scheduled date<br>- Emergency refill<br>- MMS<br>- Notify clinic if missing appt<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "travel"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "temporarily-relocated-action",
+          "text": "<u>TEMPORARILY RELOCATED</u><br><b>Action:</b><br>- Emergency refill<br>- Refill at Drop in centre/KP programs and seek assistance from CBOs<br>- Call clinic to notify of situation<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "temporarily-relocated"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "clinic-date-before-payment-action",
+          "text": "<u>CLINIC DATE BEFORE CLIENT GETS PAID</u><br><b>Action:</b><br>- Discuss with providers when is best time of the week or month to set appt<br>- Call clinic to notify of missing appt but has enough meds<br>- MMS<br>- Move to clinic closer to home<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "clinic-date-before-payment"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-action",
+          "text": "<u>TREATMENT FATIGUE</u><br><b>Action:</b><br>- Counsel with IMB,motivation part critical to support taking medication for life<br>- Refer to PSC<br>- Refer to support group<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "mental-health-issues-action",
+          "text": "<u>MENTAL HEALTH ISSUES</u><br><b>Action:</b><br>- Refer to PSC<br>- If suicidal – escort to clinician immediately<br>- Offer LIVES support<br>- Refer to the clinical provide<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "mental-health-issues"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "emr-wrong-action",
+          "text": "<u>HAD MEDS FROM THIS CLINIC</u><br><b>Action:</b><br>- Encourage the client to continue coming to the clinic as indicated. Update the records (EMR) to ensure the client record is corrected.<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "emr-wrong"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "borrowed-meds-action",
+          "text": "<u>BORROWED MEDS</u><br><b>Action:</b><br>- Review importance of not running out of meds, but praise the client for not missing doses.<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "borrowed-meds"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "other-reason-action",
+          "text": "<u>OTHER</u><br><b>Action:</b><br>- Address any challenge that the client may have. Refer to PSC if needed<br>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 3"
+              }
+            ],
+            "text": "Page 3"
+          }
+        }
+      ],
+      "linkId": "page-3",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "speak-to-psc",
+          "text": "* <b>EXPLAIN:<b> What a psychosocial counselor does<br><b>ASK:</b> Would you like to speak to a psychosocial counselor?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "referral-confirmation",
+          "text": "* Have you referred the client to a <b>psychosocial counselor</b>?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "speak-to-psc",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "psc-assigned",
+          "text": "* Assigned psychosocial counselor",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "blessings-maulidi",
+                "display": "Blessings Maulidi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "eliza-sichinga",
+                "display": "Eliza Sichinga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ibrahim-hassan",
+                "display": "Ibrahim Hassan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "idah-adamson",
+                "display": "Idah Adamson"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "macmillan-mvula",
+                "display": "Macmillan Mvula"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "steven-rashid",
+                "display": "Steven Rashid"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "https://github.com/google/android-fhir/questionnaire-item-control",
+                    "code": "phone-number"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+              "valueInteger": 10
+            }
+          ],
+          "linkId": "psc-phone-number",
+          "text": "* Enter the psychosocial counselor's phone number",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "maxLength": 13
+        },
+        {
+          "linkId": "follow-up-confirmation-speaks-to-psc-negative",
+          "text": "* Will the client require a follow up welcome service at their next appointment?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "speak-to-psc",
+              "operator": "=",
+              "answerBoolean": false
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "follow-up-confirmation-referral-confirmation-negative",
+          "text": "* Will the client require a follow up welcome service at their next appointment?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "=",
+              "answerBoolean": false
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "follow-up-confirmation-referral-confirmation-positive",
+          "text": "* Will the client require a follow up welcome service at their next appointment?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "psc-assigned",
+              "operator": "exists",
+              "answerBoolean": true
+            },
+            {
+              "question": "psc-phone-number",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "action",
+          "text": "<h1>Record the information on the Welcome Back to Care Card</h1>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "follow-up-confirmation-speaks-to-psc-negative",
+              "operator": "exists",
+              "answerBoolean": true
+            },
+            {
+              "question": "follow-up-confirmation-referral-confirmation-negative",
+              "operator": "exists",
+              "answerBoolean": true
+            },
+            {
+              "question": "follow-up-confirmation-referral-confirmation-positive",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "any",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

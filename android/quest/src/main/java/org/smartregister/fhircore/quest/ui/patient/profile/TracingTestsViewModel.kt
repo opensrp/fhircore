@@ -267,12 +267,9 @@ constructor(
           questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
         ),
         TestItem.QuestItem(
-          title = "Cervical Cancer Screening",
-          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
-        ),
-        TestItem.QuestItem(
-          title = "Cervical Cancer Screening",
-          questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json"
+          title = "Art Welcome Service",
+          questionnaire = "tests/art_client_welcome_service.json",
+                appointmentList = listOf("Followup")
         ),
       )
   }
