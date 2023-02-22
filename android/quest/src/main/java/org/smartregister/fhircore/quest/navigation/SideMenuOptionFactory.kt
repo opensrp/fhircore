@@ -41,7 +41,7 @@ constructor(
       showCount = true,
       count =
         suspend {
-          patientRegisterRepository.countRegisterData(
+            registerRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
             healthModule = HealthModule.DEFAULT
           )
@@ -81,7 +81,7 @@ constructor(
           showCount = true,
           count =
             suspend {
-              patientRegisterRepository.countRegisterData(
+                registerRepository.countRegisterData(
                 appFeatureName = it.feature,
                 healthModule = it.healthModule!!
               )

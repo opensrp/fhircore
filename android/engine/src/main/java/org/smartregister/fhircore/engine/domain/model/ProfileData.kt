@@ -16,17 +16,8 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import org.hl7.fhir.r4.model.*
 import java.util.Date
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -105,24 +96,24 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class TracingProfileData(
-    override val logicalId: String,
-    override val name: String,
-    val birthdate: Date,
-    val address: String,
-    val chwAssigned: Reference,
-    val healthStatus: HealthStatus,
-    val age: String = birthdate.toAgeDisplay(),
-    val gender: Enumerations.AdministrativeGender,
-    val addressDistrict: String = "",
-    val addressTracingCatchment: String = "",
-    val addressPhysicalLocator: String = "",
-    val services: List<CarePlan> = listOf(),
-    val tasks: List<Task> = listOf(),
-    val phoneContacts: List<String> = listOf(),
-    val showIdentifierInProfile: Boolean = false,
-    val conditions: List<Condition> = emptyList(),
-    val guardians: List<Guardian> = emptyList(),
-    val observations: List<Observation> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList()
+          override val logicalId: String,
+          override val name: String,
+          val birthdate: Date,
+          val address: String,
+          val chwAssigned: Reference,
+          val healthStatus: HealthStatus,
+          val age: String = birthdate.toAgeDisplay(),
+          val gender: Enumerations.AdministrativeGender,
+          val addressDistrict: String = "",
+          val addressTracingCatchment: String = "",
+          val addressPhysicalLocator: String = "",
+          val services: List<CarePlan> = listOf(),
+          val tasks: List<Task> = listOf(),
+          val phoneContacts: List<String> = listOf(),
+          val showIdentifierInProfile: Boolean = false,
+          val conditions: List<Condition> = emptyList(),
+          val guardians: List<Guardian> = emptyList(),
+          val observations: List<Observation> = emptyList(),
+          val practitioners: List<Practitioner> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)
 }
