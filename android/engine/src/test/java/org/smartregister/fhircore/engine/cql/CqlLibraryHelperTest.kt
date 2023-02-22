@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.cql
 
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.model.dstu2.resource.Bundle
-import ca.uhn.fhir.model.dstu2.resource.Patient
 import ca.uhn.fhir.parser.IParser
 import io.mockk.every
 import io.mockk.mockk
@@ -28,6 +26,8 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.io.ByteArrayInputStream
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Patient
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -71,7 +71,7 @@ class CqlLibraryHelperTest : RobolectricTest() {
     Assert.assertEquals(1, result.entry.size)
     Assert.assertEquals(
       "Robin",
-      (result.entryFirstRep.resource as Patient).nameFirstRep.givenFirstRep.value
+      (result.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString
     )
 
     verify(exactly = 1) { FileUtil.readFileFromInternalStorage(any(), any(), any()) }
@@ -82,7 +82,7 @@ class CqlLibraryHelperTest : RobolectricTest() {
     Assert.assertEquals(1, sameResult.entry.size)
     Assert.assertEquals(
       "Robin",
-      (sameResult.entryFirstRep.resource as Patient).nameFirstRep.givenFirstRep.value
+      (sameResult.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString
     )
 
     verify(exactly = 0, inverse = true) {

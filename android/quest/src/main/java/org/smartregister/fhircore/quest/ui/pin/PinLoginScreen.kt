@@ -120,7 +120,7 @@ fun PinLoginPage(
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
         Column(modifier = modifier.fillMaxWidth()) {
           if (pinUiState.setupPin) {
-            PinLogoSection(showLogo = false, title = stringResource(id = R.string.set_pin))
+            PinLogoSection(showLogo = true, title = stringResource(id = R.string.set_pin))
           } else {
             PinLogoSection(showLogo = true, title = pinUiState.appName)
           }
