@@ -49,39 +49,39 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-    Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
-      // Header section
-      Column(modifier = modifier.fillMaxWidth()) {
-        if (viewProperties.header != null) {
-          Spacer(modifier = modifier.height(8.dp))
-          CompoundText(
-            modifier = modifier.wrapContentWidth(Alignment.Start),
-            compoundTextProperties = viewProperties.header!!,
-            resourceData = resourceData,
-            navController = navController
-          )
-          // TODO Display viewAll action text
-          Spacer(modifier = modifier.height(8.dp))
-        }
-      }
-      // Card section
-      Card(
-        elevation = viewProperties.elevation.dp,
-        modifier =
-          modifier
-            .padding(horizontal = viewProperties.padding.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-      ) {
-        Column(modifier = modifier.padding(16.dp)) {
-          ViewRenderer(
-            viewProperties = viewProperties.content,
-            resourceData = resourceData,
-            navController = navController
-          )
-        }
+  Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
+    // Header section
+    Column(modifier = modifier.fillMaxWidth()) {
+      if (viewProperties.header != null) {
+        Spacer(modifier = modifier.height(8.dp))
+        CompoundText(
+          modifier = modifier.wrapContentWidth(Alignment.Start),
+          compoundTextProperties = viewProperties.header!!,
+          resourceData = resourceData,
+          navController = navController
+        )
+        // TODO Display viewAll action text
+        Spacer(modifier = modifier.height(8.dp))
       }
     }
+    // Card section
+    Card(
+      elevation = viewProperties.elevation.dp,
+      modifier =
+        modifier
+          .padding(horizontal = viewProperties.padding.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+    ) {
+      Column(modifier = modifier.padding(16.dp)) {
+        ViewRenderer(
+          viewProperties = viewProperties.content,
+          resourceData = resourceData,
+          navController = navController
+        )
+      }
+    }
+  }
 }
 
 @PreviewWithBackgroundExcludeGenerated

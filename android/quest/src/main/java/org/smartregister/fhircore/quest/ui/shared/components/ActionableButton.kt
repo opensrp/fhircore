@@ -66,83 +66,82 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController
 ) {
-    val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
-    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
-    val buttonEnabled =
-      buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
-    val clickable = buttonProperties.clickable(resourceData)
-    OutlinedButton(
-      onClick = {
-        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
-          buttonProperties.actions.handleClickEvent(
-            navController = navController,
-            resourceData = resourceData
-          )
-        }
-      },
-      colors =
-        ButtonDefaults.buttonColors(
-          backgroundColor =
-            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
-          contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
-          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
-          disabledContentColor = DefaultColor,
-        ),
-      modifier =
-        modifier
-          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
-          .padding(horizontal = 12.dp, vertical = 4.dp)
-          .wrapContentHeight()
-          .testTag(ACTIONABLE_BUTTON_TEST_TAG),
-      enabled = buttonEnabled,
-      border =
-        BorderStroke(
-          width = 0.5.dp,
-          color = buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f)
-        ),
-      elevation = null
-    ) {
-      // Each component here uses a new modifier to avoid inheriting the properties of the parent
-      Icon(
-        imageVector =
-          if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
-        contentDescription = null,
-        tint =
-          if (buttonEnabled)
-            when (status) {
-              ServiceStatus.COMPLETED -> SuccessColor
-              else -> statusColor
-            }
-          else DefaultColor,
-        modifier = Modifier.size(14.dp)
-      )
-      Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
-        fontWeight = FontWeight.Medium,
-        color =
-          if (buttonEnabled)
-            when (status) {
-              ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
-              else -> statusColor
-            }
-          else DefaultColor.copy(0.9f),
-        textAlign = TextAlign.Start,
-        overflow = TextOverflow.Ellipsis,
-        maxLines = 2,
-        modifier =
-          Modifier.padding(horizontal = 4.dp)
-            .conditional(status == ServiceStatus.COMPLETED, { weight(1f) }),
-        fontSize = buttonProperties.fontSize.sp
-      )
-      if (status == ServiceStatus.COMPLETED) {
-        Icon(
-          imageVector = Icons.Filled.ArrowDropDown,
-          contentDescription = null,
-          tint = DefaultColor,
-          modifier = Modifier.size(18.dp),
+  val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+  val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+  val buttonEnabled =
+    buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+  val clickable = buttonProperties.clickable(resourceData)
+  OutlinedButton(
+    onClick = {
+      if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
+        buttonProperties.actions.handleClickEvent(
+          navController = navController,
+          resourceData = resourceData
         )
       }
+    },
+    colors =
+      ButtonDefaults.buttonColors(
+        backgroundColor =
+          buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
+        contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
+        disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+        disabledContentColor = DefaultColor,
+      ),
+    modifier =
+      modifier
+        .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
+        .padding(horizontal = 12.dp, vertical = 4.dp)
+        .wrapContentHeight()
+        .testTag(ACTIONABLE_BUTTON_TEST_TAG),
+    enabled = buttonEnabled,
+    border =
+      BorderStroke(
+        width = 0.5.dp,
+        color = buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f)
+      ),
+    elevation = null
+  ) {
+    // Each component here uses a new modifier to avoid inheriting the properties of the parent
+    Icon(
+      imageVector = if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
+      contentDescription = null,
+      tint =
+        if (buttonEnabled)
+          when (status) {
+            ServiceStatus.COMPLETED -> SuccessColor
+            else -> statusColor
+          }
+        else DefaultColor,
+      modifier = Modifier.size(14.dp)
+    )
+    Text(
+      text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
+      fontWeight = FontWeight.Medium,
+      color =
+        if (buttonEnabled)
+          when (status) {
+            ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
+            else -> statusColor
+          }
+        else DefaultColor.copy(0.9f),
+      textAlign = TextAlign.Start,
+      overflow = TextOverflow.Ellipsis,
+      maxLines = 2,
+      modifier =
+        Modifier.padding(horizontal = 4.dp)
+          .conditional(status == ServiceStatus.COMPLETED, { weight(1f) }),
+      fontSize = buttonProperties.fontSize.sp
+    )
+    if (status == ServiceStatus.COMPLETED) {
+      Icon(
+        imageVector = Icons.Filled.ArrowDropDown,
+        contentDescription = null,
+        tint = DefaultColor,
+        modifier = Modifier.size(18.dp),
+      )
     }
+  }
 }
 
 /**
