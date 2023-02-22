@@ -45,6 +45,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberView
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.util.extensions.isHomeTracingTask
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
@@ -73,6 +74,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate.formatDob(),
           identifier = inputModel.identifier,
           address = inputModel.address,
+          addressDistrict = inputModel.addressDistrict,
+          addressTracingCatchment = inputModel.addressTracingCatchment,
+          addressPhysicalLocator = inputModel.addressPhysicalLocator,
+          phoneContacts = inputModel.phoneContacts,
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
@@ -168,6 +173,26 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                     }
               )
             }
+        )
+      is ProfileData.TracingProfileData ->
+        ProfileViewData.TracingProfileData(
+          logicalId = inputModel.logicalId,
+          name = inputModel.name,
+          sex = inputModel.gender.translateGender(context),
+          age = inputModel.age,
+          isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
+          attempts = 0,
+          dueDate = "",
+          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
+          showIdentifierInProfile = false,
+          addressDistrict = inputModel.addressDistrict,
+          addressTracingCatchment = inputModel.addressTracingCatchment,
+          addressPhysicalLocator = inputModel.addressPhysicalLocator,
+          carePlans = inputModel.services,
+          guardians = inputModel.guardians,
+          practitioners = inputModel.practitioners,
+          conditions = inputModel.conditions,
+          tracingTasks = inputModel.tasks
         )
     }
   }

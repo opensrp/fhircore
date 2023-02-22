@@ -23,11 +23,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import timber.log.Timber
 
 @HiltViewModel
-internal class HivPatientViewModel @Inject constructor(val repository: PatientRegisterRepository) :
+internal class HivPatientViewModel @Inject constructor(val repository: AppRegisterRepository) :
   ViewModel() {
 
   val profile = MutableLiveData<Patient>()

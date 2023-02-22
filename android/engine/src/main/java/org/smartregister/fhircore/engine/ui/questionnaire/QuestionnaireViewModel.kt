@@ -24,10 +24,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -39,6 +43,9 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
@@ -51,6 +58,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -62,6 +70,7 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -262,7 +271,7 @@ constructor(
       val extras = mutableListOf<Resource>()
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-
+        questionnaireResponse.contained = mutableListOf()
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
@@ -498,6 +507,34 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadTracing(patientId: String): List<Task> {
+    val tasks =
+      fhirEngine.search<Task> {
+        filter(Task.SUBJECT, { value = "Patient/$patientId" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
+          }
+        )
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          operation = Operation.OR
+        )
+        filter(
+          Task.PERIOD,
+          {
+            value = of(DateTimeType.now())
+            prefix = ParamPrefixEnum.GREATERTHAN
+          }
+        )
+      }
+    return tasks
+  }
+
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
@@ -527,11 +564,30 @@ constructor(
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
+      if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
+        val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+
+        if (bundleIndex != -1) {
+          val currentBundle = resourcesList[bundleIndex] as Bundle
+          val bundle = Bundle()
+          bundle.id = TracingHelpers.tracingBundleId
+          val tasks = loadTracing(patientId)
+          tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+          currentBundle.addEntry(
+            Bundle.BundleEntryComponent().setResource(bundle).apply {
+              id = TracingHelpers.tracingBundleId
+            }
+          )
+          resourcesList[bundleIndex] = currentBundle
+        }
+      }
+
       // for situations where patient RelatedPersons not passed through intent extras
       if (resourcesList.none { it.resourceType == ResourceType.RelatedPerson }) {
         loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
       }
     }
+    Timber.e(resourcesList.joinToString("\n") { jsonParser.encodeResourceToString(it) })
 
     return resourcesList.toTypedArray()
   }
@@ -540,7 +596,10 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+    val resources = getPopulationResources(intent)
+    val questResponse = ResourceMapper.populate(questionnaire, *resources)
+    questResponse.contained = resources.toList()
+    return questResponse
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {

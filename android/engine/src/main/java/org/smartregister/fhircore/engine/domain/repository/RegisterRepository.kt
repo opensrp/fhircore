@@ -39,4 +39,11 @@ interface RegisterRepository {
     healthModule: HealthModule = HealthModule.DEFAULT,
     patientId: String
   ): ProfileData?
+
+  suspend fun searchByName(
+    nameQuery: String,
+    currentPage: Int,
+    appFeatureName: String?,
+    healthModule: HealthModule
+  ): List<RegisterData>
 }

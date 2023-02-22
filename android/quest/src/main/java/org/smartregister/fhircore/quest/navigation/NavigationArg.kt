@@ -52,6 +52,6 @@ object NavigationArg {
   private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
 
   /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
+  fun bindArgumentsOf(vararg navArg: Pair<String, Any?>): String =
     "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }
