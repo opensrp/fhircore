@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name" translatable="false">SID ANC</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.sid</string>
-</resources>
