@@ -133,7 +133,6 @@ constructor(
         services = patient.activeCarePlans(),
         conditions = patient.activeConditions(),
         guardians = patient.guardians(),
-        observations = patient.observations(),
         practitioners = patient.practitioners()
       )
     }
