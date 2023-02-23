@@ -59,7 +59,6 @@ import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
-const val MAX_CHARS = 16
 
 @Composable
 fun ActionableButton(
