@@ -90,6 +90,13 @@
               ]
             },
             {
+              "name": "CheckIfAddToNextVisitRequired",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
               "name": "HandleTracingTasks",
               "variable": [
                 "src",
@@ -204,7 +211,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_enc_subject_ref",
+                  "name": "r_obs_sub_ref_hiv_test_type",
                   "source": [
                     {
                       "context": "src"
@@ -343,7 +350,7 @@
               ]
             },
             {
-              "name": "ExtractConductedMilestone",
+              "name": "ExtractHIVTestType",
               "variable": [
                 "src",
                 "bundle",
@@ -351,7 +358,55 @@
               ]
             },
             {
-              "name": "ExtractUnConductedMilestone",
+              "name": "ExtractHIVTestResults",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractIsChildWeaned",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractWhenChildWeaned",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractDBSSampleID",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractDBSTestResultsAvailable",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractReasonForUnconductedMilestone",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractOtherUnconductedMilestoneReason",
               "variable": [
                 "src",
                 "bundle",
@@ -359,9 +414,27 @@
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "PatientReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
         },
         {
-          "name": "r_add_to_next_visit_flag",
+          "name": "observation",
+          "type": "Observation",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_ref",
           "source": [
             {
               "context": "src"
@@ -369,33 +442,39 @@
           ],
           "target": [
             {
-              "variable": "nextVisit",
-              "transform": "evaluate",
+              "context": "observation",
+              "contextType": "variable",
+              "element": "subject",
+              "variable": "reference",
+              "transform": "create",
               "parameter": [
                 {
-                  "valueId": "src"
-                },
-                {
-                  "valueString": "$this.item.where(linkId = 'able-to-conduct-test').answer.value"
+                  "valueString": "Reference"
                 }
               ]
             }
           ],
           "rule": [
             {
-              "name": "r_add_to_next_visit",
+              "name": "r_obs_sub_ref_value",
               "source": [
                 {
-                  "context": "src",
-                  "condition": "(nextVisit = 'false')"
+                  "context": "src"
                 }
               ],
-              "dependent": [
+              "target": [
                 {
-                  "name": "RecreateCarePlan",
-                  "variable": [
-                    "src",
-                    "bundle"
+                  "context": "reference",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "'Patient/' + $this.where(linkId = 'patient-id').answer.value"
+                    }
                   ]
                 }
               ]
@@ -426,18 +505,18 @@
       ],
       "rule": [
         {
-          "name": "r_obs_item_able_to_conduct_test",
+          "name": "r_check_question",
           "source": [
             {
               "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = 'able-to-conduct-test') and (answer.count() > 0))"
+              "condition": "(linkId = 'able-to-conduct-test')"
             }
           ],
           "rule": [
             {
-              "name": "r_obs_able_to_conduct_test",
+              "name": "r_create_observation",
               "source": [
                 {
                   "context": "src"
@@ -465,7 +544,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_obs_data_able_to_conduct_test",
+                  "name": "r_obs_effective",
                   "source": [
                     {
                       "context": "src"
@@ -534,55 +613,24 @@
                   ]
                 },
                 {
-                  "name": "r_obs_sub_confirm_collection",
+                  "name": "r_patient_reference",
                   "source": [
                     {
                       "context": "src"
                     }
                   ],
-                  "target": [
+                  "dependent": [
                     {
-                      "context": "obs",
-                      "contextType": "variable",
-                      "element": "subject",
-                      "variable": "ref",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Reference"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_sub_ref_able_to_conduct_test",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "ref",
-                          "contextType": "variable",
-                          "element": "reference",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                            }
-                          ]
-                        }
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "r_obs_value_able_to_conduct_test",
+                  "name": "r_obs_value",
                   "source": [
                     {
                       "context": "src"
@@ -612,159 +660,6 @@
       ]
     },
     {
-      "name": "ExtractConductedMilestone",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_conducted_milestone",
-          "source": [
-            {
-              "context": "src",
-              "element": "item",
-              "variable": "conducted_group",
-              "condition": "(linkId = 'conducted-milestone-group')"
-            }
-          ],
-          "dependent": [
-            {
-              "name": "ExtractHIVTestType",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractDBSSampleID",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractDBSTestResultsAvailable",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractHIVTestResults",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractIsChildPresent",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractIsChildWeaned",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractWhenChildWeaned",
-              "variable": [
-                "src",
-                "conducted_group",
-                "bundle",
-                "encounter"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractUnConductedMilestone",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_conducted_milestone",
-          "source": [
-            {
-              "context": "src",
-              "element": "item",
-              "variable": "unconducted_group",
-              "condition": "(linkId = 'unconducted-milestone-group')"
-            }
-          ],
-          "dependent": [
-            {
-              "name": "ExtractReasonForUnconductedMilestone",
-              "variable": [
-                "src",
-                "unconducted_group",
-                "bundle",
-                "encounter"
-              ]
-            },
-            {
-              "name": "ExtractOtherUnconductedMilestoneReason",
-              "variable": [
-                "src",
-                "unconducted_group",
-                "bundle",
-                "encounter"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "ExtractHIVTestType",
       "typeMode": "none",
       "input": [
@@ -774,11 +669,6 @@
           "mode": "source"
         },
         {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
           "name": "bundle",
           "type": "Bundle",
           "mode": "target"
@@ -791,18 +681,18 @@
       ],
       "rule": [
         {
-          "name": "r_obs_item_hiv_test_type",
+          "name": "r_check_question",
           "source": [
             {
-              "context": "conducted_group",
+              "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = 'hiv-test-type') and (answer.count() > 0))"
+              "condition": "(linkId = 'test-type')"
             }
           ],
           "rule": [
             {
-              "name": "r_obs_hiv_test_type",
+              "name": "r_create_observation",
               "source": [
                 {
                   "context": "src"
@@ -830,7 +720,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_obs_data_hiv_test_type",
+                  "name": "r_obs_effective",
                   "source": [
                     {
                       "context": "src"
@@ -853,7 +743,7 @@
                           "valueString": "http://d-tree.org"
                         },
                         {
-                          "valueString": "exposed-infant-milestone-hiv-test-hiv-test-type"
+                          "valueString": "exposed-infant-milestone-hiv-test-test-type"
                         }
                       ]
                     },
@@ -899,55 +789,24 @@
                   ]
                 },
                 {
-                  "name": "r_obs_sub_hiv_test_type",
+                  "name": "r_patient_reference",
                   "source": [
                     {
                       "context": "src"
                     }
                   ],
-                  "target": [
+                  "dependent": [
                     {
-                      "context": "obs",
-                      "contextType": "variable",
-                      "element": "subject",
-                      "variable": "ref",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Reference"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_sub_ref_hiv_test_type",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "ref",
-                          "contextType": "variable",
-                          "element": "reference",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                            }
-                          ]
-                        }
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "r_obs_value_hiv_test_type",
+                  "name": "r_codeable_concept",
                   "source": [
                     {
                       "context": "src"
@@ -969,7 +828,7 @@
                   ],
                   "rule": [
                     {
-                      "name": "r_obs_value_text_hiv_test_type",
+                      "name": "r_cc_text",
                       "source": [
                         {
                           "context": "src"
@@ -993,7 +852,679 @@
                       ]
                     },
                     {
-                      "name": "r_obs_value_c_hiv_test_type",
+                      "name": "r_cc_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractHIVTestResults",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_question",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'hiv-test-results')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_observation",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "exposed-infant-milestone-hiv-test-hiv-test-results"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_patient_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_codeable_concept",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cc_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cc_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractIsChildWeaned",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_question",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'is-child-weaned')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_observation",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "exposed-infant-milestone-hiv-test-is-child-weaned"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_patient_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_codeable_concept",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cc_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cc_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractWhenChildWeaned",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_question",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'when-was-child-weaned')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_observation",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "exposed-infant-milestone-hiv-test-when-was-child-weaned"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_patient_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_codeable_concept",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cc_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cc_coding",
                       "source": [
                         {
                           "context": "src"
@@ -1034,11 +1565,6 @@
           "mode": "source"
         },
         {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
           "name": "bundle",
           "type": "Bundle",
           "mode": "target"
@@ -1051,1551 +1577,18 @@
       ],
       "rule": [
         {
-          "name": "r_obs_item_dbs_sample_id",
+          "name": "r_check_question",
           "source": [
             {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_type_group",
-              "condition": "(linkId = 'dbs-test-type-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_dbs_sample_id",
-              "source": [
-                {
-                  "context": "test_type_group",
-                  "element": "item",
-                  "variable": "item",
-                  "condition": "((linkId = 'dbs-sample-id') and (answer.count() > 0))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_dbs_sample_id",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "bundle",
-                      "contextType": "variable",
-                      "element": "entry",
-                      "variable": "entry"
-                    },
-                    {
-                      "context": "entry",
-                      "contextType": "variable",
-                      "element": "resource",
-                      "variable": "obs",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Observation"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_data_dbs_sample_id",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "id",
-                          "transform": "uuid"
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://d-tree.org"
-                            },
-                            {
-                              "valueString": "exposed-infant-milestone-hiv-dbs-sample-id"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "category",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                            },
-                            {
-                              "valueString": "vital-signs"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "encounter",
-                          "transform": "reference",
-                          "parameter": [
-                            {
-                              "valueId": "encounter"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "effective",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "now()"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_sub_dbs_sample_id",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "subject",
-                          "variable": "ref",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Reference"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_sub_ref_dbs_sample_id",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "ref",
-                              "contextType": "variable",
-                              "element": "reference",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_value_dbs_sample_id",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "value",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "item"
-                            },
-                            {
-                              "valueString": "$this.answer.value"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractDBSTestResultsAvailable",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_dbs_results_known",
-          "source": [
-            {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_type_group",
-              "condition": "(linkId = 'dbs-test-type-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_dbs_results_known",
-              "source": [
-                {
-                  "context": "test_type_group",
-                  "element": "item",
-                  "variable": "item",
-                  "condition": "((linkId = 'dbs-results-known') and (answer.count() > 0))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_dbs_results_known",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "bundle",
-                      "contextType": "variable",
-                      "element": "entry",
-                      "variable": "entry"
-                    },
-                    {
-                      "context": "entry",
-                      "contextType": "variable",
-                      "element": "resource",
-                      "variable": "obs",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Observation"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_data_dbs_results_known",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "id",
-                          "transform": "uuid"
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://d-tree.org"
-                            },
-                            {
-                              "valueString": "exposed-infant-milestone-hiv-dbs-results-known"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "category",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                            },
-                            {
-                              "valueString": "vital-signs"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "encounter",
-                          "transform": "reference",
-                          "parameter": [
-                            {
-                              "valueId": "encounter"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "effective",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "now()"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_sub_dbs_results_known",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "subject",
-                          "variable": "ref",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Reference"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_sub_ref_dbs_results_known",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "ref",
-                              "contextType": "variable",
-                              "element": "reference",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_value_dbs_results_known",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "value",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "item"
-                            },
-                            {
-                              "valueString": "$this.answer.value"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractHIVTestResults",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_hiv_test_results",
-          "source": [
-            {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_results_group",
-              "condition": "(linkId = 'hiv-test-results-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_hiv_test_results",
-              "source": [
-                {
-                  "context": "test_results_group",
-                  "element": "item",
-                  "variable": "item",
-                  "condition": "((linkId = 'hiv-test-results') and (answer.count() > 0))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_hiv_test_results",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "bundle",
-                      "contextType": "variable",
-                      "element": "entry",
-                      "variable": "entry"
-                    },
-                    {
-                      "context": "entry",
-                      "contextType": "variable",
-                      "element": "resource",
-                      "variable": "obs",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Observation"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_data_dbs_results_known",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "id",
-                          "transform": "uuid"
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "code",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://d-tree.org"
-                            },
-                            {
-                              "valueString": "exposed-infant-milestone-hiv-hiv-test-results"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "category",
-                          "transform": "cc",
-                          "parameter": [
-                            {
-                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                            },
-                            {
-                              "valueString": "vital-signs"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "encounter",
-                          "transform": "reference",
-                          "parameter": [
-                            {
-                              "valueId": "encounter"
-                            }
-                          ]
-                        },
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "effective",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "now()"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_sub_hiv_test_results",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "subject",
-                          "variable": "ref",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Reference"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_sub_ref_hiv_test_results",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "ref",
-                              "contextType": "variable",
-                              "element": "reference",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_obs_value_hiv_test_results",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "obs",
-                          "contextType": "variable",
-                          "element": "value",
-                          "variable": "codeableConcept",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "CodeableConcept"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_value_text_hiv_test_results",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "codeableConcept",
-                              "contextType": "variable",
-                              "element": "text",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "item"
-                                },
-                                {
-                                  "valueString": "$this.answer.value.display"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_value_c_hiv_test_results",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "codeableConcept",
-                              "contextType": "variable",
-                              "element": "coding",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "item"
-                                },
-                                {
-                                  "valueString": "$this.answer.value"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractIsChildPresent",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_is_the_child_weaned",
-          "source": [
-            {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_results_group",
-              "condition": "(linkId = 'hiv-test-results-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_is_the_child_weaned",
-              "source": [
-                {
-                  "context": "test_results_group",
-                  "element": "item",
-                  "variable": "test_results_positive",
-                  "condition": "(linkId = 'result-positive-group')"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_item_is_the_child_weaned",
-                  "source": [
-                    {
-                      "context": "test_results_positive",
-                      "element": "item",
-                      "variable": "item",
-                      "condition": "((linkId = 'is-child-present') and (answer.count() > 0))"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_is_the_child_weaned",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "bundle",
-                          "contextType": "variable",
-                          "element": "entry",
-                          "variable": "entry"
-                        },
-                        {
-                          "context": "entry",
-                          "contextType": "variable",
-                          "element": "resource",
-                          "variable": "obs",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Observation"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_data_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "id",
-                              "transform": "uuid"
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "code",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "https://d-tree.og"
-                                },
-                                {
-                                  "valueString": "exposed-infant-hiv-test-and-results-is-child-present"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "category",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                                },
-                                {
-                                  "valueString": "vital-signs"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "encounter",
-                              "transform": "reference",
-                              "parameter": [
-                                {
-                                  "valueId": "encounter"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "effective",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "now()"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_sub_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "subject",
-                              "variable": "ref",
-                              "transform": "create",
-                              "parameter": [
-                                {
-                                  "valueString": "Reference"
-                                }
-                              ]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_obs_sub_ref_is_the_child_weaned",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "ref",
-                                  "contextType": "variable",
-                                  "element": "reference",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "src"
-                                    },
-                                    {
-                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_value_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "value",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "item"
-                                },
-                                {
-                                  "valueString": "$this.answer.value"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractIsChildWeaned",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_is_the_child_weaned",
-          "source": [
-            {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_results_group",
-              "condition": "(linkId = 'hiv-test-results-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_is_the_child_weaned",
-              "source": [
-                {
-                  "context": "test_results_group",
-                  "element": "item",
-                  "variable": "test_results_negative",
-                  "condition": "(linkId = 'test-negative-results-group')"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_item_is_the_child_weaned",
-                  "source": [
-                    {
-                      "context": "test_results_negative",
-                      "element": "item",
-                      "variable": "item",
-                      "condition": "((linkId = 'is-the-child-weaned') and (answer.count() > 0))"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_is_the_child_weaned",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "bundle",
-                          "contextType": "variable",
-                          "element": "entry",
-                          "variable": "entry"
-                        },
-                        {
-                          "context": "entry",
-                          "contextType": "variable",
-                          "element": "resource",
-                          "variable": "obs",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Observation"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_data_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "id",
-                              "transform": "uuid"
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "code",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "http://d-tree.org"
-                                },
-                                {
-                                  "valueString": "exposed-infant-milestone-hiv-test-is-the-child-weaned"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "category",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                                },
-                                {
-                                  "valueString": "vital-signs"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "encounter",
-                              "transform": "reference",
-                              "parameter": [
-                                {
-                                  "valueId": "encounter"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "effective",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "now()"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_sub_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "subject",
-                              "variable": "ref",
-                              "transform": "create",
-                              "parameter": [
-                                {
-                                  "valueString": "Reference"
-                                }
-                              ]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_obs_sub_ref_is_the_child_weaned",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "ref",
-                                  "contextType": "variable",
-                                  "element": "reference",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "src"
-                                    },
-                                    {
-                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_value_is_the_child_weaned",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "value",
-                              "variable": "codeableConcept",
-                              "transform": "create",
-                              "parameter": [
-                                {
-                                  "valueString": "CodeableConcept"
-                                }
-                              ]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_obs_value_text_is_the_child_weaned",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "codeableConcept",
-                                  "contextType": "variable",
-                                  "element": "text",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "item"
-                                    },
-                                    {
-                                      "valueString": "$this.answer.value.display"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "name": "r_obs_value_c_is_the_child_weaned",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "codeableConcept",
-                                  "contextType": "variable",
-                                  "element": "coding",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "item"
-                                    },
-                                    {
-                                      "valueString": "$this.answer.value"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractWhenChildWeaned",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "conducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_child_weaning_period",
-          "source": [
-            {
-              "context": "conducted_group",
-              "element": "item",
-              "variable": "test_results_group",
-              "condition": "(linkId = 'hiv-test-results-group')"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_obs_item_child_weaning_period",
-              "source": [
-                {
-                  "context": "test_results_group",
-                  "element": "item",
-                  "variable": "test_results_negative",
-                  "condition": "(linkId = 'test-negative-results-group')"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_item_child_weaning_period",
-                  "source": [
-                    {
-                      "context": "test_results_negative",
-                      "element": "item",
-                      "variable": "item",
-                      "condition": "((linkId = 'child-weaning-period') and (answer.count() > 0))"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_child_weaning_period",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "bundle",
-                          "contextType": "variable",
-                          "element": "entry",
-                          "variable": "entry"
-                        },
-                        {
-                          "context": "entry",
-                          "contextType": "variable",
-                          "element": "resource",
-                          "variable": "obs",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Observation"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_obs_data_child_weaning_period",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "id",
-                              "transform": "uuid"
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "code",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "http://d-tree.org"
-                                },
-                                {
-                                  "valueString": "exposed-infant-milestone-hiv-test-child-weaning-period"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "category",
-                              "transform": "cc",
-                              "parameter": [
-                                {
-                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
-                                },
-                                {
-                                  "valueString": "vital-signs"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "encounter",
-                              "transform": "reference",
-                              "parameter": [
-                                {
-                                  "valueId": "encounter"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "effective",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "src"
-                                },
-                                {
-                                  "valueString": "now()"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_sub_child_weaning_period",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "subject",
-                              "variable": "ref",
-                              "transform": "create",
-                              "parameter": [
-                                {
-                                  "valueString": "Reference"
-                                }
-                              ]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_obs_sub_ref_child_weaning_period",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "ref",
-                                  "contextType": "variable",
-                                  "element": "reference",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "src"
-                                    },
-                                    {
-                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_obs_value_child_weaning_period",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "obs",
-                              "contextType": "variable",
-                              "element": "value",
-                              "variable": "codeableConcept",
-                              "transform": "create",
-                              "parameter": [
-                                {
-                                  "valueString": "CodeableConcept"
-                                }
-                              ]
-                            }
-                          ],
-                          "rule": [
-                            {
-                              "name": "r_obs_value_text_child_weaning_period",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "codeableConcept",
-                                  "contextType": "variable",
-                                  "element": "text",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "item"
-                                    },
-                                    {
-                                      "valueString": "$this.answer.value.display"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "name": "r_obs_value_c_child_weaning_period",
-                              "source": [
-                                {
-                                  "context": "src"
-                                }
-                              ],
-                              "target": [
-                                {
-                                  "context": "codeableConcept",
-                                  "contextType": "variable",
-                                  "element": "coding",
-                                  "transform": "evaluate",
-                                  "parameter": [
-                                    {
-                                      "valueId": "item"
-                                    },
-                                    {
-                                      "valueString": "$this.answer.value"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractReasonForUnconductedMilestone",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "unconducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_obs_item_reason_for_uncollected_results",
-          "source": [
-            {
-              "context": "unconducted_group",
+              "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = 'reason-unconducted-milestone') and (answer.count() > 0))"
+              "condition": "(linkId = 'dbs-sample-id')"
             }
           ],
           "rule": [
             {
-              "name": "r_obs_reason_for_uncollected_results",
+              "name": "r_create_observation",
               "source": [
                 {
                   "context": "src"
@@ -2623,7 +1616,359 @@
               ],
               "rule": [
                 {
-                  "name": "r_obs_data_reason_for_uncollected_results",
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "exposed-infant-milestone-hiv-test-dbs-sample-id"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_patient_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDBSTestResultsAvailable",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_question",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'are-dbs-test-results-available')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_observation",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "exposed-infant-milestone-hiv-test-are-dbs-test-results-available"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_patient_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReasonForUnconductedMilestone",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_question",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'reason-unconducted-milestone')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_observation",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_effective",
                   "source": [
                     {
                       "context": "src"
@@ -2692,55 +2037,24 @@
                   ]
                 },
                 {
-                  "name": "r_obs_sub_reason_for_uncollected_results",
+                  "name": "r_patient_reference",
                   "source": [
                     {
                       "context": "src"
                     }
                   ],
-                  "target": [
+                  "dependent": [
                     {
-                      "context": "obs",
-                      "contextType": "variable",
-                      "element": "subject",
-                      "variable": "ref",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Reference"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_sub_ref_reason_for_uncollected_results",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "ref",
-                          "contextType": "variable",
-                          "element": "reference",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                            }
-                          ]
-                        }
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "r_obs_value_reason_for_uncollected_results",
+                  "name": "r_codeable_concept",
                   "source": [
                     {
                       "context": "src"
@@ -2762,7 +2076,7 @@
                   ],
                   "rule": [
                     {
-                      "name": "r_obs_value_text_reason_for_uncollected_results",
+                      "name": "r_cc_text",
                       "source": [
                         {
                           "context": "src"
@@ -2786,7 +2100,7 @@
                       ]
                     },
                     {
-                      "name": "r_obs_value_c_reason_for_uncollected_results",
+                      "name": "r_cc_coding",
                       "source": [
                         {
                           "context": "src"
@@ -2827,11 +2141,6 @@
           "mode": "source"
         },
         {
-          "name": "unconducted_group",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
           "name": "bundle",
           "type": "Bundle",
           "mode": "target"
@@ -2844,18 +2153,18 @@
       ],
       "rule": [
         {
-          "name": "r_obs_item_other_reason_for_uncollected_results",
+          "name": "r_check_question",
           "source": [
             {
-              "context": "unconducted_group",
+              "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = 'other-reason') and (answer.count() > 0))"
+              "condition": "(linkId = 'other-reason')"
             }
           ],
           "rule": [
             {
-              "name": "r_obs_other_reason_for_uncollected_results",
+              "name": "r_create_observation",
               "source": [
                 {
                   "context": "src"
@@ -2883,7 +2192,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_obs_data_other_reason_for_uncollected_results",
+                  "name": "r_obs_effective",
                   "source": [
                     {
                       "context": "src"
@@ -2906,7 +2215,7 @@
                           "valueString": "http://d-tree.org"
                         },
                         {
-                          "valueString": "exposed-infant-milestone-hiv-test-other-reason-unconducted-milestone"
+                          "valueString": "exposed-infant-milestone-hiv-other-reason"
                         }
                       ]
                     },
@@ -2952,55 +2261,24 @@
                   ]
                 },
                 {
-                  "name": "r_obs_sub_other_reason_for_uncollected_results",
+                  "name": "r_patient_reference",
                   "source": [
                     {
                       "context": "src"
                     }
                   ],
-                  "target": [
+                  "dependent": [
                     {
-                      "context": "obs",
-                      "contextType": "variable",
-                      "element": "subject",
-                      "variable": "ref",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "Reference"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_sub_ref_other_reason_for_uncollected_results",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "ref",
-                          "contextType": "variable",
-                          "element": "reference",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "src"
-                            },
-                            {
-                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
-                            }
-                          ]
-                        }
+                      "name": "PatientReference",
+                      "variable": [
+                        "src",
+                        "obs"
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "r_obs_value_other_reason_for_uncollected_results",
+                  "name": "r_obs_value",
                   "source": [
                     {
                       "context": "src"
@@ -3030,6 +2308,228 @@
       ]
     },
     {
+      "name": "CheckIfAddToNextVisitRequired",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_milestone_hiv_test_add_to_next_visit",
+          "source": [
+            {
+              "context": "src",
+              "condition": "($this.item.where(linkId = 'reason-unconducted-milestone').answer.value.code != 'milestone-hiv-test-not-due-today')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_code_display",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "code",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "variable": "display",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "milestone-hiv-test-add-to-next-visit"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_display",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "display",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Milestone HIV Test"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_add_to_next_visit",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "RecreateCarePlan",
+                      "variable": [
+                        "src",
+                        "code",
+                        "display",
+                        "bundle"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_exposed_infant_record_hiv_test_resultadd_to_next_visit",
+          "source": [
+            {
+              "context": "src",
+              "condition": "($this.item.where(linkId = 'are-dbs-test-results-available').answer.value = false)"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_create_code_display",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "code",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "variable": "display",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "exposed-infant-record-hiv-test-result-add-to-next-visit"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_display",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "display",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "HIV Test Results"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_add_to_next_visit",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "RecreateCarePlan",
+                      "variable": [
+                        "src",
+                        "code",
+                        "display",
+                        "bundle"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "CheckIfConversionIsRequired",
       "typeMode": "none",
       "input": [
@@ -3046,234 +2546,27 @@
       ],
       "rule": [
         {
-          "name": "r_obs_item_is_the_child_weaned",
+          "name": "r_check_if_conversion_is_required",
           "source": [
             {
               "context": "src",
-              "element": "item",
-              "listMode": "first",
-              "variable": "conducted_group",
-              "condition": "(linkId = 'conducted-milestone-group')"
+              "condition": "($this.item.where(linkId = 'hiv-test-results').answer.value.code = 'positive')"
             }
           ],
           "rule": [
             {
-              "name": "r_obs_item_is_the_child_weaned",
-              "source": [
-                {
-                  "context": "conducted_group",
-                  "element": "item",
-                  "listMode": "first",
-                  "variable": "test_results_group",
-                  "condition": "(linkId = 'hiv-test-results-group')"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_obs_item_is_the_child_weaned",
-                  "source": [
-                    {
-                      "context": "test_results_group",
-                      "element": "item",
-                      "listMode": "first",
-                      "variable": "test_results_positive",
-                      "condition": "(linkId = 'result-positive-group')"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_obs_item_is_the_child_weaned",
-                      "source": [
-                        {
-                          "context": "test_results_positive",
-                          "element": "item",
-                          "listMode": "first",
-                          "variable": "isChildPresent",
-                          "condition": "((linkId = 'is-child-present') and (answer.count() > 0))"
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_convert_to_ndc",
-                          "source": [
-                            {
-                              "context": "isChildPresent",
-                              "condition": "($this.answer.value = true)"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "ConvertToNewlyDiagnosedClient",
-                              "variable": [
-                                "src",
-                                "bundle"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_add_to_tracing_list",
-                          "source": [
-                            {
-                              "context": "isChildPresent",
-                              "condition": "($this.answer.value = false)"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "AddExposedInfantToTracingList",
-                              "variable": [
-                                "src",
-                                "bundle"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_convert_to_ndc",
-                  "source": [
-                    {
-                      "context": "test_results_group",
-                      "element": "item",
-                      "listMode": "first",
-                      "variable": "test_results_rapid_and_positive",
-                      "condition": "(linkId = 'group-rapid-test-and-positive-result')"
-                    }
-                  ],
-                  "dependent": [
-                    {
-                      "name": "ConvertToNewlyDiagnosedClient",
-                      "variable": [
-                        "src",
-                        "bundle"
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "AddExposedInfantToTracingList",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_create_string",
-          "source": [
-            {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "variable": "status",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_close_existing_care_plan",
+              "name": "r_convert_to_newly_diagnosed_client",
               "source": [
                 {
                   "context": "src"
                 }
               ],
-              "target": [
-                {
-                  "context": "status",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "revoked"
-                    }
-                  ]
-                }
-              ],
               "dependent": [
                 {
-                  "name": "UpdateActiveCarePlan",
+                  "name": "ConvertToNewlyDiagnosedClient",
                   "variable": [
                     "src",
-                    "bundle",
-                    "status"
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "r_create_string_title",
-          "source": [
-            {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "variable": "title",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_create_ndc_care_plan",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "title",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "Exposed Infant Awaiting Conversion To ART Client"
-                    }
-                  ]
-                }
-              ],
-              "dependent": [
-                {
-                  "name": "CreateCarePlan",
-                  "variable": [
-                    "src",
-                    "bundle",
-                    "title"
+                    "bundle"
                   ]
                 }
               ]
@@ -3445,7 +2738,7 @@
               "element": "item",
               "listMode": "first",
               "variable": "item",
-              "condition": "(linkId = 'patient-id')"
+              "condition": "($this.where(linkId = 'page-1').item.where(linkId = 'patient-id'))"
             }
           ],
           "rule": [
@@ -3803,19 +3096,35 @@
       ],
       "rule": [
         {
-          "name": "r_check_care_plan_id",
+          "name": "r_item_care_plan",
           "source": [
             {
-              "context": "src",
-              "element": "item",
-              "listMode": "first",
-              "variable": "item",
-              "condition": "(linkId = 'care-plan-id')"
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "carePlan",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CarePlan"
+                }
+              ]
             }
           ],
           "rule": [
             {
-              "name": "r_item_care_plan",
+              "name": "r_item_care_plan_id",
               "source": [
                 {
                   "context": "src"
@@ -3823,27 +3132,21 @@
               ],
               "target": [
                 {
-                  "context": "bundle",
+                  "context": "carePlan",
                   "contextType": "variable",
-                  "element": "entry",
-                  "variable": "entry"
-                },
-                {
-                  "context": "entry",
-                  "contextType": "variable",
-                  "element": "resource",
-                  "variable": "carePlan",
+                  "element": "id",
+                  "variable": "carePlan_id",
                   "transform": "create",
                   "parameter": [
                     {
-                      "valueString": "CarePlan"
+                      "valueString": "id"
                     }
                   ]
                 }
               ],
               "rule": [
                 {
-                  "name": "r_item_care_plan_id",
+                  "name": "r_item_care_plan_id_value",
                   "source": [
                     {
                       "context": "src"
@@ -3851,66 +3154,42 @@
                   ],
                   "target": [
                     {
-                      "context": "carePlan",
+                      "context": "carePlan_id",
                       "contextType": "variable",
-                      "element": "id",
-                      "variable": "carePlan_id",
-                      "transform": "create",
+                      "element": "value",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "id"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_item_care_plan_id_value",
-                      "source": [
+                          "valueId": "src"
+                        },
                         {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "carePlan_id",
-                          "contextType": "variable",
-                          "element": "value",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "item"
-                            },
-                            {
-                              "valueString": "$this.answer.value"
-                            }
-                          ]
+                          "valueString": "$this.item.where(linkId = 'care-plan-id').answer.value"
                         }
                       ]
                     }
                   ]
-                },
+                }
+              ]
+            },
+            {
+              "name": "r_item_care_plan_status",
+              "source": [
                 {
-                  "name": "r_item_care_plan_status",
-                  "source": [
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "carePlan",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "evaluate",
+                  "parameter": [
                     {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
+                      "valueId": "status"
+                    },
                     {
-                      "context": "carePlan",
-                      "contextType": "variable",
-                      "element": "status",
-                      "transform": "evaluate",
-                      "parameter": [
-                        {
-                          "valueId": "status"
-                        },
-                        {
-                          "valueString": "$this.value"
-                        }
-                      ]
+                      "valueString": "$this.value"
                     }
                   ]
                 }
@@ -4308,7 +3587,7 @@
                           "valueId": "src"
                         },
                         {
-                          "valueString": "$this.item.where(linkId = 'practitioner-name').answer.value"
+                          "valueString": "$this.item.where(linkId = 'practitioner-fullname').answer.value"
                         }
                       ]
                     }
@@ -4325,10 +3604,9 @@
               ],
               "dependent": [
                 {
-                  "name": "CreateCarePlanAcitivities",
+                  "name": "AddNewlyDiagnosedClientActivities",
                   "variable": [
                     "src",
-                    "title",
                     "carePlan",
                     "bundle"
                   ]
@@ -4346,6 +3624,16 @@
         {
           "name": "src",
           "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "display",
+          "type": "string",
           "mode": "source"
         },
         {
@@ -4432,10 +3720,13 @@
                       "context": "coding",
                       "contextType": "variable",
                       "element": "code",
-                      "transform": "copy",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "milestone-hiv-test-add-to-next-visit"
+                          "valueId": "code"
+                        },
+                        {
+                          "valueString": "$this.value"
                         }
                       ]
                     }
@@ -4453,10 +3744,13 @@
                       "context": "coding",
                       "contextType": "variable",
                       "element": "display",
-                      "transform": "copy",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "Milestone HIV Test"
+                          "valueId": "display"
+                        },
+                        {
+                          "valueString": "$this.value"
                         }
                       ]
                     }
@@ -4475,6 +3769,16 @@
         {
           "name": "src",
           "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "display",
+          "type": "string",
           "mode": "source"
         },
         {
@@ -4552,7 +3856,7 @@
                           "valueId": "src"
                         },
                         {
-                          "valueString": "$this.item.where((linkId = 'care-plan-id') and (answer.count() > 0)).answer.value"
+                          "valueString": "$this.item.where(linkId = 'care-plan-id').answer.value"
                         }
                       ]
                     }
@@ -4572,75 +3876,11 @@
                   "name": "AddToNextVisit",
                   "variable": [
                     "src",
+                    "code",
+                    "display",
                     "carePlan"
                   ]
                 }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CreateCarePlanAcitivities",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "title",
-          "type": "string",
-          "mode": "source"
-        },
-        {
-          "name": "carePlan",
-          "type": "CarePlan",
-          "mode": "target"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_add_act_ndc",
-          "source": [
-            {
-              "context": "title",
-              "condition": "($this.value = 'Newly Diagnosed Client Visit 1')"
-            }
-          ],
-          "dependent": [
-            {
-              "name": "AddNewlyDiagnosedClientActivities",
-              "variable": [
-                "src",
-                "carePlan",
-                "bundle"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "r_add_act_awaiting_conversion",
-          "source": [
-            {
-              "context": "title",
-              "condition": "($this.value = 'Exposed Infant Awaiting Conversion To ART Client')"
-            }
-          ],
-          "dependent": [
-            {
-              "name": "AddAwaitingConversionActivities",
-              "variable": [
-                "src",
-                "carePlan",
-                "bundle"
               ]
             }
           ]
@@ -5179,124 +4419,6 @@
                   "parameter": [
                     {
                       "valueString": "clinic-visit-task-order-15"
-                    }
-                  ]
-                }
-              ],
-              "dependent": [
-                {
-                  "name": "AddCarePlanActivity",
-                  "variable": [
-                    "src",
-                    "carePlan",
-                    "bundle",
-                    "taskDescription",
-                    "taskQuestionnaireId",
-                    "order"
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "AddAwaitingConversionActivities",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "carePlan",
-          "type": "CarePlan",
-          "mode": "target"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_add_acts",
-          "source": [
-            {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "variable": "taskDescription",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            },
-            {
-              "variable": "taskQuestionnaireId",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            },
-            {
-              "variable": "order",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_order_value_16",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "taskDescription",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "Convert To ART Client"
-                    }
-                  ]
-                },
-                {
-                  "context": "taskQuestionnaireId",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "exposed-infant-convert-to-art-client"
-                    }
-                  ]
-                },
-                {
-                  "context": "order",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "clinic-visit-task-order-16"
                     }
                   ]
                 }

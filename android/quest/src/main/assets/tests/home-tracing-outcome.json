@@ -2059,7 +2059,7 @@
           ]
         },
         {
-          "linkId": "is-deceased-group",
+          "linkId": "deceased-group",
           "type": "group",
           "enableWhen": [
             {
@@ -2073,7 +2073,7 @@
           "enableBehavior": "all",
           "item": [
             {
-              "linkId": "is-deceased",
+              "linkId": "death-date-known",
               "type": "boolean",
               "text": "Do you know when they died"
             },
@@ -2100,7 +2100,7 @@
               "required": true,
               "enableWhen": [
                 {
-                  "question": "is-deceased",
+                  "question": "death-date-known",
                   "operator": "=",
                   "answerBoolean": true
                 }
@@ -2108,17 +2108,17 @@
               "enableBehavior": "all"
             },
             {
-              "linkId": "is-deceased-info",
+              "linkId": "deceased-group-info",
               "type": "display",
               "text": "<b>This person will be removed from the client list</b>",
               "enableWhen": [
                 {
-                  "question": "is-deceased",
+                  "question": "death-date-known",
                   "operator": "=",
                   "answerBoolean": true
                 },
                 {
-                  "question": "is-deceased",
+                  "question": "death-date-known",
                   "operator": "=",
                   "answerBoolean": false
                 }

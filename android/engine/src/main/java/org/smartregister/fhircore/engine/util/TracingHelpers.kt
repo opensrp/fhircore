@@ -25,7 +25,8 @@ object TracingHelpers {
       "art-client-welcome-service-high-or-detectable-viral-load",
       "art-client-viral-load-collection",
       "exposed-infant-convert-to-art-client",
-      "patient-finish-visit"
+      "patient-finish-visit",
+      "contact-and-community-positive-hiv-test-and-next-appointment"
     )
   const val tracingBundleId = "tracing"
   fun requireTracingTasks(id: String): Boolean =

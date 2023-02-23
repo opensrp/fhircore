@@ -521,53 +521,19 @@
               ]
             },
             {
-              "name": "r_assign_patient_appoinment_type",
+              "name": "r_assign_appointment",
               "source": [
                 {
                   "context": "src"
                 }
               ],
-              "target": [
+              "dependent": [
                 {
-                  "variable": "patientCategory",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "$this.item.where(linkId = 'patient-category').answer.value.code"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_art_new_appointments",
-                  "source": [
-                    {
-                      "context": "src",
-                      "condition": "((patientCategory = 'newly-diagnosed-client') or (patientCategory = 'client-already-on-art'))"
-                    }
-                  ],
-                  "dependent": [
-                    {
-                      "name": "ExtractARTNewAppointmentWithStart",
-                      "variable": [
-                        "src",
-                        "nextAppoinmentDateString",
-                        "bundle"
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_infant_new_appointment",
-                  "source": [
-                    {
-                      "context": "src",
-                      "condition": "(patientCategory = 'exposed-infant')"
-                    }
+                  "name": "ExtractARTNewAppointmentWithStart",
+                  "variable": [
+                    "src",
+                    "nextAppoinmentDateString",
+                    "bundle"
                   ]
                 }
               ]
@@ -2550,6 +2516,24 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "r_conduct_exposed_infant_record_hiv_test_result",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExposedInfantConductRecordHivTestResult",
+                  "variable": [
+                    "src",
+                    "carePlan",
+                    "bundle"
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -2702,6 +2686,135 @@
                         "carePlan",
                         "bundle",
                         "taskDescription",
+                        "order"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExposedInfantConductRecordHivTestResult",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "carePlan",
+          "type": "CarePlan",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_check_conduct_exposed_infant_record_hiv_test_result",
+          "source": [
+            {
+              "context": "src",
+              "condition": "($this.item.where(linkId = 'conduct-exposed-infant-record-hiv-test-result').answer.value = true)"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_exposed_infant_record_hiv_test_result",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "taskDescription",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "variable": "taskQuestionnaireId",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                },
+                {
+                  "variable": "order",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "string"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_tb_covid",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskDescription",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Record HIV Test Results"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "taskQuestionnaireId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "exposed-infant-record-hiv-test-results"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "order",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "clinic-visit-task-order-8"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "AddCarePlanActivity",
+                      "variable": [
+                        "src",
+                        "carePlan",
+                        "bundle",
+                        "taskDescription",
+                        "taskQuestionnaireId",
                         "order"
                       ]
                     }
@@ -8348,20 +8461,180 @@
               ]
             },
             {
-              "name": "r_create_refill_appointment",
+              "name": "r_new_appointments_check_patient_category",
               "source": [
                 {
                   "context": "src",
                   "condition": "(proceedToCreateRefillAppointment.value = 'yes')"
                 }
               ],
-              "dependent": [
+              "target": [
                 {
-                  "name": "NewRefillAppointment",
-                  "variable": [
-                    "src",
-                    "dateOfNextAppointString",
-                    "bundle"
+                  "variable": "patientCategory",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.item.where(linkId = 'patient-category').answer.value.code"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_refill_appointment",
+                  "source": [
+                    {
+                      "context": "src",
+                      "condition": "((patientCategory = 'newly-diagnosed-client') or (patientCategory = 'client-already-on-art'))"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "NewRefillAppointment",
+                      "variable": [
+                        "src",
+                        "dateOfNextAppointString",
+                        "bundle"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_eval_infant_new_appointment",
+                  "source": [
+                    {
+                      "context": "src",
+                      "condition": "(patientCategory = 'exposed-infant')"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "birthDate",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'patient-birth-date').answer.value"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "is6weeks",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "birthDate = (today() - '6 weeks'.toQuantity())"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "is1year",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "birthDate = (today() - '365 days'.toQuantity())"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "is2years",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "birthDate = (today() - '730 days'.toQuantity())"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "isOlderThan2years",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "birthDate > (today() - '730 days'.toQuantity())"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "requiresMilestoneScreening",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'conduct-milestone-hiv-screening-test').answer.value.exists() and ($this.item.where(linkId = 'conduct-milestone-hiv-screening-test').answer.value = 'true')"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "needsAppointmentForMilestone",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "is6weeks or is1year or is2years or (isOlderThan2years and requiresMilestoneScreening)"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_new_milestone_visit_appointment",
+                      "source": [
+                        {
+                          "context": "src",
+                          "condition": "(needsAppointmentForMilestone = true)"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExposedInfantMilestoneHivTestAppointment",
+                          "variable": [
+                            "src",
+                            "dateOfNextAppointString",
+                            "bundle"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_new_infant_routine_visit",
+                      "source": [
+                        {
+                          "context": "src",
+                          "condition": "(needsAppointmentForMilestone = false)"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "ExposedInfantRoutineVisitAppointment",
+                          "variable": [
+                            "src",
+                            "dateOfNextAppointString",
+                            "bundle"
+                          ]
+                        }
+                      ]
+                    }
                   ]
                 }
               ]
@@ -8456,6 +8729,217 @@
               "parameter": [
                 {
                   "valueString": "Refill"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "NewAppointment",
+              "variable": [
+                "src",
+                "dateOfNextAppointString",
+                "reasonCode",
+                "reasonDescription",
+                "reasonText",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExposedInfantMilestoneHivTestAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "dateOfNextAppointString",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_milestone_hiv_visit_appointment",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "reasonText",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonText",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Milestone HIV Test"
+                }
+              ]
+            },
+            {
+              "variable": "reasonCode",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonCode",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Milestone"
+                }
+              ]
+            },
+            {
+              "variable": "reasonDescription",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonDescription",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Milestone HIV Test"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "NewAppointment",
+              "variable": [
+                "src",
+                "dateOfNextAppointString",
+                "reasonCode",
+                "reasonDescription",
+                "reasonText",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExposedInfantRoutineVisitAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "dateOfNextAppointString",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_routine_visit_appointment",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "reasonText",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonText",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Routine Visit"
+                }
+              ]
+            },
+            {
+              "variable": "reasonCode",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonCode",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Routine"
+                }
+              ]
+            },
+            {
+              "variable": "reasonDescription",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "context": "reasonDescription",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Routine Visit"
                 }
               ]
             }

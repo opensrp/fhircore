@@ -128,87 +128,39 @@
                   ],
                   "rule": [
                     {
-                      "name": "r_create_app",
+                      "name": "r_list",
                       "source": [
                         {
                           "context": "src"
                         }
                       ],
-                      "target": [
+                      "dependent": [
                         {
-                          "context": "bundle",
-                          "contextType": "variable",
-                          "element": "entry",
-                          "variable": "entry"
-                        },
-                        {
-                          "context": "entry",
-                          "contextType": "variable",
-                          "element": "resource",
-                          "variable": "appointment",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Appointment"
-                            }
+                          "name": "HandleEncounterOutcome",
+                          "variable": [
+                            "src",
+                            "bundle",
+                            "encounter",
+                            "encList"
                           ]
                         }
+                      ]
+                    },
+                    {
+                      "name": "r_enc",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
                       ],
-                      "rule": [
+                      "dependent": [
                         {
-                          "name": "r_create_app",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "EvaluateAppointment",
-                              "variable": [
-                                "src",
-                                "appointment"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_list",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "HandleEncounterOutcome",
-                              "variable": [
-                                "src",
-                                "bundle",
-                                "encounter",
-                                "encList"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_enc",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "ExtractEncounter",
-                              "variable": [
-                                "src",
-                                "bundle",
-                                "encounter",
-                                "encList",
-                                "appointment"
-                              ]
-                            }
+                          "name": "ExtractEncounter",
+                          "variable": [
+                            "src",
+                            "bundle",
+                            "encounter",
+                            "encList"
                           ]
                         }
                       ]
@@ -243,11 +195,6 @@
         {
           "name": "encList",
           "type": "List",
-          "mode": "target"
-        },
-        {
-          "name": "appointment",
-          "type": "Appointment",
           "mode": "target"
         }
       ],
@@ -787,8 +734,7 @@
                     "src",
                     "bundle",
                     "encounter",
-                    "encList",
-                    "appointment"
+                    "encList"
                   ]
                 }
               ]
@@ -1385,11 +1331,6 @@
           "name": "encList",
           "type": "List",
           "mode": "target"
-        },
-        {
-          "name": "appointment",
-          "type": "Appointment",
-          "mode": "target"
         }
       ],
       "rule": [
@@ -1407,8 +1348,7 @@
                 "src",
                 "bundle",
                 "encounter",
-                "encList",
-                "appointment"
+                "encList"
               ]
             }
           ]
@@ -1437,11 +1377,6 @@
         {
           "name": "encList",
           "type": "List",
-          "mode": "target"
-        },
-        {
-          "name": "appointment",
-          "type": "Appointment",
           "mode": "target"
         }
       ],
@@ -1668,8 +1603,7 @@
                                 "page",
                                 "agreeDate",
                                 "bundle",
-                                "encounter",
-                                "appointment"
+                                "encounter"
                               ]
                             }
                           ]
@@ -1792,6 +1726,23 @@
                                     "encounter"
                                   ]
                                 }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "close_app",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "CloseAppointment",
+                              "variable": [
+                                "src",
+                                "bundle"
                               ]
                             }
                           ]
@@ -2092,7 +2043,7 @@
                               "name": "CloseAppointment",
                               "variable": [
                                 "src",
-                                "appointment"
+                                "bundle"
                               ]
                             }
                           ]
@@ -4990,11 +4941,6 @@
           "name": "encounter",
           "type": "Encounter",
           "mode": "target"
-        },
-        {
-          "name": "appointment",
-          "type": "Appointment",
-          "mode": "target"
         }
       ],
       "rule": [
@@ -5239,7 +5185,7 @@
                   ]
                 },
                 {
-                  "name": "add_app_start",
+                  "name": "ev_appointment",
                   "source": [
                     {
                       "context": "src"
@@ -5247,37 +5193,25 @@
                   ],
                   "target": [
                     {
-                      "variable": "startDate",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "instant"
-                        }
-                      ]
-                    },
-                    {
-                      "context": "startDate",
-                      "contextType": "variable",
-                      "element": "value",
+                      "variable": "appDate",
                       "transform": "evaluate",
                       "parameter": [
                         {
                           "valueId": "itemAnswer"
                         },
                         {
-                          "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
+                          "valueString": "$this.answer.value.toString()"
                         }
                       ]
-                    },
+                    }
+                  ],
+                  "dependent": [
                     {
-                      "context": "appointment",
-                      "contextType": "variable",
-                      "element": "start",
-                      "transform": "copy",
-                      "parameter": [
-                        {
-                          "valueId": "startDate"
-                        }
+                      "name": "EvaluateAppointment",
+                      "variable": [
+                        "src",
+                        "appDate",
+                        "bundle"
                       ]
                     }
                   ]
@@ -5298,8 +5232,287 @@
           "mode": "source"
         },
         {
-          "name": "appointment",
-          "type": "Appointment",
+          "name": "appDate",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_create_app",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "appointment",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Appointment"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_app_populate",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "PopulateAppointment",
+                  "variable": [
+                    "src",
+                    "appointment"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "add_app_start",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "startDate",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "instant"
+                    }
+                  ]
+                },
+                {
+                  "context": "startDate",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "appDate"
+                    },
+                    {
+                      "valueString": "$this + 'T00:00:00+00:00'"
+                    }
+                  ]
+                },
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "start",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "startDate"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_bundle",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "contained",
+                  "listMode": "first",
+                  "variable": "item",
+                  "condition": "($this.ofType(Bundle).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_missing_eval",
+                  "source": [
+                    {
+                      "context": "item",
+                      "element": "entry",
+                      "variable": "appointmentContainer",
+                      "condition": "($this.resource.ofType(Appointment).exists() and $this.resource.ofType(Appointment).start.empty())"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_get_app_item",
+                      "source": [
+                        {
+                          "context": "appointmentContainer"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "appointmentItem",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "appointmentContainer"
+                            },
+                            {
+                              "valueString": "$this.resource"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_get_appointment_id",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "actualAppId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "appointmentItem"
+                                },
+                                {
+                                  "valueString": "$this.id.value.replace('#', '')"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_appointment_id",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "variable": "appId",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "id"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "appId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueId": "actualAppId"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_reason_switch",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "appointmentContainer"
+                                },
+                                {
+                                  "valueString": "$this.resource.reasonCode"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonItem",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "reasonCode"
+                                },
+                                {
+                                  "valueString": "$this"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reasonItem",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "reasonCode",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueId": "reasonItem"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CloseAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
           "mode": "target"
         }
       ],
@@ -5322,7 +5535,6 @@
                 {
                   "context": "item",
                   "element": "entry",
-                  "listMode": "first",
                   "variable": "appointmentContainer",
                   "condition": "($this.resource.ofType(Appointment).exists())"
                 }
@@ -5351,7 +5563,7 @@
                   ],
                   "rule": [
                     {
-                      "name": "r_get_appointment_id",
+                      "name": "create_app",
                       "source": [
                         {
                           "context": "src"
@@ -5359,21 +5571,27 @@
                       ],
                       "target": [
                         {
-                          "variable": "actualAppId",
-                          "transform": "evaluate",
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "appointment",
+                          "transform": "create",
                           "parameter": [
                             {
-                              "valueId": "appointmentItem"
-                            },
-                            {
-                              "valueString": "$this.id.value.replace('#', '')"
+                              "valueString": "Appointment"
                             }
                           ]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_appointment_id",
+                          "name": "r_get_appointment_id",
                           "source": [
                             {
                               "context": "src"
@@ -5381,68 +5599,56 @@
                           ],
                           "target": [
                             {
-                              "context": "appointment",
-                              "contextType": "variable",
-                              "element": "id",
-                              "variable": "appId",
-                              "transform": "create",
+                              "variable": "actualAppId",
+                              "transform": "evaluate",
                               "parameter": [
                                 {
-                                  "valueString": "id"
-                                }
-                              ]
-                            },
-                            {
-                              "context": "appId",
-                              "contextType": "variable",
-                              "element": "value",
-                              "transform": "copy",
-                              "parameter": [
+                                  "valueId": "appointmentItem"
+                                },
                                 {
-                                  "valueId": "actualAppId"
+                                  "valueString": "$this.id.value.replace('#', '')"
                                 }
                               ]
                             }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_reason_switch",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "variable": "reasonCode",
-                          "transform": "evaluate",
-                          "parameter": [
+                          ],
+                          "rule": [
                             {
-                              "valueId": "appointmentContainer"
-                            },
-                            {
-                              "valueString": "$this.resource.reasonCode"
+                              "name": "r_appointment_id",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "variable": "appId",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "id"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "appId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueId": "actualAppId"
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         },
                         {
-                          "variable": "reasonItem",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "reasonCode"
-                            },
-                            {
-                              "valueString": "$this"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_create_reasonItem",
+                          "name": "r_close_app",
                           "source": [
                             {
                               "context": "src"
@@ -5452,11 +5658,68 @@
                             {
                               "context": "appointment",
                               "contextType": "variable",
-                              "element": "reasonCode",
+                              "element": "status",
                               "transform": "copy",
                               "parameter": [
                                 {
-                                  "valueId": "reasonItem"
+                                  "valueString": "fulfilled"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_reason_switch",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "appointmentContainer"
+                                },
+                                {
+                                  "valueString": "$this.resource.reasonCode"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonItem",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "reasonCode"
+                                },
+                                {
+                                  "valueString": "$this"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reasonItem",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "reasonCode",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueId": "reasonItem"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -5465,97 +5728,6 @@
                       ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "name": "r_app_empty_container",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "variable": "isListEmpty",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "item"
-                    },
-                    {
-                      "valueString": "$this.entry.resource.ofType(Appointment).empty()"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_app_empty",
-                  "source": [
-                    {
-                      "context": "src",
-                      "condition": "(isListEmpty = true)"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_app_populate",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "dependent": [
-                        {
-                          "name": "PopulateAppointment",
-                          "variable": [
-                            "src",
-                            "appointment"
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "CloseAppointment",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "appointment",
-          "type": "Appointment",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_close_app",
-          "source": [
-            {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "context": "appointment",
-              "contextType": "variable",
-              "element": "status",
-              "transform": "copy",
-              "parameter": [
-                {
-                  "valueString": "fulfilled"
                 }
               ]
             }

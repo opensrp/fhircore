@@ -5,11 +5,19 @@
   "name": "Patient Demographic Registration",
   "structure": [
     {
-      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse",
       "mode": "source"
     },
     {
       "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Encounter",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Observation",
       "mode": "target"
     }
   ],
@@ -1167,6 +1175,477 @@
       ]
     },
     {
+      "name": "ExtractPatientPhoneInformation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "parent",
+          "type": "QuestionnaireItem",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        },
+        {
+          "name": "linkIdpInfo",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "linkIdpNumber",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "linkIdpType",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "linkIdpOwner",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_info",
+          "source": [
+            {
+              "context": "parent",
+              "element": "item",
+              "listMode": "first",
+              "variable": "info",
+              "condition": "(linkId = linkIdpInfo)"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_phone_info",
+              "source": [
+                {
+                  "context": "info",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "phoneNumber",
+                  "condition": "($this.linkId.startsWith(linkIdpNumber))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_phone_type",
+                  "source": [
+                    {
+                      "context": "info",
+                      "element": "item",
+                      "listMode": "first",
+                      "variable": "phoneType",
+                      "condition": "($this.linkId.startsWith(linkIdpType))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_phone_owner",
+                      "source": [
+                        {
+                          "context": "info",
+                          "element": "item",
+                          "listMode": "first",
+                          "variable": "phoneOwner",
+                          "condition": "($this.linkId.startsWith(linkIdpOwner))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_phone_number",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "phone",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "string"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_phone",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "variable": "pNumber",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "phoneNumber.answer.value"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variable": "pTtype",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "phoneType.answer.value"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variable": "pOwner",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "phoneOwner.answer.value"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_system",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "variable": "systemOther",
+                                      "transform": "create",
+                                      "parameter": [
+                                        {
+                                          "valueString": "string"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "variable": "systemPhone",
+                                      "transform": "create",
+                                      "parameter": [
+                                        {
+                                          "valueString": "string"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_system_other",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "target": [
+                                        {
+                                          "context": "systemOther",
+                                          "contextType": "variable",
+                                          "element": "value",
+                                          "transform": "copy",
+                                          "parameter": [
+                                            {
+                                              "valueString": "other"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "name": "r_system_phone",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "target": [
+                                        {
+                                          "context": "systemPhone",
+                                          "contextType": "variable",
+                                          "element": "value",
+                                          "transform": "copy",
+                                          "parameter": [
+                                            {
+                                              "valueString": "phone"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "name": "r_patient_telecom",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "dependent": [
+                                        {
+                                          "name": "StorePhoneInformation",
+                                          "variable": [
+                                            "src",
+                                            "patient",
+                                            "pNumber",
+                                            "systemPhone"
+                                          ]
+                                        },
+                                        {
+                                          "name": "StorePhoneInformation",
+                                          "variable": [
+                                            "src",
+                                            "patient",
+                                            "pOwner",
+                                            "systemOther"
+                                          ]
+                                        },
+                                        {
+                                          "name": "StorePhoneInformation",
+                                          "variable": [
+                                            "src",
+                                            "patient",
+                                            "pTtype",
+                                            "systemOther"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPatientPhoneWithLinkIdNumber",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "parent",
+          "type": "QuestionnaireItem",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        },
+        {
+          "name": "linkIdNumber",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_create_linkIdp",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "linkIdpInfo",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "variable": "linkIdpNumber",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "variable": "linkIdpType",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            },
+            {
+              "variable": "linkIdpOwner",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "string"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_linkIdpInfo",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "linkIdpInfo",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "'phone-information-' + linkIdNumber.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_linkIdpNumber",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "linkIdpNumber",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "'phone-number-value-' + linkIdNumber.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_linkIdpType",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "linkIdpType",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "'phone-number-type-' + linkIdNumber.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_linkIdpOwner",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "linkIdpOwner",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "'phone-number-owner-' + linkIdNumber.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_phone_information",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractPatientPhoneInformation",
+                  "variable": [
+                    "src",
+                    "parent",
+                    "patient",
+                    "linkIdpInfo",
+                    "linkIdpNumber",
+                    "linkIdpType",
+                    "linkIdpOwner"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "ExtractPhoneInformation",
       "typeMode": "none",
       "input": [
@@ -1183,81 +1662,111 @@
       ],
       "rule": [
         {
-          "name": "r_check_page_4",
+          "name": "r_page_4",
           "source": [
             {
               "context": "src",
               "element": "item",
               "listMode": "first",
-              "variable": "page",
+              "variable": "parent",
               "condition": "(linkId = 'page-4')"
             }
           ],
           "rule": [
             {
-              "name": "r_check_phone_1",
+              "name": "r_create",
               "source": [
                 {
-                  "context": "page",
-                  "element": "item",
-                  "listMode": "first",
-                  "condition": "((linkId = 'phone-number-available-1') and (answer.value = true))"
+                  "context": "src"
                 }
               ],
-              "rule": [
+              "target": [
                 {
-                  "name": "r_save_phone_1",
-                  "source": [
+                  "variable": "one",
+                  "transform": "create",
+                  "parameter": [
                     {
-                      "context": "page",
-                      "element": "item",
-                      "listMode": "first",
-                      "variable": "group1",
-                      "condition": "(linkId = 'phone-information-1')"
+                      "valueString": "string"
                     }
-                  ],
-                  "dependent": [
+                  ]
+                },
+                {
+                  "variable": "two",
+                  "transform": "create",
+                  "parameter": [
                     {
-                      "name": "StorePhoneInformation",
-                      "variable": [
-                        "src",
-                        "group1",
-                        "patient"
-                      ]
+                      "valueString": "string"
                     }
                   ]
                 }
-              ]
-            },
-            {
-              "name": "r_check_phone_2",
-              "source": [
-                {
-                  "context": "page",
-                  "element": "item",
-                  "listMode": "first",
-                  "condition": "((linkId = 'phone-number-available-2') and (answer.value = true))"
-                }
               ],
               "rule": [
                 {
-                  "name": "r_save_phone_2",
+                  "name": "r_one",
                   "source": [
                     {
-                      "context": "page",
-                      "element": "item",
-                      "listMode": "first",
-                      "variable": "group2",
-                      "condition": "(linkId = 'phone-information-2')"
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "one",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "1"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_two",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "two",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "2"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_phone_information",
+                  "source": [
+                    {
+                      "context": "src"
                     }
                   ],
                   "dependent": [
                     {
-                      "name": "StorePhoneInformation",
+                      "name": "ExtractPatientPhoneWithLinkIdNumber",
                       "variable": [
                         "src",
-                        "group2",
-                        "patient"
+                        "parent",
+                        "patient",
+                        "one"
+                      ]
+                    },
+                    {
+                      "name": "ExtractPatientPhoneWithLinkIdNumber",
+                      "variable": [
+                        "src",
+                        "parent",
+                        "patient",
+                        "two"
                       ]
                     }
                   ]
@@ -1278,14 +1787,19 @@
           "mode": "source"
         },
         {
-          "name": "phoneNumberGroup",
-          "type": "QuestionnaireResponseItem",
-          "mode": "source"
-        },
-        {
           "name": "patient",
           "type": "Patient",
           "mode": "target"
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "system",
+          "type": "String",
+          "mode": "source"
         }
       ],
       "rule": [
@@ -1312,59 +1826,42 @@
           ],
           "rule": [
             {
-              "name": "r_p_phone_number_value",
+              "name": "r_p_contact_value",
               "source": [
                 {
-                  "context": "phoneNumberGroup",
-                  "element": "item",
-                  "listMode": "first",
-                  "variable": "phoneNumber",
-                  "condition": "(linkId.startsWith('phone-number-value'))"
+                  "context": "src"
                 }
               ],
-              "rule": [
+              "target": [
                 {
-                  "name": "r_p_contact_value",
-                  "source": [
+                  "context": "patientContact",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
                     {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "patientContact",
-                      "contextType": "variable",
-                      "element": "value",
-                      "transform": "evaluate",
-                      "parameter": [
-                        {
-                          "valueId": "phoneNumber"
-                        },
-                        {
-                          "valueString": "$this.answer.value"
-                        }
-                      ]
+                      "valueId": "value"
                     }
                   ]
-                },
+                }
+              ]
+            },
+            {
+              "name": "r_p_contact_system",
+              "source": [
                 {
-                  "name": "r_p_contact_system",
-                  "source": [
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patientContact",
+                  "contextType": "variable",
+                  "element": "system",
+                  "transform": "copy",
+                  "parameter": [
                     {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "patientContact",
-                      "contextType": "variable",
-                      "element": "system",
-                      "transform": "copy",
-                      "parameter": [
-                        {
-                          "valueString": "phone"
-                        }
-                      ]
+                      "valueId": "system"
                     }
                   ]
                 }
@@ -2472,7 +2969,7 @@
               ]
             },
             {
-              "name": "r_order_value_6",
+              "name": "r_order_value_7",
               "source": [
                 {
                   "context": "src"
@@ -2487,6 +2984,17 @@
                   "parameter": [
                     {
                       "valueString": "Milestone HIV Test"
+                    }
+                  ]
+                },
+                {
+                  "context": "taskQuestionnaireId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "exposed-infant-milestone-hiv-test"
                     }
                   ]
                 },
@@ -2515,14 +3023,14 @@
               ],
               "dependent": [
                 {
-                  "name": "PerformMilestoneHIVTestScreening",
+                  "name": "AddCarePlanActivity",
                   "variable": [
                     "src",
                     "visitType",
-                    "patient",
                     "carePlan",
                     "bundle",
                     "taskDescription",
+                    "taskQuestionnaireId",
                     "order"
                   ]
                 }
@@ -5463,190 +5971,6 @@
                         "taskDescription",
                         "taskQuestionnaireId",
                         "order"
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "PerformMilestoneHIVTestScreening",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "src",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "visitType",
-          "type": "string",
-          "mode": "source"
-        },
-        {
-          "name": "patient",
-          "type": "Patient",
-          "mode": "source"
-        },
-        {
-          "name": "carePlan",
-          "type": "CarePlan",
-          "mode": "target"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "taskDescription",
-          "type": "string",
-          "mode": "target"
-        },
-        {
-          "name": "order",
-          "type": "string",
-          "mode": "target"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_ei_patient_birth_date",
-          "source": [
-            {
-              "context": "patient",
-              "element": "birthDate",
-              "variable": "birthDate"
-            }
-          ],
-          "target": [
-            {
-              "variable": "taskQuestionnaireId",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "string"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_ei_date_ranges",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "variable": "date_6_weeks_ago",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "(today() - ((6 * 7).toString() + ' days').toQuantity())"
-                    }
-                  ]
-                },
-                {
-                  "variable": "date_8_weeks_ago",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "(today() - ((8 * 7).toString() + ' days').toQuantity())"
-                    }
-                  ]
-                },
-                {
-                  "variable": "date_50_weeks_ago",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "(today() - ((50 * 7).toString() + ' days').toQuantity())"
-                    }
-                  ]
-                },
-                {
-                  "variable": "date_54_weeks_ago",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "(today() - ((54 * 7).toString() + ' days').toQuantity())"
-                    }
-                  ]
-                },
-                {
-                  "variable": "date_100_weeks_ago",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "(today() - ((100 * 7).toString() + ' days').toQuantity())"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_check_milestone_age_range",
-                  "source": [
-                    {
-                      "context": "src",
-                      "condition": "(((birthDate >= date_8_weeks_ago) and (birthDate <= date_6_weeks_ago)) or ((birthDate >= date_54_weeks_ago) and (birthDate <= date_50_weeks_ago)) or (birthDate <= date_100_weeks_ago))"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_ei_add_act_mile_hiv_test",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "taskQuestionnaireId",
-                          "contextType": "variable",
-                          "element": "value",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "exposed-infant-milestone-hiv-test"
-                            }
-                          ]
-                        }
-                      ],
-                      "dependent": [
-                        {
-                          "name": "AddCarePlanActivity",
-                          "variable": [
-                            "src",
-                            "visitType",
-                            "carePlan",
-                            "bundle",
-                            "taskDescription",
-                            "taskQuestionnaireId",
-                            "order"
-                          ]
-                        }
                       ]
                     }
                   ]

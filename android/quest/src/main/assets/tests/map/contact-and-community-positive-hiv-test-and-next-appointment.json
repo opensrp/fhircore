@@ -119,6 +119,13 @@
               ]
             },
             {
+              "name": "EvaluateAppointments",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
               "name": "UpdateUniqueIdentifier",
               "variable": [
                 "src",
@@ -17182,6 +17189,1338 @@
                 },
                 {
                   "valueString": "iif(hasPhone = true, 'HIV Contact Tracing via phone', 'HIV Contact Tracing via home visit')"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointments",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_eval_appointment",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "itemForAppointment",
+              "condition": "((linkId = 'appointment-date') or (linkId = 'appointment-date-missing') or (linkId = 'facility-next-appointment-date') or (linkId = 'facility-next-appointment-date-invalid'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_new_hiv_test_appointment",
+              "source": [
+                {
+                  "context": "item",
+                  "condition": "(item.answer.count > 0)"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "appointmentDate",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "item"
+                    },
+                    {
+                      "valueString": "$this.answer.value.toString()"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ClosePreviousAppointments",
+                  "variable": [
+                    "src",
+                    "bundle"
+                  ]
+                },
+                {
+                  "name": "NewHIVTestAppointment",
+                  "variable": [
+                    "src",
+                    "appointmentDate",
+                    "bundle"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MarkAppointmentFulfilled",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "Appointment",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_fulfill_appointment",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "appointment",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Appointment"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_get_appointment_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "actualAppId",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.id.value.replace('#', '')"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "appId",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "id"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "actualAppId"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_close_app",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "fulfilled"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_reason_switch",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "reasonCode",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.resource.reasonCode"
+                    }
+                  ]
+                },
+                {
+                  "variable": "reasonItem",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "reasonCode"
+                    },
+                    {
+                      "valueString": "$this"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_reasonItem",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "reasonItem"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ClosePreviousAppointments",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle",
+          "source": [
+            {
+              "context": "src",
+              "element": "contained",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "($this.ofType(Bundle).exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_missing_eval",
+              "source": [
+                {
+                  "context": "item",
+                  "element": "entry",
+                  "variable": "appointmentContainer",
+                  "condition": "($this.resource.ofType(Appointment).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_app_item",
+                  "source": [
+                    {
+                      "context": "appointmentContainer"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "appointmentItem",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "appointmentContainer"
+                        },
+                        {
+                          "valueString": "$this.resource"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "startString",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "appointmentItem.start.toString()"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "hasStart",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "startString.exists() and (startString.indexOf('T') != ( - 1))"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_fulfill_no_start_date",
+                      "source": [
+                        {
+                          "context": "src",
+                          "condition": "(hasStart = false)"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "MarkAppointmentFulfilled",
+                          "variable": [
+                            "appointmentItem",
+                            "bundle"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_fulfill_start_date",
+                      "source": [
+                        {
+                          "context": "src",
+                          "condition": "(hasStart = true)"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "separatorIndex",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "startString.indexOf('T')"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "dateString",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "startString.substring(0, separatorIndex)"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "appointmentStartDate",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "date"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "appointmentStartDate",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "dateString"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "isEarly",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "today() <= appointmentStartDate"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_fulfill_new_date",
+                          "source": [
+                            {
+                              "context": "src",
+                              "condition": "(isEarly = true)"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "MarkAppointmentFulfilled",
+                              "variable": [
+                                "appointmentItem",
+                                "bundle"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NewHIVTestAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "dateOfNextAppointString",
+          "type": "string",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_create_new_appointment",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "appointment",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Appointment"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_default",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "booked"
+                    }
+                  ]
+                },
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "created",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_service_category",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "serviceCategory",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "HIV-AIDS program"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIVAIDS"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIV-AIDS program"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "appointmentType",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Routine appointment"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "ROUTINE"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Routine appointment"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "HIV Test"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIV Test"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "HIV Test"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_start_instant",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "start",
+                  "variable": "startInstant",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "instant"
+                    }
+                  ]
+                },
+                {
+                  "context": "startInstant",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "dateOfNextAppointString + 'T00:00:00.000Z'"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_patient_component",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "(linkId = 'patient-id')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "participant",
+                  "variable": "partComp",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Appointment_Participant"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_comp_one_liners",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "partComp",
+                      "contextType": "variable",
+                      "element": "required",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "required"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "partComp",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "accepted"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "partComp",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Subject"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_appointment_participant_code_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Coding"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_code_coding_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "SBJ"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "subject"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_ppointment_part_actor",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "partComp",
+                      "contextType": "variable",
+                      "element": "actor",
+                      "variable": "encOwner",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_ppointment_part_reference",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "encOwner",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_part_performer",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "condition": "(linkId = 'practitioner-id')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "participant",
+                  "variable": "performerComp",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Appointment_Participant"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_one_liners",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "performerComp",
+                      "contextType": "variable",
+                      "element": "required",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "required"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "performerComp",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "accepted"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_performer_type",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "performerComp",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_part_performer_type_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Performer"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_appointment_part_performer_type_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Coding"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "PRF"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Performer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_actor_performer",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "performerComp",
+                      "contextType": "variable",
+                      "element": "actor",
+                      "variable": "performer",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "performer",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Practitioner/' + $this.item.where(linkId = 'practitioner-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }

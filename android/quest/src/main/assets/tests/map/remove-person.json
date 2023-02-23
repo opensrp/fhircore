@@ -1,0 +1,1141 @@
+{
+  "resourceType": "StructureMap",
+  "id": "remove-person",
+  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/remove-person",
+  "name": "Remove Person",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Encounter",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_id",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            }
+          ]
+        },
+        {
+          "name": "r_bundle_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_bundle_entry_ext_enc",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_entry_enc",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_enc_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "finished"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_class",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    {
+                      "valueString": "AMB"
+                    },
+                    {
+                      "valueString": "ambulatory"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ser_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/service-type"
+                    },
+                    {
+                      "valueString": "335"
+                    },
+                    {
+                      "valueString": "Facility"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ext_cnd_call",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractObservations",
+                  "variable": [
+                    "src",
+                    "bundle",
+                    "encounter"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_cnd",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractReasonForRemoval",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractReasonForRemovalOther",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "SetPatientActiveAsFalse",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
+              "name": "CloseAppointments",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReasonForRemoval",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_item_reason_for_removal",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'reason-for-removal')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_reason_for_removal_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_reason_for_removal_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "remove-person-reason-for-removal"
+                        },
+                        {
+                          "valueString": "Reason for removal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "codeableConcept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_reason_for_removal_obs_value_cc_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_item_reason_for_removal_obs_cc_display",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "codeableConcept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value.display"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_reason_for_removal_obs_ref_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_enc",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_cat",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        },
+                        {
+                          "valueString": "Vital Signs"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_obs_eff",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReasonForRemovalOther",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_item_reason_for_removal_other",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "((linkId = 'reason-for-removal-other') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_reason_for_removal_other_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_reason_for_removal_other_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://d-tree.org"
+                        },
+                        {
+                          "valueString": "remove-person-reason-for-removal-other"
+                        },
+                        {
+                          "valueString": "Other reason for removal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_reason_for_removal_other_obs_ref_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_enc",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_cat",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        },
+                        {
+                          "valueString": "Vital Signs"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_reason_for_removal_other_obs_eff",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SetPatientActiveAsFalse",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_item_patient_id",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_patient_id_patient",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "patient",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Patient"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_patient_id_patient_create_pat_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patient",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "patient_id",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "id"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_patient_id_patient_set_pat_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patient_id",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_item_patient_id_patient_active",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patient",
+                      "contextType": "variable",
+                      "element": "active",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CloseAppointments",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_contained_bundle",
+          "source": [
+            {
+              "context": "src",
+              "element": "contained",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "($this.ofType(Bundle).exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_entry_eval",
+              "source": [
+                {
+                  "context": "item",
+                  "element": "entry",
+                  "variable": "appointmentContainer",
+                  "condition": "($this.resource.ofType(Appointment).exists())"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "appointmentItem",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "appointmentContainer"
+                    },
+                    {
+                      "valueString": "$this.resource"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_fulfill_appointment",
+                  "source": [
+                    {
+                      "context": "src",
+                      "condition": "(appointmentItem.status = 'booked')"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "appointment",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Appointment"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "appointmentId",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "id"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointmentId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "appointmentItem"
+                        },
+                        {
+                          "valueString": "$this.id.value.replace('#', '')"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "fulfilled"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "appointment",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "appointmentItem"
+                        },
+                        {
+                          "valueString": "$this.reasonCode"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
