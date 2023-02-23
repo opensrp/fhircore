@@ -199,9 +199,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     )
     assertEquals(
       ListResource::class.java,
-      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0)
-        .name
-        .resourceClassType()
+      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0).name.resourceClassType()
     )
   }
 
