@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -54,7 +55,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -76,7 +76,7 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+  @Inject lateinit var parser: IParser
 
   private lateinit var profileViewModel: ProfileViewModel
 
@@ -93,7 +93,7 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
+        listResourceDataMap = emptyMap()
       )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
@@ -110,7 +110,8 @@ class ProfileViewModelTest : RobolectricTest() {
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        parser = parser
       )
   }
 

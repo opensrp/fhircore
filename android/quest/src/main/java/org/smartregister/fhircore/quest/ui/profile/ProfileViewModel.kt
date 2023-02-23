@@ -17,11 +17,9 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,19 +62,16 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val parser: IParser
 ) : ViewModel() {
 
-  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
-  val launchQuestionnaireLiveData = MutableLiveData(false)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
-
   private lateinit var profileConfiguration: ProfileConfiguration
 
   suspend fun retrieveProfileUiState(

@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
@@ -85,7 +86,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
-      //      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
+      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
 
@@ -121,19 +122,22 @@ constructor(
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
 
-    // Reset previously computed values and init facts
-    computedValuesMap = mutableMapOf()
-    facts = Facts()
+    val time = measureTimeMillis {
+      // Reset previously computed values and init facts
+      computedValuesMap = mutableMapOf()
+      facts = Facts()
 
-    facts.apply {
-      put(FHIR_PATH, fhirPathDataExtractor)
-      put(DATA, computedValuesMap)
-      put(SERVICE, rulesEngineService)
-      put(baseResource.resourceType.name, baseResource)
-      relatedResourcesMap.forEach { put(it.key, it.value) }
+      facts.apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, computedValuesMap)
+        put(SERVICE, rulesEngineService)
+        put(baseResource.resourceType.name, baseResource)
+        relatedResourcesMap.forEach { put(it.key, it.value) }
+      }
+
+      rulesEngine.fire(rules, facts)
     }
-
-    rulesEngine.fire(rules, facts)
+    Timber.w("Rules executed in $time milliseconds")
     return computedValuesMap
   }
 

@@ -155,6 +155,7 @@ dependencies {
 
     // P2P dependency
     implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
+    implementation("org.slf4j:slf4j-nop:1.7.36")
 
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
