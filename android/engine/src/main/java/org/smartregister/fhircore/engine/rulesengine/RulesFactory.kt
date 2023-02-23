@@ -118,7 +118,7 @@ constructor(
    */
   fun fireRules(
     rules: Rules,
-    baseResource: Resource,
+    baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
 
@@ -131,7 +131,9 @@ constructor(
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, computedValuesMap)
         put(SERVICE, rulesEngineService)
-        put(baseResource.resourceType.name, baseResource)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
         relatedResourcesMap.forEach { put(it.key, it.value) }
       }
 
@@ -280,6 +282,7 @@ constructor(
           else null
         }
         ?.joinToString(",")
+        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -353,13 +356,14 @@ constructor(
      * This function filters resource provided the condition exracted from the [fhirPathExpression]
      * is met
      */
-    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.filter {
+      return resources?.filter {
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
+        ?: emptyList()
     }
 
     /** This function combines all string indexes to comma separated */
@@ -371,13 +375,14 @@ constructor(
     }
 
     fun mapResourcesToExtractedValues(
-      resources: List<Resource>,
+      resources: List<Resource>?,
       fhirPathExpression: String
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+      return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+        ?: emptyList()
     }
   }
 
