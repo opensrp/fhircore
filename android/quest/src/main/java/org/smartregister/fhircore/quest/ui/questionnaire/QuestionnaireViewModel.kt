@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -71,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -79,14 +83,14 @@ import timber.log.Timber
 open class QuestionnaireViewModel
 @Inject
 constructor(
-  val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry,
-  val transformSupportServices: TransformSupportServices,
-  val dispatcherProvider: DispatcherProvider,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val jsonParser: IParser
+    val defaultRepository: DefaultRepository,
+    val configurationRegistry: ConfigurationRegistry,
+    val transformSupportServices: TransformSupportServices,
+    val dispatcherProvider: DispatcherProvider,
+    val sharedPreferencesHelper: SharedPreferencesHelper,
+    val libraryEvaluator: LibraryEvaluator,
+    val fhirCarePlanGenerator: FhirCarePlanGenerator,
+    val jsonParser: IParser
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -105,27 +109,44 @@ constructor(
 
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
-      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-      ?.extractLogicalIdUuid()
+        .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+        ?.extractLogicalIdUuid()
   }
 
+  private fun readFileFromAssets(filename: String, application: Application): String {
+    return application.assets.open(filename).bufferedReader().use { it.readText() }
+  }
   suspend fun loadQuestionnaire(
+    application: Application,
     id: String,
     type: QuestionnaireType,
     prePopulationParams: List<ActionParameter>? = emptyList()
-  ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
-      }
-      // prepopulate questionnaireItems with initial values
-      if (prePopulationParams?.isNotEmpty() == true) {
-        item.prePopulateInitialValues(prePopulationParams)
-      }
+  ): Questionnaire? {
+    val question = readFileFromAssets("test-questionnaire.json", application).trimIndent()
+    val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    return parser.parseResource(
+      org.hl7.fhir.r4.model.Questionnaire::class.java,
+      question
+    ) as Questionnaire
+  }
 
-      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-      this.url = this.url ?: this.referenceValue()
-    }
+//  suspend fun loadQuestionnaire(
+//      id: String,
+//      type: QuestionnaireType,
+//      prePopulationParams: List<ActionParameter>? = emptyList()
+//  ): Questionnaire? =
+//      defaultRepository.loadResource<Questionnaire>(id)?.apply {
+//        if (type.isReadOnly() || type.isEditMode()) {
+//          item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
+//        }
+//        // prepopulate questionnaireItems with initial values
+//        if (prePopulationParams?.isNotEmpty() == true) {
+//          item.prePopulateInitialValues(prePopulationParams)
+//        }
+//
+//        // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+//        this.url = this.url ?: this.referenceValue()
+//      }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -148,9 +169,7 @@ constructor(
           ResourceType.Patient,
           ResourceType.Practitioner,
           ResourceType.PractitionerRole,
-          ResourceType.Specimen
-        )
-      ) {
+          ResourceType.Specimen)) {
         this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
       }
 
@@ -163,10 +182,10 @@ constructor(
   }
 
   fun extractAndSaveResources(
-    context: Context,
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire,
-    questionnaireConfig: QuestionnaireConfig
+      context: Context,
+      questionnaireResponse: QuestionnaireResponse,
+      questionnaire: Questionnaire,
+      questionnaireConfig: QuestionnaireConfig
   ) {
     questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
 
@@ -176,18 +195,17 @@ constructor(
     }
 
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-        it.valueCodeableConcept.coding.forEach { coding ->
-          questionnaireResponse.meta.addTag(coding)
-        }
-      }
+      questionnaire.useContext
+          .filter { it.hasValueCodeableConcept() }
+          .forEach {
+            it.valueCodeableConcept.coding.forEach { coding ->
+              questionnaireResponse.meta.addTag(coding)
+            }
+          }
 
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(
-        questionnaireConfig.resourceIdentifier,
-        questionnaire,
-        questionnaireResponse
-      )
+          questionnaireConfig.resourceIdentifier, questionnaire, questionnaireResponse)
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
@@ -195,7 +213,7 @@ constructor(
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             // if it is new registration set response subject
             if (questionnaireConfig.resourceIdentifier == null)
-              questionnaireResponse.subject = bundleEntry.resource.asReference()
+                questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
@@ -206,10 +224,7 @@ constructor(
 
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
-                ResourceType.Patient,
-                ResourceType.RelatedPerson
-              )
-          ) {
+                  ResourceType.Patient, ResourceType.RelatedPerson)) {
             questionnaireConfig.groupResource?.groupIdentifier?.let {
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
@@ -220,7 +235,7 @@ constructor(
           // Ideally ResourceMapper should allow this internally via structure-map
           if (questionnaireConfig.type.isEditMode()) {
             if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
-              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
+                bundleEntry.resource.id = questionnaireResponse.subject.extractId()
             else {
               bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
               bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
@@ -231,8 +246,7 @@ constructor(
 
         if (questionnaire.experimental) {
           Timber.w(
-            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
-          )
+              "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data")
         } else saveBundleResources(bundle)
 
         if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
@@ -260,22 +274,21 @@ constructor(
   The subject is not required in the questionnaire response
    https://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.subject */
   private suspend fun performExtraction(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaireConfig: QuestionnaireConfig,
-    questionnaire: Questionnaire,
-    bundle: Bundle?
+      questionnaireResponse: QuestionnaireResponse,
+      questionnaireConfig: QuestionnaireConfig,
+      questionnaire: Questionnaire,
+      bundle: Bundle?
   ) {
     if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
-        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
-    ) {
+        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()) {
       extractCqlOutput(questionnaire, questionnaireResponse, bundle)
       extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
     }
   }
 
   fun savePartialQuestionnaireResponse(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
@@ -287,7 +300,7 @@ constructor(
     // Organization reference in shared pref as "Organization/some-gibberish-uuid"
     authenticatedOrganizationIds.let { ids ->
       val organizationRef =
-        ids?.first()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
+          ids?.first()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
 
       when (resource) {
         is Patient -> resource.managingOrganization = organizationRef
@@ -305,57 +318,56 @@ constructor(
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
       else if (resource is Encounter)
-        resource.participant =
-          arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
-          )
+          resource.participant =
+              arrayListOf(
+                  Encounter.EncounterParticipantComponent().apply { individual = practitionerRef })
     }
   }
 
   suspend fun extractCarePlan(
-    questionnaireResponse: QuestionnaireResponse,
-    bundle: Bundle?,
-    questionnaireConfig: QuestionnaireConfig
+      questionnaireResponse: QuestionnaireResponse,
+      bundle: Bundle?,
+      questionnaireConfig: QuestionnaireConfig
   ) {
     val subject =
-      questionnaireResponse.findSubject(bundle)
-        ?: defaultRepository.loadResource(questionnaireResponse.subject)
+        questionnaireResponse.findSubject(bundle)
+            ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
     questionnaireConfig.planDefinitions?.forEach { planId ->
       val data =
-        Bundle().apply {
-          bundle?.entry?.map { this.addEntry(it) }
-          addEntry().resource = questionnaireResponse
-        }
+          Bundle().apply {
+            bundle?.entry?.map { this.addEntry(it) }
+            addEntry().resource = questionnaireResponse
+          }
 
       kotlin
-        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
-        .onFailure {
-          Timber.e(it)
-          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-        }
+          .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+          .onFailure {
+            Timber.e(it)
+            extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+          }
     }
   }
 
   suspend fun extractCqlOutput(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    bundle: Bundle?
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse,
+      bundle: Bundle?
   ) {
     withContext(dispatcherProvider.default()) {
       val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
       questionnaire
-        .cqfLibraryIds()
-        .map {
-          val patient =
-            if (questionnaireResponse.hasSubject())
-              loadPatient(questionnaireResponse.subject.extractId())
-            else null
-          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
-        }
-        .forEach { output ->
-          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
-        }
+          .cqfLibraryIds()
+          .map {
+            val patient =
+                if (questionnaireResponse.hasSubject())
+                    loadPatient(questionnaireResponse.subject.extractId())
+                else null
+            libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+          }
+          .forEach { output ->
+            if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
+          }
     }
   }
 
@@ -364,72 +376,65 @@ constructor(
    * existing resourceId or organization or null
    */
   fun handleQuestionnaireResponseSubject(
-    resourceId: String?,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+      resourceId: String?,
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse
   ) {
     val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
     questionnaireResponse.subject =
-      when (subjectType) {
-        ResourceType.Organization.name ->
-          authenticatedOrganizationIds?.first()?.asReference(ResourceType.Organization)
-        else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
-      }
+        when (subjectType) {
+          ResourceType.Organization.name ->
+              authenticatedOrganizationIds?.first()?.asReference(ResourceType.Organization)
+          else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
+        }
   }
 
   suspend fun saveQuestionnaireResponse(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse
   ) {
     if (questionnaire.experimental) {
       Timber.w(
-        "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
-      )
+          "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data")
       return
     }
-
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
   }
 
   suspend fun performExtraction(
-    context: Context,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+      context: Context,
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse
   ): Bundle {
     return kotlin
-      .runCatching {
-        ResourceMapper.extract(
-          questionnaire = questionnaire,
-          questionnaireResponse = questionnaireResponse,
-          StructureMapExtractionContext(
-            context = context,
-            transformSupportServices = transformSupportServices,
-            structureMapProvider = retrieveStructureMapProvider()
-          )
-        )
-      }
-      .onSuccess {
-        Timber.d(
-          "Questionnaire (${questionnaire.name}) with ${questionnaire.id} extracted successfully"
-        )
-      }
-      .onFailure { exception ->
-        Timber.e(exception)
-        viewModelScope.launch {
-          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
-            context.showToast(
-              context.getString(R.string.structure_map_missing_message, questionnaire.name),
-              Toast.LENGTH_LONG
-            )
-          } else {
-            context.showToast(
-              context.getString(R.string.structure_error_message, questionnaire.name),
-              Toast.LENGTH_LONG
-            )
+        .runCatching {
+          ResourceMapper.extract(
+              questionnaire = questionnaire,
+              questionnaireResponse = questionnaireResponse,
+              StructureMapExtractionContext(
+                  context = context,
+                  transformSupportServices = transformSupportServices,
+                  structureMapProvider = retrieveStructureMapProvider()))
+        }
+        .onSuccess {
+          Timber.d(
+              "Questionnaire (${questionnaire.name}) with ${questionnaire.id} extracted successfully")
+        }
+        .onFailure { exception ->
+          Timber.e(exception)
+          viewModelScope.launch {
+            if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+              context.showToast(
+                  context.getString(R.string.structure_map_missing_message, questionnaire.name),
+                  Toast.LENGTH_LONG)
+            } else {
+              context.showToast(
+                  context.getString(R.string.structure_error_message, questionnaire.name),
+                  Toast.LENGTH_LONG)
+            }
           }
         }
-      }
-      .getOrDefault(Bundle())
+        .getOrDefault(Bundle())
   }
 
   suspend fun saveBundleResources(bundle: Bundle) {
@@ -442,10 +447,9 @@ constructor(
 
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider =
-        { structureMapUrl: String, _: IWorkerContext ->
-          fetchStructureMap(structureMapUrl)
-        }
+      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+        fetchStructureMap(structureMapUrl)
+      }
     }
 
     return structureMapProvider!!
@@ -457,10 +461,9 @@ constructor(
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson> {
     return defaultRepository.searchResourceFor(
-      token = RelatedPerson.RES_ID,
-      subjectType = ResourceType.RelatedPerson,
-      subjectId = patientId
-    )
+        token = RelatedPerson.RES_ID,
+        subjectType = ResourceType.RelatedPerson,
+        subjectId = patientId)
   }
 
   fun saveResource(resource: Resource) {
@@ -468,8 +471,8 @@ constructor(
   }
 
   open suspend fun getPopulationResources(
-    intent: Intent,
-    questionnaireConfig: QuestionnaireConfig
+      intent: Intent,
+      questionnaireConfig: QuestionnaireConfig
   ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
@@ -481,19 +484,18 @@ constructor(
       loadPatient(patientId)?.apply {
         if (identifier.isEmpty()) {
           identifier =
-            mutableListOf(
-              Identifier().apply {
-                value = logicalId
-                use = Identifier.IdentifierUse.OFFICIAL
-                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-              }
-            )
+              mutableListOf(
+                  Identifier().apply {
+                    value = logicalId
+                    use = Identifier.IdentifierUse.OFFICIAL
+                    system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
+                  })
           Timber.e(jsonParser.encodeResourceToString(this))
         }
 
         resourcesList.add(this)
       }
-        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+          ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
       loadRelatedPerson(patientId).forEach { resourcesList.add(it) }
     }
 
@@ -501,14 +503,12 @@ constructor(
   }
 
   suspend fun generateQuestionnaireResponse(
-    questionnaire: Questionnaire,
-    intent: Intent,
-    questionnaireConfig: QuestionnaireConfig
+      questionnaire: Questionnaire,
+      intent: Intent,
+      questionnaireConfig: QuestionnaireConfig
   ): QuestionnaireResponse {
     return ResourceMapper.populate(
-      questionnaire,
-      *getPopulationResources(intent, questionnaireConfig = questionnaireConfig)
-    )
+        questionnaire, *getPopulationResources(intent, questionnaireConfig = questionnaireConfig))
   }
 
   fun partialQuestionnaireResponseHasValues(questionnaireResponse: QuestionnaireResponse): Boolean {
@@ -522,23 +522,23 @@ constructor(
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
     return questionnaireResponse
-      .find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
-      ?.answer
-      ?.firstOrNull()
-      ?.valueDecimalType
-      ?.value
-      ?.toInt()
+        .find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
+        ?.answer
+        ?.firstOrNull()
+        ?.valueDecimalType
+        ?.value
+        ?.toInt()
   }
 
   /** Subtract [age] from today's date */
   fun calculateDobFromAge(age: Int): Date =
-    Calendar.getInstance()
-      .apply {
-        add(Calendar.YEAR, -age)
-        set(Calendar.DAY_OF_YEAR, 1)
-        set(Calendar.MONTH, 1)
-      }
-      .time
+      Calendar.getInstance()
+          .apply {
+            add(Calendar.YEAR, -age)
+            set(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.MONTH, 1)
+          }
+          .time
 
   fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
     if (removeGroup) {
@@ -555,19 +555,18 @@ constructor(
   }
 
   fun removeGroupMember(
-    memberId: String?,
-    groupIdentifier: String?,
-    memberResourceType: String?,
-    removeMember: Boolean
+      memberId: String?,
+      groupIdentifier: String?,
+      memberResourceType: String?,
+      removeMember: Boolean
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroupMember(
-            memberId = memberId,
-            groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType
-          )
+              memberId = memberId,
+              groupId = groupIdentifier,
+              groupMemberResourceType = memberResourceType)
         } catch (exception: Exception) {
           Timber.e(exception)
         } finally {
@@ -586,6 +585,6 @@ constructor(
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
     private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
   }
 }

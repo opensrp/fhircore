@@ -42,8 +42,9 @@ interface Repository {
    * configurations identified by the [profileId] are used.
    */
   suspend fun loadProfileData(
-    profileId: String,
-    resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
+      profileId: String,
+      resourceId: String,
+      fhirResourceConfig: FhirResourceConfig? = null,
+      groupId: String = ""
   ): ResourceData?
 }

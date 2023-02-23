@@ -1377,7 +1377,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "9fac39bd-9750-4c1d-b355-1961de4e37f3"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -1466,8 +1471,22 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
+        }
+      ],
+      "params": [
+        {
+          "paramType": "PREPOPULATE",
+          "linkId": "e152df80-7f89-11ed-a1eb-0242ac128088",
+          "dataType": "STRING",
+          "key": "fpConditionId",
+          "value": "@{fpConditionId}"
         }
       ]
     },

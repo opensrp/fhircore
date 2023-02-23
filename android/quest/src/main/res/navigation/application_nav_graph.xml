@@ -55,6 +55,11 @@
             app:argType="org.smartregister.fhircore.engine.domain.model.FhirResourceConfig"
             app:nullable="true" />
 
+        <argument
+            android:name="groupId"
+            app:argType="string"
+            android:defaultValue=""
+            app:nullable="true" />
     </fragment>
 
     <fragment

@@ -43,13 +43,13 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
+      inflater: LayoutInflater,
+      container: ViewGroup?,
+      savedInstanceState: Bundle?
   ): View {
     with(profileFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, groupId!!)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -57,11 +57,10 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
       setContent {
         AppTheme {
           ProfileScreen(
-            navController = findNavController(),
-            profileUiState = profileViewModel.profileUiState.value,
-            onEvent = profileViewModel::onEvent,
-            snackStateFlow = profileViewModel.snackBarStateFlow
-          )
+              navController = findNavController(),
+              profileUiState = profileViewModel.profileUiState.value,
+              onEvent = profileViewModel::onEvent,
+              snackStateFlow = profileViewModel.snackBarStateFlow)
         }
       }
     }
@@ -83,7 +82,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
         // Always refresh data when questionnaire is submitted
         with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, groupId!!)
         }
 
         // Display SnackBar message

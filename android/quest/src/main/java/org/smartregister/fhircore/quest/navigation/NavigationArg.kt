@@ -27,6 +27,7 @@ object NavigationArg {
   const val CONFIG_ID = "configId"
   const val REPORT_ID = "reportId"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
+  const val GROUP_ID = "groupId"
 
   /** Create route paths */
   fun routePathsOf(vararg navArg: String): String =

@@ -463,7 +463,11 @@
                             "title": "@{taskDescription}",
                             "saveButtonText": "Save",
                             "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
+                            "resourceIdentifier": "@{taskFor}",
+                            "groupResource": {
+                              "groupIdentifier": "@{familyLogicalId}",
+                              "memberResourceType": "Patient"
+                            }
                           }
                         }
                       ]
