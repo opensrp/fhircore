@@ -30,8 +30,14 @@ class ManagingEntityConfigurationTest {
         resourceType = ResourceType.Patient
       )
 
-    Assert.assertEquals("sample name fhir path expression", managingEntityConfig.nameFhirPathExpression)
-    Assert.assertEquals("sample ec fhir path expression", managingEntityConfig.eligibilityCriteriaFhirPathExpression)
+    Assert.assertEquals(
+      "sample name fhir path expression",
+      managingEntityConfig.nameFhirPathExpression
+    )
+    Assert.assertEquals(
+      "sample ec fhir path expression",
+      managingEntityConfig.eligibilityCriteriaFhirPathExpression
+    )
     Assert.assertEquals(ResourceType.Patient, managingEntityConfig.resourceType)
     Assert.assertEquals(null, managingEntityConfig.dialogTitle)
     Assert.assertEquals(null, managingEntityConfig.dialogWarningMessage)
