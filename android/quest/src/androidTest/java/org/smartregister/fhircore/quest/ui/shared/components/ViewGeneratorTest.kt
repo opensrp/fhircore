@@ -28,10 +28,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -372,5 +375,67 @@ class ViewGeneratorTest {
       )
     }
     composeRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
+  }
+
+  @Test
+  fun testColumnIsRenderedWhenViewTypeIsColumnAndPropertyWrapContentIsTrue() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = true,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task"),
+                ButtonProperties(status = "READY", text = "Ready Task"),
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testColumnIsRenderedWhenViewTypeIsColumnAndWrapContentIsFalse() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.CENTER,
+            arrangement = ColumnArrangement.TOP,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
+                ButtonProperties(status = "READY", text = "Ready Task", visible = "true"),
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertDoesNotExist()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
