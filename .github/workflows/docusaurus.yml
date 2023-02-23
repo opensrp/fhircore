@@ -1,4 +1,4 @@
-name: Deploy FHIR Core docs folder to GH-PAGES
+name: Docs
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy FHIRCORE docs to GitHub Pages
+    name: Deploy docs to gh-pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
-      - name: Deploy to GitHub Pages
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,3 +39,4 @@ jobs:
           publish_dir: ./build
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
+

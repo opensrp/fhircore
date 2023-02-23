@@ -193,6 +193,14 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
+
+        zeir {
+            dimension "apps"
+            applicationIdSuffix ".zeir"
+            versionNameSuffix "-zeir"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
     sourceSets {
         main {
