@@ -329,7 +329,7 @@ private fun ServiceCardServiceOverduePreview() {
                   visible = "true",
                   status = ServiceStatus.OVERDUE.name,
                   text = "1",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -383,7 +383,7 @@ private fun ServiceCardServiceDuePreview() {
                   visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -437,7 +437,7 @@ private fun ServiceCardServiceUpcomingPreview() {
                   visible = "true",
                   status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -525,7 +525,7 @@ private fun ServiceCardServiceCompletedPreview() {
                   visible = "true",
                   status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated against COVID 19 virus",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -573,7 +573,7 @@ private fun ServiceCardANCServiceDuePreview() {
                 ButtonProperties(
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
-                  smallSized = true,
+                  buttonType = ButtonType.TINY
                 )
             )
           )
@@ -622,13 +622,13 @@ private fun ServiceCardANCServiceOverduePreview() {
                     visible = "true",
                     status = ServiceStatus.COMPLETED.name,
                     text = "Pregnancy Outcome 1",
-                    smallSized = true
+                    buttonType = ButtonType.TINY
                   ),
                   ButtonProperties(
                     visible = "true",
                     status = ServiceStatus.OVERDUE.name,
                     text = "ANC Visit 2",
-                    smallSized = true
+                    buttonType = ButtonType.TINY
                   )
                 )
             )

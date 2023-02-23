@@ -119,15 +119,8 @@ fun ActionableButton(
           else DefaultColor,
         modifier = Modifier.size(16.dp)
       )
-
-      val buttonText = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString()
-      val truncatedText =
-        if (buttonText.length > MAX_CHARS && buttonProperties.buttonType != ButtonType.BIG)
-          "${buttonText.substring(0, MAX_CHARS)}..."
-        else buttonText
-
       Text(
-        text = truncatedText,
+        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
         fontWeight = FontWeight.Medium,
         color =
           if (buttonEnabled)
@@ -195,8 +188,7 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
-        smallSized = true,
-        buttonType = ButtonType.BIG
+        buttonType = ButtonType.TINY
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
     navController = rememberNavController()
@@ -213,7 +205,6 @@ fun DisabledActionableButtonPreview() {
           visible = "true",
           status = ServiceStatus.COMPLETED.name,
           text = "Issuing of teenage pads and household due on 23-01-2023",
-          smallSized = true,
           enabled = "true",
           buttonType = ButtonType.BIG
         ),
