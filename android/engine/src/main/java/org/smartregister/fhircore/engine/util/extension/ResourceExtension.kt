@@ -298,7 +298,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 }
 
 fun String.resourceClassType(): Class<out Resource> =
-  Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+  FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
 
 /**
  * A function that extracts only the UUID part of a resource logicalId.
