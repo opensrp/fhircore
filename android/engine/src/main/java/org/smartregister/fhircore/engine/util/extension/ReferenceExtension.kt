@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,13 @@ import org.hl7.fhir.r4.model.ResourceType
 
 fun Reference.extractId(): String =
   if (this.reference.isNullOrEmpty()) "" else this.reference.extractLogicalIdUuid()
+
+fun Reference.extractType(): ResourceType? =
+  if (this.reference.isNullOrEmpty()) null
+  else
+    this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/").let {
+      ResourceType.fromCode(it)
+    }
 
 fun String.asReference(resourceType: ResourceType): Reference {
   val resourceId = this

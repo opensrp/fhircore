@@ -78,6 +78,7 @@
     <string name="select_register">Chagua rejista</string>
     <string name="tick">Tiki</string>
     <string name="invalid_login_credentials">Jina la mtumiaji au nenosiri batili</string>
+    <string name="app_id_sample">k.m ecbis, quest, cha</string>
     <string name="load_configurations">PAKIA MIPANGILIO</string>
     <string name="edit">Hariri</string>
     <string name="clients">Wateja</string>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
-        item.prePopulateInitialValues(prePopulationParams)
+        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -587,5 +587,6 @@ constructor(
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
     private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
       "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+    private const val STRING_INTERPOLATION_PREFIX = "@{"
   }
 }

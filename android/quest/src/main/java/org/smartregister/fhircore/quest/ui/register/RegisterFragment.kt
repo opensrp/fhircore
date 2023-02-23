@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
@@ -205,8 +204,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           syncJobStatus.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        if (hasAuthError == true)
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(requireContext()))
         Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
         val messageResourceId =
           if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
@@ -249,7 +246,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
         // Always refresh data when registration happens
         registerViewModel.paginateRegisterData(

@@ -1,0 +1,225 @@
+# Widget configurations
+
+Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, buttons
+:::info
+:::
+
+## Flex Alignment widgets
+
+To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
+
+``` json
+{
+     "viewType": "LIST",
+      "id": "give_your_list_an_id",
+      "baseResource": "Resource_to_use",
+      "orientation": "HORIZONTAL",
+       "emptyList": {
+        "message": ""
+                     },
+        "registerCard": {
+        "rules": [],
+         "views": [
+          {
+           "viewType": "COMPOUND_TEXT",
+            "primaryTextBackgroundColor": "#F9CFD1",
+             "primaryText": "@{carePlanTitle}",
+             "primaryTextColor": "@{carePlanTextColor}",
+             "fontSize": 13,
+             "padding": 7,
+              "borderRadius": 6
+      }
+    ]
+    }
+   }
+ ```
+
+## Display other resources (List Resources) inside another list
+To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
+If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
+``` json
+{
+  "viewType": "LIST",
+  "id": "readyTasksList",
+  "resources": [
+    {
+      "id": "availableTask",
+      "relatedResourceId": "availableTasks",
+      "resourceType": "Task",
+      "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+    }
+  ],
+  "emptyList": {
+    "message": "No visit tasks available for this patient at the moment"
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "BUTTON",
+        "smallSized": "true",
+        "text": "@{taskDescriptionWithStartDate}",
+        "status": "@{taskStatusColorCode}",
+        "visible": "true",
+        "enabled": "@{patientActive}",
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_QUESTIONNAIRE",
+            "questionnaire": {
+              "id": "@{taskQuestionnaireId}",
+              "title": "@{taskDescription}",
+              "saveButtonText": "Save",
+              "taskId": "@{taskId}",
+              "resourceIdentifier": "@{taskFor}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+ ```
+
+## Config properties of list resources using the above json config
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
+relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
+
+
+
+## Config properties of a List Widget
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the application | Yes | |
+viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
+baseResource | Resource to get data from  | Yes | |
+orientation | This is the direction you want to the widgets to flex | yes | VERTICAL |
+emptyList | empty list json with a message to show in case the resource data to display is empty | no but highly recommended | no visits |
+registerCard | card to display widgets at | Yes |  |
+views | the desired widgets and their properties to be displayed | | |
+resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
+
+
+## How to use COMPOUND_TEXT
+Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
+
+ ``` json
+{
+                "viewType": "COMPOUND_TEXT",
+                "primaryTextBackgroundColor": "#F9CFD1",
+                "primaryText": "@{taskName}",
+                "primaryTextColor": "#000000",
+                "padding": 7,
+                "borderRadius": 6
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Start date: @{taskStartDate}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 20.0
+
+              }
+```
+
+
+## Config properties of COMPOUND_TEXT
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
+primaryTextBackgroundColor | The background color of the primary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color | No | Null |
+secondaryTextBackgroundColor | The background color of the secondary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color | No | Null |
+primaryText | The primary text to be displayed in the view. If the property text is null, no primary text will be displayed | Yes | |
+primaryTextColor |The color of the primary text to be displayed. This should be visible | Yes | |
+fontSize | The font size of the primary and secondary texts, in SP (scaled pixels) |  | 16 |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | Rounds the corners of the view's outer edge | | 2 |
+weight |  The weight of the view within its parent layout. This value is used to distribute the available space among multiple views.  | No | 0 |
+backgroundColor |The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+alignment | The alignment of the view withins its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Dertimines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | false |
+secondaryText | The primary text to be displayed in the view. If the property text is null, no primary text will be displayed | No |  |
+secondaryTextColor | The color of the secondary text, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's text color | No | Null |
+separator | The separator to display between the primary and secondary texts. If this property is null, no separator will be displayed | No | Null |
+primaryTextFontWeight | The font weight of the primary text | | [TextFontWeight.NORMAL] |
+secondaryTextFontWeight | The font weight of the secondary text | | [TextFontWeight.NORMAL] |
+primaryTextActions | The list of actions associated with the primary text. If the list is empty, no actions will be displayed | | |
+secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
+
+
+## SERVICE_CARD widgets
+Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
+
+ ``` json
+{
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{patientId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceButton": {
+              "visible": "@{showMemberTasks}",
+              "text": "@{taskDescription}",
+              "status": "@{serviceStatus}",
+              "smallSized": true,
+              "enabled": "false",
+              "actions": [ ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "otherRegistersProfile"
+              }
+            ]
+          }
+        ]
+      }
+``` 
+
+
+## Config properties of COMPOUND_TEXT
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | [ViewType.SERVICE_CARD]|
+weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  the default value is #FFFFFF |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | Rounds the corners of the view's outer edge | | 2 |
+alignment | The alignment of the view withins its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Dertimines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | true |
+visible | A String value that determines whether the view should be visible | Yes| true |
+details| A list of CompoundTextProperties that represent the details of the service card| yes | emptyList() |
+showVerticalDivider | A Boolean value that determines whether a vertical divider should be displayed in the service card view | Yes |  false |
+servicememberIcons | A String value that represents the icons for the service members associated with the service card | yes | null |
+serviceButton | A ButtonProperties object that represents a button displayed in the service card | Yes | null |
+services | A list of ButtonProperties that represent the services associated with the service card | yes | null |
+actions | A list of ActionConfig objects that represent the actions that can be performed on the service card | yes | emptyList() |
