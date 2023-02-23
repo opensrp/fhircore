@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">ZEIR</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.zeir</string>
+</resources>
