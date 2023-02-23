@@ -1,11 +1,9 @@
 .DS_Store
 node_modules/
-/node_modules
 
 # Gradle files
 .gradle/
 build/
-/build
 
 
 # Local configuration file (sdk path, etc)
@@ -25,7 +23,7 @@ captures/
 
 # IntelliJ
 *.iml
-.idea
+.idea/
 
 # Fleet
 .fleet/
