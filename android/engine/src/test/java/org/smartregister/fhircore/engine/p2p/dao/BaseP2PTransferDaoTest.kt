@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -193,6 +194,12 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     assertEquals(
       QuestionnaireResponse::class.java,
       DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
+        .name
+        .resourceClassType()
+    )
+    assertEquals(
+      ListResource::class.java,
+      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0)
         .name
         .resourceClassType()
     )
