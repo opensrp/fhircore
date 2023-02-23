@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.engine.util.extension
 
-import android.os.Handler
-import android.os.Message
-import timber.log.Timber
+import org.hl7.fhir.r4.model.Observation
 
-/** Subclass of [Handler.Callback] that logs the error message to the console */
-object DefaultErrorHandler : Handler.Callback {
-  override fun handleMessage(msg: Message): Boolean {
-    Timber.i("Encountered an error while retrieving token: ", msg)
-    return true
-  }
-}
+fun Observation.codingOf(code: String) = this.code.coding.find { it.code == code }
+
+fun Observation.defaultCode() = this.code.codingFirstRep.code
+
+fun Observation.valueCode() =
+  if (this.hasValueCodeableConcept()) this.valueCodeableConcept.codingFirstRep.code else null

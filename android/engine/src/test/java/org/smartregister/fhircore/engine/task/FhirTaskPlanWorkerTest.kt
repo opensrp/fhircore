@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.hasPastEnd
+import org.smartregister.fhircore.engine.util.extension.isReady
 
 class FhirTaskPlanWorkerTest : RobolectricTest() {
 
@@ -45,6 +47,42 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   fun `FhirTaskPlanWorker doWork executes successfully`() {
     coEvery { fhirEngine.search<Task>(any()) } returns
       listOf(Task().apply { status = Task.TaskStatus.REQUESTED })
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork executes successfully when status is inProgress`() {
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(Task().apply { status = Task.TaskStatus.INPROGRESS })
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork executes successfully when status is failed`() {
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() })
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork executes successfully when task isReady`() {
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(Task().apply { status = Task.TaskStatus.REQUESTED }.apply { isReady() })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))

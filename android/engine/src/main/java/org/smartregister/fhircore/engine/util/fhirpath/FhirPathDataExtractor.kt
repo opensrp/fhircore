@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.smartregister.fhircore.engine.util.fhirpath
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.dstu3.utils.FHIRLexer.FHIRLexerException
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.utils.FHIRLexer
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import timber.log.Timber
 
@@ -47,7 +47,7 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
   fun extractData(base: Base, expression: String): List<Base> {
     return try {
       fhirPathEngine.evaluate(base, expression)
-    } catch (exception: FHIRLexerException) {
+    } catch (exception: FHIRLexer.FHIRLexerException) {
       Timber.e(exception)
       emptyList()
     }

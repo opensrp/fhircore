@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.engine.data.remote.auth
 
-import io.mockk.mockk
-import org.junit.Assert
-import org.junit.Test
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import retrofit2.Response
+import retrofit2.http.GET
 
-class DefaultErrorHandlerTest {
-
-  @Test
-  fun testHandleMessage() {
-    Assert.assertTrue(DefaultErrorHandler.handleMessage(mockk()))
-  }
+interface KeycloakService {
+  @GET("protocol/openid-connect/userinfo") suspend fun fetchUserInfo(): Response<UserInfo?>
 }

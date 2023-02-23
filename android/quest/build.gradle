@@ -139,7 +139,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.6-rc1"
+            versionName "0.1.9-rc3"
         }
 
         g6pd {
@@ -178,10 +178,18 @@ android {
             versionName "0.0.1"
         }
 
-        sid {
+        bunda {
             dimension "apps"
-            applicationIdSuffix ".sid"
-            versionNameSuffix "-sid"
+            applicationIdSuffix ".bunda"
+            versionNameSuffix "-bunda"
+            versionCode 1
+            versionName "0.0.1"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
             versionCode 1
             versionName "0.0.1"
         }
@@ -255,6 +263,7 @@ tasks.withType(Test) {
 
 configurations {
     all*.exclude group: 'xpp3'
+    all*.exclude group: 'commons-logging'
 }
 
 dependencies {
@@ -269,9 +278,9 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.6.1-BUG-FIXES-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.4.0'){
         exclude group: 'xpp3'
     }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
@@ -316,8 +325,8 @@ dependencies {
     androidTestImplementation deps.mockk_android
     androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
 
-//    debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+   // debugImplementation because LeakCanary should only run in debug builds.
+   // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
-    testImplementation 'info.cqframework:cql-to-elm:2.2.0'
+    testImplementation 'info.cqframework:cql-to-elm:2.4.0'
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,9 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
 const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
 
+const val DETAILS_COUNT_TEST_TAG = "detailsCountTestTag"
+const val DETAILS_INDICATOR_TITLE = "detailsIndicatorTitle"
+
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
   LazyColumn { itemsIndexed(dataList) { _, item -> PopulationResultCard(item) } }
@@ -71,12 +74,30 @@ private fun PopulationResultCard(
             textAlign = TextAlign.Start
           )
           Text(
-            text = resultItem.measureReportDenominator.toString().uppercase(),
+            text = resultItem.measureReportDenominator.let { it?.toString() ?: "0" },
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
             textAlign = TextAlign.End
           )
+        }
+        resultItem.dataList.forEach {
+          Row(modifier = modifier.fillMaxWidth()) {
+            Text(
+              text = it.title,
+              color = colorResource(id = R.color.black),
+              fontSize = 15.sp,
+              modifier = modifier.weight(1.0f).testTag(DETAILS_INDICATOR_TITLE),
+              textAlign = TextAlign.Start
+            )
+            Text(
+              text = it.count,
+              color = colorResource(id = R.color.black),
+              fontSize = 15.sp,
+              modifier = modifier.weight(1.0f).testTag(DETAILS_COUNT_TEST_TAG),
+              textAlign = TextAlign.End
+            )
+          }
         }
       }
     }
@@ -91,6 +112,7 @@ fun MeasureReportPopulationResultPreview() {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
+        measureReportDenominator = 4,
         indicatorTitle = "Still birth",
         dataList =
           listOf(

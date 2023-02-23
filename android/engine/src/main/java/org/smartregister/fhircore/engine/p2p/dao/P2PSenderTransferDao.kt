@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,14 +44,24 @@ constructor(
     return runBlocking { countTotalRecordsForSync(highestRecordIdMap) }
   }
 
-  override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
+  override fun getJsonData(
+    dataType: DataType,
+    lastUpdated: Long,
+    batchSize: Int,
+    offset: Int
+  ): JsonData? {
     // TODO: complete  retrieval of data implementation
     Timber.e("Last updated at value is $lastUpdated")
     var highestRecordId = lastUpdated
 
     val records = runBlocking {
       dataType.name.resourceClassType().let { classType ->
-        loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
+        loadResources(
+          lastRecordUpdatedAt = highestRecordId,
+          batchSize = batchSize,
+          offset = offset,
+          classType
+        )
       }
     }
 
