@@ -116,7 +116,7 @@ constructor(
    */
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
-    baseResource: Resource,
+    baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values and init facts
@@ -144,7 +144,9 @@ constructor(
     }
 
     // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    facts.put(baseResource.resourceType.name, baseResource)
+    if (baseResource != null) {
+      facts.put(baseResource.resourceType.name, baseResource)
+    }
 
     relatedResourcesMap.forEach { facts.put(it.key, it.value) }
     rulesEngine.fire(Rules(customRules), facts)
@@ -273,6 +275,7 @@ constructor(
           else null
         }
         ?.joinToString(",")
+        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -346,13 +349,14 @@ constructor(
      * This function filters resource provided the condition exracted from the [fhirPathExpression]
      * is met
      */
-    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.filter {
+      return resources?.filter {
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
+        ?: emptyList()
     }
 
     /** This function combines all string indexes to comma separated */
@@ -364,13 +368,14 @@ constructor(
     }
 
     fun mapResourcesToExtractedValues(
-      resources: List<Resource>,
+      resources: List<Resource>?,
       fhirPathExpression: String
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+      return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+        ?: emptyList()
     }
   }
 
