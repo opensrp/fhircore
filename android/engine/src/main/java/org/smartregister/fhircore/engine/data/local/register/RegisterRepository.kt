@@ -146,7 +146,7 @@ constructor(
     return resourceData
   }
 
-  private fun processResourceData(
+  private suspend fun processResourceData(
     relatedResources: LinkedList<RelatedResourceData>,
     baseResource: Resource,
     ruleConfigs: List<RuleConfig>,
@@ -156,7 +156,6 @@ constructor(
     val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
-
     val rules = rulesFactory.generateRules(ruleConfigs)
     val computedValuesMap =
       rulesFactory.fireRules(
@@ -185,7 +184,7 @@ constructor(
    * in the parent's view relatedResourcesMap. We retrieve it and use it to get it's related
    * resources so we can fire rules for the List.
    */
-  fun computeListRules(
+  suspend fun computeListRules(
     views: List<ViewProperties>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     computedValuesMap: Map<String, Any>
@@ -210,7 +209,7 @@ constructor(
     return resourceDataMap
   }
 
-  private fun List<Resource>.mapToResourceData(
+  private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
     listRelatedResources: List<ExtractedResource>,

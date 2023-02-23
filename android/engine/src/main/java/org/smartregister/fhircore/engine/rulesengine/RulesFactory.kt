@@ -24,6 +24,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -56,7 +58,8 @@ class RulesFactory
 constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val dispatcherProvider: DispatcherProvider
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
@@ -76,7 +79,6 @@ constructor(
       .create()
 
   private var facts: Facts = Facts()
-  private var computedValuesMap = mutableMapOf<String, Any>()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -86,6 +88,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
+      val computedValuesMap = facts.get(DATA) as Map<String, Any>
       Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
@@ -116,31 +119,31 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  fun fireRules(
+  @Suppress("UNCHECKED_CAST")
+  suspend fun fireRules(
     rules: Rules,
     baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
+    return withContext(dispatcherProvider.io()) {
+      // Initialize new facts and fire rules in background
+      val timeInMillis = measureTimeMillis {
+        facts =
+          Facts().apply {
+            put(FHIR_PATH, fhirPathDataExtractor)
+            put(DATA, mutableMapOf<String, Any>())
+            put(SERVICE, rulesEngineService)
+            if (baseResource != null) {
+              put(baseResource.resourceType.name, baseResource)
+            }
+            relatedResourcesMap.forEach { put(it.key, it.value) }
+          }
 
-    val time = measureTimeMillis {
-      // Reset previously computed values and init facts
-      computedValuesMap = mutableMapOf()
-      facts = Facts()
-
-      facts.apply {
-        put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, computedValuesMap)
-        put(SERVICE, rulesEngineService)
-        if (baseResource != null) {
-          put(baseResource.resourceType.name, baseResource)
-        }
-        relatedResourcesMap.forEach { put(it.key, it.value) }
+        rulesEngine.fire(rules, facts)
       }
-
-      rulesEngine.fire(rules, facts)
+      Timber.d("Rule executed in $timeInMillis millisecond(s)")
+      facts.get(DATA) as Map<String, Any>
     }
-    Timber.w("Rules executed in $time milliseconds")
-    return computedValuesMap
   }
 
   fun generateRules(ruleConfigs: List<RuleConfig>): Rules {
