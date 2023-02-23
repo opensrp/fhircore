@@ -1,8 +1,8 @@
-def module = project.name == "quest" ? "Quest" : ""
+//def module = project.name == "quest" ? "Quest" : ""
 
 task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
-        "test${module}DebugUnitTest",
-        "connected${module}DebugAndroidTest"
+        "testDebugUnitTest",
+        "connectedDebugAndroidTest"
 ]) {
 
     reports {
@@ -49,9 +49,9 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             'org/hl7/fhir/*'
     ]
 
-    def moduleVariant = project.name == "quest" ? "questDebug" : "debug"
-    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/${moduleVariant}/classes/", excludes: excludes)
-    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/${moduleVariant}", excludes: excludes)
+//    def moduleVariant = project.name == "quest" ? "questDebug" : "debug"
+    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/classes/", excludes: excludes)
+    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/", excludes: excludes)
     def mainSrc = "$project.projectDir/src/main/java"
     def kotlinSrc = "$project.projectDir/src/main/kotlin"
 
@@ -60,8 +60,8 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
 
     executionData.setFrom(
             fileTree(dir: project.buildDir, includes: [
-                    "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${module}DebugUnitTest.exec",
-                    "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
+                    "outputs/unit_test_code_coverage/UnitTest/testDebugUnitTest.exec",
+                    "outputs/code_coverage/AndroidTest/connected/**/*.ec"
             ])
     )
 }
