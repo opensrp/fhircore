@@ -306,14 +306,13 @@ constructor(
               clientIdentifier = patientId,
               populationResources = profile.populationResources
             )
-          R.id.patient_change_status -> {
+          R.id.patient_change_status ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = PATIENT_CHANGE_STATUS,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
-          }
           else -> {}
         }
       }
