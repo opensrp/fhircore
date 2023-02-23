@@ -1,5 +1,5 @@
 {
-  "appId": "chss",
+  "appId": "app",
   "configType": "register",
   "id": "practitionerRegister",
   "fhirResource": {
@@ -7,8 +7,9 @@
       "resource": "Practitioner",
       "sortConfigs": [
         {
-          "paramName": "name",
-          "dataType": "STRING"
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
         }
       ]
     },

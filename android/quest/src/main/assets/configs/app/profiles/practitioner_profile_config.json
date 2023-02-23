@@ -1,5 +1,5 @@
 {
-  "appId": "chss",
+  "appId": "app",
   "configType": "profile",
   "id": "practitionerProfile",
   "fhirResource": {
@@ -143,8 +143,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "householdRegister",
-                          "display": "@{practitionerFirstName} - Household",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - Household Register"
                         }
                       ]
                     }
@@ -182,8 +181,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "childRegister",
-                          "display": "@{practitionerFirstName} - Children",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - Children Register"
                         }
                       ]
                     }
@@ -221,8 +219,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "sickChildRegister",
-                          "display": "@{practitionerFirstName} - Sick Child",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - Sick Child Register"
                         }
                       ]
                     }
@@ -260,8 +257,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "ancRegister",
-                          "display": "@{practitionerFirstName} - ANC",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - ANC Register"
                         }
                       ]
                     }
@@ -299,8 +295,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "pncRegister",
-                          "display": "@{practitionerFirstName} - PNC",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - PNC Register"
                         }
                       ]
                     }
@@ -338,8 +333,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "fpRegister",
-                          "display": "@{practitionerFirstName} - FP",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - FP Register"
                         }
                       ]
                     }
@@ -377,8 +371,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "mentalHealthRegister",
-                          "display": "@{practitionerFirstName} - Mental Health",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - Mental Health Register"
                         }
                       ]
                     }
@@ -416,8 +409,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "hivRegister",
-                          "display": "@{practitionerFirstName} - HIV",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - HIV Register"
                         }
                       ]
                     }
@@ -455,8 +447,7 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "tbRegister",
-                          "display": "@{practitionerFirstName} - TB",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - TB Register"
                         }
                       ]
                     }
@@ -475,8 +466,7 @@
                       "viewType": "COMPOUND_TEXT",
                       "primaryText": "CM-NTD",
                       "primaryTextColor": "#000000",
-                      "fontSize": 14.0,
-                      "weight": 0.3
+                      "fontSize": 14.0
                     }
                   ]
                 },
@@ -490,14 +480,12 @@
                       "primaryTextColor": "#006EB8",
                       "clickable": true,
                       "fontSize": 14.0,
-                      "weight": 0.7,
                       "primaryTextActions": [
                         {
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "cmntdRegister",
-                          "display": "@{practitionerFirstName} - CM-NTD",
-                          "toolBarHomeNavigation": "NAVIGATE_BACK"
+                          "display": "@{practitionerName} - CM-NTD Register"
                         }
                       ]
                     }

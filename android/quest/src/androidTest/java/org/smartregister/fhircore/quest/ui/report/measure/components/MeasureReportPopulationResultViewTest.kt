@@ -48,7 +48,8 @@ class MeasureReportPopulationResultViewTest {
         title = "Population Title",
         count = "2",
         indicatorTitle = "Indicator1",
-        dataList = measureReportIndividualResultList
+        dataList = measureReportIndividualResultList,
+        measureReportDenominator = 2
       )
     )
 
