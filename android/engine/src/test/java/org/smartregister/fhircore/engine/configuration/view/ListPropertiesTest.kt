@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
@@ -26,7 +27,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class ListPropertiesTest {
 
   private val relatedResources =
-    listOf(ExtractedResource(resourceType = "typeResource", fhirPathExpression = "fhirPath"))
+    listOf(ListResource(id = "patients", resourceType = ResourceType.Patient))
 
   private val registerCardConfig =
     RegisterCardConfig(rules = emptyList<RuleConfig>(), views = emptyList<ViewProperties>())
@@ -43,8 +44,7 @@ class ListPropertiesTest {
       fillMaxHeight = false,
       clickable = "false",
       id = "listid",
-      baseResource = "resource",
-      relatedResources = relatedResources,
+      resources = relatedResources,
       registerCard = registerCardConfig,
       showDivider = true
     )
@@ -60,8 +60,8 @@ class ListPropertiesTest {
     Assert.assertEquals(false, listProperties.fillMaxWidth)
     Assert.assertEquals(false, listProperties.fillMaxHeight)
     Assert.assertEquals("false", listProperties.clickable)
-    Assert.assertEquals("resource", listProperties.baseResource)
-    Assert.assertEquals(relatedResources, listProperties.relatedResources)
+    Assert.assertEquals(ResourceType.Patient, listProperties.resources.first().resourceType)
+    Assert.assertEquals(relatedResources, listProperties.resources)
     Assert.assertEquals(registerCardConfig, listProperties.registerCard)
     Assert.assertEquals(true, listProperties.showDivider)
   }

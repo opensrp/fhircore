@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.profile
 
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -31,16 +32,11 @@ class ProfileConfigurationTest {
   private val fhirResourceConfig =
     FhirResourceConfig(baseResource = ResourceConfig(resource = "Patient"))
 
-  private val extractedResource =
-    ExtractedResource(
-      resourceType = "Patient",
-      fhirPathExpression = "extractedResourceFhirPathExpression"
-    )
-
   private val managingEntityConfig =
     ManagingEntityConfig(
-      infoFhirPathExpression = "infoFhirPathExpression test",
-      fhirPathResource = extractedResource
+      nameFhirPathExpression = "sample name fhir path expression",
+      eligibilityCriteriaFhirPathExpression = "sample ec fhir path expression",
+      resourceType = ResourceType.Patient
     )
 
   private val rulesList = listOf(RuleConfig(name = "test rule", actions = listOf("actions")))

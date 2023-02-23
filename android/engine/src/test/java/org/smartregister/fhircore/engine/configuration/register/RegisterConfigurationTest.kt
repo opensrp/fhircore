@@ -24,7 +24,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 class RegisterConfigurationTest {
 
   private val fhirResourceConfig =
-    FhirResourceConfig(ResourceConfig("name", "resource"), relatedResources = emptyList())
+    FhirResourceConfig(ResourceConfig("id", "resource"), relatedResources = emptyList())
   private val registerConfiguration =
     RegisterConfiguration(
       appId = "1234",
@@ -41,7 +41,7 @@ class RegisterConfigurationTest {
     Assert.assertEquals("configType", registerConfiguration.configType)
     Assert.assertEquals("2424", registerConfiguration.id)
     Assert.assertEquals("title", registerConfiguration.registerTitle)
-    Assert.assertEquals("name", registerConfiguration.fhirResource.baseResource.name)
+    Assert.assertEquals("id", registerConfiguration.fhirResource.baseResource.id)
     Assert.assertEquals("resource", registerConfiguration.fhirResource.baseResource.resource)
   }
 }

@@ -16,33 +16,27 @@
 
 package org.smartregister.fhircore.engine.configuration.profile
 
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 
 class ManagingEntityConfigurationTest {
-
-  private val extractedResource =
-    ExtractedResource(
-      resourceType = "Patient",
-      fhirPathExpression = "extractedResourceFhirPathExpression"
-    )
-
   @Test
   fun testAuthConfiguration() {
     val managingEntityConfig =
       ManagingEntityConfig(
-        infoFhirPathExpression = "sample fhir path expression",
-        fhirPathResource = extractedResource,
-        dialogTitle = "dialogTitle test",
-        dialogWarningMessage = "dialogWarningMessage test",
-        dialogContentMessage = "dialogContentMessage test"
+        nameFhirPathExpression = "sample name fhir path expression",
+        eligibilityCriteriaFhirPathExpression = "sample ec fhir path expression",
+        resourceType = ResourceType.Patient
       )
 
-    Assert.assertEquals("sample fhir path expression", managingEntityConfig.infoFhirPathExpression)
-    Assert.assertEquals(extractedResource, managingEntityConfig.fhirPathResource)
-    Assert.assertEquals("dialogTitle test", managingEntityConfig.dialogTitle)
-    Assert.assertEquals("dialogWarningMessage test", managingEntityConfig.dialogWarningMessage)
-    Assert.assertEquals("dialogContentMessage test", managingEntityConfig.dialogContentMessage)
+    Assert.assertEquals("sample name fhir path expression", managingEntityConfig.nameFhirPathExpression)
+    Assert.assertEquals("sample ec fhir path expression", managingEntityConfig.eligibilityCriteriaFhirPathExpression)
+    Assert.assertEquals(ResourceType.Patient, managingEntityConfig.resourceType)
+    Assert.assertEquals(null, managingEntityConfig.dialogTitle)
+    Assert.assertEquals(null, managingEntityConfig.dialogWarningMessage)
+    Assert.assertEquals(null, managingEntityConfig.dialogContentMessage)
+    Assert.assertEquals("", managingEntityConfig.noMembersErrorMessage)
+    Assert.assertEquals("", managingEntityConfig.managingEntityReassignedMessage)
   }
 }
