@@ -306,6 +306,14 @@ constructor(
               clientIdentifier = patientId,
               populationResources = profile.populationResources
             )
+          R.id.patient_change_status -> {
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = PATIENT_CHANGE_STATUS,
+              clientIdentifier = patientId,
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = profile.populationResources
+            )
+          }
           else -> {}
         }
       }
@@ -427,5 +435,6 @@ constructor(
       "contact-and-community-positive-hiv-test-and-next-appointment"
     const val REMOVE_HIV_PATIENT_FORM = "remove-person"
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
+    const val PATIENT_CHANGE_STATUS = "patient-change-status"
   }
 }
