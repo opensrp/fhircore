@@ -127,21 +127,18 @@ constructor(
   ): Map<String, Any> {
     return withContext(dispatcherProvider.io()) {
       // Initialize new facts and fire rules in background
-      val timeInMillis = measureTimeMillis {
-        facts =
-          Facts().apply {
-            put(FHIR_PATH, fhirPathDataExtractor)
-            put(DATA, mutableMapOf<String, Any>())
-            put(SERVICE, rulesEngineService)
-            if (baseResource != null) {
-              put(baseResource.resourceType.name, baseResource)
-            }
-            relatedResourcesMap.forEach { put(it.key, it.value) }
+      facts =
+        Facts().apply {
+          put(FHIR_PATH, fhirPathDataExtractor)
+          put(DATA, mutableMapOf<String, Any>())
+          put(SERVICE, rulesEngineService)
+          if (baseResource != null) {
+            put(baseResource.resourceType.name, baseResource)
           }
-
-        rulesEngine.fire(rules, facts)
-      }
-      Timber.d("Rule executed in $timeInMillis millisecond(s)")
+          relatedResourcesMap.forEach { put(it.key, it.value) }
+        }
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
       facts.get(DATA) as Map<String, Any>
     }
   }
