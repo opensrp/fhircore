@@ -27,6 +27,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
+import androidx.work.WorkManager
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
@@ -127,13 +128,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
-      schedulePeriodicJobs()
+      //schedulePeriodicJobs()
+      workManager.cancelAllWork()
     }
 
     syncBroadcaster.run {
       with(appMainViewModel.syncSharedFlow) {
         runSync(this)
-        schedulePeriodicSync(this)
+        //schedulePeriodicSync(this)
       }
     }
   }
@@ -171,22 +173,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       /*val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
       fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)*/
 
-        /*val searchQuery =
+        val searchQuery =
           SearchQuery(
             """
-            SELECT a.serializedResource
+            SELECT a.serializedResource, a.resourceUuid
             FROM ResourceEntity a
-            LEFT JOIN DateTimeIndexEntity c
-            ON a.resourceUuid = c.resourceUuid
-            WHERE a.resourceUuid IN (
-            SELECT resourceUuid FROM DateTimeIndexEntity
-            WHERE resourceType = 'Task' AND index_name = '_lastUpdated' AND index_to >= 0 ORDER BY index_from ASC, id ASC LIMIT 25 OFFSET 0
-            )
-            AND (
-            c.index_name = "_lastUpdated")
-            ORDER BY 
-            c.index_from ASC, a.id ASC
-            LIMIT 25 OFFSET 0
+            JOIN ReferenceIndexEntity b ON a.resourceUuid = b.resourceUuid 
+            WHERE b.resourceType = 'Task'
+            AND b.index_name = 'subject' 
+            AND b.index_value = 'Patient/29af5cd1-bed0-46b7-b968-92dcf80b6098'
           """.trimIndent(),
             emptyList()
           )
@@ -195,8 +190,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
         val stopTime = System.currentTimeMillis()
         val timeTaken = stopTime - startTime
-        Timber.e("Time take = ${timeTaken/1000} s | $timeTaken ms")
-        offset += 25*/
+        Timber.e("Time taken = ${timeTaken/1000} s | $timeTaken ms")
+        offset += 25
         //} while (tasks.isNotEmpty())
 
       try {

@@ -340,6 +340,35 @@ private fun MenuActionButton(
         fontSize = 18.sp
       )
     }
+    Row(
+      modifier =
+      modifier
+        .fillMaxWidth()
+        .clickable {
+          navigationConfiguration.onp2pReset?.invoke()
+        }
+        .padding(16.dp)
+        .testTag(MENU_BUTTON_TEST_TAG),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Box(
+        modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          modifier = modifier.testTag(MENU_BUTTON_ICON_TEST_TAG),
+          contentDescription = null,
+        )
+      }
+      Spacer(modifier.width(16.dp))
+      Text(
+        modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
+        text = "Reset for p2p",
+        color = MenuActionButtonTextColor,
+        fontSize = 18.sp
+      )
+    }
   }
 }
 

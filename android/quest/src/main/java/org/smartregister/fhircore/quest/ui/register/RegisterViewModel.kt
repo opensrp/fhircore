@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel
@@ -76,6 +77,7 @@ constructor(
   private lateinit var registerConfiguration: RegisterConfiguration
 
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private var fetchDataRunning = false
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -91,15 +93,24 @@ constructor(
       pagesDataCache.clear()
       allPatientRegisterData = null
     }
+
+    if (fetchDataRunning) {
+      return
+    }
+
+    fetchDataRunning = true
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
+        Timber.e("paginateRegisterData called()")
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
       }
+    fetchDataRunning = false
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
     // Get the configured page size from RegisterConfiguration default is 20
     val pageSize = retrieveRegisterConfiguration(registerId).pageSize
+    Timber.e("getPager() called $registerId | loadAll $loadAll")
 
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
@@ -129,6 +140,7 @@ constructor(
   private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
     // Ensure that we only initialize this flow once
     if (allPatientRegisterData == null) {
+      Timber.e("retrieveAllPatientRegisterData() Register id -> $registerId")
       allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
     return allPatientRegisterData!!
@@ -139,15 +151,18 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         searchText.value = event.searchText
+        Timber.e("RegisterViewMode.onEvent search register | Search text = ${searchText.value}")
         if (event.searchText.isEmpty()) paginateRegisterData(registerUiState.value.registerId)
         else filterRegisterData(event)
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
+        Timber.e("RegisterViewModel.onEvent MoveToNextPage -> ${currentPage.value} | ${registerUiState.value.registerId}")
         paginateRegisterData(registerUiState.value.registerId)
       }
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
+        Timber.e("RegisterViewModel.onEvent MoveToPreviousPage -> ${currentPage.value} | ${registerUiState.value.registerId}")
         paginateRegisterData(registerUiState.value.registerId)
       }
     }
@@ -177,6 +192,7 @@ constructor(
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId)
         // Count register data then paginate the data
         _totalRecordsCount.value = registerRepository.countRegisterData(registerId)
+        Timber.e("RegisterViewModel.retrieveRegisterUiState() ")
         paginateRegisterData(registerId, loadAll = false)
 
         registerUiState.value =

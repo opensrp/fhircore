@@ -27,6 +27,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.WorkManager
+import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.SyncDataParams
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -40,8 +46,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -73,10 +82,13 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import org.smartregister.p2p.P2PLibrary
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -89,7 +101,8 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  fhirEngine: FhirEngine
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
@@ -112,8 +125,40 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  val navigationConfiguration: NavigationConfiguration by lazy {
+  /*val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }*/
+
+  val navigationConfiguration: NavigationConfiguration by lazy {
+    val config22 : NavigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+    config22.onp2pReset = {
+      Timber.e("Performing p2p reset")
+
+      viewModelScope.launch (dispatcherProvider.io()) {
+        P2PLibrary.getInstance().getDb().clearAllTables()
+        Timber.e("Finished performing p2p reset")
+
+        /*val patients = fhirEngine.search<Patient> {
+          filter(
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+            {
+              value = of(DateTimeType(Date(0)))
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            }
+          )
+        }
+
+        Timber.e("Clearing ${patients.size} patients")
+
+        patients.forEach {
+          fhirEngine.delete(ResourceType.Patient, it.logicalId)
+        }
+
+        Timber.e("Finished clearing ${patients.size} patients")*/
+      }
+    }
+
+    config22
   }
 
   fun retrieveIconsAsBitmap() {
@@ -295,9 +340,8 @@ constructor(
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-      /* // Schedule job for generating measure report in the background
+       // Schedule job for generating measure report in the background
        MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-      */
     }
   }
 

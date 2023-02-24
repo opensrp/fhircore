@@ -32,6 +32,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -58,7 +59,11 @@ constructor(
     return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
         deviceToDeviceSyncConfigs.resourcesToSync.isNotEmpty()
     ) {
-      getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
+      //getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
+      TreeSet<DataType>(
+        listOf(
+            DataType(name = ResourceType.Patient.name, DataType.Filetype.JSON, 0)
+        ))
     } else {
       getDefaultDataTypes()
     }
@@ -139,20 +144,20 @@ constructor(
         SearchQuery(
           """
             SELECT a.serializedResource
-            FROM ResourceEntity a
-            LEFT JOIN DateTimeIndexEntity c
-            ON a.resourceUuid = c.resourceUuid
-            WHERE a.resourceUuid IN (
-            SELECT resourceUuid FROM DateTimeIndexEntity
-            WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ? ORDER BY index_from ASC, id ASC LIMIT ? OFFSET ?
-            )
-            AND (
-            c.index_name = "_lastUpdated")
-            ORDER BY 
-            c.index_from ASC, a.id ASC
-            LIMIT ? OFFSET ?
+              FROM ResourceEntity a
+              LEFT JOIN DateIndexEntity b
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid 
+              LEFT JOIN DateTimeIndexEntity c
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid
+              WHERE a.resourceUuid IN (
+              SELECT resourceUuid FROM DateTimeIndexEntity
+              WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
+              )
+              AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
+              ORDER BY c.index_from ASC, b.index_from ASC, a.id ASC
+              LIMIT ? OFFSET ?
           """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize, offset, batchSize, offset)
+          listOf(lastRecordUpdatedAt, batchSize, offset)
         )
 
       fhirEngine.search(searchQuery)

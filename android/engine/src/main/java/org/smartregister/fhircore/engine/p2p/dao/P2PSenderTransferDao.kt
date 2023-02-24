@@ -38,6 +38,8 @@ constructor(
   configurationRegistry: ConfigurationRegistry
 ) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), SenderTransferDao {
 
+  private var recordIdsSet = mutableSetOf<String>()
+
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
   override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
@@ -51,10 +53,11 @@ constructor(
     offset: Int
   ): JsonData? {
     // TODO: complete  retrieval of data implementation
-    Timber.e("Last updated at value is $lastUpdated")
+    Timber.e("Last updated at value is ${dataType.name} $lastUpdated FROM $offset ONLY $batchSize")
     var highestRecordId = lastUpdated
 
     val records = runBlocking {
+      Timber.e("Inside the runBlocking for getJsonData")
       dataType.name.resourceClassType().let { classType ->
         loadResources(
           lastRecordUpdatedAt = highestRecordId,
@@ -65,20 +68,32 @@ constructor(
       }
     }
 
-    Timber.e("Fetching resources from base dao of type  $dataType.name")
+    Timber.e("getJsonData() done searching")
+
     highestRecordId =
       (if (records.isNotEmpty()) records.last().meta?.lastUpdated?.time ?: highestRecordId
       else lastUpdated)
 
+    val newRecordIdsSet = mutableSetOf<String>()
+
     val jsonArray = JSONArray()
     records.forEach {
+
+      if (recordIdsSet.contains(it.logicalId)) {
+        Timber.i("Skipping a record that was sent previously with ID ${it.logicalId}")
+        return@forEach
+      }
+
       jsonArray.put(jsonParser.encodeResourceToString(it))
+      Timber.i("Record last updatedd ${it.meta.lastUpdated.time} for ${it.logicalId}")
       highestRecordId =
         if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!!
         else highestRecordId
       Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
+      newRecordIdsSet.add(it.logicalId)
     }
 
+    recordIdsSet = newRecordIdsSet
     Timber.e("New highest Last updated at value is $highestRecordId")
     return JsonData(jsonArray, highestRecordId)
   }

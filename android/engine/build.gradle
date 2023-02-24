@@ -169,7 +169,11 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.6.1-SNAPSHOT')
+    //implementation('org.smartregister:p2p-lib:0.6.1-SNAPSHOT')
+    //implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
+    implementation (project(":p2p-lib")) {
+        transitive = true
+    }
 
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
@@ -219,6 +223,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
         exclude group: 'com.github.ben-manes.caffeine'
+        exclude group: 'org.smartregister', module: 'engine'
     }
 
     api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {
@@ -231,9 +236,10 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
+        exclude group: 'org.smartregister', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview10-p2p-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-performance-optimizations-S1') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'

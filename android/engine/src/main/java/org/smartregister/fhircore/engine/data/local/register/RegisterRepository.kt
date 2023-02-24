@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.SearchQuery
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -54,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.domain.repository.Repository
+import org.smartregister.fhircore.engine.performance.Timer
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -100,6 +102,9 @@ constructor(
       secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
 
+    val timer = Timer("currentPage $currentPage | registerID | $registerId", "loadRegisterData()")
+
+    var timer2 = Timer(methodName = "searchResource()")
     val baseResources: List<Resource> =
       withContext(dispatcherProvider.io()) {
         searchResource(
@@ -111,12 +116,16 @@ constructor(
         )
       }
 
+    timer2.stop()
+
+    timer2 = Timer(methodName = "baseResources.forEach.searchRelatedResources()")
+
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
     baseResources.map { baseResource: Resource ->
       val currentRelatedResources = LinkedList<RelatedResourceData>()
 
-      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+      /*relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
             searchRelatedResources(
@@ -127,7 +136,7 @@ constructor(
             )
           }
         currentRelatedResources.addAll(relatedResources)
-      }
+      }*/
 
       // Include secondary resourceData in each row if secondaryResources are configured
       currentRelatedResources.addAll(secondaryResourceData)
@@ -142,11 +151,14 @@ constructor(
 
       resourceData.add(currentResourceData)
     }
+    timer2.stop()
+
+    timer.stop()
 
     return resourceData
   }
 
-  private fun processResourceData(
+  private suspend fun processResourceData(
     relatedResources: LinkedList<RelatedResourceData>,
     baseResource: Resource,
     rules: List<RuleConfig>,
@@ -154,16 +166,20 @@ constructor(
   ): ResourceData {
 
     val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
+    val timer = Timer("baseResource -> $baseResource", methodName = "processResourceData()")
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
     val computedValuesMap =
       rulesFactory.fireRule(
         ruleConfigs = rules,
         baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
+        relatedResourcesMap = relatedResourcesMap,
+        fhirEngine = fhirEngine
       )
 
     val listResourceDataMap = computeListRules(views, relatedResourcesMap, computedValuesMap)
+
+    timer.stop()
 
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
@@ -183,7 +199,7 @@ constructor(
    * in the parent's view relatedResourcesMap. We retrieve it and use it to get it's related
    * resources so we can fire rules for the List.
    */
-  private fun computeListRules(
+  private suspend fun computeListRules(
     views: List<ViewProperties>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     computedValuesMap: Map<String, Any>
@@ -220,7 +236,7 @@ constructor(
     return resourceDataMap
   }
 
-  private fun List<Resource>.mapToResourceData(
+  private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
     listRelatedResources: List<ExtractedResource>,
@@ -347,22 +363,52 @@ constructor(
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
     val relatedResourcesData = LinkedList<RelatedResourceData>()
+    val startTime = System.currentTimeMillis()
+    Timber.e(
+      "Starting searchRelatedResources $resourceConfig | $fhirPathExpression | $baseResourceType"
+    )
+
     if (fhirPathExpression.isNullOrEmpty()) {
-      val relatedResourceSearch =
-        Search(type = relatedResourceType).apply {
-          filterByResourceTypeId(
-            ReferenceClientParam(resourceConfig.searchParameter),
-            baseResourceType,
-            baseResource.logicalId
-          )
-          resourceConfig.dataQueries?.forEach { filterBy(it) }
-          sort(resourceConfig.sortConfigs)
-        }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(
-          RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+
+      /*if (resourceConfig.sortConfigs.isEmpty() &&
+          (resourceConfig.dataQueries == null || resourceConfig.dataQueries.isEmpty())
+      ) {
+        Timber.e("Running using the optimized query")
+        val searchQuery = SearchQuery("""
+            SELECT a.serializedResource
+            FROM ResourceEntity a
+            WHERE
+            a.resourceUuid IN (
+            SELECT resourceUuid FROM ReferenceIndexEntity
+            WHERE resourceType = ? AND index_name = ? AND index_value = ?
+            )
+            """,
+          listOf(baseResourceType.name, resourceConfig.searchParameter!!, baseResource.logicalId)
         )
-      }
+        fhirEngine.search<Resource>(searchQuery).forEach { resource ->
+          relatedResourcesData.addLast(
+            RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+          )
+        }
+      } else {*/
+        // TODO: Optimize this also
+        Timber.e("Running using the non-optimized query")
+        val relatedResourceSearch =
+          Search(type = relatedResourceType).apply {
+            filterByResourceTypeId(
+              ReferenceClientParam(resourceConfig.searchParameter),
+              baseResourceType,
+              baseResource.logicalId
+            )
+            resourceConfig.dataQueries?.forEach { filterBy(it) }
+            sort(resourceConfig.sortConfigs)
+          }
+        fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+          relatedResourcesData.addLast(
+            RelatedResourceData(resource = resource, resourceConfigId = resourceConfig.id)
+          )
+        }
+      //}
     } else {
       fhirPathDataExtractor
         .extractData(baseResource, fhirPathExpression)
@@ -397,6 +443,11 @@ constructor(
         resourceData.relatedResources.addAll(searchRelatedResources)
       }
     }
+
+    val stopTime = System.currentTimeMillis()
+    val timeTaken = stopTime - startTime
+    Timber.e("Finished searchRelatedResources -> $timeTaken ms | ${timeTaken/1000} s")
+
     return relatedResourcesData
   }
 

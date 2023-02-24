@@ -17,14 +17,18 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.SearchQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
@@ -44,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -114,10 +119,11 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  fun fireRule(
+  suspend fun fireRule(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+    fhirEngine: FhirEngine? = null
   ): Map<String, Any> {
     // Reset previously computed values and init facts
     computedValuesMap.clear()
@@ -127,6 +133,44 @@ constructor(
       put(DATA, computedValuesMap)
       put(SERVICE, rulesEngineService)
     }
+
+    // Fetch the resourceUUIDs of the members
+    val memberUUIDs = mutableListOf<String>()
+    var groupUUID = ""
+    if (fhirEngine != null) {
+      var searchQuery =
+        SearchQuery(
+          """
+          SELECT resourceUuid FROM ResourceEntity WHERE resourceType = "Patient" AND resourceId IN (
+          SELECT SUBSTR(index_value, 9) FROM ReferenceIndexEntity WHERE index_name = "member" 
+          AND resourceUuid = (SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?)
+          )
+        """.trimIndent(),
+          listOf(baseResource.logicalId)
+        )
+
+      memberUUIDs.addAll(fhirEngine.getUUIDs(searchQuery))
+      Timber.e("Member UUIDs -> $memberUUIDs")
+
+      searchQuery =
+        SearchQuery(
+          """
+          SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?
+        """.trimIndent(),
+          listOf(baseResource.logicalId)
+        )
+
+      groupUUID = fhirEngine.getUUIDs(searchQuery).first()
+    }
+
+
+    val memberSelector = genMemberUuidsSelector(memberUUIDs)
+    val date = Date()
+      .plusYears(-5)
+    val birthDate = LocalDate.now()
+      .minusYears(5)
+      .toEpochDay()
+
 
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
@@ -149,8 +193,79 @@ constructor(
     relatedResourcesMap.forEach { facts.put(it.key, it.value) }
     rulesEngine.fire(Rules(customRules), facts)
 
+    ruleConfigs.forEach { ruleConfig ->
+
+
+      ruleConfig.actions.forEach {
+        if (fhirEngine == null) {
+          return@forEach
+        }
+
+        if (ruleConfig.name == "taskCount") {
+          val searchQuery =
+            SearchQuery(
+              """
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Task" AND index_name = "status" 
+            AND resourceUuid IN (
+            SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Task" AND index_name = "subject" 
+            AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE resourceUuid = x'$groupUUID' AND index_name = "member")
+            ) 
+            AND (index_value = "failed" OR index_value = "completed" OR index_value = "cancelled")
+
+          """.trimIndent(),
+              emptyList()
+            )
+
+          val taskCount = fhirEngine.count(searchQuery)
+          computedValuesMap.put("taskCount", taskCount)
+        } else if (ruleConfig.name == "serviceMemberIcons") {
+          var searchQuery =
+            SearchQuery(
+              """
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Condition" 
+            AND index_name = "code" AND index_system = "http://snomed.info/sct" AND index_value = "77386006" 
+            AND resourceUuid IN (SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Condition" 
+            AND index_name = "subject" AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE index_name = "member" AND resourceUuid = x'$groupUUID') )
+          """.trimIndent(),
+              emptyList()
+            )
+
+          val pregnantWomenCount = fhirEngine.count(searchQuery)
+          searchQuery = SearchQuery("""
+            SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid  
+            WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true" 
+            AND b.index_name = "birthdate" AND b.index_from >= ?
+          """.trimIndent(),
+            listOf(birthDate)
+          )
+          val childrenCount = fhirEngine.count(searchQuery)
+
+          val totalIcons = MutableList(childrenCount.toInt()) {"CHILD"}
+          totalIcons.addAll(MutableList(pregnantWomenCount.toInt()) {"PREGNANT_WOMAN"})
+          Timber.e("Children $childrenCount | Pregnant women $pregnantWomenCount")
+
+          computedValuesMap.put("serviceMemberIcons", totalIcons.joinToString(","))
+        }
+      }
+    }
+
+    computedValuesMap.forEach {
+      Timber.e("computedValuesMap for ${baseResource.logicalId} -> ${it.key} = ${it.value}")
+    }
+
     return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
   }
+
+  fun genQuestionMarks(N: Int) : String {
+    return CharArray(N, {i -> '?'}).joinToString(separator=",")
+  }
+
+
+  fun genMemberUuidsSelector(memberUuids: MutableList<String>) : String {
+    return memberUuids.map { "x'$it'" } .joinToString(separator=",")
+  }
+
+
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {

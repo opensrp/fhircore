@@ -46,6 +46,7 @@ class RegisterPagingSource(private val registerRepository: RegisterRepository) :
    * nextKey = if (data.isNotEmpty()) pageNumber + 1 else null
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
+    Timber.e("RegisterPagingSource.load called")
     return try {
       val currentPage = params.key ?: _registerPagingSourceState.currentPage
       val registerData =

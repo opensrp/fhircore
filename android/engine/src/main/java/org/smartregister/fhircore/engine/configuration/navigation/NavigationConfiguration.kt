@@ -27,5 +27,6 @@ data class NavigationConfiguration(
   val menuActionButton: NavigationMenuConfig? = null,
   val staticMenu: List<NavigationMenuConfig> = emptyList(),
   val clientRegisters: List<NavigationMenuConfig> = emptyList(),
-  val bottomSheetRegisters: NavigationBottomSheetRegisterConfig? = null
+  val bottomSheetRegisters: NavigationBottomSheetRegisterConfig? = null,
+  var onp2pReset: (() -> Unit)? = null
 ) : Configuration()

@@ -244,6 +244,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
    * a detached fragment.
    */
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
+    Timber.e("RegisterFragment.onChanged()")
     lifecycleScope.launch {
       questionnaireSubmission?.let {
         appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
