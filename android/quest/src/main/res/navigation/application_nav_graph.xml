@@ -49,6 +49,11 @@
             android:defaultValue=""
             app:argType="string"
             app:nullable="false" />
+        <argument
+            android:name="secondaryComputedMap"
+            android:defaultValue=""
+            app:argType="org.smartregister.fhircore.engine.domain.model.SecondaryComputedValues"
+            app:nullable="false" />
 
         <argument
             android:name="resourceConfig"

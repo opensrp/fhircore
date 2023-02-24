@@ -40,8 +40,7 @@ data class ListProperties(
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
-  val resources: List<ListResource> = emptyList(),
-  val practitionerList: List<PractitionerConfig> = emptyList()
+  val resources: List<ListResource> = emptyList()
 ) : ViewProperties()
 
 enum class ListOrientation {
@@ -55,12 +54,6 @@ data class ListResource(
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String? = null,
-  val practitionerFhirPathExpression: String? = null,
   val relatedResources: List<ExtractedResource> = emptyList()
 )
 
-@Serializable
-data class PractitionerConfig(
-  val filterByPractitionerId:Boolean?=false,
-  val practitionerFhirPathExpression: String? = null
-)

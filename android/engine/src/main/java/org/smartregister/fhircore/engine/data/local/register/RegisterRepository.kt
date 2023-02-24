@@ -85,7 +85,11 @@ constructor(
     configService = configService
   ) {
 
-  override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {
+  override suspend fun loadRegisterData(
+    currentPage: Int,
+    registerId: String,
+    filterParam: String?
+  ): List<ResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
@@ -99,7 +103,6 @@ constructor(
     if (!secondaryResourceConfig.isNullOrEmpty()) {
       secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
-
     val baseResources: List<Resource> =
       withContext(dispatcherProvider.io()) {
         searchResource(
@@ -107,7 +110,8 @@ constructor(
           dataQueries = baseResourceConfig.dataQueries,
           sortConfigs = baseResourceConfig.sortConfigs,
           currentPage = currentPage,
-          pageSize = registerConfiguration.pageSize
+          pageSize = registerConfiguration.pageSize,
+          filterParam = filterParam
         )
       }
 
@@ -204,22 +208,6 @@ constructor(
           }
         resourceDataMap[listProperties.id] = resourceDataList
       }
-      if (listProperties.practitionerList.isNotEmpty()) {
-        val resourceDataList: List<ResourceData> =
-          listProperties.resources.flatMap { resource ->
-            filteredResourcesPerPractitioner(
-              relatedResourcesMap,
-              resource
-            )
-              .mapToResourceData(
-                relatedResourcesMap = relatedResourcesMap,
-                ruleConfigs = listProperties.registerCard.rules,
-                listRelatedResources = resource.relatedResources,
-                computedValuesMap = computedValuesMap
-              )
-          }
-        resourceDataMap[listProperties.id] = resourceDataList
-      }
     }
     return resourceDataMap
   }
@@ -286,33 +274,6 @@ constructor(
     }
 
     return newListRelatedResources ?: mutableListOf()
-  }
-
-  /**
-   * This function returns a list of filtered resources. The required list is obtained from
-   * [relatedResourceMap], then a filter is applied based on the condition returned from the
-   * extraction of the [ListResource] conditional FHIR path expression
-   */
-  private fun filteredResourcesPerPractitioner(
-    relatedResourceMap: MutableMap<String, MutableList<Resource>>,
-    listResource: ListResource
-  ): MutableList<Resource> {
-    val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
-    val resultingPractitionerFilteredResource = relatedResourceMap[relatedResourceKey]
-
-    // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
-    if (resultingPractitionerFilteredResource != null && !listResource.practitionerFhirPathExpression.isNullOrEmpty()
-    ) {
-      return rulesFactory
-        .rulesEngineService
-        .filterResources(
-          resources = resultingPractitionerFilteredResource,
-          fhirPathExpression = listResource.practitionerFhirPathExpression
-        )
-        .toMutableList()
-    }
-
-    return resultingPractitionerFilteredResource ?: mutableListOf()
   }
 
   /**
@@ -440,7 +401,8 @@ constructor(
     dataQueries: List<DataQuery>?,
     sortConfigs: List<SortConfig>,
     currentPage: Int? = null,
-    pageSize: Int? = null
+    pageSize: Int? = null,
+    filterParam: String? = null
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
     val search =
@@ -454,6 +416,10 @@ constructor(
         if (currentPage != null && pageSize != null) {
           count = pageSize
           from = currentPage * pageSize
+        }
+        if (!filterParam.isNullOrEmpty()) {
+          filter(TokenClientParam(filterParam), { value = of(filterParam) })
+          //Add filterBy parameter here
         }
       }
     return fhirEngine.search(search)
@@ -495,7 +461,7 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
-    practitionerId: String?
+    filterParam: String?
   ): ResourceData {
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(

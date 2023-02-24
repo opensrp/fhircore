@@ -27,7 +27,7 @@ interface Repository {
    * data query extracted from the retrieved configuration is used to filter the register data (FHIR
    * resources wrapped in [ResourceData]
    */
-  suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
+  suspend fun loadRegisterData(currentPage: Int, registerId: String,filterParam: String?=null): List<ResourceData>
 
   /**
    * This function uses the provided [registerId] to retrieve the register configuration from the
@@ -45,6 +45,6 @@ interface Repository {
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    practitionerId: String?=null
+    filterParam: String?=null
   ): ResourceData?
 }

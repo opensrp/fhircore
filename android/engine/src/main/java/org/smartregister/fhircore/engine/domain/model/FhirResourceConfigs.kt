@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Parcelable
 import com.google.android.fhir.search.Order
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -65,3 +66,15 @@ data class SortConfig(
   val dataType: DataType,
   val order: Order = Order.ASCENDING
 ) : Parcelable
+
+@Serializable
+@Parcelize
+data class SecondaryComputedValues(
+  val valueMap: Map<String, String>
+) : Parcelable {
+  @IgnoredOnParcel
+  val key: String by valueMap
+  @IgnoredOnParcel
+  val value: String by valueMap
+}
+
