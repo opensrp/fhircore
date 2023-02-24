@@ -70,7 +70,7 @@ fun List<ActionConfig>.handleClickEvent(
                   NavigationArg.PROFILE_ID to id,
                   NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
                   NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-                  NavigationArg.GROUP_ID to actionConfig.params.first().value
+                  NavigationArg.GROUP_ID to actionConfig.params.first().value.interpolate(resourceData?.computedValuesMap?: emptyMap())
               )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

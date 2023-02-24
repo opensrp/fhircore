@@ -154,12 +154,14 @@ constructor(
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
     val computedValuesMap =
-        rulesFactory.fireRule(
-            ruleConfigs = rules,
-            baseResource = baseResource,
-            relatedResourcesMap = relatedResourcesMap,
-        ).toMutableMap()
-      computedValuesMap["param_groupId"] = "12345"
+        rulesFactory
+            .fireRule(
+                ruleConfigs = rules,
+                baseResource = baseResource,
+                relatedResourcesMap = relatedResourcesMap,
+            )
+            .toMutableMap()
+    computedValuesMap["param_groupId"] = groupId
 
     val listResourceDataMap = computeListRules(views, relatedResourcesMap, computedValuesMap)
 

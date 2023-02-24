@@ -68,13 +68,9 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -117,36 +113,35 @@ constructor(
     return application.assets.open(filename).bufferedReader().use { it.readText() }
   }
   suspend fun loadQuestionnaire(
-    application: Application,
-    id: String,
-    type: QuestionnaireType,
-    prePopulationParams: List<ActionParameter>? = emptyList()
+      application: Application,
+      id: String,
+      type: QuestionnaireType,
+      prePopulationParams: List<ActionParameter>? = emptyList()
   ): Questionnaire? {
     val question = readFileFromAssets("test-questionnaire.json", application).trimIndent()
     val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    return parser.parseResource(
-      org.hl7.fhir.r4.model.Questionnaire::class.java,
-      question
-    ) as Questionnaire
+    return parser.parseResource(org.hl7.fhir.r4.model.Questionnaire::class.java, question)
+        as Questionnaire
   }
 
-//  suspend fun loadQuestionnaire(
-//      id: String,
-//      type: QuestionnaireType,
-//      prePopulationParams: List<ActionParameter>? = emptyList()
-//  ): Questionnaire? =
-//      defaultRepository.loadResource<Questionnaire>(id)?.apply {
-//        if (type.isReadOnly() || type.isEditMode()) {
-//          item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
-//        }
-//        // prepopulate questionnaireItems with initial values
-//        if (prePopulationParams?.isNotEmpty() == true) {
-//          item.prePopulateInitialValues(prePopulationParams)
-//        }
-//
-//        // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-//        this.url = this.url ?: this.referenceValue()
-//      }
+  //  suspend fun loadQuestionnaire(
+  //      id: String,
+  //      type: QuestionnaireType,
+  //      prePopulationParams: List<ActionParameter>? = emptyList()
+  //  ): Questionnaire? =
+  //      defaultRepository.loadResource<Questionnaire>(id)?.apply {
+  //        if (type.isReadOnly() || type.isEditMode()) {
+  //          item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM,
+  // type.isReadOnly())
+  //        }
+  //        // prepopulate questionnaireItems with initial values
+  //        if (prePopulationParams?.isNotEmpty() == true) {
+  //          item.prePopulateInitialValues(prePopulationParams)
+  //        }
+  //
+  //        // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+  //        this.url = this.url ?: this.referenceValue()
+  //      }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -267,6 +262,7 @@ constructor(
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+
     }
   }
 

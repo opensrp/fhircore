@@ -1402,7 +1402,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -1422,7 +1427,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -1442,7 +1452,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "a881d53a-590c-4d52-ae0f-c87b7ff04148"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           },
           "params": [
             {
@@ -1473,20 +1488,11 @@
               "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
             ],
             "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
+              "groupIdentifier": "@{param_groupId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
           }
-        }
-      ],
-      "params": [
-        {
-          "paramType": "PREPOPULATE",
-          "linkId": "e152df80-7f89-11ed-a1eb-0242ac128088",
-          "dataType": "STRING",
-          "key": "fpConditionId",
-          "value": "@{fpConditionId}"
         }
       ]
     },
@@ -1506,7 +1512,12 @@
             "planDefinitions": [
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22",
               "cd39380b-2359-4b98-8ab9-df7f90fe9392"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -1527,7 +1538,12 @@
             "planDefinitions": [
               "55d89227-3a06-4a9a-b526-2819dcb1d301",
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -1548,7 +1564,12 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Update registration",
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
