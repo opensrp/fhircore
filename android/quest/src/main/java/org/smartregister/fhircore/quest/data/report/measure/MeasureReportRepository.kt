@@ -52,7 +52,7 @@ class MeasureReportRepository(
       .map {
         rulesExecutor.processResourceData(
           baseResource = it.resource,
-          relatedResources = it.relatedResources,
+          relatedRepositoryResourceData = it.relatedResources,
           ruleConfigs = registerConfiguration.registerCard.rules
         )
       }

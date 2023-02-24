@@ -21,7 +21,8 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 data class ProfileUiState(
-  var resourceData: ResourceData? = null,
+  val resourceData: ResourceData? = null,
   val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig()
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
+  val showDataLoadProgressIndicator: Boolean = true
 )

@@ -33,5 +33,5 @@ data class ResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
   val computedValuesMap: Map<String, Any>,
-  var listResourceDataMap: Map<String, List<ResourceData>>? = null
+  val listResourceDataMap: Map<String, List<ResourceData>>? = null
 )

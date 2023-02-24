@@ -48,7 +48,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     savedInstanceState: Bundle?
   ): View {
     with(profileFragmentArgs) {
-      lifecycleScope.launchWhenCreated {
+      lifecycleScope.launch {
         profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
       }
     }

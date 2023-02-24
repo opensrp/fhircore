@@ -75,7 +75,7 @@ class RegisterPagingSource(
         registerData.map { repoResourceData ->
           rulesExecutor.processResourceData(
             baseResource = repoResourceData.resource,
-            relatedResources = repoResourceData.relatedResources,
+            relatedRepositoryResourceData = repoResourceData.relatedResources,
             ruleConfigs = ruleConfigs
           )
         }

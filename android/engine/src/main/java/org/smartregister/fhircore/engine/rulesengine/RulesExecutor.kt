@@ -37,10 +37,10 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   suspend fun processResourceData(
     baseResource: Resource,
-    relatedResources: LinkedList<RepositoryResourceData>,
+    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     ruleConfigs: List<RuleConfig>
   ): ResourceData {
-    val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
+    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
     val computedValuesMap =
       computeRules(
         ruleConfigs = ruleConfigs,
@@ -60,10 +60,11 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
-    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
+    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>
-  ): List<ResourceData> =
-    listProperties.resources.flatMap { listResource ->
+  ): List<ResourceData> {
+    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
+    return listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
           relatedResourcesMap = relatedResourcesMap,
@@ -72,6 +73,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
           computedValuesMap = computedValuesMap
         )
     }
+  }
 
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
@@ -84,39 +86,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
       baseResource = baseResource,
       relatedResourcesMap = relatedResourcesMap
     )
-
-  /**
-   * This function creates a map of resource config Id ( or resource type if the id is not
-   * configured) against [Resource] from a list of nested [RepositoryResourceData].
-   *
-   * Example: A list of [RepositoryResourceData] with Patient as its base resource and two nested
-   * [RepositoryResourceData] of resource type Condition & CarePlan returns:
-   * ```
-   * {
-   * "Patient" -> [Patient],
-   * "Condition" -> [Condition],
-   * "CarePlan" -> [CarePlan]
-   * }
-   * ```
-   *
-   * NOTE: [RepositoryResourceData] are represented as tree however they grouped by their resource
-   * config Id ( or resource type if the id is not configured) as key and value as list of
-   * [Resource] s in the map.
-   */
-  private fun LinkedList<RepositoryResourceData>.createRelatedResourcesMap():
-    MutableMap<String, MutableList<Resource>> {
-    val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
-    while (this.isNotEmpty()) {
-      val relatedResourceData = this.removeFirst()
-      relatedResourcesMap
-        .getOrPut(relatedResourceData.configId ?: relatedResourceData.resource.resourceType.name) {
-          mutableListOf()
-        }
-        .add(relatedResourceData.resource)
-      relatedResourceData.relatedResources.forEach { this.addLast(it) }
-    }
-    return relatedResourcesMap
-  }
 
   private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
@@ -179,29 +148,61 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
     return newListRelatedResources ?: mutableListOf()
   }
+}
 
-  /**
-   * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
-   * LISTs
-   */
-  private fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
-    val listProperties = mutableListOf<ListProperties>()
-    val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
-    while (viewPropertiesLinkedList.isNotEmpty()) {
-      val properties = viewPropertiesLinkedList.removeFirst()
-      if (properties.viewType == ViewType.LIST) {
-        listProperties.add(properties as ListProperties)
+/**
+ * This function creates a map of resource config Id ( or resource type if the id is not configured)
+ * against [Resource] from a list of nested [RepositoryResourceData].
+ *
+ * Example: A list of [RepositoryResourceData] with Patient as its base resource and two nested
+ * [RepositoryResourceData] of resource type Condition & CarePlan returns:
+ * ```
+ * {
+ * "Patient" -> [Patient],
+ * "Condition" -> [Condition],
+ * "CarePlan" -> [CarePlan]
+ * }
+ * ```
+ *
+ * NOTE: [RepositoryResourceData] are represented as tree however they grouped by their resource
+ * config Id ( or resource type if the id is not configured) as key and value as list of [Resource]
+ * s in the map.
+ */
+fun LinkedList<RepositoryResourceData>.createRelatedResourcesMap():
+  MutableMap<String, MutableList<Resource>> {
+  val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
+  while (this.isNotEmpty()) {
+    val relatedResourceData = this.removeFirst()
+    relatedResourcesMap
+      .getOrPut(relatedResourceData.configId ?: relatedResourceData.resource.resourceType.name) {
+        mutableListOf()
       }
-      when (properties.viewType) {
-        ViewType.COLUMN ->
-          viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
-        ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
-        ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
-        ViewType.LIST ->
-          viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
-        else -> {}
-      }
-    }
-    return listProperties
+      .add(relatedResourceData.resource)
+    relatedResourceData.relatedResources.forEach { this.addLast(it) }
   }
+  return relatedResourcesMap
+}
+
+/**
+ * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
+ * LISTs
+ */
+fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
+  val listProperties = mutableListOf<ListProperties>()
+  val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
+  while (viewPropertiesLinkedList.isNotEmpty()) {
+    val properties = viewPropertiesLinkedList.removeFirst()
+    if (properties.viewType == ViewType.LIST) {
+      listProperties.add(properties as ListProperties)
+    }
+    when (properties.viewType) {
+      ViewType.COLUMN -> viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
+      ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
+      ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
+      ViewType.LIST ->
+        viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
+      else -> {}
+    }
+  }
+  return listProperties
 }
