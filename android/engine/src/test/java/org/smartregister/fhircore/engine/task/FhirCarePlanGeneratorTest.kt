@@ -286,9 +286,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val structureMapScript = "plans/household-wash-check-routine-visit/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
-        // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
-        //  so use only months and that would have the unit replaced with 'months'
-        println(it.encodeResourceToString().replace("''", "'month'"))
+        // The parser does not recognize the time unit i.e. months and prints as '',
+        // so use only months and that would have the unit replaced with 'months'
+        it.encodeResourceToString().replace("''", "'month'")
       }
 
     val resourcesSlot = mutableListOf<Resource>()
