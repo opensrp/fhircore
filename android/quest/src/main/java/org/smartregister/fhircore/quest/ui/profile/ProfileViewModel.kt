@@ -84,11 +84,11 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    practitionerId: String? = null
+    filterParam: String? = null
   ) {
     if (resourceId.isNotEmpty()) {
       val resourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig,practitionerId)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, filterParam)
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
