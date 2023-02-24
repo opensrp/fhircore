@@ -48,18 +48,21 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     reportPatientsPagingSource =
-      MeasureReportPatientsPagingSource(reportRepository, measureReportPatientViewDataMapper)
+      MeasureReportPatientsPagingSource(
+        reportRepository,
+        measureReportPatientViewDataMapper,
+        registerConfigs
+      )
   }
 
   @Test
   fun loadShouldReturnResults() {
-    coEvery { reportRepository.retrievePatients(0) } returns
+    coEvery { reportRepository.retrievePatients(0, registerConfiguration) } returns
       listOf(
         ResourceData(
           baseResourceId = "resourceId",
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-          listResourceDataMap = emptyMap(),
         )
       )
 

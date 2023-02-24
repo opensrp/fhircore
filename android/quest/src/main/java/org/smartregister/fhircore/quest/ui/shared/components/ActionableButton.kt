@@ -189,7 +189,7 @@ fun ActionableButtonPreview() {
         text = "ANC Visit",
         buttonType = ButtonType.TINY
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -207,7 +207,7 @@ fun DisabledActionableButtonPreview() {
           enabled = "true",
           buttonType = ButtonType.BIG
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -226,7 +226,7 @@ fun SmallActionableButtonPreview() {
           fillMaxWidth = true,
           buttonType = ButtonType.TINY
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
     ActionableButton(
@@ -238,7 +238,7 @@ fun SmallActionableButtonPreview() {
           fillMaxWidth = true,
           buttonType = ButtonType.TINY
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }

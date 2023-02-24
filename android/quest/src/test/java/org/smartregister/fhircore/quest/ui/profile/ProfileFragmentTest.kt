@@ -89,7 +89,6 @@ class ProfileFragmentTest : RobolectricTest() {
       ResourceData(
         baseResourceId = "resourceId",
         baseResourceType = ResourceType.Patient,
-        listResourceDataMap = emptyMap(),
         computedValuesMap =
           mapOf("patientName" to patient.name, "patientId" to patient.identifierFirstRep),
       )

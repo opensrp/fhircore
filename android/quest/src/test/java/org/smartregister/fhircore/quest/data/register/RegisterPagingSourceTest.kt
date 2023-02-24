@@ -50,7 +50,6 @@ class RegisterPagingSourceTest {
           baseResourceId = "resourceId",
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-          listResourceDataMap = emptyMap(),
         )
       )
 

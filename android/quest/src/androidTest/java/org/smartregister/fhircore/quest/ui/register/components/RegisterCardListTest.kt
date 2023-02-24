@@ -72,7 +72,7 @@ class RegisterCardListTest {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
 
-      val data = listOf(ResourceData("1", ResourceType.Patient, mockk(), mockk()))
+      val data = listOf(ResourceData("1", ResourceType.Patient, mockk()))
 
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 

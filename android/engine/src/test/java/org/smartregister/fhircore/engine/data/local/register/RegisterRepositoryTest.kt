@@ -91,11 +91,10 @@ class RegisterRepositoryTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = DefaultDispatcherProvider(),
-          configurationRegistry = configurationRegistry,
-          rulesFactory = rulesFactory,
-          fhirPathDataExtractor = fhirPathDataExtractor,
           sharedPreferencesHelper = mockk(),
-          configService = mockk()
+          configurationRegistry = configurationRegistry,
+          configService = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
@@ -279,7 +278,6 @@ class RegisterRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper,
           configurationRegistry,
           configService,
-          rulesFactory,
           fhirPathDataExtractor
         ),
         recordPrivateCalls = true

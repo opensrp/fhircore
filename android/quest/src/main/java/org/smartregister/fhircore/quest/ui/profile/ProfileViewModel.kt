@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -63,7 +64,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val parser: IParser
+  val parser: IParser,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
   val profileUiState = mutableStateOf(ProfileUiState())
@@ -80,12 +82,20 @@ constructor(
     fhirResourceConfig: FhirResourceConfig? = null
   ) {
     if (resourceId.isNotEmpty()) {
-      val resourceData =
+      val currentProfileConfigs = retrieveProfileConfiguration(profileId)
+      val repoResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+      val resourceData =
+        rulesExecutor.processResourceData(
+          baseResource = repoResourceData.resource,
+          relatedResources = repoResourceData.relatedResources,
+          ruleConfigs = currentProfileConfigs.rules
+        )
+
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
-          profileConfiguration = retrieveProfileConfiguration(profileId),
+          profileConfiguration = currentProfileConfigs,
           snackBarTheme = applicationConfiguration.snackBarTheme
         )
     }

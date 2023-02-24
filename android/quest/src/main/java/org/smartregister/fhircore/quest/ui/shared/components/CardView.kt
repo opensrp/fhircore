@@ -108,7 +108,7 @@ private fun CardViewWithoutPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -150,7 +150,7 @@ private fun CardViewWithPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -172,7 +172,7 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               )
             ),
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }

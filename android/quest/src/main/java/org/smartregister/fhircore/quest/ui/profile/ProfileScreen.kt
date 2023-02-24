@@ -139,7 +139,7 @@ fun ProfileScreen(
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
             resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
+                ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController
           )
         }
@@ -173,7 +173,7 @@ fun CustomProfileTopAppBar(
         ViewRenderer(
           viewProperties = topBarConfig.content,
           resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap(), emptyMap()),
+              ?: ResourceData("", ResourceType.Patient, emptyMap()),
           navController = navController
         )
       }

@@ -92,8 +92,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ResourceData(
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
-        computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap()
+        computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
@@ -140,7 +139,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
@@ -221,7 +219,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
 
     val actionConfig =
@@ -289,7 +286,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(

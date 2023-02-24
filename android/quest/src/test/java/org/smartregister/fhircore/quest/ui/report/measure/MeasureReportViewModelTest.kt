@@ -106,13 +106,12 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrievePatients(0) } returns
+    coEvery { measureReportRepository.retrievePatients(0, registerConfiguration) } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-          listResourceDataMap = emptyMap(),
         )
       )
 
