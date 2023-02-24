@@ -38,6 +38,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import timber.log.Timber
 
 /**
@@ -58,21 +60,23 @@ constructor(
 ) {
 
   fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
-    val coroutineScope = CoroutineScope(dispatcherProvider.main())
-    Timber.i("Running one time sync...")
-    coroutineScope.launch {
-      syncSharedFlow
-        .onEach {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
+    if (this.context.getActivity()?.isDeviceOnline() == true) {
+      val coroutineScope = CoroutineScope(dispatcherProvider.main())
+      Timber.i("Running one time sync...")
+      coroutineScope.launch {
+        syncSharedFlow
+          .onEach {
+            syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+              onSyncListener.onSync(it)
+            }
           }
-        }
-        .handleErrors()
-        .launchIn(this)
-    }
+          .handleErrors()
+          .launchIn(this)
+      }
 
-    coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
+      coroutineScope.launch(dispatcherProvider.main()) {
+        Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
+      }
     }
   }
 

@@ -54,6 +54,13 @@
       ]
     },
     {
+      "name": "practitionerName",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerName', data.get('practitionerFirstName') + ' ' + data.get('practitionerLastName'))"
+      ]
+    },
+    {
       "name": "assignedLocation",
       "condition": "true",
       "actions": [

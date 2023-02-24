@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
@@ -71,8 +72,8 @@ class LoginActivity : BaseMultiLanguageActivity() {
         navigateToPinLogin(launchSetup = false)
       }
 
-      navigateToHome.observe(loginActivity) { launchHomeScreen ->
-        if (launchHomeScreen) downloadNowWorkflowConfigs()
+      navigateToHome.observe(loginActivity) { launchHomeScreen -> //
+        if (launchHomeScreen && loginActivity.isDeviceOnline()) downloadNowWorkflowConfigs()
         when {
           launchHomeScreen && isPinEnabled && hasActivePin ->
             navigateToPinLogin(launchSetup = false)

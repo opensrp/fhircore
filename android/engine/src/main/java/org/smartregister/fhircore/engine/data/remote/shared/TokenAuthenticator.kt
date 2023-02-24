@@ -44,6 +44,8 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.HttpException
@@ -68,7 +70,7 @@ constructor(
     val account = findAccount()
     return if (account != null) {
       val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
-      if (!isTokenActive(accessToken)) {
+      if (!isTokenActive(accessToken) && this.context.getActivity()?.isDeviceOnline() == true) {
         accountManager.run {
           invalidateAuthToken(account.type, accessToken)
           try {

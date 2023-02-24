@@ -25,6 +25,16 @@
             "system": "https://www.snomed.org",
             "code": "35359004"
           }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "meta.tag",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "34895683479"
+          }
         }
       ],
       "sortConfigs": [
