@@ -29,3 +29,57 @@ Your artifact should now be available under your maven local repo. location `~/.
 Building FHIR Core should now import the new artifact version. MavenLocal is already configured as an artifact source.
 
 **Note:** This process needs to be repeated for all of the above aforementioned artifacts incase there are changes required there as well for testing. Also note, if you need to test changes present in other un-merged branches, you'd need to build the release artifact from a release branch that has all the other (un-merged) branch changes as well.
+
+### Remote Publishing
+
+
+  #### Credentials
+  In order to publish artifacts in OpenSRP's `org.smartregisters` _Sonatype_ group on maven, you need to be authenticated (and authorized). With the current configuration you need to set up your client credentials in the _global_ `gradle.properties` file as show below
+  
+  ```properties
+  ~/.gradle/gradle.properties
+  
+    sonatypeUsername=<username>
+    sonatypePassword=<password>
+  ```
+  
+ **Note:** Name the property keys exactly as shown above. The credentials should not be pushed for version control else they will be available publicly. This set up will also work if you have your own Sonatype account you want to publish to. 
+  
+  #### Processes
+
+  1. On OpenSRP's Github fork of the Android FHIR SDK (Assuming there are new changes) click on _Sync fork_
+  2. _Check out_ to `master` branch locally and _pull_ the latest changes
+  3. _Checkout_ to `main-release` branch and _merge_ in master changes
+  4. _Update the versions_ of the various modules you want to publish in the `buildSrc/src/main/kotlin/Releases.kt` file
+  5. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
+  6. Now that the main-release branch has all the latest updates, _Check out_ to a new branch on your local e.g. `opensrp-release1`
+  7. Merge in any other the previous unmerged PR branches mentioned in the previous commit message and have not been merged to master yet
+  8. _Publish_ the specific modules that you wanted. 
+  9. After a successful publish to Maven you can _Delete_ your release branch.
+
+**Note:** Always remember to check out the _commits diff_ to tell which modules were affected by the latest changes. You can confirm that your module artifact was uploaded as it is available at https://oss.sonatype.org/content/repositories/snapshots/org/smartregister/
+
+
+  #### Commits
+  
+  Depending on the exact modules you updated in this commit for publising:
+  **Header** - SDK Release: SDC, Engine, Workflow
+  **Message** - With unmerged PR #1344 branch
+              - With unmerged PR #1542 branch
+
+ **Note:** The above helps the next person doing a release to include exactly all the code updates that had been merged in previeously. If by the time we are publishing again the branch has already been merged into master branch then there'd be no need to add the message again. Also a glance at the header shows which specific modules were affected. Other than confirming the module changes that were incorporated after merging in master, check out which modules the unmerged PRs updated.
+
+ ####  Versioning
+ When versioning we extend from the current versions of the SDK library by adding `-preview-SNAPSHOT` suffix. Subsequently in future updates we increment that version e.g. `-preview2-SNAPSHOT`
+  
+ In the `buildSrc/src/main/kotlin/Releases.kt` file, we edit the entry as shown below 
+
+  ```kotlin
+  buildSrc/src/main/kotlin/Releases.kt
+  
+  object DataCapture : LibraryArtifact {
+    override val artifactId = "data-capture"
+    override val version = "1.0.0-preview-SNAPSHOT"
+    override val name = "Android FHIR Structured Data Capture Library"
+  }
+  ```
