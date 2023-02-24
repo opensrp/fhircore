@@ -32,6 +32,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -43,6 +44,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import retrofit2.HttpException
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -131,6 +133,59 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(authTokenBundle)
     Assert.assertTrue(authTokenBundle.containsKey(AccountManager.KEY_AUTHTOKEN))
     Assert.assertEquals("newAccessToken", authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN))
+  }
+
+  @Test
+  fun testGetBundleWithoutAuthInfoWhenCaughtHttpException() {
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    val account = spyk(Account("newAccName", "newAccType"))
+    every { accountManager.peekAuthToken(account, authTokenType) } returns ""
+
+    val refreshToken = "refreshToken"
+    every { accountManager.getPassword(account) } returns refreshToken
+    every { tokenAuthenticator.refreshToken(refreshToken) } throws
+      HttpException(
+        mockk {
+          every { code() } returns 0
+          every { message() } returns ""
+        }
+      )
+
+    val authTokenBundle: Bundle =
+      accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
+
+    Assert.assertNotNull(authTokenBundle)
+    Assert.assertFalse(authTokenBundle.containsKey(AccountManager.KEY_AUTHTOKEN))
+  }
+
+  @Test
+  fun testGetBundleWithoutAuthInfoWhenCaughtUnknownHostException() {
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    val account = spyk(Account("newAccName", "newAccType"))
+    every { accountManager.peekAuthToken(account, authTokenType) } returns ""
+
+    val refreshToken = "refreshToken"
+    every { accountManager.getPassword(account) } returns refreshToken
+    every { tokenAuthenticator.refreshToken(refreshToken) } throws UnknownHostException()
+
+    val authTokenBundle: Bundle =
+      accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
+
+    Assert.assertNotNull(authTokenBundle)
+    Assert.assertFalse(authTokenBundle.containsKey(AccountManager.KEY_AUTHTOKEN))
+  }
+
+  @Test(expected = RuntimeException::class)
+  fun testGetBundleWithoutAuthInfoWhenCaughtUnknownHost() {
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    val account = spyk(Account("newAccName", "newAccType"))
+    every { accountManager.peekAuthToken(account, authTokenType) } returns ""
+
+    val refreshToken = "refreshToken"
+    every { accountManager.getPassword(account) } returns refreshToken
+    every { tokenAuthenticator.refreshToken(refreshToken) } throws RuntimeException()
+
+    accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
   }
 
   @Test
