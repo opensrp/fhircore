@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -240,13 +241,17 @@ private fun NavTopSection(
       text = appUiState.appTitle,
       fontSize = 22.sp,
       color = AppTitleColor,
-      modifier = modifier.padding(vertical = 16.dp)
+      modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis
     )
     Text(
       text = "$versionCode($versionName)",
       fontSize = 22.sp,
       color = AppTitleColor,
-      modifier = modifier.padding(vertical = 16.dp)
+      modifier = modifier.padding(vertical = 16.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis
     )
   }
 }
