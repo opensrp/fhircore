@@ -63,9 +63,12 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   #### Commits
   
   Depending on the exact modules you updated in this commit for publising:
-  **Header** - SDK Release: SDC, Engine, Workflow
-  **Message** - With unmerged PR #1344 branch
-              - With unmerged PR #1542 branch
+  ```
+   SDK Release: SDC, Engine, Workflow
+   - With unmerged PR #1344 branch
+   - With unmerged PR #1542 branch
+  ```
+See [sample commit here](https://github.com/google/android-fhir/commit/10e46a0eac5f41b68b5bb1caa87069b83d36c6b1)
 
  **Note:** The above helps the next person doing a release to include exactly all the code updates that had been merged in previeously. If by the time we are publishing again the branch has already been merged into master branch then there'd be no need to add the message again. Also a glance at the header shows which specific modules were affected. Other than confirming the module changes that were incorporated after merging in master, check out which modules the unmerged PRs updated.
 
