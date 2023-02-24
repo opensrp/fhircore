@@ -272,6 +272,78 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  fun testGenerateCarePlanForHouseHold() = runTest {
+    val plandefinition =
+      "plans/household-wash-check-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val group =
+      "plans/household-wash-check-routine-visit/sample/group.json"
+        .readFile()
+        .decodeResourceFromString<Group>()
+
+    val structureMapScript = "plans/household-wash-check-routine-visit/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
+        // The parser does not recognize the time unit i.e. months and prints as '',
+        // so use only months and that would have the unit replaced with 'months'
+        it.encodeResourceToString().replace("''", "'month'")
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Household Routine WASH Check Plan", carePlan.title)
+        Assert.assertEquals(
+          "This defines the schedule of service for WASH Check on households",
+          carePlan.description
+        )
+        Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertNotNull(carePlan.period.start)
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty() && list.size > 59 && list.size < 62) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+      }
+  }
+
+  @Test
   @Ignore("Passing local failing CI")
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val plandefinition =
