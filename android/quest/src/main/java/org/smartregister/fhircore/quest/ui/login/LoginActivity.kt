@@ -72,13 +72,17 @@ class LoginActivity : BaseMultiLanguageActivity() {
       }
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
-        if (launchHomeScreen) downloadNowWorkflowConfigs()
         when {
           launchHomeScreen && isPinEnabled && hasActivePin ->
             navigateToPinLogin(launchSetup = false)
-          launchHomeScreen && isPinEnabled && !hasActivePin ->
+          launchHomeScreen && isPinEnabled && !hasActivePin -> {
+            downloadNowWorkflowConfigs()
             navigateToPinLogin(launchSetup = true)
-          launchHomeScreen && !isPinEnabled -> loginActivity.navigateToHome()
+          }
+          launchHomeScreen && !isPinEnabled -> {
+            downloadNowWorkflowConfigs()
+            loginActivity.navigateToHome()
+          }
         }
       }
       launchDialPad.observe(loginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
