@@ -54,7 +54,9 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -67,21 +69,14 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var registerRepository: RegisterRepository
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
+  @Inject lateinit var rulesExecutor: RulesExecutor
   @Inject lateinit var parser: IParser
-
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
-
   private lateinit var resourceData: ResourceData
-
   private lateinit var expectedBaseResource: Patient
 
   @Before
@@ -95,7 +90,8 @@ class ProfileViewModelTest : RobolectricTest() {
         computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
+    coEvery { registerRepository.loadProfileData(any(), any()) } returns
+      RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -110,7 +106,8 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        parser = parser
+        parser = parser,
+        rulesExecutor = rulesExecutor
       )
   }
 

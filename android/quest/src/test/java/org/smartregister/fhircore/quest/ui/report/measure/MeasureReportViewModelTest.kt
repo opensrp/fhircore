@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -75,38 +76,26 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
-  var fhirEngine: FhirEngine = mockk()
-
-  var fhirOperator: FhirOperator = mockk()
-
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-
-  @Inject lateinit var registerRepository: RegisterRepository
-
-  @Inject lateinit var defaultRepository: DefaultRepository
-
-  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-
-  val measureReportRepository = mockk<MeasureReportRepository>()
-
-  private lateinit var measureReportViewModel: MeasureReportViewModel
-
-  private val navController: NavController = mockk(relaxUnitFun = true)
-
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var registerRepository: RegisterRepository
+  @Inject lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  var fhirEngine: FhirEngine = mockk()
+  var fhirOperator: FhirOperator = mockk()
+  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  val measureReportRepository = mockk<MeasureReportRepository>()
+  private lateinit var measureReportViewModel: MeasureReportViewModel
+  private val navController: NavController = mockk(relaxUnitFun = true)
   private val reportId = "supplyChainMeasureReport"
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
   @Before
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrievePatients(0, registerConfiguration) } returns
+    coEvery { measureReportRepository.retrievePatients(0) } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
@@ -125,7 +114,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          defaultRepository = defaultRepository
+          defaultRepository = defaultRepository,
+          rulesExecutor = rulesExecutor
         )
       )
   }
@@ -270,14 +260,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertNotNull(samplePatientViewData.gender, patientViewData?.gender)
     Assert.assertNotNull(samplePatientViewData.age, patientViewData?.age)
     Assert.assertNotNull(samplePatientViewData.family, patientViewData?.family)
-  }
-
-  @Test
-  fun testOnEventOnSearchTextChanged() {
-    measureReportViewModel.onEvent(
-      MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = "Mandela")
-    )
-    Assert.assertNotNull(measureReportViewModel.patientsData.value)
   }
 
   @Test
