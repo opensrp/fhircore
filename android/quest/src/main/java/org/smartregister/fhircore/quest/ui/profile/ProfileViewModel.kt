@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -229,11 +230,15 @@ constructor(
       val eligibleManagingEntities: List<EligibleManagingEntity> =
         group
           ?.member
-          ?.map {
-            registerRepository.loadResource(
-              it.entity.extractId(),
-              event.managingEntity.resourceType
-            )
+          ?.mapNotNull {
+            try {
+              registerRepository.loadResource(
+                it.entity.extractId(),
+                event.managingEntity.resourceType
+              )
+            } catch (resourceNotFoundException: ResourceNotFoundException) {
+              null
+            }
           }
           ?.filter { managingEntityResource ->
             fhirPathDataExtractor
