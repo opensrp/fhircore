@@ -56,13 +56,12 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
-import org.smartregister.fhircore.engine.util.extension.filterToken
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
@@ -90,7 +89,7 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
-    filterParam: String?
+    filterParamsMap: Map<String, Any>?
   ): List<ResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
@@ -103,7 +102,7 @@ constructor(
 
     // retrieve secondary ResourceData if secondaryResources are configured
     if (!secondaryResourceConfig.isNullOrEmpty()) {
-      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParam))
+      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParamsMap))
     }
     val baseResources: List<Resource> =
       withContext(dispatcherProvider.io()) {
@@ -113,7 +112,7 @@ constructor(
           sortConfigs = baseResourceConfig.sortConfigs,
           currentPage = currentPage,
           pageSize = registerConfiguration.pageSize,
-          filterParam = filterParam
+          filterParam = filterParamsMap
         )
       }
 
@@ -129,7 +128,7 @@ constructor(
               baseResourceType = baseResourceType,
               baseResource = baseResource,
               fhirPathExpression = resourceConfig.fhirPathExpression,
-              filterParam
+              filterParamsMap
             )
           }
         currentRelatedResources.addAll(relatedResources)
@@ -341,7 +340,7 @@ constructor(
     baseResourceType: ResourceType,
     baseResource: Resource,
     fhirPathExpression: String?,
-    filterParam: String?
+    filterParam: Map<String, Any>?
   ): LinkedList<RelatedResourceData> {
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
@@ -357,8 +356,11 @@ constructor(
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           sort(resourceConfig.sortConfigs)
           //Iteration loop through the map retriving the value. filter by the value
-          if (!filterParam.isNullOrEmpty()) filter(TokenClientParam(filterParam),
-            { value = of(filterParam) })
+          if (!filterParam.isNullOrEmpty()) {
+            filterParam.forEach {
+              filter(ReferenceClientParam(it.value.toString().interpolate(emptyMap())), { value = "" })
+            }
+          }
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
         relatedResourcesData.addLast(
@@ -409,10 +411,9 @@ constructor(
     sortConfigs: List<SortConfig>,
     currentPage: Int? = null,
     pageSize: Int? = null,
-    filterParam: String? = null
+    filterParam: Map<String, Any>? = null
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
-    val practitionerId=FileUtil.getValueByDelimiter("","",1)
     val search =
       Search(type = resourceType).apply {
         dataQueries?.forEach { filterBy(it) }
@@ -426,7 +427,9 @@ constructor(
           from = currentPage * pageSize
         }
         if (!filterParam.isNullOrEmpty()) {
-          //Add filterBy parameter here
+          filterParam.forEach {
+            filter(ReferenceClientParam(it.value.toString().interpolate(emptyMap())), { value = "" })
+          }
         }
       }
     return fhirEngine.search(search)
@@ -468,7 +471,7 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
-    filterParam: String?
+    filterParamsMap: Map<String, Any>?
   ): ResourceData {
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
@@ -497,14 +500,14 @@ constructor(
             baseResourceType = baseResourceType,
             baseResource = baseResource,
             fhirPathExpression = config.fhirPathExpression,
-            filterParam
+            filterParamsMap
           )
         }
       relatedResources.addAll(resources)
     }
 
     if (!secondaryResourceConfig.isNullOrEmpty()) {
-      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParam))
+      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParamsMap))
     }
 
     return processResourceData(
@@ -517,7 +520,7 @@ constructor(
 
   private suspend fun retrieveSecondaryResources(
     resourceConfigList: List<FhirResourceConfig>,
-    filterParam: String?
+    filterParamsMap: Map<String, Any>?
   ): LinkedList<RelatedResourceData> {
     val relatedResourceData = LinkedList<RelatedResourceData>()
 
@@ -541,7 +544,7 @@ constructor(
                 baseResourceType = baseResource.resourceType,
                 baseResource = baseResource,
                 fhirPathExpression = resourceConfig.fhirPathExpression,
-                filterParam
+                filterParamsMap
               )
             }
           baseRelatedResourceList.addAll(currentRelatedResources)
