@@ -56,11 +56,13 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.filterToken
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
@@ -101,7 +103,7 @@ constructor(
 
     // retrieve secondary ResourceData if secondaryResources are configured
     if (!secondaryResourceConfig.isNullOrEmpty()) {
-      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParam))
     }
     val baseResources: List<Resource> =
       withContext(dispatcherProvider.io()) {
@@ -119,7 +121,6 @@ constructor(
     // Also retrieve data for nested related resources for each of the related resource
     baseResources.map { baseResource: Resource ->
       val currentRelatedResources = LinkedList<RelatedResourceData>()
-
       relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
@@ -127,7 +128,8 @@ constructor(
               resourceConfig = resourceConfig,
               baseResourceType = baseResourceType,
               baseResource = baseResource,
-              fhirPathExpression = resourceConfig.fhirPathExpression
+              fhirPathExpression = resourceConfig.fhirPathExpression,
+              filterParam
             )
           }
         currentRelatedResources.addAll(relatedResources)
@@ -338,7 +340,8 @@ constructor(
     resourceConfig: ResourceConfig,
     baseResourceType: ResourceType,
     baseResource: Resource,
-    fhirPathExpression: String?
+    fhirPathExpression: String?,
+    filterParam: String?
   ): LinkedList<RelatedResourceData> {
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
@@ -353,6 +356,9 @@ constructor(
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           sort(resourceConfig.sortConfigs)
+          //Iteration loop through the map retriving the value. filter by the value
+          if (!filterParam.isNullOrEmpty()) filter(TokenClientParam(filterParam),
+            { value = of(filterParam) })
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
         relatedResourcesData.addLast(
@@ -388,7 +394,8 @@ constructor(
             resourceConfig = it,
             baseResourceType = resourceData.resource.resourceType,
             baseResource = resourceData.resource,
-            fhirPathExpression = it.fhirPathExpression
+            fhirPathExpression = it.fhirPathExpression,
+            filterParam
           )
         resourceData.relatedResources.addAll(searchRelatedResources)
       }
@@ -405,6 +412,7 @@ constructor(
     filterParam: String? = null
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
+    val practitionerId=FileUtil.getValueByDelimiter("","",1)
     val search =
       Search(type = resourceType).apply {
         dataQueries?.forEach { filterBy(it) }
@@ -418,7 +426,6 @@ constructor(
           from = currentPage * pageSize
         }
         if (!filterParam.isNullOrEmpty()) {
-          filter(TokenClientParam(filterParam), { value = of(filterParam) })
           //Add filterBy parameter here
         }
       }
@@ -489,14 +496,15 @@ constructor(
             resourceConfig = config,
             baseResourceType = baseResourceType,
             baseResource = baseResource,
-            fhirPathExpression = config.fhirPathExpression
+            fhirPathExpression = config.fhirPathExpression,
+            filterParam
           )
         }
       relatedResources.addAll(resources)
     }
 
     if (!secondaryResourceConfig.isNullOrEmpty()) {
-      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig, filterParam))
     }
 
     return processResourceData(
@@ -508,7 +516,8 @@ constructor(
   }
 
   private suspend fun retrieveSecondaryResources(
-    resourceConfigList: List<FhirResourceConfig>
+    resourceConfigList: List<FhirResourceConfig>,
+    filterParam: String?
   ): LinkedList<RelatedResourceData> {
     val relatedResourceData = LinkedList<RelatedResourceData>()
 
@@ -531,7 +540,8 @@ constructor(
                 resourceConfig = resourceConfig,
                 baseResourceType = baseResource.resourceType,
                 baseResource = baseResource,
-                fhirPathExpression = resourceConfig.fhirPathExpression
+                fhirPathExpression = resourceConfig.fhirPathExpression,
+                filterParam
               )
             }
           baseRelatedResourceList.addAll(currentRelatedResources)

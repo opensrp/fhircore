@@ -46,6 +46,7 @@
     ]
   },
   "registerCard": {
+
     "rules": [
       {
         "name": "practitionerFirstName",
@@ -73,6 +74,13 @@
         "condition": "true",
         "actions": [
           "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
+        ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
         ]
       }
     ],
@@ -113,8 +121,18 @@
                     "saveButtonText": "Supervisory CHA Visit",
                     "setPractitionerDetails": true,
                     "setOrganizationDetails": true
-                  }
+                  },
+                  "params": [
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
+                      "dataType": "STRING",
+                      "key": "practitionerId",
+                      "value": "@{practitionerId}"
+                    }
+                  ]
                 }
+
               ]
             },
             "actions": [
