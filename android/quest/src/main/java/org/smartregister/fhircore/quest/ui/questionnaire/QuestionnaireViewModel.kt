@@ -315,17 +315,14 @@ constructor(
   }
 
   fun appendAppVersion(resource: Resource) {
-    //Create a tag with the app version
+    // Create a tag with the app version
     val metaTag = resource.meta.addTag()
-    metaTag
-      .setSystem("https://smartregister.org/")
-      .setCode(BuildConfig.VERSION_NAME)
-      .display = "Application Version"
+    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
+      "Application Version"
 
-    //Update resource with metaTag
+    // Update resource with metaTag
     resource.meta.apply { addTag(metaTag) }
   }
-
 
   suspend fun extractCarePlan(
     questionnaireResponse: QuestionnaireResponse,
