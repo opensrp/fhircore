@@ -63,7 +63,6 @@ import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactPagingSource
-import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
@@ -300,10 +299,11 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
-          R.id.remove_hiv_patient ->
-            event.context.launchQuestionnaire<HivPatientQuestionnaireActivity>(
-              questionnaireId = REMOVE_HIV_PATIENT_FORM,
+          R.id.patient_change_status ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = PATIENT_CHANGE_STATUS,
               clientIdentifier = patientId,
+              questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           else -> {}
@@ -425,7 +425,7 @@ constructor(
     const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
-    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
+    const val PATIENT_CHANGE_STATUS = "patient-change-status"
   }
 }

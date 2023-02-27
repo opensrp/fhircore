@@ -60,7 +60,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileChildContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.CHILD_CONTACT_PROFILE)
     Assert.assertNotNull(uiProfileChildContact)
-    Assert.assertEquals(5, uiProfileChildContact.size)
+    Assert.assertEquals(4, uiProfileChildContact.size)
 
     val uiProfileSexualContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SEXUAL_CONTACT_PROFILE)
