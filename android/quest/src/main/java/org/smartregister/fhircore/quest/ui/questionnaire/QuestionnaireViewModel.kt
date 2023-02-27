@@ -313,6 +313,13 @@ constructor(
     }
   }
 
+  /**
+   * This creates a meta tag that records the App Version as defined in the build.gradle and updates
+   * all resources created by the App with the relevant app version name. The tag defines three
+   * strings: 'setSystem - The code system' , 'setCode - The code would be the App Version defined
+   * on the build.gradle.', and 'setDisplay - The display name'. All resources created by the App
+   * will have a tag of the App Version on the meta.tag.
+   */
   fun appendAppVersion(resource: Resource) {
     // Create a tag with the app version
     val metaTag = resource.meta.addTag()
