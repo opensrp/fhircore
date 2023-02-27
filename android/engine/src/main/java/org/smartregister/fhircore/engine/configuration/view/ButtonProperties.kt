@@ -38,4 +38,11 @@ data class ButtonProperties(
   val smallSized: Boolean = false,
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
+  val buttonType: ButtonType = ButtonType.MEDIUM,
 ) : ViewProperties()
+
+enum class ButtonType {
+  TINY,
+  MEDIUM,
+  BIG
+}

@@ -14,16 +14,35 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.geowidget.org.smartregister.fhircore.engine.configuration.geowidget
+package org.smartregister.fhircore.engine.configuration.geowidget
 
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 
 class GeoWidgetConfigurationTest {
+  @Test
+  fun testAuthConfiguration() {
+    val geoWidgetConfiguration =
+      GeoWidgetConfiguration(
+        appId = "demo_app",
+        configType = ConfigType.GeoWidget.name,
+        id = "test_id",
+        profileId = "profile_test_id",
+        registrationQuestionnaire = QuestionnaireConfig(id = "1090"),
+        resourceConfig = FhirResourceConfig(baseResource = ResourceConfig(resource = "Patient"))
+      )
+
+    Assert.assertEquals("demo_app", geoWidgetConfiguration.appId)
+    Assert.assertEquals("geoWidget", geoWidgetConfiguration.configType)
+    Assert.assertEquals("test_id", geoWidgetConfiguration.id)
+    Assert.assertEquals("profile_test_id", geoWidgetConfiguration.profileId)
+    Assert.assertEquals("1090", geoWidgetConfiguration.registrationQuestionnaire.id)
+  }
+
   @Test
   fun testGeoWidgetConfiguration() {
     val appId = "testAppId"
