@@ -112,7 +112,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launch {
       questionnaireViewModel.loadQuestionnaire(
-        application,
+          application,
           questionnaireConfig.id,
           questionnaireConfig.type,
           prePopulationParams

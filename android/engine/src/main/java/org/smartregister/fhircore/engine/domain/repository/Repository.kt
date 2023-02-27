@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
@@ -42,9 +43,9 @@ interface Repository {
    * configurations identified by the [profileId] are used.
    */
   suspend fun loadProfileData(
-      profileId: String,
-      resourceId: String,
-      fhirResourceConfig: FhirResourceConfig? = null,
-      groupId: String = ""
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
+    params: Array<ActionParameter>?
   ): ResourceData?
 }

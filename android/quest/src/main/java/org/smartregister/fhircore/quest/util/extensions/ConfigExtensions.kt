@@ -34,9 +34,9 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
 fun List<ActionConfig>.handleClickEvent(
-    navController: NavController,
-    resourceData: ResourceData? = null,
-    navMenu: NavigationMenuConfig? = null
+  navController: NavController,
+  resourceData: ResourceData? = null,
+  navMenu: NavigationMenuConfig? = null
 ) {
   val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
   onClickAction?.let { actionConfig ->
@@ -44,53 +44,64 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated =
-              questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
           val actionParams =
-              actionConfig.params.map {
-                ActionParameter(
-                    key = it.key,
-                    paramType = it.paramType,
-                    dataType = it.dataType,
-                    linkId = it.linkId,
-                    value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap()))
-              }
+            actionConfig.params.map {
+              ActionParameter(
+                key = it.key,
+                paramType = it.paramType,
+                dataType = it.dataType,
+                linkId = it.linkId,
+                value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+              )
+            }
 
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
-                context = navController.context,
-                questionnaireConfig = questionnaireConfigInterpolated,
-                actionParams = actionParams)
+              context = navController.context,
+              questionnaireConfig = questionnaireConfigInterpolated,
+              actionParams = actionParams
+            )
           }
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
         actionConfig.id?.let { id ->
           val args =
-              bundleOf(
-                  NavigationArg.PROFILE_ID to id,
-                  NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
-                  NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-                  NavigationArg.GROUP_ID to actionConfig.params.first().value.interpolate(resourceData?.computedValuesMap?: emptyMap())
-              )
+            bundleOf(
+              NavigationArg.PROFILE_ID to id,
+              NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
+              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
+              NavigationArg.PARAMS to
+                actionConfig.params.map {
+                  ActionParameter(
+                    key = it.key,
+                    paramType = it.paramType,
+                    dataType = it.dataType,
+                    linkId = it.linkId,
+                    value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+                  ).
+                },
+            )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
       }
       ApplicationWorkflow.LAUNCH_REGISTER -> {
         val args =
-            bundleOf(
-                Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-                Pair(
-                    NavigationArg.SCREEN_TITLE,
-                    resourceData?.let { actionConfig.display(it.computedValuesMap) }
-                        ?: navMenu?.display),
-                Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            )
+          bundleOf(
+            Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
+            Pair(
+              NavigationArg.SCREEN_TITLE,
+              resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
+            ),
+            Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+          )
 
         // Register is the entry point destination, clear back stack with every register switch
         navController.navigate(
-            resId = MainNavigationScreen.Home.route,
-            args = args,
-            navOptions = navOptions(MainNavigationScreen.Home.route),
+          resId = MainNavigationScreen.Home.route,
+          args = args,
+          navOptions = navOptions(MainNavigationScreen.Home.route),
         )
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
@@ -98,12 +109,13 @@ fun List<ActionConfig>.handleClickEvent(
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
-          navController.navigate(MainNavigationScreen.Settings.route)
+        navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
-          navController.navigate(
-              MainNavigationScreen.GeoWidget.route,
-              bundleOf(NavigationArg.CONFIG_ID to actionConfig.id))
+        navController.navigate(
+          MainNavigationScreen.GeoWidget.route,
+          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id)
+        )
       else -> return
     }
   }
@@ -113,7 +125,7 @@ fun List<ActionConfig>.handleClickEvent(
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
-    NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
+  NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
-    this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
+  this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()

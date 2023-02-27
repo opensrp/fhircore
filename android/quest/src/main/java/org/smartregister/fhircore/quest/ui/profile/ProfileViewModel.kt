@@ -61,10 +61,10 @@ import timber.log.Timber
 class ProfileViewModel
 @Inject
 constructor(
-    val registerRepository: RegisterRepository,
-    val configurationRegistry: ConfigurationRegistry,
-    val dispatcherProvider: DispatcherProvider,
-    val fhirPathDataExtractor: FhirPathDataExtractor
+  val registerRepository: RegisterRepository,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
   private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
@@ -80,19 +80,20 @@ constructor(
   private lateinit var profileConfiguration: ProfileConfiguration
 
   suspend fun retrieveProfileUiState(
-      profileId: String,
-      resourceId: String,
-      fhirResourceConfig: FhirResourceConfig? = null,
-      groupId: String=""
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
+    params: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
       val resourceData =
-          registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, groupId)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, params)
       profileUiState.value =
-          ProfileUiState(
-              resourceData = resourceData,
-              profileConfiguration = retrieveProfileConfiguration(profileId),
-              snackBarTheme = applicationConfiguration.snackBarTheme)
+        ProfileUiState(
+          resourceData = resourceData,
+          profileConfiguration = retrieveProfileConfiguration(profileId),
+          snackBarTheme = applicationConfiguration.snackBarTheme
+        )
     }
   }
 
@@ -100,7 +101,7 @@ constructor(
     // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
-          configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId)
+        configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId)
     }
     return profileConfiguration
   }
@@ -117,45 +118,49 @@ constructor(
                     var questionnaireResponse: String? = null
 
                     val questionnaireConfigInterpolated =
-                        questionnaireConfig.interpolate(
-                            event.resourceData?.computedValuesMap ?: emptyMap())
+                      questionnaireConfig.interpolate(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      )
                     val actionParams =
-                        actionConfig.params.map {
-                          ActionParameter(
-                              key = it.key,
-                              paramType = it.paramType,
-                              dataType = it.dataType,
-                              linkId = it.linkId,
-                              value =
-                                  it.value.interpolate(
-                                      event.resourceData?.computedValuesMap ?: emptyMap()))
-                        }
+                      actionConfig.params.map {
+                        ActionParameter(
+                          key = it.key,
+                          paramType = it.paramType,
+                          dataType = it.dataType,
+                          linkId = it.linkId,
+                          value =
+                            it.value.interpolate(
+                              event.resourceData?.computedValuesMap ?: emptyMap()
+                            )
+                        )
+                      }
 
                     if (event.resourceData != null) {
                       questionnaireResponse =
-                          searchQuestionnaireResponses(
-                                  subjectId =
-                                      event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                                  subjectType = event.resourceData.baseResourceType,
-                                  questionnaireId = questionnaireConfigInterpolated.id)
-                              .maxByOrNull { it.authored } // Get latest version
-                              ?.let { parser.encodeResourceToString(it) }
+                        searchQuestionnaireResponses(
+                          subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
+                          subjectType = event.resourceData.baseResourceType,
+                          questionnaireId = questionnaireConfigInterpolated.id
+                        )
+                          .maxByOrNull { it.authored } // Get latest version
+                          ?.let { parser.encodeResourceToString(it) }
                     }
 
                     val intentBundle =
-                        actionConfig
-                            .paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
-                            .apply {
-                              putString(
-                                  QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                                  questionnaireResponse)
-                            }
+                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                        .apply {
+                          putString(
+                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                            questionnaireResponse
+                          )
+                        }
 
                     (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
-                        context = event.navController.context,
-                        intentBundle = intentBundle,
-                        questionnaireConfig = questionnaireConfigInterpolated,
-                        actionParams = actionParams)
+                      context = event.navController.context,
+                      intentBundle = intentBundle,
+                      questionnaireConfig = questionnaireConfigInterpolated,
+                      actionParams = actionParams
+                    )
                   }
                 }
               }
@@ -168,14 +173,18 @@ constructor(
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(
-              event.eligibleManagingEntity.logicalId, event.eligibleManagingEntity.groupId)
+            event.eligibleManagingEntity.logicalId,
+            event.eligibleManagingEntity.groupId
+          )
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
-                snackBarMessageConfig =
-                    SnackBarMessageConfig(
-                        message = event.managingEntityConfig?.managingEntityReassignedMessage
-                                ?: event.context.getString(R.string.reassigned_managing_entity),
-                        actionLabel = event.context.getString(R.string.ok)))
+              snackBarMessageConfig =
+                SnackBarMessageConfig(
+                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                      ?: event.context.getString(R.string.reassigned_managing_entity),
+                  actionLabel = event.context.getString(R.string.ok)
+                )
+            )
           }
         }
       }
@@ -188,54 +197,61 @@ constructor(
    * main resource.
    */
   private fun changeManagingEntity(event: ProfileEvent.OverflowMenuClick) {
-    if (event.managingEntity == null ||
-        event.resourceData?.baseResourceType != ResourceType.Group) {
+    if (event.managingEntity == null || event.resourceData?.baseResourceType != ResourceType.Group
+    ) {
       Timber.w("ManagingEntityConfig required. Base resource should be Group")
       return
     }
     viewModelScope.launch {
       val group = registerRepository.loadResource<Group>(event.resourceData.baseResourceId)
       val eligibleManagingEntities: List<EligibleManagingEntity> =
-          group
-              ?.member
-              ?.map {
-                registerRepository.loadResource(
-                    it.entity.extractId(), event.managingEntity.resourceType)
-              }
-              ?.filter { managingEntityResource ->
-                fhirPathDataExtractor
-                    .extractValue(
-                        base = managingEntityResource,
-                        expression = event.managingEntity.eligibilityCriteriaFhirPathExpression)
-                    .toBoolean()
-              }
-              ?.map {
-                EligibleManagingEntity(
-                    groupId = event.resourceData.baseResourceId,
-                    logicalId = it.logicalId.extractLogicalIdUuid(),
-                    memberInfo =
-                        fhirPathDataExtractor.extractValue(
-                            it, event.managingEntity.nameFhirPathExpression))
-              }
-              ?: emptyList()
+        group
+          ?.member
+          ?.map {
+            registerRepository.loadResource(
+              it.entity.extractId(),
+              event.managingEntity.resourceType
+            )
+          }
+          ?.filter { managingEntityResource ->
+            fhirPathDataExtractor
+              .extractValue(
+                base = managingEntityResource,
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+              )
+              .toBoolean()
+          }
+          ?.map {
+            EligibleManagingEntity(
+              groupId = event.resourceData.baseResourceId,
+              logicalId = it.logicalId.extractLogicalIdUuid(),
+              memberInfo =
+                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
+            )
+          }
+          ?: emptyList()
 
       // Show error message when no group members are found
       if (eligibleManagingEntities.isEmpty()) {
         emitSnackBarState(
-            SnackBarMessageConfig(message = event.managingEntity.noMembersErrorMessage))
+          SnackBarMessageConfig(message = event.managingEntity.noMembersErrorMessage)
+        )
       } else {
         (event.navController.context.getActivity())?.let { activity ->
           ProfileBottomSheetFragment(
-                  eligibleManagingEntities = eligibleManagingEntities,
-                  onSaveClick = {
-                    onEvent(
-                        ProfileEvent.OnChangeManagingEntity(
-                            context = activity,
-                            eligibleManagingEntity = it,
-                            managingEntityConfig = event.managingEntity))
-                  },
-                  managingEntity = event.managingEntity)
-              .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+              eligibleManagingEntities = eligibleManagingEntities,
+              onSaveClick = {
+                onEvent(
+                  ProfileEvent.OnChangeManagingEntity(
+                    context = activity,
+                    eligibleManagingEntity = it,
+                    managingEntityConfig = event.managingEntity
+                  )
+                )
+              },
+              managingEntity = event.managingEntity
+            )
+            .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
         }
       }
     }
@@ -246,19 +262,21 @@ constructor(
   }
 
   private suspend fun searchQuestionnaireResponses(
-      subjectId: String,
-      subjectType: ResourceType,
-      questionnaireId: String
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
   ): List<QuestionnaireResponse> =
-      withContext(dispatcherProvider.io()) {
-        registerRepository.fhirEngine.search {
-          filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
-          filter(
-              QuestionnaireResponse.QUESTIONNAIRE,
-              { value = "${ResourceType.Questionnaire.name}/$questionnaireId" })
-          filter(
-              QuestionnaireResponse.STATUS,
-              { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) })
-        }
+    withContext(dispatcherProvider.io()) {
+      registerRepository.fhirEngine.search {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
       }
+    }
 }

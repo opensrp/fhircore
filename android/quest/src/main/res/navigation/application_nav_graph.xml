@@ -56,9 +56,8 @@
             app:nullable="true" />
 
         <argument
-            android:name="groupId"
-            app:argType="string"
-            android:defaultValue=""
+            android:name="params"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
             app:nullable="true" />
     </fragment>
 
