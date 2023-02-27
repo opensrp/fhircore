@@ -63,7 +63,6 @@ import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactPagingSource
-import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
