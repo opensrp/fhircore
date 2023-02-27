@@ -300,12 +300,6 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
-          R.id.remove_hiv_patient ->
-            event.context.launchQuestionnaire<HivPatientQuestionnaireActivity>(
-              questionnaireId = REMOVE_HIV_PATIENT_FORM,
-              clientIdentifier = patientId,
-              populationResources = profile.populationResources
-            )
           R.id.patient_change_status ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = PATIENT_CHANGE_STATUS,
@@ -432,7 +426,6 @@ constructor(
     const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
-    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
     const val PATIENT_CHANGE_STATUS = "patient-change-status"
   }
