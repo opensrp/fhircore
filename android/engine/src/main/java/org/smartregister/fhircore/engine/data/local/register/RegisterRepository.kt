@@ -166,8 +166,7 @@ constructor(
           baseResource = baseResource,
           relatedResourcesMap = relatedResourcesMap,
         )
-        .toMutableMap()
-    computedValuesMap.plus(params?.associate { it.key to it.value }?.toMap() ?: mapOf())
+        .toMutableMap() + (params?.associate { it.key to it.value }?.toMap() ?: mapOf())
 
     val listResourceDataMap = computeListRules(views, relatedResourcesMap, computedValuesMap)
 
