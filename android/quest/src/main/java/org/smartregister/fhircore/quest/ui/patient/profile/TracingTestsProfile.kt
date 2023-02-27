@@ -92,6 +92,9 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
               onClick = { viewModel.updateUserWithTracing(isHomeTracing = false) },
               enabled = !isOnTracing
             ) { Text(text = "Add Phone Tracing") }
+            Button(
+                    onClick = { viewModel.addPregnancy() },
+            ) { Text(text = "Make Pregnant") }
           }
         }
       }

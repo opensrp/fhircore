@@ -34,10 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
@@ -53,6 +50,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 import timber.log.Timber
+import java.util.*
 
 @HiltViewModel
 class TracingTestsViewModel
@@ -124,6 +122,19 @@ constructor(
       questionnaireType = QuestionnaireType.EDIT
     )
   }
+
+    fun addPregnancy() {
+        viewModelScope.launch {
+            val con = Condition().apply {
+                recordedDate = Date()
+                clinicalStatus = CodeableConcept(Coding("http://terminology.hl7.org/CodeSystem/condition-clinical", "active", ""))
+                verificationStatus = CodeableConcept(Coding("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed", ""))
+                code = CodeableConcept(Coding("http://snomed.info/sct", "77386006", "Pregnant"))
+                subject = Reference("Patient/$patientId")
+            }
+            fhirEngine.create(con)
+        }
+    }
 
   fun checkIfOnTracing() {
     viewModelScope.launch {
@@ -271,6 +282,11 @@ constructor(
           questionnaire = "tests/art_client_welcome_service.json",
                 appointmentList = listOf("Followup")
         ),
+      TestItem.QuestItem(
+              title = "Woman health Screening",
+              questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json",
+              appointmentList = listOf("Cervical Cancer Screening")
+      ),
       )
   }
 }
