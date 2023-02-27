@@ -377,7 +377,7 @@ constructor(
       }
   }
 
-  suspend fun s(
+  suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
@@ -387,6 +387,7 @@ constructor(
       )
       return
     }
+
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
   }
 
