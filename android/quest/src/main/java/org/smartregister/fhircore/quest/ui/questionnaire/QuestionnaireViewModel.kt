@@ -74,7 +74,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.STRING_INTERPOLATION_PREFIX
 import timber.log.Timber
 
 @HiltViewModel
