@@ -46,14 +46,6 @@ fun Search.filterByResourceTypeId(
   filter(token, { value = of("${resourceType.name}/$resourceId") })
 }
 
-fun Search.filterByPractitionerId(
-  token: TokenClientParam,
-  resourceType: ResourceType,
-  practitionerId: String
-) {
-  filter(token, { value = of("${resourceType.name}/$practitionerId") })
-}
-
 fun Search.filterBy(filter: DataQuery) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
