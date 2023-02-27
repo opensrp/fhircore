@@ -1241,13 +1241,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testAppVersionIsAppendedToPatientResource() {
+    // Version name
+    val versionName = "0.0.4-quest"
+
     // For Patient
     val patient = samplePatient()
     questionnaireViewModel.appendAppVersion(resource = patient)
     val tag = patient.meta.tag
     val appVersionTag = tag[0]
     Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
-    Assert.assertEquals("0.1.9-rc3-ecbis", appVersionTag.code)
+    Assert.assertEquals(versionName, appVersionTag.code)
     Assert.assertEquals("Application Version", appVersionTag.display)
   }
 
