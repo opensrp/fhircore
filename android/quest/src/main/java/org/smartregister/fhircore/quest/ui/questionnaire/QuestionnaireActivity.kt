@@ -112,7 +112,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launch {
       questionnaireViewModel.loadQuestionnaire(
-          application,
           questionnaireConfig.id,
           questionnaireConfig.type,
           prePopulationParams
@@ -222,7 +221,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // Reload the questionnaire and reopen the fragment
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
-            application,
             questionnaireConfig.id,
             questionnaireConfig.type,
             prePopulationParams

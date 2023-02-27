@@ -16,15 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -123,7 +120,7 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
-        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
+        item.prePopulateInitialValues(prePopulationParams)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -380,7 +377,7 @@ constructor(
       }
   }
 
-  suspend fun saveQuestionnaireResponse(
+  suspend fun s(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
