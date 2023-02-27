@@ -80,8 +80,8 @@ fun List<ActionConfig>.handleClickEvent(
                     dataType = it.dataType,
                     linkId = it.linkId,
                     value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
-                  ).
-                },
+                  )
+                }.toTypedArray(),
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

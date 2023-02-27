@@ -1379,7 +1379,7 @@
               "9fac39bd-9750-4c1d-b355-1961de4e37f3"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1404,7 +1404,7 @@
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1429,7 +1429,7 @@
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1454,7 +1454,7 @@
               "a881d53a-590c-4d52-ae0f-c87b7ff04148"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1488,7 +1488,7 @@
               "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1514,7 +1514,7 @@
               "cd39380b-2359-4b98-8ab9-df7f90fe9392"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1540,7 +1540,7 @@
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
             ],
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
@@ -1566,7 +1566,7 @@
             "title": "Remove family member",
             "saveButtonText": "Update registration",
             "groupResource": {
-              "groupIdentifier": "@{param_groupId}",
+              "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
               "removeGroup": false
             }
