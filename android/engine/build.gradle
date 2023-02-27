@@ -202,7 +202,7 @@ dependencies {
     api('javax.xml.stream:stax-api:1.0')
     api('com.github.ben-manes.caffeine:caffeine:2.9.1')
     
-    api('org.smartregister:data-capture:0.1.0-beta06-preview7-SNAPSHOT') {
+    api('org.smartregister:data-capture:1.0.0-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
