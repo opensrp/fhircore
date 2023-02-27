@@ -56,4 +56,3 @@ data class ListResource(
   val conditionalFhirPathExpression: String? = null,
   val relatedResources: List<ExtractedResource> = emptyList()
 )
-

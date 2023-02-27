@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateFrom
@@ -79,7 +80,8 @@ constructor(
   // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
-    configId: String? = null
+    configId: String? = null,
+    paramsMap: Map<String, String>? = emptyMap()
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
@@ -90,9 +92,11 @@ constructor(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
           template =
-            configsJsonMap.getValue(
-              configKey
-            ) // java.util.NoSuchElementException: Key application is missing in the map.
+            configsJsonMap
+              .getValue(configKey)
+              .interpolate(
+                paramsMap!!
+              ) // java.util.NoSuchElementException: Key application is missing in the map.
         )
         .decodeJson(jsonInstance = json)
   }

@@ -39,6 +39,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -117,11 +119,14 @@ constructor(
     )
   }
 
-  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+  fun retrieveRegisterConfiguration(
+    registerId: String,
+    paramMap: Map<String, String>? = emptyMap()
+  ): RegisterConfiguration {
     // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramMap)
     }
     return registerConfiguration
   }
@@ -170,13 +175,26 @@ constructor(
     }
   }
 
-  fun retrieveRegisterUiState(registerId: String, screenTitle: String) {
+  fun retrieveRegisterUiState(
+    registerId: String,
+    screenTitle: String,
+    paramsList: Array<ActionParameter>?
+  ) {
     if (registerId.isNotEmpty()) {
+      var filterParams: List<ActionParameter>? = null
+      if (paramsList != null) {
+        filterParams =
+          paramsList.filter {
+            it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty()
+          }
+      }
+      val paramsMap = mapOf<String, String>()
+      filterParams?.forEach { paramsMap[it.key] to it.value }
 
       viewModelScope.launch(dispatcherProvider.io()) {
-        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId)
+        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
-        _totalRecordsCount.value = registerRepository.countRegisterData(registerId)
+        _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
         paginateRegisterData(registerId, loadAll = false)
 
         registerUiState.value =

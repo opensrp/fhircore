@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -43,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -84,11 +84,20 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    filterParam: String? = null
+    paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
+      var filterParams: List<ActionParameter>? = null
+      if (paramsList != null) {
+        filterParams =
+          paramsList.filter {
+            it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty()
+          }
+      }
+      val paramsMap = mapOf<String, String>()
+      filterParams?.forEach { paramsMap[it.key] to it.value }
       val resourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, filterParam)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,

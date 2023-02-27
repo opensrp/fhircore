@@ -27,7 +27,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.SecondaryComputedValues
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -73,7 +72,7 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.SECONDARY_VALUES_MAP to SecondaryComputedValues
+              NavigationArg.actionParams to actionConfig.params
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

@@ -49,7 +49,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   ): View {
     with(profileFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -83,7 +83,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
         // Always refresh data when questionnaire is submitted
         with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
         }
 
         // Display SnackBar message

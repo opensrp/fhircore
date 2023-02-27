@@ -34,6 +34,10 @@
             android:defaultValue="OPEN_DRAWER"
             app:argType="org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation"
             app:nullable="false" />
+        <argument
+            android:name="params"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
+            app:nullable="true" />
     </fragment>
 
     <fragment
@@ -50,11 +54,9 @@
             app:argType="string"
             app:nullable="false" />
         <argument
-            android:name="secondaryComputedMap"
-            android:defaultValue=""
-            app:argType="org.smartregister.fhircore.engine.domain.model.SecondaryComputedValues"
+            android:name="params"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
             app:nullable="true" />
-
         <argument
             android:name="resourceConfig"
             app:argType="org.smartregister.fhircore.engine.domain.model.FhirResourceConfig"
