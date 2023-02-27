@@ -72,7 +72,9 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.STRING_INTERPOLATION_PREFIX
 import timber.log.Timber
 
 @HiltViewModel
@@ -204,6 +206,10 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
+          if (questionnaireConfig.setAppVersion) {
+            appendAppVersion(bundleEntry.resource)
+          }
+
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -307,6 +313,19 @@ constructor(
           )
     }
   }
+
+  fun appendAppVersion(resource: Resource) {
+    //Create a tag with the app version
+    val metaTag = resource.meta.addTag()
+    metaTag
+      .setSystem("https://smartregister.org/")
+      .setCode(BuildConfig.VERSION_NAME)
+      .display = "Application Version"
+
+    //Update resource with metaTag
+    resource.meta.apply { addTag(metaTag) }
+  }
+
 
   suspend fun extractCarePlan(
     questionnaireResponse: QuestionnaireResponse,

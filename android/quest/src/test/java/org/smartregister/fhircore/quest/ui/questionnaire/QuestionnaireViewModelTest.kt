@@ -1240,6 +1240,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testAppVersionIsAppendedToPatientResource() {
+    // For Patient
+    val patient = samplePatient()
+    questionnaireViewModel.appendAppVersion(resource = patient)
+    val tag = patient.meta.tag
+    val appVersionTag = tag[0]
+    Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
+    Assert.assertEquals("0.1.9-rc3-ecbis", appVersionTag.code)
+    Assert.assertEquals("Application Version", appVersionTag.display)
+  }
+
+  @Test
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
