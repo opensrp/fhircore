@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import androidx.core.text.isDigitsOnly
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.DateUtils
@@ -44,9 +43,8 @@ fun Task.clinicVisitOrder(systemTag: String) =
     .filter { it.system.equals(systemTag, true) }
     .filterNot { it.code.isNullOrBlank() }
     .map { it.code.replace("_", "-").substringAfterLast("-").trim() }
-    .filter { it.isDigitsOnly() }
-    .map { it.toInt() }
-    .firstOrNull()
+    .map { it.toDouble() }
+    .lastOrNull()
 
 fun Task.isGuardianVisit(systemTag: String) =
   this.meta.tag.filter { it.system.equals(systemTag, true) }.any {
