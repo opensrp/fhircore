@@ -87,6 +87,9 @@ constructor(
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
   val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
 
+  // TODO: replace later with actual implementation from the engine
+  val isSyncing = mutableStateOf(false)
+
   var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
       PatientProfileUiState(
@@ -133,9 +136,15 @@ constructor(
         override fun onSync(state: SyncJobStatus) {
           when (state) {
             is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+              isSyncing.value = false
               fetchPatientProfileDataWithChildren()
             }
-            else -> {}
+            is SyncJobStatus.Started -> {
+              isSyncing.value = true
+            }
+            else -> {
+              isSyncing.value = false
+            }
           }
         }
       },

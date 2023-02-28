@@ -85,6 +85,7 @@ fun PatientProfileScreen(
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
   val taskId by appMainViewModel.taskId.collectAsState()
+  val syncing by remember { patientProfileViewModel.isSyncing }
 
   LaunchedEffect(taskId) {
     taskId?.let { patientProfileViewModel.fetchPatientProfileDataWithChildren() }
@@ -100,7 +101,7 @@ fun PatientProfileScreen(
           }
         },
         actions = {
-          IconButton(onClick = { patientProfileViewModel.reSync() }) {
+          IconButton(onClick = { patientProfileViewModel.reSync() }, enabled = !syncing) {
             Icon(
               imageVector = Icons.Outlined.Refresh,
               contentDescription = null,
