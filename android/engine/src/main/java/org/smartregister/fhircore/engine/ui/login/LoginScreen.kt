@@ -63,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -86,6 +87,7 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -147,6 +149,8 @@ fun LoginPage(
   val forgotPasswordColor = if (viewConfiguration.darkMode) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
+  val context = LocalContext.current
+  val (versionCode, versionName) = remember { context.appVersion() }
 
   Surface(
     modifier =
@@ -335,12 +339,7 @@ fun LoginPage(
         Text(
           color = contentColor,
           fontSize = 16.sp,
-          text =
-            stringResource(
-              id = R.string.app_version,
-              viewConfiguration.applicationVersionCode,
-              viewConfiguration.applicationVersion
-            ),
+          text = stringResource(id = R.string.app_version, versionCode, versionName),
           modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
         )
       }
