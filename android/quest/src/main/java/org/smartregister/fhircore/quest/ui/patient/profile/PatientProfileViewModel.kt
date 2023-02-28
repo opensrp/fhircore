@@ -73,7 +73,7 @@ class PatientProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
+  val syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
@@ -168,6 +168,10 @@ constructor(
           )
         )
     }
+  }
+
+  fun reSync() {
+    syncBroadcaster.runSync()
   }
 
   fun filterGuardianVisitTasks() {

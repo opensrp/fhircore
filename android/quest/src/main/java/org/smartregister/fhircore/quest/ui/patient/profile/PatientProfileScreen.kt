@@ -38,6 +38,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -99,6 +100,13 @@ fun PatientProfileScreen(
           }
         },
         actions = {
+          IconButton(onClick = { patientProfileViewModel.reSync() }) {
+            Icon(
+              imageVector = Icons.Outlined.Refresh,
+              contentDescription = null,
+              tint = Color.White
+            )
+          }
           IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,
