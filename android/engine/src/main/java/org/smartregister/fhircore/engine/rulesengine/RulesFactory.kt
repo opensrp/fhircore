@@ -137,8 +137,12 @@ constructor(
           }
           relatedResourcesMap.forEach { put(it.key, it.value) }
         }
-      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+      if (BuildConfig.DEBUG) {
+        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+      } else {
+        rulesEngine.fire(rules, facts)
+      }
       facts.get(DATA) as Map<String, Any>
     }
   }
@@ -353,8 +357,8 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function filters resource provided the condition exracted from the [fhirPathExpression]
-     * is met
+     * This function filters resources provided the condition extracted from the
+     * [fhirPathExpression] is met
      */
     fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
