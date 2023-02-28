@@ -26,6 +26,13 @@
             "code": "35359004"
           }
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
       ]
     },
     "relatedResources": [
@@ -178,12 +185,7 @@
             "title": "Add household",
             "saveButtonText": "Add Household",
             "setPractitionerDetails": true,
-            "setOrganizationDetails": true,
-            "snackBarMessage": {
-              "message": "Household has been created",
-              "actionLabel": "UNDO",
-              "duration": "Short"
-            }
+            "setOrganizationDetails": true
           }
         }
       ]
