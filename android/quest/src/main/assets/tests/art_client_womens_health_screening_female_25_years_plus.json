@@ -10,9 +10,7 @@
   ],
   "title": "Women's Health Screening",
   "status": "active",
-  "subjectType": [
-    "Patient"
-  ],
+  "subjectType": ["Patient"],
   "publisher": "mcore",
   "contact": [
     {
@@ -60,13 +58,13 @@
           "linkId": "intro",
           "text": "You are starting Women's Health Screen where Cervical Cancer and Famiy Planning is discussed and information is provided",
           "type": "display",
-          "required":false
+          "required": false
         },
         {
           "linkId": "fp-heading",
           "text": "<h4>Family Planning</h4>",
           "type": "display",
-          "required":false
+          "required": false
         },
         {
           "linkId": "fp-check-required",
@@ -281,7 +279,7 @@
               "linkId": "ccs-25-plus-info",
               "text": "Cervical cancer is a viral infection caused by a virus  called HPV and is a preventable cancer. Having screening for cervical cancer yearly and getting treatment for pre-cancerous signs of cervical cancer are important things you can do to prevent cervical cancer.",
               "type": "display",
-              "required":false
+              "required": false
             },
             {
               "linkId": "ccs-25-plus-ask",
@@ -293,7 +291,7 @@
               "linkId": "ccs-25-plus-ask-no",
               "text": "<b>Action:</b> Refer client for cervical cancer screening",
               "type": "display",
-              "required":false,
+              "required": false,
               "enableWhen": [
                 {
                   "question": "ccs-25-plus-ask",
@@ -398,7 +396,7 @@
                   "linkId": "refer-for-ccs-via",
                   "text": "<b>Action:</b> Refer client for cervical cancer screening",
                   "type": "display",
-                  "required":false,
+                  "required": false,
                   "enableWhen": [
                     {
                       "question": "date-of-last-via-screen",
@@ -417,7 +415,7 @@
                   "linkId": "tell-no-need-for-ccs",
                   "text": "<b>Tell the client</b> You do not have a cervical cancer screening due today",
                   "type": "display",
-                  "required":false,
+                  "required": false,
                   "enableWhen": [
                     {
                       "question": "date-of-last-via-screen",
@@ -492,7 +490,7 @@
                   "linkId": "refer-for-ccs-hpv",
                   "text": "<b>Action:</b> Refer client for cervical cancer screening",
                   "type": "display",
-                  "required":false,
+                  "required": false,
                   "enableWhen": [
                     {
                       "question": "date-of-last-hpv-screen",
@@ -562,7 +560,7 @@
                   "linkId": "check-last-hpv-result-positive",
                   "text": "<b>Action</b><br><b>Refer</b> the client to see CECAP nurse to determine next steps",
                   "type": "display",
-                  "required":false,
+                  "required": false,
                   "enableWhen": [
                     {
                       "question": "check-last-hpv-result",
@@ -576,7 +574,7 @@
                   "linkId": "check-last-hpv-result-negative",
                   "text": "<b>Tell the client</b> You do not have a cervical cancer screening due today",
                   "type": "display",
-                  "required":false,
+                  "required": false,
                   "enableWhen": [
                     {
                       "question": "check-last-hpv-result",
@@ -655,59 +653,22 @@
               "required": true
             }
           ]
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 3"
-              }
-            ],
-            "text": "Page 3"
-          }
-        }
-      ],
-      "linkId": "summary-page",
-      "type": "group",
-      "item": [
-        {
-          "linkId": "summary-page",
-          "text": "Summary Page",
-          "type": "display",
-          "required": false
         },
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
               "valueExpression": {
                 "language": "text/fhirpath",
-                "expression": "Patient.birthDate <= (today() - ((15 * 365).toString() + ' days').toQuantity())"
+                "expression": "%resource.repeat(item).where(linkId='date-of-last-hpv-screen' and answer.empty().not()).answer.value < (today() - ((3 * 365).toString() + ' days').toQuantity())"
               }
-            }
-          ],
-          "linkId": "is-older-than-15-years",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "extension": [
+            },
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Patient.birthDate <= (today() - ((25 * 365).toString() + ' days').toQuantity())"
-              }
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
             }
           ],
-          "linkId": "is-older-than-25-years",
+          "linkId": "last-hpv-date-entered-is-older-than-3-years-ago",
           "type": "boolean",
           "required": true
         },
@@ -732,10 +693,10 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
               "valueExpression": {
                 "language": "text/fhirpath",
-                "expression": "%resource.repeat(item).where(linkId='date-of-last-hpv-screen' and answer.empty().not()).answer.value < (today() - ((3 * 365).toString() + ' days').toQuantity())"
+                "expression": "Patient.birthDate <= (today() - ((25 * 365).toString() + ' days').toQuantity())"
               }
             },
             {
@@ -743,28 +704,46 @@
               "valueBoolean": true
             }
           ],
-          "linkId": "last-hpv-date-entered-is-older-than-3-years-ago",
+          "linkId": "is-older-than-25-years",
           "type": "boolean",
           "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Patient.id"
-          }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-          "valueBoolean": true
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate <= (today() - ((15 * 365).toString() + ' days').toQuantity())"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "is-older-than-15-years",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.id"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "patient-id",
+          "type": "text"
         }
-      ],
-      "linkId": "patient-id",
-      "type": "text"
+      ]
     }
   ]
 }
