@@ -84,7 +84,7 @@ fun List<ActionConfig>.handleClickEvent(
                       value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
                     )
                   }
-                  .toTypedArray(),
+                  .toTypedArray()
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
