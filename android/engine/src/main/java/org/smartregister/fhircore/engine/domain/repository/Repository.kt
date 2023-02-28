@@ -29,6 +29,8 @@ interface Repository {
    */
   suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
 
+  suspend fun loadRegisterData2(currentPage: Int, registerId: String): List<ResourceData>
+
   /**
    * This function uses the provided [registerId] to retrieve the register configuration from the
    * registry, then proceeds to count the data based on the configured query parameters

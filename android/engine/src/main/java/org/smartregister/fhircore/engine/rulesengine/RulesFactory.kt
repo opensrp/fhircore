@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.performance.Timer
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -134,10 +135,13 @@ constructor(
       put(SERVICE, rulesEngineService)
     }
 
+    val timer = Timer(methodName = "fireRule")
+
     // Fetch the resourceUUIDs of the members
     val memberUUIDs = mutableListOf<String>()
     var groupUUID = ""
     if (fhirEngine != null) {
+      val timer2 = Timer(methodName = "fireRule.executeFetchMembersQuery")
       var searchQuery =
         SearchQuery(
           """
@@ -161,16 +165,15 @@ constructor(
         )
 
       groupUUID = fhirEngine.getUUIDs(searchQuery).first()
+
+      timer2.stop()
     }
 
 
     val memberSelector = genMemberUuidsSelector(memberUUIDs)
-    val date = Date()
-      .plusYears(-5)
     val birthDate = LocalDate.now()
       .minusYears(5)
       .toEpochDay()
-
 
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
@@ -202,6 +205,7 @@ constructor(
         }
 
         if (ruleConfig.name == "taskCount") {
+          val timer3 = Timer(methodName = "fireRule.taskCountQuery")
           val searchQuery =
             SearchQuery(
               """
@@ -218,7 +222,11 @@ constructor(
 
           val taskCount = fhirEngine.count(searchQuery)
           computedValuesMap.put("taskCount", taskCount)
+
+          timer3.stop()
         } else if (ruleConfig.name == "serviceMemberIcons") {
+          val timer4 = Timer(methodName = "fireRule.executePregnantWomenCountQuery")
+
           var searchQuery =
             SearchQuery(
               """
@@ -231,6 +239,9 @@ constructor(
             )
 
           val pregnantWomenCount = fhirEngine.count(searchQuery)
+          timer4.stop()
+
+          val timer5 = Timer(methodName = "fireRule.executeChildrenCountQuery")
           searchQuery = SearchQuery("""
             SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid  
             WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true" 
@@ -239,6 +250,8 @@ constructor(
             listOf(birthDate)
           )
           val childrenCount = fhirEngine.count(searchQuery)
+
+          timer5.stop()
 
           val totalIcons = MutableList(childrenCount.toInt()) {"CHILD"}
           totalIcons.addAll(MutableList(pregnantWomenCount.toInt()) {"PREGNANT_WOMAN"})
@@ -252,6 +265,8 @@ constructor(
     computedValuesMap.forEach {
       Timber.e("computedValuesMap for ${baseResource.logicalId} -> ${it.key} = ${it.value}")
     }
+
+    timer.stop()
 
     return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
   }

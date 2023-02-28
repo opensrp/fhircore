@@ -27,28 +27,22 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
-import androidx.work.WorkManager
-import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.SearchQuery
-import com.google.android.fhir.sync.SyncDataParams
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.IntegerType
-import org.hl7.fhir.r4.model.Patient
+import java.time.LocalDate
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.performance.Timer
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -128,14 +122,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
-      //schedulePeriodicJobs()
+      // schedulePeriodicJobs()
       workManager.cancelAllWork()
     }
 
     syncBroadcaster.run {
       with(appMainViewModel.syncSharedFlow) {
         runSync(this)
-        //schedulePeriodicSync(this)
+        // schedulePeriodicSync(this)
       }
     }
   }
@@ -149,33 +143,33 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       var fetches = 0
       var offset = 0
 
-      //do {
-        Timber.e("loadResources starting search")
-        val startTime = System.currentTimeMillis()
-        /*
-        val search =
-          Search(type = ResourceType.Task).apply {
-            filter(
-              DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-              {
-                value = of(DateTimeType(Date(0)))
-                prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-              }
-            )
+      // do {
+      Timber.e("loadResources starting search")
+      val startTime = System.currentTimeMillis()
+      /*
+      val search =
+        Search(type = ResourceType.Task).apply {
+          filter(
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+            {
+              value = of(DateTimeType(Date(0)))
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            }
+          )
 
-            sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-            from = offset
-            count = 25
-          }
+          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+          from = offset
+          count = 25
+        }
 
-        val tasks = fhirEngine.search<Task>(search)*/
+      val tasks = fhirEngine.search<Task>(search)*/
 
       /*val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
       fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)*/
 
-        val searchQuery =
-          SearchQuery(
-            """
+      /*val searchQuery =
+        SearchQuery(
+          """
             SELECT a.serializedResource, a.resourceUuid
             FROM ResourceEntity a
             JOIN ReferenceIndexEntity b ON a.resourceUuid = b.resourceUuid 
@@ -183,25 +177,226 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             AND b.index_name = 'subject' 
             AND b.index_value = 'Patient/29af5cd1-bed0-46b7-b968-92dcf80b6098'
           """.trimIndent(),
+          emptyList()
+        )
+
+      val tasks = fhirEngine.search<Task>(searchQuery)
+
+      val stopTime = System.currentTimeMillis()
+      val timeTaken = stopTime - startTime
+      Timber.e("Time taken = ${timeTaken/1000} s | $timeTaken ms")
+      offset += 25*/
+      // } while (tasks.isNotEmpty())
+
+      // Add index for DateTimeIndexEntity (index_from)
+      try {
+        val addDateTimeIndexEntityIndexFromIndexQuery =
+          SearchQuery(
+            "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
             emptyList()
           )
+        fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+      } catch (ex: SQLException) {
+        Timber.e(ex)
+      }
 
-        val tasks = fhirEngine.search<Task>(searchQuery)
-
-        val stopTime = System.currentTimeMillis()
-        val timeTaken = stopTime - startTime
-        Timber.e("Time taken = ${timeTaken/1000} s | $timeTaken ms")
-        offset += 25
-        //} while (tasks.isNotEmpty())
-
+      // Add index for ResourceEntity (resourceId)
       try {
-      val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
-      fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
-        } catch(ex: SQLException) {
-          Timber.e(ex)
-        }
+        val addDateTimeIndexEntityIndexFromIndexQuery =
+          SearchQuery(
+            "CREATE INDEX `index_ResourceEntity_resourceId` ON `ResourceEntity` (`resourceId`)",
+            emptyList()
+          )
+        fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+      } catch (ex: SQLException) {
+        Timber.e(ex)
+      }
+      //
+
+      createAndUpdateRelationalTable()
+    }
+  }
+
+  suspend fun <T : Resource> runQuery(query: String, args: List<Any>): List<T> {
+    val timer = Timer(methodName ="runQuery -> $query")
+    return try {
+      val searchQuery = SearchQuery(query, args)
+        //Timber.e("Running Query $searchQuery")
+      val result = fhirEngine.search<T>(searchQuery)
+      timer.stop()
+      result
+    } catch (ex: SQLException) {
+      Timber.e(ex)
+      timer.stop()
+      emptyList()
+    }
+  }
+
+  suspend fun createAndUpdateRelationalTable() {
+      val timer = Timer(methodName = "createAndUpdateRelationalTable")
+
+    runQuery<Task>(
+      """
+        CREATE TABLE IF NOT EXISTS "RegisterFamilies" (
+        	"resourceUuid"	BLOB UNIQUE,
+        	"resourceId"	TEXT,
+        	"lastUpdated"	INTEGER,
+        	"childCount" INTEGER,
+        	"taskCount" INTEGER,
+        	"taskStatus" TEXT,
+        	"pregnantWomenCount" INTEGER,
+        	"familyName" TEXT,
+        	"householdNo" TEXT,
+        	"householdLocation" TEXT,
+        	PRIMARY KEY("resourceUuid")
+        );
+      """.trimIndent(),
+      emptyList()
+    )
+    runQuery<Task>(
+      """
+        CREATE INDEX "index_RegisterFamilies_lastUpdated" ON "RegisterFamilies" (
+        	"lastUpdated"
+        );
+      """.trimIndent(),
+      emptyList()
+    )
+    runQuery<Task>(
+      """
+        INSERT INTO RegisterFamilies (resourceUuid, resourceId, lastUpdated)
+        SELECT a.resourceUuid, a.resourceId, c.index_from
+        FROM ResourceEntity a
+        LEFT JOIN DateIndexEntity b
+        ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = "_lastUpdated"
+        LEFT JOIN DateTimeIndexEntity c
+        ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = "_lastUpdated"
+        WHERE a.resourceType = "Group"
+        AND a.resourceUuid IN (
+        SELECT resourceUuid FROM TokenIndexEntity
+        WHERE resourceType = "Group" AND index_name = "type" AND (index_value = "person" AND (index_system = "http://hl7.org/fhir/group-type"))
+        )
+        AND a.resourceUuid IN (
+        SELECT resourceUuid FROM TokenIndexEntity
+        WHERE resourceType = "Group" AND index_name = "code" AND (index_value = "35359004" AND IFNULL(index_system,'') = "https://www.snomed.org")
+        )
+        ORDER BY b.index_from DESC, c.index_from DESC
+      """.trimIndent(),
+      emptyList()
+    )
+    // Get the families
+    val families =
+      runQuery<Group>(
+        """
+      SELECT a.serializedResource
+      FROM ResourceEntity a
+      LEFT JOIN DateIndexEntity b
+      ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = ?
+      LEFT JOIN DateTimeIndexEntity c
+      ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = ?
+      WHERE a.resourceType = ?
+      AND a.resourceUuid IN (
+      SELECT resourceUuid FROM TokenIndexEntity
+      WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)
+      )
+      AND a.resourceUuid IN (
+      SELECT resourceUuid FROM TokenIndexEntity
+      WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)
+      )
+    """.trimIndent(),
+        listOf(
+          "_lastUpdated",
+          "_lastUpdated",
+          "Group",
+          "Group",
+          "type",
+          "person",
+          "http://hl7.org/fhir/group-type",
+          "Group",
+          "code",
+          "35359004",
+          "https://www.snomed.org"
+        )
+      )
+
+    families.forEach { baseResource ->
+      val memberUUIDs = mutableListOf<String>()
+      var searchQuery =
+        SearchQuery(
+          """
+          SELECT resourceUuid FROM ResourceEntity WHERE resourceType = "Patient" AND resourceId IN (
+          SELECT SUBSTR(index_value, 9) FROM ReferenceIndexEntity WHERE index_name = "member" 
+          AND resourceUuid = (SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?)
+          )
+        """.trimIndent(),
+          listOf(baseResource.logicalId)
+        )
+
+      memberUUIDs.addAll(fhirEngine.getUUIDs(searchQuery))
+      Timber.e("Member UUIDs -> $memberUUIDs")
+
+      searchQuery =
+        SearchQuery(
+          """
+          SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?
+        """.trimIndent(),
+          listOf(baseResource.logicalId)
+        )
+
+      val groupUUID = fhirEngine.getUUIDs(searchQuery).first()
+      searchQuery =
+        SearchQuery(
+          """
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Task" AND index_name = "status" 
+            AND resourceUuid IN (
+            SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Task" AND index_name = "subject" 
+            AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE resourceUuid = x'$groupUUID' AND index_name = "member")
+            ) 
+            AND (index_value = "failed" OR index_value = "completed" OR index_value = "cancelled")
+
+          """.trimIndent(),
+          emptyList()
+        )
+
+      val taskCount = fhirEngine.count(searchQuery)
+      searchQuery =
+        SearchQuery(
+          """
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Condition" 
+            AND index_name = "code" AND index_system = "http://snomed.info/sct" AND index_value = "77386006" 
+            AND resourceUuid IN (SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Condition" 
+            AND index_name = "subject" AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE index_name = "member" AND resourceUuid = x'$groupUUID') )
+          """.trimIndent(),
+          emptyList()
+        )
+
+      val pregnantWomenCount = fhirEngine.count(searchQuery)
+      val birthDate = LocalDate.now().minusYears(5).toEpochDay()
+      val memberSelector = genMemberUuidsSelector(memberUUIDs)
+      searchQuery =
+        SearchQuery(
+          """
+            SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid  
+            WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true" 
+            AND b.index_name = "birthdate" AND b.index_from >= ?
+          """.trimIndent(),
+          listOf(birthDate)
+        )
+      val childrenCount = fhirEngine.count(searchQuery)
+
+      runQuery<Task>(
+        """
+        UPDATE RegisterFamilies SET childCount = ?, taskCount = ?, pregnantWomenCount = ?, familyName = ?, householdNo = ?, householdLocation = ?
+        WHERE resourceUuid = x'$groupUUID'
+      """.trimIndent(),
+        listOf(childrenCount, taskCount, pregnantWomenCount, baseResource.name, baseResource.identifier[0].value, baseResource.characteristic[0].code.text)
+      )
     }
 
+      timer.stop()
+  }
+
+  fun genMemberUuidsSelector(memberUuids: MutableList<String>): String {
+    return memberUuids.map { "x'$it'" }.joinToString(separator = ",")
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {

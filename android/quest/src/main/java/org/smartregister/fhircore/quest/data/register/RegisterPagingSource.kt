@@ -50,7 +50,7 @@ class RegisterPagingSource(private val registerRepository: RegisterRepository) :
     return try {
       val currentPage = params.key ?: _registerPagingSourceState.currentPage
       val registerData =
-        registerRepository.loadRegisterData(
+        registerRepository.loadRegisterData2(
           currentPage = currentPage,
           registerId = _registerPagingSourceState.registerId
         )

@@ -239,7 +239,7 @@ dependencies {
         exclude group: 'org.smartregister', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-performance-optimizations-S1') {
+    api('org.smartregister:engine:0.1.0-beta02-performance-optimizations-S2') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'

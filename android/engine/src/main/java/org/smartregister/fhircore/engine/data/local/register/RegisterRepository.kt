@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import android.database.Cursor
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -86,6 +87,83 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService
   ) {
+
+  override suspend fun loadRegisterData2(currentPage: Int, registerId: String): List<ResourceData> {
+
+    val timer = Timer("currentPage $currentPage | registerID | $registerId", "loadRegisterData()")
+
+    val resourceData = mutableListOf<ResourceData>()
+
+    val searchQuery = SearchQuery("""
+      SELECT * FROM RegisterFamilies ORDER BY lastUpdated DESC LIMIT 25 OFFSET ${currentPage.times(25)}
+    """.trimIndent(),
+      emptyList()
+    )
+
+    val cursor = withContext(dispatcherProvider.io()) {
+      fhirEngine.getCursorAll(searchQuery)
+    }
+
+    while (cursor.moveToNext()) {
+      /*
+      "resourceUuid"	BLOB UNIQUE,
+        	"resourceId"	TEXT,
+        	"lastUpdated"	INTEGER,
+        	"childCount" INTEGER,
+        	"taskCount" INTEGER,
+        	"taskStatus" TEXT,
+        	"pregnantWomenCount" INTEGER,
+        	"familyName" TEXT,
+        	"householdNo" TEXT,
+        	"householdLocation" TEXT,
+        	PRIMARY KEY("resourceUuid")
+       */
+
+      val childrenCount = cursor.getInt("childCount")
+      val pregnantWomenCount = cursor.getInt("pregnantWomenCount")
+      val totalIcons = MutableList(childrenCount) {"CHILD"}
+      totalIcons.addAll(MutableList(pregnantWomenCount) {"PREGNANT_WOMAN"})
+
+      val computedValuesMap = mapOf<String, Any>(
+        "familyName" to cursor.getString("familyName"),
+        "familyId" to cursor.getString("householdNo"),
+        "familyVillage" to cursor.getString("householdLocation"),
+        "taskCount" to cursor.getInt("taskCount"),
+        "serviceStatus" to cursor.getString("taskStatus"),
+        "serviceMemberIcons" to totalIcons.joinToString(","),
+      )
+      val singleResourceData = ResourceData(
+        cursor.getString("resourceId"),
+        ResourceType.Group,
+        computedValuesMap,
+        emptyMap()
+      )
+
+      resourceData.add(singleResourceData)
+    }
+
+    timer.stop()
+    return resourceData
+  }
+
+  fun Cursor.getString(fieldName: String) : String {
+    val index = getColumnIndex(fieldName)
+    return if (index != -1) {
+      getString(index) ?: ""
+    } else {
+      ""
+    }
+  }
+
+
+  fun Cursor.getInt(fieldName: String) : Int {
+    val index = getColumnIndex(fieldName)
+    return if (index != -1) {
+      getInt(index)
+    } else {
+      0
+    }
+  }
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
@@ -523,6 +601,8 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
     val secondaryResourceConfig = profileConfiguration.secondaryResources
+
+    val timer = Timer(methodName = "loadProfileData()")
 
     val baseResource: Resource =
       withContext(dispatcherProvider.io()) {
