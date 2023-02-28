@@ -443,7 +443,7 @@ constructor(
     val relatedResourcesData = LinkedList<RelatedResourceData>()
     val startTime = System.currentTimeMillis()
     Timber.e(
-      "Starting searchRelatedResources $resourceConfig | $fhirPathExpression | $baseResourceType"
+      "Starting searchRelatedResources $baseResourceType | $resourceConfig | $fhirPathExpression"
     )
 
     if (fhirPathExpression.isNullOrEmpty()) {
@@ -509,7 +509,10 @@ constructor(
           )
         }
     }
+
+    val timer = Timer(methodName = "searchRelatedResources.relatedResourcesData.forEach", startString = "Searching related resources for ${relatedResourcesData.size}")
     relatedResourcesData.forEach { resourceData: RelatedResourceData ->
+      val timer2 = Timer(methodName = "searchRelatedResources.relatedResourcesData.forEach.relatedResources.forEach", startString = "Searching related resources for ${resourceConfig.relatedResources.size}")
       resourceConfig.relatedResources.forEach {
         val searchRelatedResources =
           searchRelatedResources(
@@ -520,11 +523,14 @@ constructor(
           )
         resourceData.relatedResources.addAll(searchRelatedResources)
       }
+
+      timer2.stop()
     }
+    timer.stop()
 
     val stopTime = System.currentTimeMillis()
     val timeTaken = stopTime - startTime
-    Timber.e("Finished searchRelatedResources -> $timeTaken ms | ${timeTaken/1000} s")
+    Timber.e("Finished searchRelatedResources -> $timeTaken ms | ${timeTaken/1000} s  for $baseResourceType | $resourceConfig")
 
     return relatedResourcesData
   }
@@ -602,12 +608,15 @@ constructor(
     val baseResourceType = baseResourceClass.newInstance().resourceType
     val secondaryResourceConfig = profileConfiguration.secondaryResources
 
-    val timer = Timer(methodName = "loadProfileData()")
+    val timer = Timer(methodName = "loadProfileData()", startString = "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig")
 
+    val timer2 = Timer(methodName = "loadProfileData.fetchBaseResource $baseResourceType")
     val baseResource: Resource =
       withContext(dispatcherProvider.io()) {
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
+
+    timer2.stop()
 
     val relatedResources = LinkedList<RelatedResourceData>()
 
@@ -628,12 +637,15 @@ constructor(
       relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
 
-    return processResourceData(
+    val res = processResourceData(
       relatedResources = relatedResources,
       baseResource = baseResource,
       views = profileConfiguration.views,
       rules = profileConfiguration.rules
     )
+
+    timer.stop()
+    return res
   }
 
   private suspend fun retrieveSecondaryResources(
