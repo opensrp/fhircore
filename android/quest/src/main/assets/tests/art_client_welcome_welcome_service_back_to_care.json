@@ -1,21 +1,23 @@
 {
   "resourceType": "Questionnaire",
-  "id": "art-client-welcome-service-high-or-detectable-viral-load",
-  "meta": {
-    "versionId": "8",
-    "lastUpdated": "2022-10-20T15:47:47.193+03:00",
-    "source": "#Cwr1H6sMkjIOyUuW"
-  },
+  "id": "art-client-welcome-service-back-to-care",
   "language": "en",
   "extension": [
     {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-      "valueCode": "https://fhir-dev.d-tree.org/StructureMap/art-client-welcome-service-high-or-detectable-viral-load"
+      "valueCode": "https://fhir-dev.d-tree.org/StructureMap/art-client-welcome-service-back-to-care"
+    },
+    {
+      "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode" : "prior-edit"
     }
+
   ],
   "title": "Welcome Service",
   "status": "active",
-  "subjectType": ["Patient"],
+  "subjectType": [
+    "Patient"
+  ],
   "publisher": "mcore",
   "contact": [
     {
@@ -95,739 +97,8 @@
           }
         }
       ],
-      "linkId": "page-2",
-      "type": "group",
-      "item": [
-        {
-          "linkId": "adherence-challenge-display",
-          "text": "<b>Adherence Challenges</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "check-box",
-                    "display": "Check-box"
-                  }
-                ],
-                "text": "Check-box"
-              }
-            }
-          ],
-          "linkId": "adherence-challenge",
-          "text": "What adherence challenge was identified in IAC with IMB?",
-          "type": "choice",
-          "required": true,
-          "repeats": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "do-not-want-art-anymore",
-                "display": "Do not want to take ART anymore?"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "timing-of-meds",
-                "display": "Timing of meds: current time of day is not a good time"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "forget-to-take-art",
-                "display": "Forgets to take ART"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no-guardian",
-                "display": "I don't have a guardian to help me"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "treatment-fatigue",
-                "display": "Treatment fatigue. Client is tired of taking treament every day"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "mental-health-issues",
-                "display": "Mental health issues - Worries, fears, sadness, suicidal thoughts, etc"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "child-disclosure",
-                "display": "Child asking about ART - needs disclosure"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no-art-privacy",
-                "display": "Unable to take ART because no privacy and has been unable to disclose"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "miss-refill-appointment",
-                "display": "Miss appointments for refills"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "other",
-                "display": "other"
-              }
-            },
-            {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
-                  "valueBoolean": true
-                }
-              ],
-              "valueCoding": {
-                "code": "none-of-the-above",
-                "display": "None of the above"
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "other",
-          "text": "* <b>ENTER</b> Other",
-          "type": "string",
-          "enableWhen": [
-            {
-              "question": "adherence-challenge",
-              "operator": "=",
-              "answerCoding": {
-                "code": "other"
-              }
-            }
-          ],
-          "enableBehavior": "all",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 3"
-              }
-            ],
-            "text": "Page 3"
-          }
-        }
-      ],
-      "linkId": "do-not-want-art-anymore-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "do-not-want-art-anymore"
-          }
-        }
-      ],
-      "enableBehavior": "all",
-      "item": [
-        {
-          "linkId": "do-not-want-art-anymore-display",
-          "text": "<b>Do not want to take ART anymore?</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "check-box",
-                    "display": "Check-box"
-                  }
-                ],
-                "text": "Check-box"
-              }
-            }
-          ],
-          "linkId": "no-art-adherence-challenges",
-          "text": "What adherence challenge was identified in IAC with IMB?",
-          "type": "choice",
-          "required": true,
-          "repeats": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "timing-of-meds",
-                "display": "Timing of meds: current time of day is not a good time"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "forget-to-take-art",
-                "display": "Forgets to take ART"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no-guardian",
-                "display": "I don't have a guardian to help me"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "treatment-fatigue",
-                "display": "Treatment fatigue. Client is tired of taking treament every day"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "mental-health-issues",
-                "display": "Mental health issues - Worries, fears, sadness, suicidal thoughts, etc"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "child-disclosure",
-                "display": "Child asking about ART - needs disclosure"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no-art-privacy",
-                "display": "Unable to take ART because no privacy and has been unable to disclose"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "miss-refill-appointment",
-                "display": "Miss appointments for refills"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "other",
-                "display": "other"
-              }
-            },
-            {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
-                  "valueBoolean": true
-                }
-              ],
-              "valueCoding": {
-                "code": "none-of-the-above",
-                "display": "None of the above"
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "other",
-          "text": "* <b>ENTER</b> Other",
-          "type": "string",
-          "enableWhen": [
-            {
-              "question": "no-art-adherence-challenges",
-              "operator": "=",
-              "answerCoding": {
-                "code": "other"
-              }
-            }
-          ],
-          "enableBehavior": "all",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 4"
-              }
-            ],
-            "text": "Page 4"
-          }
-        }
-      ],
-      "linkId": "timing-of-meds-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "timing-of-meds"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "timing-of-meds"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "timing-of-meds-display",
-          "text": "<b>Timing of meds: current time of day is not a good time</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "timing-of-meds-tasks",
-          "text": "Confirm client knows: <br> <ol> <li> Better tiime of day identified to take ART</li> <li> Remember if you forget you can take it within the next 12 hoours </li> </ol>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "timing-of-meds-tasks-done",
-          "text": "Did you discuss everything listed with the client?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 5"
-              }
-            ],
-            "text": "Page 5"
-          }
-        }
-      ],
-      "linkId": "forget-to-take-art-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "forget-to-take-art"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "forget-to-take-art"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "forget-to-take-art-display",
-          "text": "<b>Forgets to take ART</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "forget-to-take-art-tasks",
-          "text": "Confirm client knows: <br> <ol> <li> Set med reminder on phone </li><li> Use a calender to set a reminder </li> <li> Ask question to remind them of meds </li> </ol>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "forget-to-take-art-tasks-done",
-          "text": "Did you discuss everything listed with the client?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 6"
-              }
-            ],
-            "text": "Page 6"
-          }
-        }
-      ],
-      "linkId": "no-guardian-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "no-guardian"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "no-guardian"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "no-guardian-display",
-          "text": "<b>I don't have a guardian to help me</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "no-guardian-tasks",
-          "text": "Confirm client knows: <br> <ol> <li>How to identify a trustworthy guardian </li> <li>We can help advise them how to do disclosure or sit with them and do disclosure </li> </ol>  ",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "no-guardian-tasks-done",
-          "text": "Did you discuss everything listed with the client?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 7"
-              }
-            ],
-            "text": "Page 7"
-          }
-        }
-      ],
-      "linkId": "treatment-fatigue-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "treatment-fatigue"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "treatment-fatigue"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "treatment-fatigue-display",
-          "text": "<b>Treatment fatigue. Client is tired of taking treament every day</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "treatment-fatigue-tasks",
-          "text": "Confirm client knows:  <br> <ol> <li>Counsel with IBM, motivation part critical to support taking medication for life </li> <li>Find out what part of taking medication is tiresome </li> <li> Refer to support group </li> </ol>  ",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "treatment-fatigue-tasks-done",
-          "text": "Did you discuss everything listed with the client?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 8"
-              }
-            ],
-            "text": "Page 8"
-          }
-        }
-      ],
-      "linkId": "mental-health-issues-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "mental-health-issues"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "mental-health-issues"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "mental-health-issues-display",
-          "text": "<b>Mental health issues - Worries, fears, sadness, suicidal thoughts, etc</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "mental-health-issues-tasks",
-          "text": "<ol> <li>If suicidal - escort to clinician immediately</li> <li>Other LIVES support</li> </ol> ",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "mental-health-issues-tasks-done",
-          "text": "<b>Refer to a clinical provider </b>",
-          "type": "display",
-          "required": false
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 9"
-              }
-            ],
-            "text": "Page 9"
-          }
-        }
-      ],
-      "linkId": "child-disclosure-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "child-disclosure"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "child-disclosure"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "child-disclosure-display",
-          "text": "<b>Child asking about ART - needs disclosure</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "child-disclosure-tasks",
-          "text": "<ol> <li>Refer to disclosure trained site level staff to discuss and ideally complete disclosure with the child and family</li> </ol>  ",
-          "type": "display",
-          "required": false
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 10"
-              }
-            ],
-            "text": "Page 10"
-          }
-        }
-      ],
-      "linkId": "no-art-privacy-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "no-art-privacy"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "no-art-privacy"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "no-art-privacy-display",
-          "text": "<b>Unable to take ART because no privacy and has been unable to disclose</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "no-art-privacy-tasks",
-          "text": "Strategize with client: <br> <ol> <li>SAY: Everyone on ART has some concern about disclosure. You are not alone</li> <li>Verify who is a trustworthy person who can support you? </li> <li> Ask if we can help them disclose and share tips on how to disclose </li> <li> Remind them to discuss this concern with PSC when they chat </li> <li> Can you find another more private time of day and move meds to that time </li> </ol>  ",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "no-art-privacy-tasks-done",
-          "text": "Did you discuss everything listed with the client?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 11"
-              }
-            ],
-            "text": "Page 11"
-          }
-        }
-      ],
-      "linkId": "miss-refill-appointment-page",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "adherence-challenge",
-          "operator": "=",
-          "answerCoding": {
-            "code": "miss-refill-appointment"
-          }
-        },
-        {
-          "question": "no-art-adherence-challenges",
-          "operator": "=",
-          "answerCoding": {
-            "code": "miss-refill-appointment"
-          }
-        }
-      ],
-      "enableBehavior": "any",
-      "item": [
-        {
-          "linkId": "miss-refill-appointment-display",
-          "text": "<b>Miss appointments for refills</b>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "miss-refill-appointment-tasks",
-          "text": "<ol> <li>Welcome the client to care</li> <li><b>PROVIDE</b> welcome service counselling</li> <li>Welcome card opened for back to care </li>",
-          "type": "display",
-          "required": false
-        },
-        {
-          "linkId": "miss-refill-appointment-tasks-done",
-          "text": "Did you complete all the tasks listed above?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page 12"
-              }
-            ],
-            "text": "Page 12"
-          }
-        }
-      ],
       "linkId": "missed-appointment-page",
       "type": "group",
-      "enableWhen": [
-        {
-          "question": "miss-refill-appointment-tasks-done",
-          "operator": "exists",
-          "answerBoolean": true
-        }
-      ],
       "item": [
         {
           "linkId": "missed-appointment-display",
@@ -982,10 +253,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 13"
+                "display": "Page 3"
               }
             ],
-            "text": "Page 13"
+            "text": "Page 3"
           }
         }
       ],
@@ -1030,10 +301,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 14"
+                "display": "Page 4"
               }
             ],
-            "text": "Page 14"
+            "text": "Page 4"
           }
         }
       ],
@@ -1078,10 +349,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 15"
+                "display": "Page 5"
               }
             ],
-            "text": "Page 15"
+            "text": "Page 5"
           }
         }
       ],
@@ -1132,10 +403,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 16"
+                "display": "Page 6"
               }
             ],
-            "text": "Page 16"
+            "text": "Page 6"
           }
         }
       ],
@@ -1180,10 +451,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 17"
+                "display": "Page 7"
               }
             ],
-            "text": "Page 17"
+            "text": "Page 7"
           }
         }
       ],
@@ -1234,10 +505,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 18"
+                "display": "Page 8"
               }
             ],
-            "text": "Page 18"
+            "text": "Page 8"
           }
         }
       ],
@@ -1282,10 +553,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 19"
+                "display": "Page 9"
               }
             ],
-            "text": "Page 19"
+            "text": "Page 9"
           }
         }
       ],
@@ -1330,10 +601,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 20"
+                "display": "Page 10"
               }
             ],
-            "text": "Page 20"
+            "text": "Page 10"
           }
         }
       ],
@@ -1384,10 +655,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 21"
+                "display": "Page 11"
               }
             ],
-            "text": "Page 21"
+            "text": "Page 11"
           }
         }
       ],
@@ -1432,10 +703,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 22"
+                "display": "Page 12"
               }
             ],
-            "text": "Page 22"
+            "text": "Page 12"
           }
         }
       ],
@@ -1480,10 +751,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 23"
+                "display": "Page 13"
               }
             ],
-            "text": "Page 23"
+            "text": "Page 13"
           }
         }
       ],
@@ -1547,6 +818,8 @@
           "linkId": "priorities-advice",
           "text": "<ol> <li>Attend appointment on possible day before scheduled date</li> <li>Weekend appointment</li> <li>Early morning or lunch hour clinic if available </li> <li>Call clinic to notify of missing appointment but has enough meds</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
           "type": "display",
+          "required": false,
+          "enableBehavior": "any",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -1562,14 +835,14 @@
                 "code": "other-priorities"
               }
             }
-          ],
-          "enableBehavior": "any",
-          "required": false
+          ]
         },
         {
           "linkId": "travel-advice",
           "text": "<ol> <li>Attend appointment before scheduled date</li> <li>Emergency refill</li> <li>MMS </li> <li>Notify clinic if missing appointment</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
           "type": "display",
+          "required": false,
+          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -1578,14 +851,14 @@
                 "code": "travel"
               }
             }
-          ],
-          "enableBehavior": "all",
-          "required": false
+          ]
         },
         {
           "linkId": "relocation-advice",
           "text": "<ol> <li>Emergency refill</li> <li>Refill at Drop in centre/KP programs and seek assistance from CBOs</li> <li>Transfer out to nearby clinic </li> <li>Call clinic to notify of situation</li></ol> ",
           "type": "display",
+          "required": false,
+          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -1594,14 +867,14 @@
                 "code": "relocation"
               }
             }
-          ],
-          "enableBehavior": "all",
-          "required": false
+          ]
         },
         {
           "linkId": "o-transport-funds-advice",
           "text": "<ol> <li>Ask for next appointment date after pay day</li> <li>Flash clinic if you will miss appointment to let them know</li> <li>Ask for MMS </li> <li>Move to clinic closer to home/CAD</li></ol> ",
           "type": "display",
+          "required": false,
+          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -1610,9 +883,7 @@
                 "code": "no-transport-funds"
               }
             }
-          ],
-          "enableBehavior": "all",
-          "required": false
+          ]
         }
       ]
     },
@@ -1625,10 +896,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 24"
+                "display": "Page 14"
               }
             ],
-            "text": "Page 24"
+            "text": "Page 14"
           }
         }
       ],
@@ -1673,10 +944,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 25"
+                "display": "Page 15"
               }
             ],
-            "text": "Page 25"
+            "text": "Page 15"
           }
         }
       ],
@@ -1715,10 +986,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 26"
+                "display": "Page 16"
               }
             ],
-            "text": "Page 26"
+            "text": "Page 16"
           }
         }
       ],
@@ -1764,6 +1035,8 @@
           "linkId": "did-not-miss-dose-clinic-meds-display",
           "text": "<ol> <li>Encourage the client to continue coming to the clinic as indicated. <b>ACTION: </b> Correct the EMR before client leaves today </li> <li><b>SAY:</b> Great job coming to clinic before your ART finished. Please try to come when you have at least 2 tabs remaining so if there is any reason you cannot get to clinic when you plan, then you will still have some doses. Don't want until meds are all gone</li> <li>Show the clinician how many tabs you have and they will give you a later clinic date </li></ol>",
           "type": "display",
+          "required": false,
+          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "did-not-miss-dose-advice",
@@ -1772,14 +1045,14 @@
                 "code": "meds-from-clinic"
               }
             }
-          ],
-          "enableBehavior": "all",
-          "required": false
+          ]
         },
         {
           "linkId": "did-not-miss-dose-borrowed-meds-display",
           "text": "<ol> <li>Praise the client for not missing doses and review importance of not sharing meds and not all ART is the same </li> <li>Review their ART name </li></ol>",
           "type": "display",
+          "required": false,
+          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "did-not-miss-dose-advice",
@@ -1788,9 +1061,7 @@
                 "code": "borrowed-meds"
               }
             }
-          ],
-          "enableBehavior": "all",
-          "required": false
+          ]
         },
         {
           "linkId": "did-not-miss-dose-action",
@@ -1809,10 +1080,10 @@
               {
                 "system": "http://hl7.org/fhir/questionnaire-item-control",
                 "code": "page",
-                "display": "Page 16"
+                "display": "Page 17"
               }
             ],
-            "text": "Page 16"
+            "text": "Page 17"
           }
         }
       ],
@@ -1870,14 +1141,42 @@
           ],
           "enableBehavior": "any",
           "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Summary Page"
+              }
+            ],
+            "text": "Summary Page"
+          }
+        }
+      ],
+      "linkId": "summary-page",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "summary-page",
+          "text": "Summary Page",
+          "type": "display",
+          "required": false
         },
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
               "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Patient.id"
+                "name": "encounter",
+                "language": "application/x-fhir-query",
+                "expression": "Encounter"
               }
             },
             {
@@ -1885,59 +1184,21 @@
               "valueBoolean": true
             }
           ],
-          "linkId": "patient-id",
-          "type": "string"
-        },
-        {
-          "extension": [
+          "linkId": "encounter-context",
+          "type": "group",
+          "item": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'detectable-vl').select(identifier.value + ',' + executionPeriod.start.toString())"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              "valueBoolean": true
+              "linkId": "encounter-status",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Encounter#Encounter.status",
+              "type": "string",
+              "required": true,
+              "initial": [
+                {
+                  "valueString": "finished"
+                }
+              ]
             }
-          ],
-          "linkId": "tracing-task-detectable-vl",
-          "type": "string"
-        },
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Bundle.entry.select(resource as Bundle).where(id = 'tracing').entry.select(resource as Task).where(reasonCode.coding.code = 'hvl').select(identifier.value + ',' + executionPeriod.start.toString())"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              "valueBoolean": true
-            }
-          ],
-          "linkId": "tracing-task-high-vl",
-          "type": "string"
-        },
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "CarePlan.activity.where(detail.code.coding.code = 'art-client-index-case-testing').select(detail.status).toString()"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              "valueBoolean": true
-            }
-          ],
-          "linkId": "ict-status",
-          "type": "string"
+          ]
         }
       ]
     }

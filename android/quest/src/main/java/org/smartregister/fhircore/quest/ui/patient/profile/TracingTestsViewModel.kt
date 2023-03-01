@@ -269,24 +269,33 @@ constructor(
           appointmentList = listOf("Milestone")
         ),
         TestItem.QuestItem(
-          title = "welcome service high or detectable viral load",
-          questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
-          tracingList = listOf("-HVL")
-        ),
-        TestItem.QuestItem(
           title = "hiv test and next appointment",
           questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
-        ),
-        TestItem.QuestItem(
-          title = "Art Welcome Service",
-          questionnaire = "tests/art_client_welcome_service.json",
-                appointmentList = listOf("Followup")
         ),
       TestItem.QuestItem(
               title = "Woman health Screening",
               questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json",
               appointmentList = listOf("Cervical Cancer Screening")
       ),
+              TestItem.DividerItem,
+              TestItem.QuestItem(
+                      title = "Welcome Service Newly Diagnosed",
+                      questionnaire = "tests/art_client_welcome_service_newly_diagnosed.json",
+                      appointmentList = listOf("Followup")
+              ),
+              TestItem.QuestItem(
+                      title = "Welcome Service high or detectable viral load",
+                      questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
+                      tracingList = listOf("-HVL"),
+                      appointmentList = listOf("Followup")
+              ),
+              TestItem.QuestItem(
+                      title = "Welcome Service Back to Care",
+                      questionnaire = "tests/art_client_welcome_welcome_service_back_to_care.json",
+                      appointmentList = listOf("Followup")
+              ),
+              TestItem.DividerItem,
+
       )
   }
 }

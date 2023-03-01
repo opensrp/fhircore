@@ -1,0 +1,4153 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-welcome-service-newly-diagnosed",
+  "url": "http://fhir-dev.d-tree.org/fhir/StructureMap/art-client-welcome-service-newly-diagnosed",
+  "name": "ART Client Welcome Service for Newly Diagnosed",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_entries",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [{ "valueString": "collection" }]
+            }
+          ],
+          "dependent": [
+            { "name": "ExtractEncounter", "variable": ["src", "bundle"] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_encounter_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [{ "valueString": "Encounter" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_id",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_enc_status",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "finished" }]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_class",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    { "valueString": "AMB" },
+                    { "valueString": "ambulatory" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ser_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/service-type"
+                    },
+                    { "valueString": "335" },
+                    { "valueString": "Facility" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_sub",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "reference",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_sub_ref",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "reference",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_1_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractPage1Observations",
+                  "variable": ["src", "encounter", "bundle"]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_2_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractPage2Observations",
+                  "variable": ["src", "encounter", "bundle"]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_3_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractPage3Observations",
+                  "variable": ["src", "encounter", "bundle"]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_4_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractPage4Observations",
+                  "variable": ["src", "encounter", "bundle"]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_4_observations",
+              "source": [{ "context": "src" }],
+              "dependent": [
+                {
+                  "name": "ExtractPage5Observations",
+                  "variable": ["src", "encounter", "bundle"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage1Observations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractServiceDone",
+              "variable": ["src", "encounter", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractServiceDone",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_activities_done_page-1",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page1",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_activities_done_item",
+              "source": [
+                {
+                  "context": "page1",
+                  "element": "item",
+                  "variable": "serviceDone",
+                  "condition": "(linkId = 'activities-done')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_activities_done_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_activities-done",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-activities-done"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-activities-done"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_activities_done",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_activities_done",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_activities_done_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_activities_done_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "serviceDone" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_activities_done_obs_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "serviceDone" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage2Observations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractClientKnowledge",
+              "variable": ["src", "encounter", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractClientKnowledge",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_knowledge_activities_done_page-2",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'infomation-known-by-client-page')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_knowledge_activities_done_item",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "knowledgeServiceDone",
+                  "condition": "(linkId = 'knowledge-activities-done')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_knowledge_activities_done_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_knowledge_activities_done",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-knowledge-activities-done"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-knowledge-activities-done"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_knowledge_activities_done",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_knowledge_activities_done",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_knowledge_activities_done_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_knowledge_activities_done_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "knowledgeServiceDone" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_knowledge_activities_done_obs_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "knowledgeServiceDone" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage3Observations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractDifficulties",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractOtherDifficulty",
+              "variable": ["src", "encounter", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDifficulties",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_challenges_page-3",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page3",
+              "condition": "(linkId = 'difficulty-taking-arts-page')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_challenges_item",
+              "source": [
+                {
+                  "context": "page3",
+                  "element": "item",
+                  "variable": "challenge",
+                  "condition": "(linkId = 'challenges')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_challenges_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_challenges",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-challenges"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-challenges"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_challenges",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_challenges",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_challenges_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_challenges_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "challenge" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_challenges_obs_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "challenge" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractOtherDifficulty",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_other_challenges_page-3",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page3",
+              "condition": "(linkId = 'difficulty-taking-arts-page')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_other_challenges_item",
+              "source": [
+                {
+                  "context": "page3",
+                  "element": "item",
+                  "variable": "otherChallenge",
+                  "condition": "(linkId = 'other')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_other_challenges_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_other_challenges",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-other"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-other-challenges"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_other_challenges",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_other_challenges",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_other_challenges_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "otherChallenge" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage4Observations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractReadyARTStartDate",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractTraceComfirmation",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractRememberingART",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractPrivacyAdvice",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractPrivacyAction",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractTooWellAdvice",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractDiscriminationAdvice",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractTraditionalMedicine",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractSupportAdvice",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractForgetfullnessAdvice",
+              "variable": ["src", "encounter", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractRememberingART",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_remembering_art_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_remembering_art_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "artAdvice",
+                  "condition": "(linkId = 'remembering-art-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_remembering_art_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_remembering_art_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-remembering-art-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-remembering-art-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_remembering_art_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_remembering_art_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_remembering_art_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_remembering_art_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "artAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_remembering_art_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "artAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPrivacyAdvice",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_privacy_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_privacy_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "privacyAdvice",
+                  "condition": "(linkId = 'privacy-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_privacy_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_privacy_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-privacy-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-privacy-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_privacy_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_privacy_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_privacy_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_privacy_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "privacyAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_privacy_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "privacyAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPrivacyAction",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_privacy_actions_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_privacy_actions_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "privacyAction",
+                  "condition": "(linkId = 'privacy-actions')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_privacy_actions_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_privacy_actions",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-privacy-actions"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-privacy-actions"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_privacy_actions",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_privacy_actions",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_privacy_actions_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_privacy_actions_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "privacyAction" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_privacy_actions_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "privacyAction" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTooWellAdvice",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_too_well_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_too_well_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "wellAdvice",
+                  "condition": "(linkId = 'too-well-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_too_well_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_too_well_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-too-well-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-too-well-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_too_well_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_too_well_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_too_well_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_too_well_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "wellAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_too_well_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "wellAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDiscriminationAdvice",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_discrimination_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_discrimination_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "discriminationAdvice",
+                  "condition": "(linkId = 'discrimination-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_discrimination_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_discrimination_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-discrimination-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-discrimination-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_discrimination_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_discrimination_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_discrimination_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_discrimination_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "discriminationAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_discrimination_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "discriminationAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReadyARTStartDate",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_art_ready_start_date_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_art_ready_start_date_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "treatmentDate",
+                  "condition": "(linkId = 'treatment-fatigue-discussion-date')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_art_ready_start_date_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_art_ready_start_date",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-treatment-fatigue-discussion-date"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-art-ready-date"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_art_ready_start_date",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_art_ready_start_date",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_art_ready_start_date_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "treatmentDate" },
+                            { "valueString": "$this.answer.value.toString()" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTraceComfirmation",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_trace_confirmation_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_trace_confirmation_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "confirmation",
+                  "condition": "(linkId = 'treatment-fatigue-trace-confirmation')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_trace_confirmation_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_trace_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-treatment-fatigue-trace-confirmation"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-art-trace-confirmation"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_trace_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_trace_confirmation",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_trace_confirmation_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "confirmation" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTraditionalMedicine",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_traditional_medicine_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_traditional_medicine_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "medicineAdvice",
+                  "condition": "(linkId = 'traditional-medicine-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_traditional_medicine_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_traditional_medicine_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-traditional-medicine-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-traditional-medicine-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_traditional_medicine_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_traditional_medicine_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_traditional_medicine_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_traditional_medicine_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "discriminationAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_traditional_medicine_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "discriminationAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractSupportAdvice",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_support_group_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_support_group_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "supportAdvice",
+                  "condition": "(linkId = 'support-group-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_support_group_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_support_group_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-support-group-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-support-group-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_support_group_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_support_group_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_support_group_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_support_group_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "supportAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_support_group_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "supportAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractForgetfullnessAdvice",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_forgetfullness_advice_page-4",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page4",
+              "condition": "(linkId = 'page-4')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_forgetfullness_advice_item",
+              "source": [
+                {
+                  "context": "page4",
+                  "element": "item",
+                  "variable": "supportAdvice",
+                  "condition": "(linkId = 'forgetfullness-advice')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_forgetfullness_advice_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_forgetfullness_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-forgetfullness-advice"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-forgetfullness-advice"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_forgetfullness_advice",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_forgetfullness_advice",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_forgetfullness_advice_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "CodeableConcept" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_forgetfullness_advice_obs_value_display",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "supportAdvice" },
+                                { "valueString": "$this.answer.value.display" }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_forgetfullness_advice_value_coding",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "supportAdvice" },
+                                { "valueString": "$this.answer.value" }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage5Observations",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [{ "context": "src" }],
+          "dependent": [
+            {
+              "name": "ExtractRefertoPsc",
+              "variable": ["src", "encounter", "bundle"]
+            },
+            {
+              "name": "ExtractFollowUp",
+              "variable": ["src", "encounter", "bundle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractRefertoPsc",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_referral_confirmation_page-5",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page5",
+              "condition": "(linkId = 'page-5')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_referral_confirmation_item",
+              "source": [
+                {
+                  "context": "page5",
+                  "element": "item",
+                  "variable": "confirmReferral",
+                  "condition": "(linkId = 'referral-confirmation')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_referral_confirmation_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_referral_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-referral-confirmation"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-referral-confirmation"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_referral_confirmation",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_referral_confirmation",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_referral_confirmation_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "confirmReferral" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractFollowUp",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "encounter", "type": "Encounter", "mode": "target" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_follow_up_page-5",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page5",
+              "condition": "(linkId = 'page-5')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_follow_up_item",
+              "source": [
+                {
+                  "context": "page5",
+                  "element": "item",
+                  "variable": "followUp",
+                  "condition": "(linkId = 'follow-up-confirmation-speaks-to-psc')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_follow_up_obs",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [{ "valueId": "Observation" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_data_follow_up",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            { "valueString": "http://d-tree.org" },
+                            {
+                              "valueString": "art-client-welcome-service-newly-diagnosed-follow-up-confirmation-speaks-to-psc"
+                            },
+                            {
+                              "valueString": "art-client-welcome-service-follow-up-confirmation-speaks-to-psc"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            { "valueString": "vital-signs" },
+                            { "valueString": "welcome-service" }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [{ "valueId": "encounter" }]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "src" },
+                            { "valueString": "now()" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_followUp",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [{ "valueString": "Reference" }]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_follow_up",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "src" },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_follow_up_obs_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "followUp" },
+                            { "valueString": "$this.answer.value" }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_add_to_app",
+                      "source": [{ "context": "src" }],
+                      "dependent": [
+                        {
+                          "name": "EvaluateAppointment",
+                          "variable": ["src", "bundle"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "bundle", "type": "Bundle", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_create_app",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "appointment",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_bundle",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "contained",
+                  "listMode": "first",
+                  "variable": "item",
+                  "condition": "($this.ofType(Bundle).exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_missing_eval",
+                  "source": [
+                    {
+                      "context": "item",
+                      "element": "entry",
+                      "variable": "appointmentContainer",
+                      "condition": "($this.resource.ofType(Appointment).exists() and $this.resource.ofType(Appointment).start.empty())"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_get_app_item",
+                      "source": [{ "context": "appointmentContainer" }],
+                      "target": [
+                        {
+                          "variable": "appointmentItem",
+                          "transform": "evaluate",
+                          "parameter": [
+                            { "valueId": "appointmentContainer" },
+                            { "valueString": "$this.resource" }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_get_appointment_id",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "actualAppId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "appointmentItem" },
+                                {
+                                  "valueString": "$this.id.value.replace('#', '')"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_appointment_id",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "variable": "appId",
+                                  "transform": "create",
+                                  "parameter": [{ "valueString": "id" }]
+                                },
+                                {
+                                  "context": "appId",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueId": "actualAppId" }]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_reason_switch",
+                          "source": [{ "context": "src" }],
+                          "target": [
+                            {
+                              "variable": "reasonCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "appointmentContainer" },
+                                { "valueString": "$this.resource.reasonCode" }
+                              ]
+                            },
+                            {
+                              "variable": "reasonItem",
+                              "transform": "evaluate",
+                              "parameter": [
+                                { "valueId": "reasonCode" },
+                                { "valueString": "$this" }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_reasonItem",
+                              "source": [{ "context": "src" }],
+                              "target": [
+                                {
+                                  "context": "appointment",
+                                  "contextType": "variable",
+                                  "element": "reasonCode",
+                                  "transform": "copy",
+                                  "parameter": [{ "valueId": "reasonItem" }]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_app_empty_container",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "variable": "isListEmpty",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        {
+                          "valueString": "$this.entry.resource.ofType(Appointment).empty()"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "allEvaluated",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "item" },
+                        {
+                          "valueString": "$this.entry.resource.ofType(Appointment).all($this.start.exists())"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_app_empty",
+                      "source": [
+                        {
+                          "context": "src",
+                          "condition": "((isListEmpty = true) or (allEvaluated = true))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_app_populate",
+                          "source": [{ "context": "src" }],
+                          "dependent": [
+                            {
+                              "name": "PopulateAppointment",
+                              "variable": ["src", "appointment"]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "appointment",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        { "valueString": "Welcome Service Follow Up" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "https://d-tree.org" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Welcome Service Follow Up" }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            { "valueString": "Welcome Service Follow Up" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PopulateAppointment",
+      "typeMode": "none",
+      "input": [
+        { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
+        { "name": "appointment", "type": "Appointment", "mode": "target" }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_data",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "booked" }]
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "created",
+              "variable": "current_date_time",
+              "transform": "evaluate",
+              "parameter": [{ "valueId": "src" }, { "valueString": "now()" }]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_service_category",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "serviceCategory",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "HIV-AIDS program" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIVAIDS" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "HIV-AIDS program" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_type",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "appointmentType",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [{ "valueString": "CodeableConcept" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "Routine appointment" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Coding" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "ROUTINE" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Routine appointment" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_ppointment_part_patient_component",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "partComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_comp_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_participant_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Subject" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "SBJ" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "subject" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_actor",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "encOwner",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_ppointment_part_reference",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "encOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        { "valueId": "src" },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_part_performer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'practitioner-ref')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "performerComp",
+              "transform": "create",
+              "parameter": [{ "valueString": "Appointment_Participant" }]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_part_one_liners",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "required" }]
+                },
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [{ "valueString": "accepted" }]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_performer_type",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_performer_type_text",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_part_performer_type_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "PRF" }]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [{ "valueString": "Performer" }]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_actor_performer",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "performer",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "Reference" }]
+                },
+                {
+                  "context": "performer",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    { "valueId": "src" },
+                    {
+                      "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
