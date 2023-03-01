@@ -40,9 +40,9 @@ import org.hl7.fhir.r4.model.ResourceType
  */
 @Serializable
 data class ManagingEntityConfig(
-  val nameFhirPathExpression: String,
-  val eligibilityCriteriaFhirPathExpression: String,
-  val resourceType: ResourceType,
+  val nameFhirPathExpression: String? = null,
+  val eligibilityCriteriaFhirPathExpression: String? = "",
+  val resourceType: ResourceType? = null,
   val dialogTitle: String? = null,
   val dialogWarningMessage: String? = null,
   val dialogContentMessage: String? = null,

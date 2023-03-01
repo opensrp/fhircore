@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -122,19 +121,20 @@ constructor(
                       questionnaireConfig.interpolate(
                         event.resourceData?.computedValuesMap ?: emptyMap()
                       )
-                    val params= actionConfig.params.map {
-                      ActionParameter(
-                        key = it.key,
-                        paramType = it.paramType,
-                        dataType = it.dataType,
-                        linkId = it.linkId,
-                        value =
-                        it.value.interpolate(
-                          event.resourceData?.computedValuesMap ?: emptyMap()
+                    val params =
+                      actionConfig.params.map {
+                        ActionParameter(
+                          key = it.key,
+                          paramType = it.paramType,
+                          dataType = it.dataType,
+                          linkId = it.linkId,
+                          value =
+                            it.value.interpolate(
+                              event.resourceData?.computedValuesMap ?: emptyMap()
+                            )
                         )
-                      )
-                    }
-                    val actionParams =params.toTypedArray()
+                      }
+                    val actionParams = params.toTypedArray()
 
                     if (event.resourceData != null) {
                       questionnaireResponse =
@@ -211,14 +211,14 @@ constructor(
           ?.map {
             registerRepository.loadResource(
               it.entity.extractId(),
-              event.managingEntity.resourceType
+              event.managingEntity.resourceType!!
             )
           }
           ?.filter { managingEntityResource ->
             fhirPathDataExtractor
               .extractValue(
                 base = managingEntityResource,
-                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression!!
               )
               .toBoolean()
           }
@@ -227,7 +227,10 @@ constructor(
               groupId = event.resourceData.baseResourceId,
               logicalId = it.logicalId.extractLogicalIdUuid(),
               memberInfo =
-                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
+                fhirPathDataExtractor.extractValue(
+                  it,
+                  event.managingEntity.nameFhirPathExpression!!
+                )
             )
           }
           ?: emptyList()
