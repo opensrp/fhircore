@@ -24,5 +24,7 @@
     <item name="hiv_test_and_results"  type="id"/>
     <item name="hiv_test_and_next_appointment"  type="id"/>
     <item name="remove_hiv_patient"  type="id"/>
+    <item name="patient_change_status"  type="id"/>
+    <item name="patient_transfer_out" type="id"/>
     <item name="tracing_history" type="id"/>
 </resources>
