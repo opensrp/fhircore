@@ -24,7 +24,7 @@ import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import timber.log.Timber
 
@@ -33,7 +33,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   @Inject lateinit var workerFactory: HiltWorkerFactory
 
-  @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
 
@@ -61,7 +61,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     configuration =
       configuration
         ?: DataCaptureConfig(
-          attachmentResolver = referenceAttachmentResolver,
+          urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver
         )
     return configuration as DataCaptureConfig

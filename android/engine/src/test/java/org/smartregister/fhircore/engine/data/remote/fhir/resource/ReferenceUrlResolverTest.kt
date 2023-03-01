@@ -37,9 +37,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
-class ReferenceAttachmentResolverTest : RobolectricTest() {
+class ReferenceUrlResolverTest : RobolectricTest() {
   @get:Rule val coroutineTestRule = CoroutineTestRule()
-  private lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  private lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   private val fhirEngine = mockk<FhirEngine>()
 
@@ -47,13 +47,8 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    referenceAttachmentResolver =
-      spyk(
-        ReferenceAttachmentResolver(
-          fhirEngine = fhirEngine,
-          fhirResourceService = fhirResourceService
-        )
-      )
+    referenceUrlResolver =
+      spyk(ReferenceUrlResolver(fhirEngine = fhirEngine, fhirResourceService = fhirResourceService))
   }
 
   @Test
@@ -63,7 +58,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
       coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
       Assert.assertEquals(
         binary,
-        referenceAttachmentResolver.resolveBinaryResource(
+        referenceUrlResolver.resolveBinaryResource(
           "https://fhir-server.org/Binary/sample-binary-image"
         )
       )
@@ -74,9 +69,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   fun testResolveImageUrlWithNullBodyShouldReturnNull() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirResourceService.fetchImage(any()) } returns null
-      Assert.assertNull(
-        referenceAttachmentResolver.resolveImageUrl("https://image-server.com/8929839")
-      )
+      Assert.assertNull(referenceUrlResolver.resolveImageUrl("https://image-server.com/8929839"))
     }
   }
 
@@ -102,7 +95,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
         ))
 
       coEvery { fhirResourceService.fetchImage(any()) } returns mockResponseBody
-      val bitmap = referenceAttachmentResolver.resolveImageUrl("https://image-server.com/8929839")
+      val bitmap = referenceUrlResolver.resolveImageUrl("https://image-server.com/8929839")
       Assert.assertNotNull(bitmap)
       Assert.assertTrue(bitmap is Bitmap)
     }
