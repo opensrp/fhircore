@@ -203,7 +203,7 @@ constructor(
     baseResources.map { baseResource: Resource ->
       val currentRelatedResources = LinkedList<RelatedResourceData>()
 
-      /*relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
             searchRelatedResources(
@@ -214,7 +214,7 @@ constructor(
             )
           }
         currentRelatedResources.addAll(relatedResources)
-      }*/
+      }
 
       // Include secondary resourceData in each row if secondaryResources are configured
       currentRelatedResources.addAll(secondaryResourceData)

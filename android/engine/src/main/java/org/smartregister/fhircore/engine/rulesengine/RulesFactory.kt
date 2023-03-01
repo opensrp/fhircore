@@ -138,7 +138,7 @@ constructor(
     val timer = Timer(methodName = "fireRule")
 
     // Fetch the resourceUUIDs of the members
-    val memberUUIDs = mutableListOf<String>()
+    /*val memberUUIDs = mutableListOf<String>()
     var groupUUID = ""
     if (fhirEngine != null) {
       val timer2 = Timer(methodName = "fireRule.executeFetchMembersQuery")
@@ -173,7 +173,7 @@ constructor(
     val memberSelector = genMemberUuidsSelector(memberUUIDs)
     val birthDate = LocalDate.now()
       .minusYears(5)
-      .toEpochDay()
+      .toEpochDay()*/
 
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
@@ -196,7 +196,7 @@ constructor(
     relatedResourcesMap.forEach { facts.put(it.key, it.value) }
     rulesEngine.fire(Rules(customRules), facts)
 
-    ruleConfigs.forEach { ruleConfig ->
+    /*ruleConfigs.forEach { ruleConfig ->
 
 
       ruleConfig.actions.forEach {
@@ -260,7 +260,7 @@ constructor(
           computedValuesMap.put("serviceMemberIcons", totalIcons.joinToString(","))
         }
       }
-    }
+    }*/
 
     computedValuesMap.forEach {
       Timber.e("computedValuesMap for ${baseResource.logicalId} -> ${it.key} = ${it.value}")
