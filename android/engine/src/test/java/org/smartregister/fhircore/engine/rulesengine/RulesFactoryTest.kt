@@ -67,6 +67,34 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
+fun populateTestPatient(): Patient {
+  val patientId = "patient-1"
+  val patient: Patient =
+    Patient().apply {
+      id = patientId
+      active = true
+      birthDate = LocalDate.parse("1999-10-03").toDate()
+      gender = Enumerations.AdministrativeGender.MALE
+      address =
+        listOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      name =
+        listOf(
+          HumanName().apply {
+            given = mutableListOf(StringType("Kiptoo"))
+            family = "Maina"
+          }
+        )
+      telecom = listOf(ContactPoint().apply { value = "12345" })
+      meta = Meta().apply { lastUpdated = Date() }
+    }
+  return patient
+}
+
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
@@ -561,35 +589,6 @@ class RulesFactoryTest : RobolectricTest() {
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
-
-  private fun populateTestPatient(): Patient {
-    val patientId = "patient-1"
-    val patient: Patient =
-      Patient().apply {
-        id = patientId
-        active = true
-        birthDate = LocalDate.parse("1999-10-03").toDate()
-        gender = Enumerations.AdministrativeGender.MALE
-        address =
-          listOf(
-            Address().apply {
-              city = "Nairobi"
-              country = "Kenya"
-            }
-          )
-        name =
-          listOf(
-            HumanName().apply {
-              given = mutableListOf(StringType("Kiptoo"))
-              family = "Maina"
-            }
-          )
-        telecom = listOf(ContactPoint().apply { value = "12345" })
-        meta = Meta().apply { lastUpdated = Date() }
-      }
-    return patient
-  }
-
   private fun populateCarePlan(): CarePlan {
     val carePlan: CarePlan =
       CarePlan().apply {
