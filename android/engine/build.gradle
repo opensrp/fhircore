@@ -226,7 +226,7 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
     }
 
-    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview4-dev-SNAPSHOT') {
+    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
