@@ -24,6 +24,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
@@ -51,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
+import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RulesFactory
@@ -149,19 +152,21 @@ constructor(
 
   fun generateRules(ruleConfigs: List<RuleConfig>): Rules {
     val customRules =
-      ruleConfigs
-        .map { ruleConfig ->
-          val customRule: JexlRule =
-            JexlRule(jexlEngine)
-              .name(ruleConfig.name)
-              .description(ruleConfig.description)
-              .priority(ruleConfig.priority)
-              .`when`(ruleConfig.condition.ifEmpty { TRUE })
+      runBlocking(Dispatchers.Default) {
+        ruleConfigs
+          .pmap { ruleConfig ->
+            val customRule: JexlRule =
+              JexlRule(jexlEngine)
+                .name(ruleConfig.name)
+                .description(ruleConfig.description)
+                .priority(ruleConfig.priority)
+                .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-          ruleConfig.actions.forEach { customRule.then(it) }
-          customRule
-        }
-        .toSet()
+            ruleConfig.actions.forEach { customRule.then(it) }
+            customRule
+          }
+          .toSet()
+      }
     return Rules(customRules)
   }
 

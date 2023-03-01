@@ -24,6 +24,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.util.pmap
 
 class MeasureReportRepository(
   private val measureReportConfiguration: MeasureReportConfiguration,
@@ -49,7 +50,7 @@ class MeasureReportRepository(
         currentPage = currentPage,
         registerId = measureReportConfiguration.registerId
       )
-      .map {
+      .pmap {
         rulesExecutor.processResourceData(
           baseResource = it.resource,
           relatedRepositoryResourceData = it.relatedResources,
