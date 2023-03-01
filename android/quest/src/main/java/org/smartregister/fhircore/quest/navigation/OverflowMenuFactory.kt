@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.navigation
 
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.quest.R
 
 class OverflowMenuFactory @Inject constructor() {
@@ -47,12 +46,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.change_family_head, R.string.change_family_head),
       OverflowMenuItem(R.id.family_activity, R.string.family_activity),
       OverflowMenuItem(R.id.view_past_encounters, R.string.view_past_encounters),
-      OverflowMenuItem(
-        id = R.id.remove_family,
-        titleResource = R.string.remove_family,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   PATIENT_PROFILE(
@@ -60,12 +55,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.individual_details, R.string.individual_details),
       OverflowMenuItem(R.id.view_family, R.string.view_family),
       OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
-      OverflowMenuItem(
-        id = R.id.remove_family_member,
-        titleResource = R.string.remove_this_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   NEWLY_DIAGNOSED_PROFILE(
@@ -77,12 +68,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   ART_CLIENT_PROFILE(
@@ -94,12 +81,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   EXPOSED_INFANT_PROFILE(
@@ -108,12 +91,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   CHILD_CONTACT_PROFILE(
@@ -121,13 +100,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   SEXUAL_CONTACT_PROFILE(
@@ -135,12 +109,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   COMMUNITY_POSITIVE_PROFILE(
@@ -148,23 +118,15 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   NOT_ON_ART(
     listOf(
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(
-        id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_active_person,
-        titleColor = DangerColor,
-        confirmAction = true
-      )
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   TRACING_PROFILE(

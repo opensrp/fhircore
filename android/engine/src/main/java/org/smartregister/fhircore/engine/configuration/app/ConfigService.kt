@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -47,6 +48,18 @@ interface ConfigService {
 
   fun unschedulePlan(context: Context) {
     WorkManager.getInstance(context).cancelUniqueWork(FhirTaskPlanWorker.WORK_ID)
+  }
+
+  fun scheduleCheckForMissedAppointments(context: Context) {
+    val workRequest =
+      PeriodicWorkRequestBuilder<MissedFHIRAppointmentsWorker>(1, TimeUnit.DAYS).build()
+
+    WorkManager.getInstance(context)
+      .enqueueUniquePeriodicWork(
+        MissedFHIRAppointmentsWorker.NAME,
+        ExistingPeriodicWorkPolicy.REPLACE,
+        workRequest
+      )
   }
 
   /** Retrieve registry sync params */

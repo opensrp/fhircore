@@ -45,17 +45,17 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileNewlyDiagnosed =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
     Assert.assertNotNull(uiProfileNewlyDiagnosed)
-    Assert.assertEquals(8, uiProfileNewlyDiagnosed.size)
+    Assert.assertEquals(9, uiProfileNewlyDiagnosed.size)
 
     val uiProfileAlreadyOnART =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE)
     Assert.assertNotNull(uiProfileAlreadyOnART)
-    Assert.assertEquals(8, uiProfileAlreadyOnART.size)
+    Assert.assertEquals(9, uiProfileAlreadyOnART.size)
 
     val uiProfileExposedInfant =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.EXPOSED_INFANT_PROFILE)
     Assert.assertNotNull(uiProfileExposedInfant)
-    Assert.assertEquals(5, uiProfileExposedInfant.size)
+    Assert.assertEquals(6, uiProfileExposedInfant.size)
 
     val uiProfileChildContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.CHILD_CONTACT_PROFILE)
@@ -65,22 +65,22 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileSexualContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SEXUAL_CONTACT_PROFILE)
     Assert.assertNotNull(uiProfileSexualContact)
-    Assert.assertEquals(4, uiProfileSexualContact.size)
+    Assert.assertEquals(5, uiProfileSexualContact.size)
 
     val uiProfileHivPositive =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.COMMUNITY_POSITIVE_PROFILE)
     Assert.assertNotNull(uiProfileHivPositive)
-    Assert.assertEquals(4, uiProfileHivPositive.size)
+    Assert.assertEquals(5, uiProfileHivPositive.size)
 
     val uiProfileFamily =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
     Assert.assertNotNull(uiProfileFamily)
-    Assert.assertEquals(5, uiProfileFamily.size)
+    Assert.assertEquals(6, uiProfileFamily.size)
 
     val uiProfilePatient =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
     Assert.assertNotNull(uiProfilePatient)
-    Assert.assertEquals(4, uiProfilePatient.size)
+    Assert.assertEquals(5, uiProfilePatient.size)
   }
 
   @Test
