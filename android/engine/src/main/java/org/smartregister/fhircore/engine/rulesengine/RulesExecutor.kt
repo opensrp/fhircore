@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.pmap
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
@@ -93,7 +94,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     listRelatedResources: List<ExtractedResource>,
     computedValuesMap: Map<String, Any>
   ) =
-    this.map { resource ->
+    this.pmap { resource ->
       val listItemRelatedResources: Map<String, List<Resource>> =
         listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
           (id

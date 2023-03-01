@@ -23,6 +23,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.util.pmap
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
@@ -72,7 +73,7 @@ class RegisterPagingSource(
         }
 
       val data =
-        registerData.map { repoResourceData ->
+        registerData.pmap { repoResourceData ->
           rulesExecutor.processResourceData(
             baseResource = repoResourceData.resource,
             relatedRepositoryResourceData = repoResourceData.relatedResources,
