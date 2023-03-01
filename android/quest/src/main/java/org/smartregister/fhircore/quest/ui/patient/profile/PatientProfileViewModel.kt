@@ -299,6 +299,13 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
+          R.id.patient_transfer_out ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = PATIENT_TRANSFER_OUT,
+              clientIdentifier = patientId,
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = profile.populationResources
+            )
           R.id.patient_change_status ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = PATIENT_CHANGE_STATUS,
@@ -427,5 +434,6 @@ constructor(
       "contact-and-community-positive-hiv-test-and-next-appointment"
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
     const val PATIENT_CHANGE_STATUS = "patient-change-status"
+    const val PATIENT_TRANSFER_OUT = "patient-transfer-out"
   }
 }
