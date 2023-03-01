@@ -43,6 +43,8 @@ import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
@@ -139,7 +141,8 @@ constructor(
           relatedResources = currentRelatedResources,
           baseResource = baseResource,
           views = registerConfiguration.registerCard.views,
-          rules = registerConfiguration.registerCard.rules
+          rules = registerConfiguration.registerCard.rules,
+          params = emptyArray()
         )
 
       resourceData.add(currentResourceData)
@@ -152,7 +155,8 @@ constructor(
     relatedResources: LinkedList<RelatedResourceData>,
     baseResource: Resource,
     rules: List<RuleConfig>,
-    views: List<ViewProperties>
+    views: List<ViewProperties>,
+    params: Array<ActionParameter>?
   ): ResourceData {
 
     val relatedResourcesMap = relatedResources.createRelatedResourcesMap()
@@ -163,7 +167,7 @@ constructor(
         ruleConfigs = rules,
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
-      )
+      ).toMutableMap().plus(params?.associate { it.key to it.value }?.toMap() ?: emptyMap())
 
     val listResourceDataMap = computeListRules(views, relatedResourcesMap, computedValuesMap)
 
@@ -458,8 +462,13 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
-    paramsMap: Map<String, String>?
+    paramsList: Array<ActionParameter>?
   ): ResourceData {
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        ?.associate { it.key to it.value }
+        ?: emptyMap()
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
@@ -501,7 +510,8 @@ constructor(
       relatedResources = relatedResources,
       baseResource = baseResource,
       views = profileConfiguration.views,
-      rules = profileConfiguration.rules
+      rules = profileConfiguration.rules,
+      params = paramsList
     )
   }
 

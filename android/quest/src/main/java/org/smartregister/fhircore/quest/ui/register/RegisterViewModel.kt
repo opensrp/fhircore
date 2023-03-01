@@ -183,7 +183,7 @@ constructor(
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> =
         paramsList
-          ?.filter { it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty() }
+          ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
           ?.associate { it.key to it.value }
           ?: emptyMap()
 

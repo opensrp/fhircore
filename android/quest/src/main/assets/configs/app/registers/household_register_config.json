@@ -160,7 +160,7 @@
                       "value": "@{familyId}"
                     },
                     {
-                      "paramType": "DATAPASS",
+                      "paramType": "PARAMDATA",
                       "key": "practitionerId",
                       "value": "@{practitionerId}"
                     }
@@ -179,7 +179,7 @@
                     "value": "@{familyId}"
                   },
                   {
-                    "paramType": "DATAPASS",
+                    "paramType": "PARAMDATA",
                     "key": "practitionerId",
                     "value": "@{practitionerId}"
                   }

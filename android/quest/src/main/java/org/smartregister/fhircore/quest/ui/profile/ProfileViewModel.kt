@@ -87,13 +87,8 @@ constructor(
     paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
-      val paramsMap: Map<String, String> =
-        paramsList
-          ?.filter { it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty() }
-          ?.associate { it.key to it.value }
-          ?: emptyMap()
       val resourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
@@ -127,19 +122,19 @@ constructor(
                       questionnaireConfig.interpolate(
                         event.resourceData?.computedValuesMap ?: emptyMap()
                       )
-                    val actionParams =
-                      actionConfig.params.map {
-                        ActionParameter(
-                          key = it.key,
-                          paramType = it.paramType,
-                          dataType = it.dataType,
-                          linkId = it.linkId,
-                          value =
-                            it.value.interpolate(
-                              event.resourceData?.computedValuesMap ?: emptyMap()
-                            )
+                    val params= actionConfig.params.map {
+                      ActionParameter(
+                        key = it.key,
+                        paramType = it.paramType,
+                        dataType = it.dataType,
+                        linkId = it.linkId,
+                        value =
+                        it.value.interpolate(
+                          event.resourceData?.computedValuesMap ?: emptyMap()
                         )
-                      }
+                      )
+                    }
+                    val actionParams =params.toTypedArray()
 
                     if (event.resourceData != null) {
                       questionnaireResponse =
@@ -165,7 +160,7 @@ constructor(
                       context = event.navController.context,
                       intentBundle = intentBundle,
                       questionnaireConfig = questionnaireConfigInterpolated,
-                      actionParams = actionParams
+                      actionParams = actionParams.toList()
                     )
                   }
                 }

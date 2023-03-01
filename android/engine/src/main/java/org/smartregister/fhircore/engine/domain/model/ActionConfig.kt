@@ -62,4 +62,4 @@ data class ActionParameter(
   val dataType: DataType? = null,
   val value: String,
   val linkId: String? = null
-) : java.io.Serializable, Parcelable
+) : Parcelable

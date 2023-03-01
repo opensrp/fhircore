@@ -54,13 +54,13 @@ fun List<ActionConfig>.handleClickEvent(
                 linkId = it.linkId,
                 value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
               )
-            }
+            }.toTypedArray()
 
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = actionParams
+              actionParams = actionParams.toList()
             )
           }
         }
@@ -81,7 +81,7 @@ fun List<ActionConfig>.handleClickEvent(
                     linkId = it.linkId,
                     value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
                   )
-                }
+                }.toTypedArray()
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
@@ -52,6 +53,6 @@ interface Repository {
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsMap: Map<String, String>? = emptyMap()
+    paramsList: Array<ActionParameter>? = emptyArray()
   ): ResourceData?
 }
