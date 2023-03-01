@@ -46,6 +46,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.change_family_head, R.string.change_family_head),
       OverflowMenuItem(R.id.family_activity, R.string.family_activity),
       OverflowMenuItem(R.id.view_past_encounters, R.string.view_past_encounters),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -54,6 +55,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.individual_details, R.string.individual_details),
       OverflowMenuItem(R.id.view_family, R.string.view_family),
       OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -66,6 +68,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -78,6 +81,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -87,6 +91,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -95,6 +100,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -103,6 +109,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
@@ -111,12 +118,14 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   ),
   NOT_ON_ART(
     listOf(
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
   )
