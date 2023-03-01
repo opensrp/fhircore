@@ -72,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -204,6 +205,10 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
+          if (questionnaireConfig.setAppVersion) {
+            appendAppVersion(bundleEntry.resource)
+          }
+
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -306,6 +311,25 @@ constructor(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
           )
     }
+  }
+
+  /**
+   * This creates a meta tag that records the App Version as defined in the build.gradle and updates
+   * all resources created by the App with the relevant app version name. The tag defines three
+   * strings: 'setSystem - The code system' , 'setCode - The code would be the App Version defined
+   * on the build.gradle.', and 'setDisplay - The display name'. All resources created by the App
+   * will have a tag of the App Version on the meta.tag.
+   *
+   * @property resource The resource to add the meta tag to.
+   */
+  fun appendAppVersion(resource: Resource) {
+    // Create a tag with the app version
+    val metaTag = resource.meta.addTag()
+    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
+      "Application Version"
+
+    // Update resource with metaTag
+    resource.meta.apply { addTag(metaTag) }
   }
 
   suspend fun extractCarePlan(
