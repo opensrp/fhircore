@@ -73,7 +73,7 @@ class PatientProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
+  val syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
@@ -86,6 +86,9 @@ constructor(
     savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
   val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
+
+  // TODO: replace later with actual implementation from the engine
+  val isSyncing = mutableStateOf(false)
 
   var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
@@ -133,9 +136,15 @@ constructor(
         override fun onSync(state: SyncJobStatus) {
           when (state) {
             is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+              isSyncing.value = false
               fetchPatientProfileDataWithChildren()
             }
-            else -> {}
+            is SyncJobStatus.Started -> {
+              isSyncing.value = true
+            }
+            else -> {
+              isSyncing.value = false
+            }
           }
         }
       },
@@ -168,6 +177,10 @@ constructor(
           )
         )
     }
+  }
+
+  fun reSync() {
+    syncBroadcaster.runSync()
   }
 
   fun filterGuardianVisitTasks() {
