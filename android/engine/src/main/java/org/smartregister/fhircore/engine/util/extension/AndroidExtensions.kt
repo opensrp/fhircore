@@ -172,7 +172,7 @@ inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
 }
 
 /** This function checks if the device is online */
-fun Activity.isDeviceOnline(): Boolean {
+fun Context.isDeviceOnline(): Boolean {
   val connectivityManager =
     this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
