@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -114,9 +115,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
 
     syncBroadcaster.run {
-      with(appMainViewModel.syncSharedFlow) {
-        runSync(this)
-        schedulePeriodicSync(this)
+      if (isDeviceOnline()) {
+        with(appMainViewModel.syncSharedFlow) {
+          runSync(this)
+          schedulePeriodicSync(this)
+        }
       }
     }
   }
