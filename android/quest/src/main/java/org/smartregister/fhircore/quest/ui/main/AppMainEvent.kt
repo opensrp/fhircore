@@ -48,5 +48,5 @@ sealed class AppMainEvent {
     val resourceConfig: FhirResourceConfig? = null
   ) : AppMainEvent()
 
-  object SyncData : AppMainEvent()
+  data class SyncData(val context: Context) : AppMainEvent()
 }
