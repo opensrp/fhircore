@@ -165,7 +165,7 @@ constructor(
           .activeTasks()
           .sortedWith(
             compareBy<Task>(
-              { it.clinicVisitOrder(metaCodingSystemTag) ?: Integer.MAX_VALUE },
+              { it.clinicVisitOrder(metaCodingSystemTag) ?: Double.MAX_VALUE },
               // tasks with no clinicVisitOrder, would be sorted with Task#description
               { it.description }
             )

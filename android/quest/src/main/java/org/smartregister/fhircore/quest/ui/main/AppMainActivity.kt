@@ -163,7 +163,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     // TODO use sharedpref to save the state
     with(configService) {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@AppMainActivity)
+        this.schedulePlan(this@AppMainActivity).also {
+          scheduleCheckForMissedAppointments(this@AppMainActivity)
+        }
       else this.unschedulePlan(this@AppMainActivity)
     }
   }
