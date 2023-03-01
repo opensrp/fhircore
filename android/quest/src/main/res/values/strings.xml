@@ -57,6 +57,7 @@
     <string name="remove_hiv_patient_warning">%1$s will be removed permanently. This action can’t be undone.</string>
     <string name="remove_active_person">Remove This Person</string>
     <string name="change_status">Change Status</string>
+    <string name="transfer_out">Transfer Out</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Device to device sync</string>
