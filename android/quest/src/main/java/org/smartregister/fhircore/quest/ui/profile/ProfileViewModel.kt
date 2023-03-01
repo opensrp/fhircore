@@ -87,15 +87,11 @@ constructor(
     paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
-      var filterParams: List<ActionParameter>? = null
-      if (paramsList != null) {
-        filterParams =
-          paramsList.filter {
-            it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty()
-          }
-      }
-      val paramsMap = mapOf<String, String>()
-      filterParams?.forEach { paramsMap[it.key] to it.value }
+      val paramsMap: Map<String, String> =
+        paramsList
+          ?.filter { it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty() }
+          ?.associate { it.key to it.value }
+          ?: emptyMap()
       val resourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
       profileUiState.value =

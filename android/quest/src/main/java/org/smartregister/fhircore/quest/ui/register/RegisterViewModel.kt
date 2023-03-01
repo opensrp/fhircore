@@ -181,15 +181,11 @@ constructor(
     paramsList: Array<ActionParameter>?
   ) {
     if (registerId.isNotEmpty()) {
-      var filterParams: List<ActionParameter>? = null
-      if (paramsList != null) {
-        filterParams =
-          paramsList.filter {
-            it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty()
-          }
-      }
-      val paramsMap = mapOf<String, String>()
-      filterParams?.forEach { paramsMap[it.key] to it.value }
+      val paramsMap: Map<String, String> =
+        paramsList
+          ?.filter { it.paramType == ActionParameterType.DATAPASS && !it.value.isNullOrEmpty() }
+          ?.associate { it.key to it.value }
+          ?: emptyMap()
 
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)

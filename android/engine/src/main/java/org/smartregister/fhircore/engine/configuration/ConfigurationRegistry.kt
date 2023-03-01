@@ -85,19 +85,21 @@ constructor(
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      configsJsonMap.getValue(configKey).decodeResourceFromString()
+      if (paramsMap?.isNullOrEmpty() == false)
+        configsJsonMap.getValue(configKey).interpolate(paramsMap).decodeResourceFromString()
+      else configsJsonMap.getValue(configKey).decodeResourceFromString()
     else
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
           template =
-            configsJsonMap
-              .getValue(configKey)
-              .interpolate(
-                paramsMap!!
-              ) // java.util.NoSuchElementException: Key application is missing in the map.
-        )
+            if (paramsMap?.isNullOrEmpty() == false)
+              configsJsonMap.getValue(configKey).interpolate(paramsMap)
+            else configsJsonMap.getValue(configKey)
+
+          // java.util.NoSuchElementException: Key application is missing in the map.
+          )
         .decodeJson(jsonInstance = json)
   }
 

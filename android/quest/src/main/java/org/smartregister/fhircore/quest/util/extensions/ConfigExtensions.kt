@@ -72,7 +72,16 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.actionParams to actionConfig.params
+              NavigationArg.PARAMS to
+                actionConfig.params.map {
+                  ActionParameter(
+                    key = it.key,
+                    paramType = it.paramType,
+                    dataType = it.dataType,
+                    linkId = it.linkId,
+                    value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+                  )
+                }
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

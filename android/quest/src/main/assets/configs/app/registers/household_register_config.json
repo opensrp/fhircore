@@ -51,6 +51,11 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ]
       }
@@ -61,7 +66,8 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId"
+      "familyId",
+      "practitionerId"
     ]
   },
   "registerCard": {
@@ -78,6 +84,13 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
         ]
       },
       {
@@ -145,6 +158,11 @@
                     {
                       "key": "familyId",
                       "value": "@{familyId}"
+                    },
+                    {
+                      "paramType": "DATAPASS",
+                      "key": "practitionerId",
+                      "value": "@{practitionerId}"
                     }
                   ]
                 }
@@ -159,6 +177,11 @@
                   {
                     "key": "familyId",
                     "value": "@{familyId}"
+                  },
+                  {
+                    "paramType": "DATAPASS",
+                    "key": "practitionerId",
+                    "value": "@{practitionerId}"
                   }
                 ]
               }

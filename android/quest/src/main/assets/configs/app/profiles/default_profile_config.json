@@ -1025,13 +1025,6 @@
                     "actions": [
                       "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
                     ]
-                  },
-                  {
-                    "name": "practitionerId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
-                    ]
                   }
                 ],
                 "views": [
@@ -1200,11 +1193,6 @@
                             "dataType": "STRING",
                             "key": "sayanaPressStockOutFlagId",
                             "value": "@{sayanaPressStockOutFlagId}"
-                          },
-                          {
-                            "paramType": "DATAPASS",
-                            "key": "practitionerId",
-                            "value": "@{practitionerId}"
                           }
                         ]
                       }
