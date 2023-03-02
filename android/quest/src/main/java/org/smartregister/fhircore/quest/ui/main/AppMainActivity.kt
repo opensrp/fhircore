@@ -114,14 +114,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       schedulePeriodicJobs()
     }
 
-    syncBroadcaster.run {
-      if (isDeviceOnline()) {
-        with(appMainViewModel.syncSharedFlow) {
-          runSync(this)
-          schedulePeriodicSync(this)
-        }
-      }
-    }
+    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
@@ -172,6 +165,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
       else -> {
         /*Do nothing */
+      }
+    }
+  }
+
+  private fun runSync(syncBroadcaster: SyncBroadcaster) {
+    syncBroadcaster.run {
+      if (isDeviceOnline()) {
+        with(appMainViewModel.syncSharedFlow) {
+          runSync(this)
+          schedulePeriodicSync(this)
+        }
       }
     }
   }

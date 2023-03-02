@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.usersetting
 
+import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
@@ -28,6 +29,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -87,12 +89,14 @@ class UserSettingViewModelTest : RobolectricTest() {
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        fhirEngine = mockk(),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-        syncListenerManager = mockk(relaxed = true),
-        context = context
+      spyk(
+        SyncBroadcaster(
+          configurationRegistry,
+          fhirEngine = mockk(),
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          syncListenerManager = mockk(relaxed = true),
+          context = context
+        )
       )
 
     userSettingViewModel =
@@ -111,8 +115,22 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRunSync() {
-    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
+  fun testRunSyncWhenDeviceIsOnline() {
+    every { syncBroadcaster.runSync(any()) } returns Unit
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+  }
+
+  @Test
+  fun testDoNotRunSyncWhenDeviceIsOffline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+
+    every { syncBroadcaster.runSync(any()) } returns Unit
+
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
   }
 
   @Test
