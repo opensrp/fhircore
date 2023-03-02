@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
-import java.util.LinkedList
+import java.util.concurrent.ConcurrentLinkedQueue
 import org.hl7.fhir.r4.model.Resource
 
 /**
@@ -28,5 +28,5 @@ import org.hl7.fhir.r4.model.Resource
 data class RepositoryResourceData(
   val configId: String? = null,
   val resource: Resource,
-  val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
+  val relatedResources: ConcurrentLinkedQueue<RepositoryResourceData> = ConcurrentLinkedQueue()
 )

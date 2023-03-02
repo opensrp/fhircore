@@ -27,6 +27,7 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -96,7 +97,8 @@ constructor(
           .processResourceData(
             baseResource = repoResourceData.resource,
             relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
-            ruleConfigs = profileConfigs.rules
+            ruleConfigs = profileConfigs.rules,
+            ruleConfigsKey = profileConfigs::class.java.canonicalName
           )
           .copy(listResourceDataMap = listResourceDataMapState)
 
@@ -107,16 +109,21 @@ constructor(
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false
         )
-
-      profileConfigs.views.retrieveListProperties().forEach {
-        val listResourceData =
-          rulesExecutor.processListResourceData(
-            listProperties = it,
-            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
-            computedValuesMap = resourceData.computedValuesMap
-          )
-        listResourceDataMapState[it.id] = listResourceData
+      val timeToFireRules = measureTimeMillis {
+        profileConfigs.views.retrieveListProperties().forEach {
+          val listResourceData =
+            rulesExecutor.processListResourceData(
+              listProperties = it,
+              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+              computedValuesMap = resourceData.computedValuesMap
+            )
+          listResourceDataMapState[it.id] = listResourceData
+        }
       }
+
+      Timber.d(
+        "profileConfigs.views.retrieveListProperties() > rulesExecutor.processListResourceData executed in $timeToFireRules millisecond(s)"
+      )
     }
   }
 

@@ -29,6 +29,10 @@ import kotlinx.coroutines.coroutineScope
  * @param f the function to apply to the elements
  * @return the resulting list after apply *f* to the elements of the iterable
  */
-suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
+suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutineScope {
   map { async { f(it) } }.awaitAll()
+}
+
+suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
+  forEach { async { action(it) } }
 }
