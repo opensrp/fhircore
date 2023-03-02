@@ -65,7 +65,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
         )
     return configuration as DataCaptureConfig
   }
