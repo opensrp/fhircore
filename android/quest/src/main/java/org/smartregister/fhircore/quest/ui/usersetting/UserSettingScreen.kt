@@ -176,7 +176,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Sync,
         text = stringResource(id = R.string.sync),
-        clickListener = { onEvent(UserSettingsEvent.SyncData) },
+        clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
         modifier = modifier
       )
 
