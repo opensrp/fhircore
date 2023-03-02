@@ -445,60 +445,56 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties =
-        ColumnProperties(
-          wrapContent = false,
-          alignment = ViewAlignment.START,
-          arrangement = ColumnArrangement.TOP,
-          children =
-            listOf(
-              CardViewProperties(
-                viewType = ViewType.CARD,
-                content =
-                listOf(
-                  CompoundTextProperties(
-                    primaryText = "Richard Brown, M, 29",
-                    primaryTextColor = "#000000",
-                    visible = "false"
-                  )
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.START,
+            arrangement = ColumnArrangement.TOP,
+            children =
+              listOf(
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Richard Brown, M, 29",
+                        primaryTextColor = "#000000",
+                        visible = "false"
+                      )
+                    )
+                ),
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Jane Brown, M, 26",
+                        primaryTextColor = "#000000",
+                      )
+                    )
+                ),
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Billy Brown, M, 20",
+                        primaryTextColor = "#000000",
+                        visible = "false"
+                      )
+                    )
                 )
               ),
-              CardViewProperties(
-                viewType = ViewType.CARD,
-                content =
-                listOf(
-                  CompoundTextProperties(
-                    primaryText = "Jane Brown, M, 26",
-                    primaryTextColor = "#000000",
-                  )
-                )
-              ),
-              CardViewProperties(
-                viewType = ViewType.CARD,
-                content =
-                listOf(
-                  CompoundTextProperties(
-                    primaryText = "Billy Brown, M, 20",
-                    primaryTextColor = "#000000",
-                    visible = "false"
-                  )
-                )
-              )
-            ),
-          viewType = ViewType.COLUMN
-        ),
+            viewType = ViewType.COLUMN
+          ),
         resourceData = resourceData,
         navController = navController
       )
     }
-    composeRule
-      .onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true)
-      .assertDoesNotExist()
+    composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
     composeRule
       .onNodeWithText("Jane Brown, M, 26", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
-    composeRule
-      .onNodeWithText("Billy Brown, M, 20", useUnmergedTree = true)
-      .assertDoesNotExist()
+    composeRule.onNodeWithText("Billy Brown, M, 20", useUnmergedTree = true).assertDoesNotExist()
   }
 }
