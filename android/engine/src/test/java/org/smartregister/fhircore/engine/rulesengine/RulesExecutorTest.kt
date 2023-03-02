@@ -68,7 +68,8 @@ class RulesExecutorTest : RobolectricTest() {
 
   @Test
   fun processResourceData() {
-    val baseResource = populateTestPatient()
+    val patientId = "patient id"
+    val baseResource = Faker.buildPatient(id = patientId)
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val ruleConfig =
@@ -83,7 +84,7 @@ class RulesExecutorTest : RobolectricTest() {
       val resourceData =
         rulesExecutor.processResourceData(baseResource, relatedRepositoryResourceData, ruleConfigs)
 
-      Assert.assertEquals(resourceData.baseResourceId, "patient-1")
+      Assert.assertEquals(resourceData.baseResourceId, patientId)
       Assert.assertEquals(resourceData.baseResourceType, ResourceType.Patient)
       Assert.assertNull(resourceData.listResourceDataMap)
       Assert.assertEquals(resourceData.computedValuesMap.size, 1)

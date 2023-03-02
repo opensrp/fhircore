@@ -31,21 +31,14 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
-import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.jeasy.rules.api.Facts
@@ -66,34 +59,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-
-fun populateTestPatient(): Patient {
-  val patientId = "patient-1"
-  val patient: Patient =
-    Patient().apply {
-      id = patientId
-      active = true
-      birthDate = LocalDate.parse("1999-10-03").toDate()
-      gender = Enumerations.AdministrativeGender.MALE
-      address =
-        listOf(
-          Address().apply {
-            city = "Nairobi"
-            country = "Kenya"
-          }
-        )
-      name =
-        listOf(
-          HumanName().apply {
-            given = mutableListOf(StringType("Kiptoo"))
-            family = "Maina"
-          }
-        )
-      telecom = listOf(ContactPoint().apply { value = "12345" })
-      meta = Meta().apply { lastUpdated = Date() }
-    }
-  return patient
-}
 
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
@@ -135,7 +100,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
-      val baseResource = populateTestPatient()
+      val baseResource = Faker.buildPatient()
       val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
       val ruleConfig =
         RuleConfig(
@@ -179,7 +144,7 @@ class RulesFactoryTest : RobolectricTest() {
     populateFactsWithResources()
     val result =
       rulesEngineService.retrieveRelatedResources(
-        resource = populateTestPatient(),
+        resource = Faker.buildPatient(),
         relatedResourceKey = ResourceType.CarePlan.name,
         referenceFhirPathExpression = "CarePlan.subject.reference"
       )
@@ -193,12 +158,12 @@ class RulesFactoryTest : RobolectricTest() {
     populateFactsWithResources()
     val result =
       rulesEngineService.retrieveParentResource(
-        childResource = populateCarePlan(),
+        childResource = Faker.buildCarePlan(),
         parentResourceType = "Patient",
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
-    Assert.assertEquals("patient-1", result.logicalId)
+    Assert.assertEquals("sampleId", result.logicalId)
   }
 
   @Test
@@ -580,8 +545,8 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   private fun populateFactsWithResources() {
-    val carePlanRelatedResource = mutableListOf(populateCarePlan())
-    val patientRelatedResource = mutableListOf(populateTestPatient())
+    val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
+    val patientRelatedResource = mutableListOf(Faker.buildPatient())
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
@@ -589,22 +554,6 @@ class RulesFactoryTest : RobolectricTest() {
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
-  private fun populateCarePlan(): CarePlan {
-    val carePlan: CarePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        identifier =
-          mutableListOf(
-            Identifier().apply {
-              use = Identifier.IdentifierUse.OFFICIAL
-              value = "value-1"
-            }
-          )
-        subject = Reference().apply { reference = "Patient/patient-1" }
-      }
-    return carePlan
-  }
-
   @Test
   fun testPrettifyDateReturnXDaysAgo() {
     val weeksAgo = 2
