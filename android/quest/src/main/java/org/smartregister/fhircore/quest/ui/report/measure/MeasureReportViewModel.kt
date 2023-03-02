@@ -420,6 +420,8 @@ constructor(
       "All Measure Reports in module should have same type"
     }
 
+    val indicatorUrlToTitleMap = indicators.associateBy({ it.url }, { it.title })
+
     measureReports
       .takeIf {
         it.all { measureReport -> measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL }
@@ -442,7 +444,7 @@ constructor(
         val theIndicators =
           entry.value.flatMap { report ->
             val formatted = formatSupplementalData(report.contained, report.type)
-            val title = indicators.find { it.url == report.measure }?.title ?: ""
+            val title = indicatorUrlToTitleMap.getOrDefault(report.measure, "")
             if (formatted.isEmpty())
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             else if (formatted.size == 1)
@@ -503,9 +505,7 @@ constructor(
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle =
-                  indicators.find { reportConfig -> reportConfig.url == report.measure }?.title
-                    ?: "",
+                indicatorTitle = indicatorUrlToTitleMap.getOrDefault(report.measure, ""),
                 measureReportDenominator = count.count
               )
             }

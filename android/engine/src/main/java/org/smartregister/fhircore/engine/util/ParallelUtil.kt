@@ -21,7 +21,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
 /**
- * Launch a new coroutine for each function application using async. From
+ * Launch a new coroutine for each map iteration using async. From
  * https://jivimberg.io/blog/2018/05/04/parallel-map-in-kotlin/.
  *
  * @param A the type of elements in the iterable
@@ -33,6 +33,11 @@ suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutin
   map { async { f(it) } }.awaitAll()
 }
 
+/**
+ * Launch a new coroutine for each loop iteration using async.
+ *
+ * @param T the type of elements in the iterable
+ */
 suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
   forEach { async { action(it) } }
 }

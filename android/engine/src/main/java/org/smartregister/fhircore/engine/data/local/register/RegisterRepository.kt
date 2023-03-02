@@ -26,7 +26,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
-import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
@@ -107,7 +106,7 @@ constructor(
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
     return baseResources.map { baseResource: Resource ->
-      val currentRelatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
+      val currentRelatedResources = LinkedList<RepositoryResourceData>()
 
       relatedResourcesConfig.forEachAsync { resourceConfig: ResourceConfig ->
         val relatedResources =
@@ -291,7 +290,7 @@ constructor(
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    val relatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
+    val relatedResources = LinkedList<RepositoryResourceData>()
 
     relatedResourcesConfig.forEachAsync { config: ResourceConfig ->
       val resources =
@@ -333,7 +332,7 @@ constructor(
         }
 
       baseResources.map { baseResource: Resource ->
-        val baseRelatedResourceList = ConcurrentLinkedQueue<RepositoryResourceData>()
+        val baseRelatedResourceList = LinkedList<RepositoryResourceData>()
         fhirResourceConfig.relatedResources.forEachAsync { resourceConfig: ResourceConfig ->
           val currentRelatedResources =
             withContext(dispatcherProvider.io()) {
