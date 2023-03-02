@@ -122,19 +122,21 @@ constructor(
                         event.resourceData?.computedValuesMap ?: emptyMap()
                       )
                     val params =
-                      actionConfig.params.map {
-                        ActionParameter(
-                          key = it.key,
-                          paramType = it.paramType,
-                          dataType = it.dataType,
-                          linkId = it.linkId,
-                          value =
-                            it.value.interpolate(
-                              event.resourceData?.computedValuesMap ?: emptyMap()
-                            )
-                        )
-                      }
-                    val actionParams = params.toTypedArray()
+                      actionConfig
+                        .params
+                        .map {
+                          ActionParameter(
+                            key = it.key,
+                            paramType = it.paramType,
+                            dataType = it.dataType,
+                            linkId = it.linkId,
+                            value =
+                              it.value.interpolate(
+                                event.resourceData?.computedValuesMap ?: emptyMap()
+                              )
+                          )
+                        }
+                        .toTypedArray()
 
                     if (event.resourceData != null) {
                       questionnaireResponse =
@@ -160,7 +162,7 @@ constructor(
                       context = event.navController.context,
                       intentBundle = intentBundle,
                       questionnaireConfig = questionnaireConfigInterpolated,
-                      actionParams = actionParams.toList()
+                      actionParams = params.toList()
                     )
                   }
                 }
