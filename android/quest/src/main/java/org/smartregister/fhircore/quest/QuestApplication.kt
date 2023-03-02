@@ -26,6 +26,7 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -62,7 +63,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       configuration
         ?: DataCaptureConfig(
           urlResolver = referenceUrlResolver,
-          xFhirQueryResolver = xFhirQueryResolver
+          xFhirQueryResolver = xFhirQueryResolver,
+          questionnaireItemViewHolderFactoryMatchersProviderFactory =
+          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
         )
     return configuration as DataCaptureConfig
   }
