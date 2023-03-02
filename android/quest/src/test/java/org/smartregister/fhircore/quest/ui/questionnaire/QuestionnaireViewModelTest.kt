@@ -91,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -1242,7 +1243,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testAppVersionIsAppendedToPatientResource() {
     // Version name
-    val versionName = "0.0.4-quest"
+    val versionName = BuildConfig.VERSION_NAME
 
     // For Patient
     val patient = samplePatient()
