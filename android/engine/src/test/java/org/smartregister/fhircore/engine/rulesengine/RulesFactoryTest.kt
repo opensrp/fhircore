@@ -98,7 +98,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
+  fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
       val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
@@ -119,11 +119,11 @@ class RulesFactoryTest : RobolectricTest() {
         relatedResourcesMap = relatedResourcesMap
       )
 
-      val factsSlot = slot<Facts>()
-      val rulesSlot = slot<Rules>()
+      var factsSlot = slot<Facts>()
+      var rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -133,12 +133,79 @@ class RulesFactoryTest : RobolectricTest() {
         capturedBaseResource.address[0].city,
       )
 
-      val capturedRule = rulesSlot.captured.first()
+      var capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
     }
   }
 
+  @Test
+  fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFactsWhenMissingRelatedResourcesMap() {
+    runTest {
+      val baseResource = Faker.buildPatient()
+      val ruleConfig =
+        RuleConfig(
+          name = "patientName",
+          description = "Retrieve patient name",
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        )
+      val ruleConfigs = listOf(ruleConfig)
+
+      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+      every { rulesEngine.fire(any(), any()) } just runs
+      val rules = rulesFactory.generateRules(ruleConfigs)
+      rulesFactory.fireRules(rules = rules, baseResource = baseResource)
+
+      var factsSlot = slot<Facts>()
+      var rulesSlot = slot<Rules>()
+      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
+
+      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
+      Assert.assertTrue(capturedBaseResource.active)
+      Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
+      Assert.assertEquals(baseResource.name[0].given, capturedBaseResource.name[0].given)
+      Assert.assertEquals(
+        baseResource.address[0].city,
+        capturedBaseResource.address[0].city,
+      )
+
+      var capturedRule = rulesSlot.captured.first()
+      Assert.assertEquals(ruleConfig.name, capturedRule.name)
+      Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
+  }
+
+  @Test
+  fun fireRulesIgnoresBaseResourceWhenNull() {
+    runTest {
+      val baseResource = Faker.buildPatient()
+      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val ruleConfig =
+        RuleConfig(
+          name = "patientName",
+          description = "Retrieve patient name",
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        )
+      val ruleConfigs = listOf(ruleConfig)
+
+      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+      every { rulesEngine.fire(any(), any()) } just runs
+      val rules = rulesFactory.generateRules(ruleConfigs)
+      rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
+
+      val factsSlot = slot<Facts>()
+      val rulesSlot = slot<Rules>()
+      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
+
+      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      Assert.assertNull(capturedBaseResource)
+
+      val capturedRule = rulesSlot.captured.first()
+      Assert.assertEquals(ruleConfig.name, capturedRule.name)
+      Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
+  }
   @Test
   fun retrieveRelatedResourcesReturnsCorrectResource() {
     populateFactsWithResources()
@@ -444,6 +511,36 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun filterResourcesIsEmptyWhenEmptyExpression() {
+    val result = rulesEngineService.filterResources(listOf(), "")
+    Assert.assertEquals(result.size, 0)
+  }
+  @Test
+  fun filterResourcesIsEmptyWhenEmptyResources() {
+    val result = rulesEngineService.filterResources(listOf(), "something")
+    Assert.assertEquals(result.size, 0)
+  }
+  @Test
+  fun mapResourcesToExtractedValuesIsEmptyWhenEmptyExpression() {
+    val result = rulesEngineService.mapResourcesToExtractedValues(listOf(), "")
+    Assert.assertEquals(result.size, 0)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesIsEmptyWhenEmptyResources() {
+    val result = rulesEngineService.mapResourcesToExtractedValues(listOf(), "something")
+    Assert.assertEquals(result.size, 0)
+  }
+
+  @Test
+  fun evaluateToBooleanReturnsFalseWhenResourcesNull() {
+    val fhirPathExpression = ""
+
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(null, fhirPathExpression, true))
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(null, fhirPathExpression, false))
+  }
+
+  @Test
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
     val fhirPathExpression = "Patient.active"
     val patients =
@@ -453,6 +550,15 @@ class RulesFactoryTest : RobolectricTest() {
 
     patients.add(Patient().setActive(false))
     Assert.assertFalse(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+  }
+
+  @Test
+  fun evaluateToBooleanDefaultMatchAllIsFalse() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
   }
 
   @Test
