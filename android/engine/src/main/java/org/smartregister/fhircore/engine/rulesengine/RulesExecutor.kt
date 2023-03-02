@@ -32,19 +32,21 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.pmap
+import timber.log.Timber
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   suspend fun processResourceData(
     baseResource: Resource,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
-    ruleConfigs: List<RuleConfig>
+    ruleConfigs: List<RuleConfig>,
+    ruleConfigsKey: String
   ): ResourceData {
     val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
     val computedValuesMap =
       computeRules(
         ruleConfigs = ruleConfigs,
+        ruleConfigsKey = ruleConfigsKey,
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
       )
@@ -70,6 +72,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         .mapToResourceData(
           relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
+          ruleConfigsKey = listProperties.registerCard::class.java.canonicalName,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
         )
@@ -78,12 +81,13 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
+    ruleConfigsKey: String,
     baseResource: Resource,
     relatedResourcesMap: Map<String, List<Resource>>
   ): Map<String, Any> =
     // Compute values via rules engine and return a map. Rule names MUST be unique
     rulesFactory.fireRules(
-      rules = rulesFactory.generateRules(ruleConfigs),
+      rules = rulesFactory.generateRules(ruleConfigsKey, ruleConfigs),
       baseResource = baseResource,
       relatedResourcesMap = relatedResourcesMap
     )
@@ -91,10 +95,12 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
+    ruleConfigsKey: String,
     listRelatedResources: List<ExtractedResource>,
     computedValuesMap: Map<String, Any>
   ) =
-    this.pmap { resource ->
+    this.map { resource ->
+      val start = System.currentTimeMillis()
       val listItemRelatedResources: Map<String, List<Resource>> =
         listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
           (id
@@ -107,12 +113,23 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
             )
         }
 
+      Timber.d(
+        "ListRelatedResources.associate executed in ${ System.currentTimeMillis() - start } millisecond(s)"
+      )
+
+      val start2 = System.currentTimeMillis()
+
       val listComputedValuesMap =
         computeRules(
           ruleConfigs = ruleConfigs,
+          ruleConfigsKey = ruleConfigsKey,
           baseResource = resource,
           relatedResourcesMap = listItemRelatedResources
         )
+
+      Timber.d(
+        "ListComputedValuesMap.computeRules executed in ${ System.currentTimeMillis() - start2 } millisecond(s)"
+      )
 
       // LIST view should reuse the previously computed values
       ResourceData(

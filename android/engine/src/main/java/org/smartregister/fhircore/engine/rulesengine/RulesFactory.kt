@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
-import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RulesFactory
@@ -82,6 +81,7 @@ constructor(
       .create()
 
   private var facts: Facts = Facts()
+  private val ruleConfigsCache = mutableMapOf<String, Rules>()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -150,24 +150,30 @@ constructor(
     }
   }
 
-  fun generateRules(ruleConfigs: List<RuleConfig>): Rules {
-    val customRules =
-      runBlocking(Dispatchers.Default) {
-        ruleConfigs
-          .pmap { ruleConfig ->
-            val customRule: JexlRule =
-              JexlRule(jexlEngine)
-                .name(ruleConfig.name)
-                .description(ruleConfig.description)
-                .priority(ruleConfig.priority)
-                .`when`(ruleConfig.condition.ifEmpty { TRUE })
+  fun generateRules(ruleConfigsKey: String, ruleConfigs: List<RuleConfig>): Rules {
+    val jexlRules =
+      ruleConfigsCache.getOrDefault(
+        ruleConfigsKey,
+        Rules(
+            runBlocking(Dispatchers.Default) {
+                ruleConfigs.map { ruleConfig ->
+                  val customRule: JexlRule =
+                    JexlRule(jexlEngine)
+                      .name(ruleConfig.name)
+                      .description(ruleConfig.description)
+                      .priority(ruleConfig.priority)
+                      .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-            ruleConfig.actions.forEach { customRule.then(it) }
-            customRule
-          }
-          .toSet()
-      }
-    return Rules(customRules)
+                  ruleConfig.actions.forEach { customRule.then(it) }
+                  customRule
+                }
+              }
+              .toSet()
+          )
+          .also { ruleConfigsCache[ruleConfigsKey] = it }
+      )
+
+    return jexlRules
   }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */

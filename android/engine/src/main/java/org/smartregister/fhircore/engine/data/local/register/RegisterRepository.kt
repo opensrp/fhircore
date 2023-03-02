@@ -26,6 +26,7 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
@@ -52,6 +53,8 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.forEachAsync
+import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RegisterRepository
@@ -104,9 +107,9 @@ constructor(
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
     return baseResources.map { baseResource: Resource ->
-      val currentRelatedResources = LinkedList<RepositoryResourceData>()
+      val currentRelatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
 
-      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+      relatedResourcesConfig.forEachAsync { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
             searchRelatedResources(
@@ -134,6 +137,8 @@ constructor(
     baseResource: Resource,
     fhirPathExpression: String?
   ): LinkedList<RepositoryResourceData> {
+    val start = System.currentTimeMillis()
+
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
     val relatedResourcesData = LinkedList<RepositoryResourceData>()
@@ -148,52 +153,68 @@ constructor(
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           sort(resourceConfig.sortConfigs)
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+      fhirEngine.search<Resource>(relatedResourceSearch).forEachAsync { resource ->
         relatedResourcesData.addLast(
           RepositoryResourceData(
             configId = resourceConfig.id ?: resource.resourceType.name,
             resource = resource
           )
         )
+
+        postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
       }
     } else {
       fhirPathDataExtractor
         .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
-        .map { it as Reference }
-        .mapNotNull {
+        .pmap {
           try {
             fhirEngine.get(
               resourceConfig.resource.resourceClassType().newInstance().resourceType,
-              it.extractId()
+              (it as Reference).extractId()
             )
           } catch (exception: ResourceNotFoundException) {
             Timber.e(exception)
             null
           }
         }
-        .forEach { resource ->
-          relatedResourcesData.addLast(
-            RepositoryResourceData(
-              configId = resourceConfig.id ?: resource.resourceType.name,
-              resource = resource
+        .forEachAsync { resource ->
+          resource?.let {
+            relatedResourcesData.addLast(
+              RepositoryResourceData(
+                configId = resourceConfig.id ?: resource.resourceType.name,
+                resource = resource
+              )
             )
-          )
+          }
+          postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
         }
     }
-    relatedResourcesData.forEach { resourceData: RepositoryResourceData ->
-      resourceConfig.relatedResources.forEach {
-        val searchRelatedResources =
-          searchRelatedResources(
-            resourceConfig = it,
-            baseResourceType = resourceData.resource.resourceType,
-            baseResource = resourceData.resource,
-            fhirPathExpression = it.fhirPathExpression
-          )
-        resourceData.relatedResources.addAll(searchRelatedResources)
-      }
-    }
+
+    Timber.d(
+      "searchRelatedResources executed in ${System.currentTimeMillis() - start} millisecond(s)"
+    )
     return relatedResourcesData
+  }
+
+  private suspend fun postProcessRelatedResourcesData(
+    relatedResources: List<ResourceConfig>,
+    relatedResourcesData: LinkedList<RepositoryResourceData>
+  ) {
+
+    if (relatedResourcesData.size < 1) return
+
+    relatedResources.forEachAsync {
+      val searchRelatedResources =
+        searchRelatedResources(
+          resourceConfig = it,
+          baseResourceType = relatedResourcesData.last.resource.resourceType,
+          baseResource = relatedResourcesData.last.resource,
+          fhirPathExpression = it.fhirPathExpression
+        )
+
+      relatedResourcesData.last.relatedResources.addAll(searchRelatedResources)
+    }
   }
 
   private suspend fun searchResource(
@@ -274,9 +295,9 @@ constructor(
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    val relatedResources = LinkedList<RepositoryResourceData>()
+    val relatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
 
-    relatedResourcesConfig.forEach { config: ResourceConfig ->
+    relatedResourcesConfig.forEachAsync { config: ResourceConfig ->
       val resources =
         withContext(dispatcherProvider.io()) {
           searchRelatedResources(
@@ -316,8 +337,8 @@ constructor(
         }
 
       baseResources.map { baseResource: Resource ->
-        val baseRelatedResourceList = LinkedList<RepositoryResourceData>()
-        fhirResourceConfig.relatedResources.forEach { resourceConfig: ResourceConfig ->
+        val baseRelatedResourceList = ConcurrentLinkedQueue<RepositoryResourceData>()
+        fhirResourceConfig.relatedResources.forEachAsync { resourceConfig: ResourceConfig ->
           val currentRelatedResources =
             withContext(dispatcherProvider.io()) {
               searchRelatedResources(
