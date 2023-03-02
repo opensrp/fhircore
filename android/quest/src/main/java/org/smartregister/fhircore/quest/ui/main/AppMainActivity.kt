@@ -165,6 +165,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@AppMainActivity).also {
           scheduleCheckForMissedAppointments(this@AppMainActivity)
+          scheduleWelcomeServiceAppointments(this@AppMainActivity)
         }
       else this.unschedulePlan(this@AppMainActivity)
     }
