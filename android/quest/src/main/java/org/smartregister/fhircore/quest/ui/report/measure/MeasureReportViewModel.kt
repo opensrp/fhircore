@@ -89,6 +89,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
 import timber.log.Timber
 
 @HiltViewModel
@@ -444,7 +445,7 @@ constructor(
         val theIndicators =
           entry.value.flatMap { report ->
             val formatted = formatSupplementalData(report.contained, report.type)
-            val title = indicatorUrlToTitleMap.getOrDefault(report.measure, "")
+            val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
             if (formatted.isEmpty())
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             else if (formatted.size == 1)
@@ -505,7 +506,7 @@ constructor(
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle = indicatorUrlToTitleMap.getOrDefault(report.measure, ""),
+                indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
                 measureReportDenominator = count.count
               )
             }
