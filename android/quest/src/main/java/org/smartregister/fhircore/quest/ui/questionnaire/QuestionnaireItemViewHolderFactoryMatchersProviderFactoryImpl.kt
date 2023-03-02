@@ -48,8 +48,4 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
       )
     }
   }
-
-
 }
-
-
