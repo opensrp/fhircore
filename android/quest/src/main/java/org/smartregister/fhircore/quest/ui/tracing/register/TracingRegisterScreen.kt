@@ -33,6 +33,7 @@ fun TracingRegisterScreen(
     modifier = modifier,
     screenTitle = screenTitle,
     navController = navController,
-    registerViewModel = registerViewModel
+    registerViewModel = registerViewModel,
+    filterNavClickAction = { TODO("Show modal dialog for tracing filters") }
   )
 }

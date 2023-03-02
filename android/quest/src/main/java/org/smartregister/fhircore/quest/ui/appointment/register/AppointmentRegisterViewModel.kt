@@ -30,6 +30,7 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,6 +54,7 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
@@ -221,3 +223,54 @@ constructor(
       configurationRegistry.context.resources.getString(R.string.search_progress_message)
     }
 }
+
+enum class PatientsFilter {
+  ALL_PATIENTS,
+  MY_PATIENTS;
+
+  override fun toString(): String =
+    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
+}
+
+enum class PatientCategory {
+  ALL_PATIENT_CATEGORIES,
+  ART_CLIENT,
+  EXPOSED_INFANT,
+  CHILD_CONTACT,
+  PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY,
+  SEXUAL_CONTACT;
+
+  override fun toString(): String =
+    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
+}
+
+enum class AppointmentReason(val patientCategory: Array<PatientCategory>) {
+  ALL_REASONS(PatientCategory.values()),
+  CERVICAL_CANCER_SCREENING(arrayOf(PatientCategory.ART_CLIENT)),
+  DBS_POSITIVE(arrayOf(PatientCategory.EXPOSED_INFANT)),
+  HIV_TEST(
+    arrayOf(
+      PatientCategory.CHILD_CONTACT,
+      PatientCategory.SEXUAL_CONTACT,
+      PatientCategory.PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY
+    )
+  ),
+  INDEX_CASE_TESTING(arrayOf(PatientCategory.ART_CLIENT)),
+  MILESTONE_HIV_TEST(arrayOf(PatientCategory.EXPOSED_INFANT)),
+  LINKAGE(arrayOf(PatientCategory.ART_CLIENT)),
+  REFILL(arrayOf(PatientCategory.ART_CLIENT)),
+  ROUTINE_VISIT(arrayOf(PatientCategory.EXPOSED_INFANT)),
+  VIRAL_LOAD_COLLECTION(arrayOf(PatientCategory.ART_CLIENT)),
+  WELCOME_SERVICE(arrayOf(PatientCategory.ART_CLIENT)),
+  WELCOME_SERVICE_FOLLOW_UP(arrayOf(PatientCategory.ART_CLIENT));
+
+  override fun toString(): String =
+    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
+}
+
+data class AppointmentsFilterObject(
+  val date: Date,
+  val patients: PatientsFilter,
+  val patientCategory: PatientCategory,
+  val reason: AppointmentReason
+)

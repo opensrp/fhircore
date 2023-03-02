@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -65,7 +66,8 @@ fun PageRegisterScreen(
   modifier: Modifier,
   screenTitle: String,
   navController: NavHostController,
-  registerViewModel: StandardRegisterViewModel
+  registerViewModel: StandardRegisterViewModel,
+  filterNavClickAction: () -> Unit
 ) {
 
   val context = LocalContext.current
@@ -84,8 +86,10 @@ fun PageRegisterScreen(
         searchText = searchText,
         onSearchTextChanged = { searchText ->
           registerViewModel.onEvent(StandardRegisterEvent.SearchRegister(searchText = searchText))
-        }
-      ) { navController.popBackStack() }
+        },
+        onNavIconClick = { navController.popBackStack() },
+        onFilterIconClick = filterNavClickAction
+      )
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
@@ -140,7 +144,8 @@ fun TopSection(
   title: String,
   searchText: String,
   onSearchTextChanged: (String) -> Unit,
-  onNavIconClick: () -> Unit
+  onNavIconClick: () -> Unit,
+  onFilterIconClick: () -> Unit = {}
 ) {
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
@@ -150,9 +155,9 @@ fun TopSection(
       IconButton(onClick = onNavIconClick) {
         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
       }
-      Text(text = title, fontSize = 20.sp, color = Color.White)
-      IconButton(onClick = onNavIconClick) {
-        Icon(Icons.Filled.FilterList, contentDescription = "Back", tint = Color.White)
+      Text(text = title, fontSize = 20.sp, color = Color.White, modifier = Modifier.weight(1f))
+      IconButton(onClick = onFilterIconClick) {
+        Icon(Icons.Filled.FilterList, contentDescription = "Filter", tint = Color.White)
       }
     }
 
@@ -183,4 +188,16 @@ fun TopSection(
       }
     )
   }
+}
+
+@Preview
+@Composable
+fun PreviewTopSection() {
+  TopSection(
+    title = "Test Register",
+    searchText = "Search \u2026",
+    onSearchTextChanged = {},
+    onNavIconClick = {},
+    onFilterIconClick = {}
+  )
 }

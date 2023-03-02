@@ -130,5 +130,10 @@
     <string name="guardian_phone_number_2">Guardian Phone Number 2</string>
     <string name="guardian_phone_owner_2">Guardian Phone Owner 2</string>
 
-
+    <string name="filters">Filters</string>
+    <string name="apply">Apply</string>
+    <string name="filter_date_of_appointment">Date of Appointment</string>
+    <string name="filter_patients_assigned">Patient Assignment</string>
+    <string name="filter_patient_category">Patient Category</string>
+    <string name="filter_appointment_reason">Appointment Reason</string>
 </resources>
