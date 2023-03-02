@@ -175,6 +175,7 @@ private fun NavBottomSection(
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit
 ) {
+  val context = LocalContext.current
   Box(
     modifier =
       modifier
@@ -191,7 +192,7 @@ private fun NavBottomSection(
       endTextColor = SubtitleTextColor
     ) {
       openDrawer(false)
-      onSideMenuClick(AppMainEvent.SyncData)
+      onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }
 }

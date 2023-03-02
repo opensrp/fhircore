@@ -33,6 +33,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkClass
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -65,6 +66,7 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -137,11 +139,22 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventSyncData() {
-    val appMainEvent = AppMainEvent.SyncData
+  fun testOnEventSyncDataWhenDeviceIsOnline() {
+    val appMainEvent = AppMainEvent.SyncData(application)
     appMainViewModel.onEvent(appMainEvent)
 
-    verify { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+  }
+
+  @Test
+  fun testOnEventDoNotSyncDataWhenDeviceIsOffline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+    val appMainEvent = AppMainEvent.SyncData(context)
+    appMainViewModel.onEvent(appMainEvent)
+
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
   }
 
   @Test
