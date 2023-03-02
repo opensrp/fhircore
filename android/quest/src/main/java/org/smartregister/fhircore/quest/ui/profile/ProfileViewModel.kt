@@ -120,10 +120,6 @@ constructor(
           listResourceDataMapState[it.id] = listResourceData
         }
       }
-
-      Timber.d(
-        "profileConfigs.views.retrieveListProperties() > rulesExecutor.processListResourceData executed in $timeToFireRules millisecond(s)"
-      )
     }
   }
 

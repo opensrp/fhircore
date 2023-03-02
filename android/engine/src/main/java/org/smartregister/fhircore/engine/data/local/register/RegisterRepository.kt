@@ -190,10 +190,6 @@ constructor(
           postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
         }
     }
-
-    Timber.d(
-      "searchRelatedResources executed in ${System.currentTimeMillis() - start} millisecond(s)"
-    )
     return relatedResourcesData
   }
 

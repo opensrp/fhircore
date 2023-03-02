@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import timber.log.Timber
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
@@ -113,10 +112,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
             )
         }
 
-      Timber.d(
-        "ListRelatedResources.associate executed in ${ System.currentTimeMillis() - start } millisecond(s)"
-      )
-
       val start2 = System.currentTimeMillis()
 
       val listComputedValuesMap =
@@ -126,10 +121,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
           baseResource = resource,
           relatedResourcesMap = listItemRelatedResources
         )
-
-      Timber.d(
-        "ListComputedValuesMap.computeRules executed in ${ System.currentTimeMillis() - start2 } millisecond(s)"
-      )
 
       // LIST view should reuse the previously computed values
       ResourceData(
