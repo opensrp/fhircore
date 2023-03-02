@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
 class RulesExecutorTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
@@ -82,7 +81,12 @@ class RulesExecutorTest : RobolectricTest() {
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
-        rulesExecutor.processResourceData(baseResource, relatedRepositoryResourceData, ruleConfigs)
+        rulesExecutor.processResourceData(
+          baseResource,
+          relatedRepositoryResourceData,
+          ruleConfigs,
+          ""
+        )
 
       Assert.assertEquals(resourceData.baseResourceId, patientId)
       Assert.assertEquals(resourceData.baseResourceType, ResourceType.Patient)
