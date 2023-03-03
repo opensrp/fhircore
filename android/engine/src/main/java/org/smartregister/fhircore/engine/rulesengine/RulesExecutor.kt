@@ -39,7 +39,8 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     baseResource: Resource,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     ruleConfigs: List<RuleConfig>,
-    ruleConfigsKey: String
+    ruleConfigsKey: String,
+    params: Map<String, String>?
   ): ResourceData {
     val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
     val computedValuesMap =
@@ -52,7 +53,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,
-      computedValuesMap = computedValuesMap
+      computedValuesMap = computedValuesMap.toMutableMap().plus(params!!).toMap()
     )
   }
 
@@ -63,7 +64,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   suspend fun processListResourceData(
     listProperties: ListProperties,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
-    computedValuesMap: Map<String, Any>
+    computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
     val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
     return listProperties.resources.flatMap { listResource ->
@@ -111,8 +112,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
               relatedResourcesMap = relatedResourcesMap
             )
         }
-
-      val start2 = System.currentTimeMillis()
 
       val listComputedValuesMap =
         computeRules(

@@ -60,6 +60,7 @@ import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomShee
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
 import timber.log.Timber
 
 @HiltViewModel
@@ -86,19 +87,22 @@ constructor(
   suspend fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
-      val profileConfigs = retrieveProfileConfiguration(profileId)
       val repoResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
+      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
         rulesExecutor
           .processResourceData(
             baseResource = repoResourceData.resource,
             relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
             ruleConfigs = profileConfigs.rules,
-            ruleConfigsKey = profileConfigs::class.java.canonicalName
+            ruleConfigsKey = profileConfigs::class.java.canonicalName,
+            paramsMap
           )
           .copy(listResourceDataMap = listResourceDataMapState)
 
@@ -115,7 +119,8 @@ constructor(
             rulesExecutor.processListResourceData(
               listProperties = it,
               relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
-              computedValuesMap = resourceData.computedValuesMap
+              computedValuesMap =
+                resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
             )
           listResourceDataMapState[it.id] = listResourceData
         }
@@ -123,11 +128,14 @@ constructor(
     }
   }
 
-  private fun retrieveProfileConfiguration(profileId: String): ProfileConfiguration {
+  private fun retrieveProfileConfiguration(
+    profileId: String,
+    paramsMap: Map<String, String>?
+  ): ProfileConfiguration {
     // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId)
+        configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
     }
     return profileConfiguration
   }
@@ -147,19 +155,22 @@ constructor(
                       questionnaireConfig.interpolate(
                         event.resourceData?.computedValuesMap ?: emptyMap()
                       )
-                    val actionParams =
-                      actionConfig.params.map {
-                        ActionParameter(
-                          key = it.key,
-                          paramType = it.paramType,
-                          dataType = it.dataType,
-                          linkId = it.linkId,
-                          value =
-                            it.value.interpolate(
-                              event.resourceData?.computedValuesMap ?: emptyMap()
-                            )
-                        )
-                      }
+                    val params =
+                      actionConfig
+                        .params
+                        .map {
+                          ActionParameter(
+                            key = it.key,
+                            paramType = it.paramType,
+                            dataType = it.dataType,
+                            linkId = it.linkId,
+                            value =
+                              it.value.interpolate(
+                                event.resourceData?.computedValuesMap ?: emptyMap()
+                              )
+                          )
+                        }
+                        .toTypedArray()
 
                     if (event.resourceData != null) {
                       questionnaireResponse =
@@ -185,7 +196,7 @@ constructor(
                       context = event.navController.context,
                       intentBundle = intentBundle,
                       questionnaireConfig = questionnaireConfigInterpolated,
-                      actionParams = actionParams
+                      actionParams = params.toList()
                     )
                   }
                 }
@@ -237,7 +248,7 @@ constructor(
             try {
               registerRepository.loadResource(
                 it.entity.extractId(),
-                event.managingEntity.resourceType
+                event.managingEntity.resourceType!!
               )
             } catch (resourceNotFoundException: ResourceNotFoundException) {
               null
@@ -247,7 +258,7 @@ constructor(
             fhirPathDataExtractor
               .extractValue(
                 base = managingEntityResource,
-                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression!!
               )
               .toBoolean()
           }
@@ -256,7 +267,10 @@ constructor(
               groupId = event.resourceData.baseResourceId,
               logicalId = it.logicalId.extractLogicalIdUuid(),
               memberInfo =
-                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
+                fhirPathDataExtractor.extractValue(
+                  it,
+                  event.managingEntity.nameFhirPathExpression!!
+                )
             )
           }
           ?: emptyList()

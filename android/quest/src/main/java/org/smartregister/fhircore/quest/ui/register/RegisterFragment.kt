@@ -82,7 +82,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -227,7 +227,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle)
+        retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
   }

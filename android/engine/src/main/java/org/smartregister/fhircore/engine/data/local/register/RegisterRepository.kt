@@ -37,6 +37,8 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -76,9 +78,10 @@ constructor(
 
   override suspend fun loadRegisterData(
     currentPage: Int,
-    registerId: String
+    registerId: String,
+    paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
@@ -135,7 +138,6 @@ constructor(
     baseResource: Resource,
     fhirPathExpression: String?
   ): LinkedList<RepositoryResourceData> {
-    val start = System.currentTimeMillis()
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
@@ -249,8 +251,11 @@ constructor(
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
-  override suspend fun countRegisterData(registerId: String): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+  override suspend fun countRegisterData(
+    registerId: String,
+    paramsMap: Map<String, String>?
+  ): Long {
+    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val resourceType = baseResourceClass.newInstance().resourceType
@@ -270,12 +275,19 @@ constructor(
   override suspend fun loadProfileData(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig?
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsList: Array<ActionParameter>?
   ): RepositoryResourceData {
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        ?.associate { it.key to it.value }
+        ?: emptyMap()
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
-        profileId
+        profileId,
+        paramsMap
       )
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
@@ -357,8 +369,11 @@ constructor(
     return repositoryResourceData
   }
 
-  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration =
-    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+  fun retrieveRegisterConfiguration(
+    registerId: String,
+    paramsMap: Map<String, String>?
+  ): RegisterConfiguration =
+    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   companion object {
     const val ACTIVE = "active"

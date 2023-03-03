@@ -55,7 +55,8 @@ class MeasureReportRepository(
           baseResource = it.resource,
           relatedRepositoryResourceData = LinkedList(it.relatedResources),
           ruleConfigs = registerConfiguration.registerCard.rules,
-          ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
+          ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName,
+          emptyMap()
         )
       }
   }
