@@ -38,6 +38,7 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -399,5 +400,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     assertEquals("Test Code 3", result.first().dataList.elementAt(2).title)
     assertEquals("6", result.first().dataList.elementAt(2).count)
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfReportIdNotFound() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      measureReportViewModel.reportMeasuresList("")
+    }
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      val pager = measureReportViewModel.reportMeasuresList(reportId)
+    }
   }
 }
