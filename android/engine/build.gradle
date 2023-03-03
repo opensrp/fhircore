@@ -227,7 +227,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview11-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview13-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'
