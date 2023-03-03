@@ -69,7 +69,7 @@ class ReferenceUrlResolverTest : RobolectricTest() {
   fun testResolveImageUrlWithNullBodyShouldReturnNull() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirResourceService.fetchImage(any()) } returns null
-      Assert.assertNull(referenceUrlResolver.resolveImageUrl("https://image-server.com/8929839"))
+      Assert.assertNull(referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839"))
     }
   }
 
@@ -95,7 +95,7 @@ class ReferenceUrlResolverTest : RobolectricTest() {
         ))
 
       coEvery { fhirResourceService.fetchImage(any()) } returns mockResponseBody
-      val bitmap = referenceUrlResolver.resolveImageUrl("https://image-server.com/8929839")
+      val bitmap = referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839")
       Assert.assertNotNull(bitmap)
       Assert.assertTrue(bitmap is Bitmap)
     }
