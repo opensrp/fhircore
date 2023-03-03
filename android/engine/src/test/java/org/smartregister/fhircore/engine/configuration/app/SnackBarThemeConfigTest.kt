@@ -20,23 +20,26 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class DeviceToDeviceSyncConfigTest() {
-  private var resourcesToSync = listOf("a")
-  private lateinit var deviceToDeviceSyncConfig: DeviceToDeviceSyncConfig
+class SnackBarThemeConfigTest {
+  private lateinit var snackBarThemeConfig: SnackBarThemeConfig
 
   @Before
   fun setUp() {
-    deviceToDeviceSyncConfig = DeviceToDeviceSyncConfig(resourcesToSync)
+    snackBarThemeConfig = SnackBarThemeConfig()
   }
 
   @Test
-  fun testGetResourcesToSync() {
-    Assert.assertEquals(resourcesToSync, deviceToDeviceSyncConfig.resourcesToSync)
+  fun getMessageTextColor() {
+    Assert.assertEquals("#FFFFFF", snackBarThemeConfig.messageTextColor)
   }
 
   @Test
-  fun testNullResourcesToSync() {
-    deviceToDeviceSyncConfig = DeviceToDeviceSyncConfig(null)
-    Assert.assertEquals(null, deviceToDeviceSyncConfig.resourcesToSync)
+  fun getActionTextColor() {
+    Assert.assertEquals("#FFE400", snackBarThemeConfig.actionTextColor)
+  }
+
+  @Test
+  fun getBackgroundColor() {
+    Assert.assertEquals("#2c2c2c", snackBarThemeConfig.backgroundColor)
   }
 }

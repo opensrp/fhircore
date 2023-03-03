@@ -16,10 +16,30 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import kotlinx.serialization.Serializable
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-@Serializable
-data class RepeatIntervalConfig(
-  val hours: Int = 0, // 24 hours format starts from 0-24 (0=>12am)
-  val minutes: Int = 0,
-)
+class LoginConfigTest() {
+  private lateinit var loginConfig: LoginConfig
+
+  @Before
+  fun setUp() {
+    loginConfig = LoginConfig()
+  }
+
+  @Test
+  fun testGetShowLogo() {
+    Assert.assertTrue(loginConfig.showLogo)
+  }
+
+  @Test
+  fun testGetEnablePin() {
+    Assert.assertEquals(false, loginConfig.enablePin)
+  }
+
+  @Test
+  fun testGetPinLength() {
+    Assert.assertEquals(4, loginConfig.pinLength)
+  }
+}

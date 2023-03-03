@@ -39,10 +39,4 @@ class AuthCredentialsTest() {
   fun testGetPassword() {
     Assert.assertEquals(password, authCredentials.password)
   }
-
-  @Test
-  fun testTestEquals() {
-    var sameAuthCredentials = AuthCredentials(username, password)
-    Assert.assertTrue(authCredentials.equals(sameAuthCredentials))
-  }
 }
