@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
@@ -108,7 +107,7 @@ constructor(
     return baseResources.map { baseResource: Resource ->
       val currentRelatedResources = LinkedList<RepositoryResourceData>()
 
-      relatedResourcesConfig.forEachAsync { resourceConfig: ResourceConfig ->
+      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
             searchRelatedResources(
@@ -152,7 +151,7 @@ constructor(
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           sort(resourceConfig.sortConfigs)
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEachAsync { resource ->
+      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
         relatedResourcesData.addLast(
           RepositoryResourceData(
             configId = resourceConfig.id ?: resource.resourceType.name,
@@ -177,7 +176,7 @@ constructor(
             null
           }
         }
-        .forEachAsync { resource ->
+        .forEach { resource ->
           resource?.let {
             relatedResourcesData.addLast(
               RepositoryResourceData(
@@ -199,7 +198,7 @@ constructor(
 
     if (relatedResourcesData.size < 1) return
 
-    relatedResources.forEachAsync {
+    relatedResources.forEach {
       val searchRelatedResources =
         searchRelatedResources(
           resourceConfig = it,
@@ -292,7 +291,7 @@ constructor(
 
     val relatedResources = LinkedList<RepositoryResourceData>()
 
-    relatedResourcesConfig.forEachAsync { config: ResourceConfig ->
+    relatedResourcesConfig.forEach { config: ResourceConfig ->
       val resources =
         withContext(dispatcherProvider.io()) {
           searchRelatedResources(
@@ -333,7 +332,7 @@ constructor(
 
       baseResources.map { baseResource: Resource ->
         val baseRelatedResourceList = LinkedList<RepositoryResourceData>()
-        fhirResourceConfig.relatedResources.forEachAsync { resourceConfig: ResourceConfig ->
+        fhirResourceConfig.relatedResources.forEach { resourceConfig: ResourceConfig ->
           val currentRelatedResources =
             withContext(dispatcherProvider.io()) {
               searchRelatedResources(
