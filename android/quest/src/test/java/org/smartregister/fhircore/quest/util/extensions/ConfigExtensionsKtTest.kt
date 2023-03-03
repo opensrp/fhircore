@@ -63,7 +63,6 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       baseResourceId = patient.logicalId,
       baseResourceType = ResourceType.Patient,
       computedValuesMap = mapOf("logicalId" to patient.id, "name" to patient.name),
-      listResourceDataMap = emptyMap(),
     )
   }
 

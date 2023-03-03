@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterConfigur
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -54,27 +55,20 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
-
   val registerUiState = mutableStateOf(RegisterUiState())
-
   val currentPage: MutableState<Int> = mutableStateOf(0)
-
   val searchText = mutableStateOf("")
-
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
-
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
-
   private val _totalRecordsCount = mutableStateOf(0L)
-
   private lateinit var registerConfiguration: RegisterConfiguration
-
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
 
   /**
@@ -98,21 +92,28 @@ constructor(
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
-    // Get the configured page size from RegisterConfiguration default is 20
-    val pageSize = retrieveRegisterConfiguration(registerId).pageSize
+    val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
+    val ruleConfigs = currentRegisterConfigs.registerCard.rules
+    val pageSize = currentRegisterConfigs.pageSize // Default 10
 
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository).apply {
-          setPatientPagingSourceState(
-            RegisterPagingSourceState(
-              registerId = registerId,
-              loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value
-            )
+        RegisterPagingSource(
+            registerRepository,
+            rulesExecutor,
+            ruleConfigs,
+            ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
           )
-        }
+          .apply {
+            setPatientPagingSourceState(
+              RegisterPagingSourceState(
+                registerId = registerId,
+                loadAll = loadAll,
+                currentPage = if (loadAll) 0 else currentPage.value
+              )
+            )
+          }
       }
     )
   }

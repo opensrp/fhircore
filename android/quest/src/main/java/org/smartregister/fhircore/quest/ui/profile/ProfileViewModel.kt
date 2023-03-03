@@ -16,16 +16,18 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.LinkedList
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,7 +45,10 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -64,20 +69,19 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val parser: IParser,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
-  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
-  val launchQuestionnaireLiveData = MutableLiveData(false)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
-
   private lateinit var profileConfiguration: ProfileConfiguration
+  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -85,14 +89,37 @@ constructor(
     fhirResourceConfig: FhirResourceConfig? = null
   ) {
     if (resourceId.isNotEmpty()) {
-      val resourceData =
+      val profileConfigs = retrieveProfileConfiguration(profileId)
+      val repoResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+      val resourceData =
+        rulesExecutor
+          .processResourceData(
+            baseResource = repoResourceData.resource,
+            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+            ruleConfigs = profileConfigs.rules,
+            ruleConfigsKey = profileConfigs::class.java.canonicalName
+          )
+          .copy(listResourceDataMap = listResourceDataMapState)
+
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
-          profileConfiguration = retrieveProfileConfiguration(profileId),
-          snackBarTheme = applicationConfiguration.snackBarTheme
+          profileConfiguration = profileConfigs,
+          snackBarTheme = applicationConfiguration.snackBarTheme,
+          showDataLoadProgressIndicator = false
         )
+      val timeToFireRules = measureTimeMillis {
+        profileConfigs.views.retrieveListProperties().forEach {
+          val listResourceData =
+            rulesExecutor.processListResourceData(
+              listProperties = it,
+              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+              computedValuesMap = resourceData.computedValuesMap
+            )
+          listResourceDataMapState[it.id] = listResourceData
+        }
+      }
     }
   }
 
@@ -206,11 +233,15 @@ constructor(
       val eligibleManagingEntities: List<EligibleManagingEntity> =
         group
           ?.member
-          ?.map {
-            registerRepository.loadResource(
-              it.entity.extractId(),
-              event.managingEntity.resourceType
-            )
+          ?.mapNotNull {
+            try {
+              registerRepository.loadResource(
+                it.entity.extractId(),
+                event.managingEntity.resourceType
+              )
+            } catch (resourceNotFoundException: ResourceNotFoundException) {
+              null
+            }
           }
           ?.filter { managingEntityResource ->
             fhirPathDataExtractor

@@ -18,14 +18,19 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import java.util.LinkedList
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 
 class MeasureReportRepository(
   private val measureReportConfiguration: MeasureReportConfiguration,
-  private val registerRepository: RegisterRepository
+  private val registerConfiguration: RegisterConfiguration,
+  private val registerRepository: RegisterRepository,
+  private val rulesExecutor: RulesExecutor
 ) : PagingSource<Int, MeasureReportConfig>() {
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
@@ -42,8 +47,16 @@ class MeasureReportRepository(
 
   suspend fun retrievePatients(currentPage: Int): List<ResourceData> {
     return registerRepository.loadRegisterData(
-      currentPage = currentPage,
-      registerId = measureReportConfiguration.registerId
-    )
+        currentPage = currentPage,
+        registerId = measureReportConfiguration.registerId
+      )
+      .map {
+        rulesExecutor.processResourceData(
+          baseResource = it.resource,
+          relatedRepositoryResourceData = LinkedList(it.relatedResources),
+          ruleConfigs = registerConfiguration.registerCard.rules,
+          ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
+        )
+      }
   }
 }
