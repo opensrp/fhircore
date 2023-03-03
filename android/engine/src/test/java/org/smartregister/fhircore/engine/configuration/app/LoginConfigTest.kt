@@ -14,23 +14,32 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.extensions
+package org.smartregister.fhircore.engine.configuration.app
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.ui.Modifier
-import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
-class ComposeExtensionsKtTest {
+class LoginConfigTest() {
+  private lateinit var loginConfig: LoginConfig
+
+  @Before
+  fun setUp() {
+    loginConfig = LoginConfig()
+  }
 
   @Test
-  fun testConditionalModifier() {
-    val modifier = spyk(Modifier)
-    modifier.conditional(true, { fillMaxWidth() }, { fillMaxHeight() })
-    verify { modifier.fillMaxWidth() }
-    modifier.conditional(false, { fillMaxWidth() }, { fillMaxHeight() })
-    verify { modifier.fillMaxHeight() }
+  fun testGetShowLogo() {
+    Assert.assertTrue(loginConfig.showLogo)
+  }
+
+  @Test
+  fun testGetEnablePin() {
+    Assert.assertEquals(false, loginConfig.enablePin)
+  }
+
+  @Test
+  fun testGetPinLength() {
+    Assert.assertEquals(4, loginConfig.pinLength)
   }
 }

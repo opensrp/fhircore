@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -66,12 +65,11 @@ fun MeasureReportResultScreen(
   MeasureReportResultPage(
     screenTitle = measureReportRowData.firstOrNull()?.module ?: "",
     navController = navController,
-    measureReportConfig = measureReportRowData,
-    endDate = uiState.endDate,
     startDate = uiState.startDate,
+    endDate = uiState.endDate,
+    patientViewData = uiState.patientViewData,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
-    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value,
-    patientViewData = uiState.patientViewData
+    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value
   )
 }
 
@@ -79,7 +77,6 @@ fun MeasureReportResultScreen(
 fun MeasureReportResultPage(
   screenTitle: String,
   navController: NavController,
-  measureReportConfig: MutableList<MeasureReportConfig>,
   startDate: String,
   endDate: String,
   patientViewData: MeasureReportPatientViewData?,
@@ -147,13 +144,6 @@ private fun MeasureReportResultScreenForIndividualPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportConfig =
-      mutableListOf(
-        MeasureReportConfig(
-          title = "First ANC",
-          description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
-        )
-      ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =
@@ -179,12 +169,6 @@ private fun MeasureReportResultScreenForPopulationPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportConfig =
-      mutableListOf(
-        MeasureReportConfig(
-          description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
-        )
-      ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =

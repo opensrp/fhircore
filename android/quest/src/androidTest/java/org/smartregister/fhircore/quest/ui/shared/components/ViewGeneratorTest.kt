@@ -93,7 +93,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#000000",
             primaryTextFontWeight = TextFontWeight.SEMI_BOLD
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -109,7 +109,7 @@ class ViewGeneratorTest {
             primaryText = "Sex",
             primaryTextColor = "#5A5A5A",
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -122,7 +122,7 @@ class ViewGeneratorTest {
       GenerateView(
         properties =
           CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -142,7 +142,7 @@ class ViewGeneratorTest {
             separator = ".",
             secondaryTextBackgroundColor = "#FFA500"
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -167,7 +167,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -187,7 +187,7 @@ class ViewGeneratorTest {
             primaryText = "Richard Brown, M, 21",
             primaryTextColor = "#000000",
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -205,7 +205,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#6F7274",
             padding = 16
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -223,7 +223,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#6F7274",
             padding = 16
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -248,7 +248,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -273,7 +273,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -285,7 +285,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Sex"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -297,7 +297,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Female"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -309,7 +309,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "DOB"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -321,7 +321,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "01 2000"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -333,7 +333,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Age"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -345,7 +345,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "22y"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -358,7 +358,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = spacerProperties,
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -371,7 +371,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = spacerProperties,
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }

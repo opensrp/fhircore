@@ -25,9 +25,12 @@ import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -105,5 +108,21 @@ object Faker {
         city = "City 1"
       }
     }
+  }
+
+  fun buildCarePlan(referenceString: String = "Patient/sampleId"): CarePlan {
+    val carePlan: CarePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "value-1"
+            }
+          )
+        subject = Reference().apply { reference = referenceString }
+      }
+    return carePlan
   }
 }
