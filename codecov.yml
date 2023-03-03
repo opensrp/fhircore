@@ -1,7 +1,6 @@
 codecov:
   disable_default_path_fixes: yes
   notify:
-    after_n_builds: 3
     wait_for_ci: yes
 
 coverage:
