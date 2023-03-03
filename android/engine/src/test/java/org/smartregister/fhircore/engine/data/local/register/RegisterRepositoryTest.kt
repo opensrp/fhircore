@@ -241,6 +241,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertEquals(20, recordsCount)
     }
   }
+
   @Test
   fun loadRegisterDataWithParamsReturnsFilteredResources() = runTest {
     val group =
