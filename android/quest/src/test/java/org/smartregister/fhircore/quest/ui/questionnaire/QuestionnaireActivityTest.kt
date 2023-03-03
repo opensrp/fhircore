@@ -95,7 +95,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Inject lateinit var jsonParser: IParser
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private lateinit var questionnaireFragment: QuestQuestionnaireFragment
+  private lateinit var questionnaireFragment: QuestionnaireFragment
 
   private lateinit var intent: Intent
 
@@ -714,7 +714,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assertions.assertThrows(java.lang.IllegalArgumentException::class.java) {
       runBlocking {
-        questionnaireActivity.attachQuestionnaireResponse(Bundle(), Intent(), questionnaireConfig)
+        questionnaireActivity.decodeQuestionnaireResponse(Intent(), questionnaireConfig)
       }
     }
   }
@@ -750,7 +750,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
 
     runBlocking {
-      questionnaireActivity.attachQuestionnaireResponse(Bundle(), intent, questionnaireConfig)
+      questionnaireActivity.decodeQuestionnaireResponse(intent, questionnaireConfig)
     }
 
     coVerify {
