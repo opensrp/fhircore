@@ -119,7 +119,8 @@ fun RegisterScreen(
           lazyListState = lazyListState,
           onEvent = onEvent,
           registerUiState = registerUiState,
-          currentPage = currentPage
+          currentPage = currentPage,
+          showPagination = searchText.value.isEmpty()
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->

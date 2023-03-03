@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -53,8 +54,9 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -67,21 +69,14 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var registerRepository: RegisterRepository
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var parser: IParser
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
-
   private lateinit var resourceData: ResourceData
-
   private lateinit var expectedBaseResource: Patient
 
   @Before
@@ -92,11 +87,11 @@ class ProfileViewModelTest : RobolectricTest() {
       ResourceData(
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
-        computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
+        computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
+    coEvery { registerRepository.loadProfileData(any(), any()) } returns
+      RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -110,7 +105,9 @@ class ProfileViewModelTest : RobolectricTest() {
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        parser = parser,
+        rulesExecutor = rulesExecutor
       )
   }
 
@@ -139,7 +136,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
@@ -220,7 +216,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
 
     val actionConfig =
@@ -288,7 +283,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(

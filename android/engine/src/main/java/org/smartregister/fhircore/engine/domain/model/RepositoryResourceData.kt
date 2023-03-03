@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
+import androidx.compose.runtime.Stable
+import java.util.LinkedList
+import org.hl7.fhir.r4.model.Resource
 
-data class ProfileUiState(
-  val resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
-  val showDataLoadProgressIndicator: Boolean = true
+/**
+ * @property resource A valid FHIR resource
+ * @property relatedResources Nested list of [RepositoryResourceData]
+ */
+@Stable
+data class RepositoryResourceData(
+  val configId: String? = null,
+  val resource: Resource,
+  val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
 )

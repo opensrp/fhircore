@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.quest.util
 
-import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
-
-data class ProfileUiState(
-  val resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
-  val showDataLoadProgressIndicator: Boolean = true
-)
+/**
+ * Helper to return a defaultValue when getting maybe null keys from a map.
+ *
+ * @param A the type of the map key
+ * @param B the type of the map value
+ * @property map the map to get from
+ * @property key the key that may be null
+ * @property defaultValue a default value that may not be null and defaults to an empty string
+ */
+fun <A, B> nonNullGetOrDefault(map: Map<A, B>, key: A?, defaultValue: B): B {
+  return if (key != null) map.getOrDefault(key, defaultValue) else defaultValue
+}

@@ -22,7 +22,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.navigation.NavController
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
@@ -60,7 +59,7 @@ class ExtendedFabTest {
                 )
             )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
         lazyListState = rememberLazyListState()
       )

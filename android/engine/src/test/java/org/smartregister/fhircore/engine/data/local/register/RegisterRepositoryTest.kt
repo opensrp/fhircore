@@ -33,35 +33,21 @@ import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.jupiter.api.Assertions
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
-import org.smartregister.fhircore.engine.configuration.view.ListOrientation
-import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
-import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -91,11 +77,10 @@ class RegisterRepositoryTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = DefaultDispatcherProvider(),
-          configurationRegistry = configurationRegistry,
-          rulesFactory = rulesFactory,
-          fhirPathDataExtractor = fhirPathDataExtractor,
           sharedPreferencesHelper = mockk(),
-          configService = mockk()
+          configurationRegistry = configurationRegistry,
+          configService = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
@@ -114,14 +99,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
       Assert.assertEquals(1, listResourceData.size)
 
-      Assert.assertEquals(ResourceType.Patient, resourceData.baseResourceType)
-
-      Assert.assertEquals("Nelson Mandela", resourceData.computedValuesMap["patientName"])
-
-      Assert.assertEquals(
-        Enumerations.AdministrativeGender.MALE.name.lowercase(),
-        (resourceData.computedValuesMap["patientGender"] as String).lowercase()
-      )
+      Assert.assertEquals(ResourceType.Patient, resourceData.resource.resourceType)
     }
 
     verify { registerRepository.retrieveRegisterConfiguration("patientRegister") }
@@ -165,9 +143,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
       Assert.assertEquals(1, listResourceData.size)
 
-      Assert.assertEquals(ResourceType.Group, resourceData.baseResourceType)
-
-      Assert.assertEquals("Snow", resourceData.computedValuesMap["familyName"])
+      Assert.assertEquals(ResourceType.Group, resourceData.resource.resourceType)
     }
 
     verify { registerRepository.retrieveRegisterConfiguration("householdRegister") }
@@ -190,10 +166,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val profileData =
         registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
       Assert.assertNotNull(profileData)
-      Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_NAME))
-      Assert.assertEquals("Nelson Mandela", profileData.computedValuesMap[PATIENT_NAME])
-      Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_ID))
-      Assert.assertEquals("12345", profileData.computedValuesMap[PATIENT_ID])
+      Assert.assertEquals(ResourceType.Patient, profileData.resource.resourceType)
     }
   }
 
@@ -263,137 +236,5 @@ class RegisterRepositoryTest : RobolectricTest() {
 
       Assert.assertEquals(20, recordsCount)
     }
-  }
-
-  @Test
-  fun testFilteredListResources() {
-    val configService = mockk<ConfigService>()
-    val configurationRegistry = mockk<ConfigurationRegistry>()
-    val defaultDispatcherProvider = mockk<DefaultDispatcherProvider>()
-    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
-    val spiedRegisterRepository =
-      spyk(
-        RegisterRepository(
-          fhirEngine,
-          defaultDispatcherProvider,
-          sharedPreferencesHelper,
-          configurationRegistry,
-          configService,
-          rulesFactory,
-          fhirPathDataExtractor
-        ),
-        recordPrivateCalls = true
-      )
-    val relatedResourceMap = mockk<MutableMap<String, MutableList<Resource>>>()
-    val listResource =
-      ListResource(
-        "readyTasks",
-        "availableTasks",
-        ResourceType.Task,
-        "Task.reasonCode.coding[0].code = 'immunization_at_birth'"
-      )
-    val mutableListResource = every {
-      spiedRegisterRepository["filteredListResources"](relatedResourceMap, listResource)
-    }
-    mutableListResource.answers { a -> Assertions.assertNotNull(a.fieldValueProvider) }
-  }
-
-  @Test
-  fun testComputeListRulesWithListResourcesExecutesRulesCorrectly() {
-    val views =
-      listOf<ViewProperties>(
-        ListProperties(
-          resources =
-            listOf(
-              ListResource(
-                id = "availablePlans",
-                conditionalFhirPathExpression = "",
-                relatedResourceId = "",
-                relatedResources = emptyList(),
-                resourceType = ResourceType.Task
-              )
-            ),
-          registerCard =
-            RegisterCardConfig(
-              views = emptyList(),
-              rules =
-                listOf(
-                  RuleConfig(
-                    actions =
-                      listOf("data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"),
-                    condition = "true",
-                    description = "",
-                    name = "taskStatus"
-                  )
-                ),
-            ),
-          orientation = ListOrientation.VERTICAL,
-          viewType = ViewType.LIST
-        ),
-      )
-    val relatedResourceMap = mockk<MutableMap<String, MutableList<Resource>>>()
-    val computedValuesMap = emptyMap<String, Any>()
-    val resultMap = emptyMap<String, List<ResourceData>>()
-    every {
-      registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
-    } returns resultMap
-    registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
-    verify { registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap) }
-    Assert.assertNotNull(resultMap)
-  }
-
-  @Test
-  fun testComputeListRulesWithoutListResourcesExecutesRulesCorrectly() {
-    val views =
-      listOf<ViewProperties>(
-        ListProperties(
-          resources =
-            listOf(
-              ListResource(
-                relatedResources =
-                  listOf(
-                    ExtractedResource(
-                      resourceType = ResourceType.Task,
-                      id = "relatedResource",
-                      fhirPathExpression =
-                        "data.put('conditionTitle', fhirPath.extractValue(Condition, \"Condition.where(clinicalStatus.coding.where(code = 'active').exists()).code.text\"))"
-                    )
-                  ),
-                resourceType = ResourceType.Task,
-                id = "availablePlans"
-              )
-            ),
-          registerCard =
-            RegisterCardConfig(
-              views = emptyList(),
-              rules =
-                listOf(
-                  RuleConfig(
-                    actions =
-                      listOf("data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"),
-                    condition = "true",
-                    description = "",
-                    name = "taskStatus"
-                  )
-                ),
-            ),
-          orientation = ListOrientation.VERTICAL,
-          viewType = ViewType.LIST,
-        ),
-      )
-    val relatedResourceMap = mockk<MutableMap<String, MutableList<Resource>>>()
-    val computedValuesMap = emptyMap<String, Any>()
-    val resultMap = emptyMap<String, List<ResourceData>>()
-    every {
-      registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
-    } returns resultMap
-    registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap)
-    verify { registerRepository.computeListRules(views, relatedResourceMap, computedValuesMap) }
-    Assert.assertNotNull(resultMap)
-  }
-
-  companion object {
-    private const val PATIENT_NAME = "patientName"
-    private const val PATIENT_ID = "patientId"
   }
 }
