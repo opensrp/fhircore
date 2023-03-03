@@ -149,7 +149,7 @@ constructor(
               WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
               )
               AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
-              ORDER BY b.index_from ASC, c.index_from ASC, a.id ASC
+              ORDER BY c.index_from ASC, a.id ASC
               LIMIT ? OFFSET ?
           """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize, offset)
