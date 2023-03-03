@@ -51,8 +51,7 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
       ResourceData(
         baseResourceId = samplePatient.logicalId,
         baseResourceType = samplePatient.resourceType,
-        computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap()
+        computedValuesMap = emptyMap()
       )
     val profileViewDataHiv = measureReportPatientViewDataMapper.transformInputToOutputModel(dto)
     with(profileViewDataHiv) {

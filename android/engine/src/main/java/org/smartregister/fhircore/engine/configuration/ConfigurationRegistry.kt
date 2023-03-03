@@ -85,23 +85,32 @@ constructor(
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      if (paramsMap?.isNullOrEmpty() == false)
-        configsJsonMap.getValue(configKey).interpolate(paramsMap).decodeResourceFromString()
-      else configsJsonMap.getValue(configKey).decodeResourceFromString()
+      getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
     else
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template =
-            if (paramsMap?.isNullOrEmpty() == false)
-              configsJsonMap.getValue(configKey).interpolate(paramsMap)
-            else configsJsonMap.getValue(configKey)
+          template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
 
           // java.util.NoSuchElementException: Key application is missing in the map.
           )
         .decodeJson(jsonInstance = json)
   }
+
+  /**
+   * receives @paramsMap , @configKey and @ConfigJsonMap as inputs and
+   * interpolates the value if found and if paramsMap are not empty return the result
+   * return the value if key is found and paramsMap is empty
+   */
+  inline fun <reified T : Configuration> getConfigValueWithParam(
+    paramsMap: Map<String, String>?,
+    configKey: String,
+    configsJsonMap: Map<String, String>
+  ) =
+    if (paramsMap?.isNullOrEmpty() == false)
+      configsJsonMap.getValue(configKey).interpolate(paramsMap)
+    else configsJsonMap.getValue(configKey)
 
   inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
     configsJsonMap.values

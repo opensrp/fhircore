@@ -89,7 +89,7 @@ private fun PreviewWeightedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -144,7 +144,7 @@ private fun PreviewWrappedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -181,7 +181,7 @@ private fun PreviewSameSizedViewInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -299,7 +299,7 @@ private fun PreviewCardViewWithRows() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }

@@ -26,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -36,6 +37,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterConfigur
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -45,6 +47,8 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class RegisterViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -69,7 +73,8 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          rulesExecutor = rulesExecutor
         )
       )
 

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.domain.repository
 
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -32,7 +33,7 @@ interface Repository {
     currentPage: Int,
     registerId: String,
     paramsMap: Map<String, String>? = emptyMap()
-  ): List<ResourceData>
+  ): List<RepositoryResourceData>
 
   /**
    * This function uses the provided [registerId] to retrieve the register configuration from the
@@ -54,5 +55,5 @@ interface Repository {
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray()
-  ): ResourceData?
+  ): RepositoryResourceData?
 }
