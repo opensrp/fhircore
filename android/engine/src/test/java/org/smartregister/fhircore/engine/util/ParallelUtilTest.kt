@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util
 
-import io.mockk.InternalPlatformDsl.toArray
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
