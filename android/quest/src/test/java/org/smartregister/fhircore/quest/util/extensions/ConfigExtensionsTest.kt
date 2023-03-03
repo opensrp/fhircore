@@ -46,7 +46,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
-class ConfigExtensionsKtTest : RobolectricTest() {
+class ConfigExtensionsTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
@@ -86,7 +86,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
-    Assert.assertEquals(3, slotBundle.captured.size())
+    Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
     Assert.assertEquals(patient.logicalId, slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
