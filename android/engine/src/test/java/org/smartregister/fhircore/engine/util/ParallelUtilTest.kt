@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import io.mockk.InternalPlatformDsl.toArray
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,8 +31,8 @@ class ParallelUtilTest {
   @Test
   fun testExecutesAgainstAllMembersOfIterable() {
     runBlocking(Dispatchers.Default) {
-      val output = testIterable.pmap { it + 1 }
-      Assert.assertArrayEquals(output.toIntArray(), listOf(2, 3, 4).toIntArray())
+      val output = testIterable.pmap { it + 1 }.toList()
+      Assert.assertTrue(output == listOf(2, 3, 4))
     }
   }
 
