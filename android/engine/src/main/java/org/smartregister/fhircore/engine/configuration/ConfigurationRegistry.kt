@@ -97,7 +97,7 @@ constructor(
   }
 
   /**
-   * receives @paramsMap , @configKey and @ConfigJsonMap as inputs and interpolates the value if
+   * Receives @paramsMap , @configKey and @ConfigJsonMap as inputs and interpolates the value if
    * found and if paramsMap are not empty return the result return the value if key is found and
    * paramsMap is empty
    */
@@ -109,19 +109,6 @@ constructor(
     configsJsonMap.getValue(configKey).let { jsonValue ->
       if (paramsMap?.isNullOrEmpty() == false) jsonValue.interpolate(paramsMap) else jsonValue
     }
-
-  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
-    configsJsonMap.values
-      .map {
-        localizationHelper
-          .parseTemplate(
-            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            locale = Locale.getDefault(),
-            template = configsJsonMap.getValue(it)
-          )
-          .decodeJson<T>(jsonInstance = json)
-      }
-      .filter { it.configType.equals(configType.name, ignoreCase = true) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]

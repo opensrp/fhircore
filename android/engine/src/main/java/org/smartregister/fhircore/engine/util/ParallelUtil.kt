@@ -19,8 +19,6 @@ package org.smartregister.fhircore.engine.util
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 
 /**
  * Launch a new coroutine for each map iteration using async. From
