@@ -17,6 +17,8 @@
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
         tools:replace="android:theme">
 
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
             android:exported="true">
