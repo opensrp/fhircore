@@ -497,6 +497,12 @@
                       {
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
+                      },
+                      {
+                        "paramType": "PARAMDATA",
+                        "dataType": "STRING",
+                        "key": "practitionerId",
+                        "value": "@{practitionerId}"
                       }
                     ]
                   }

@@ -113,7 +113,13 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testRetrieveProfileUiState() {
-    runBlocking { profileViewModel.retrieveProfileUiState("householdProfile", "sampleId") }
+    runBlocking {
+      profileViewModel.retrieveProfileUiState(
+        "householdProfile",
+        "sampleId",
+        paramsList = emptyArray()
+      )
+    }
 
     assertNotNull(profileViewModel.profileUiState.value)
     val theResourceData = profileViewModel.profileUiState.value.resourceData

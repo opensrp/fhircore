@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateFrom
@@ -79,36 +80,35 @@ constructor(
   // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
-    configId: String? = null
+    configId: String? = null,
+    paramsMap: Map<String, String>? = emptyMap()
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      configsJsonMap.getValue(configKey).decodeResourceFromString()
+      getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
     else
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template =
-            configsJsonMap.getValue(
-              configKey
-            ) // java.util.NoSuchElementException: Key application is missing in the map.
+          template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
         )
         .decodeJson(jsonInstance = json)
   }
 
-  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
-    configsJsonMap.values
-      .map {
-        localizationHelper
-          .parseTemplate(
-            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            locale = Locale.getDefault(),
-            template = configsJsonMap.getValue(it)
-          )
-          .decodeJson<T>(jsonInstance = json)
-      }
-      .filter { it.configType.equals(configType.name, ignoreCase = true) }
+  /**
+   * Receives @paramsMap , @configKey and @ConfigJsonMap as inputs and interpolates the value if
+   * found and if paramsMap are not empty return the result return the value if key is found and
+   * paramsMap is empty
+   */
+  inline fun <reified T : Configuration> getConfigValueWithParam(
+    paramsMap: Map<String, String>?,
+    configKey: String,
+    configsJsonMap: Map<String, String>
+  ) =
+    configsJsonMap.getValue(configKey).let { jsonValue ->
+      if (paramsMap?.isNullOrEmpty() == false) jsonValue.interpolate(paramsMap) else jsonValue
+    }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]

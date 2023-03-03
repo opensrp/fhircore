@@ -85,7 +85,8 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          ""
+          "",
+          emptyMap()
         )
 
       Assert.assertEquals(resourceData.baseResourceId, patientId)

@@ -52,7 +52,7 @@ import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class WorkManagerExtensionsKtTest : RobolectricTest() {
+class WorkManagerExtensionsTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirEngine: FhirEngine

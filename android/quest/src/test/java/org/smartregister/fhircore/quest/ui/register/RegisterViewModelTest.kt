@@ -105,7 +105,11 @@ class RegisterViewModelTest : RobolectricTest() {
   fun testRetrieveRegisterUiState() = runTest {
     every { registerViewModel.paginateRegisterData(any(), any()) } just runs
     coEvery { registerRepository.countRegisterData(any()) } returns 200
-    registerViewModel.retrieveRegisterUiState(registerId = registerId, screenTitle = screenTitle)
+    registerViewModel.retrieveRegisterUiState(
+      registerId = registerId,
+      screenTitle = screenTitle,
+      paramsList = null
+    )
     val registerUiState = registerViewModel.registerUiState.value
     Assert.assertNotNull(registerUiState)
     Assert.assertEquals(registerId, registerUiState.registerId)
