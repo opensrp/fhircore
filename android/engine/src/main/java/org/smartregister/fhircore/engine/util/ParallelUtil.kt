@@ -43,20 +43,3 @@ suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutin
 suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
   forEach { async { action(it) } }
 }
-
-/**
- * @paramList return @Map Function to convert arrayList to map of the values or else return an
- * emptyMap
- */
-fun convertArrayToMap(paramsList: Array<ActionParameter>?): Map<String, String> {
-  val paramsMap: MutableMap<String, String> = mutableMapOf()
-  if (paramsList != null) {
-    for (param in paramsList) {
-      if (param.paramType == ActionParameterType.PARAMDATA && !param.value.isNullOrEmpty()) {
-        paramsMap[param.key] = param.value
-      }
-    }
-    return paramsMap.toMap()
-  }
-  return emptyMap()
-}
