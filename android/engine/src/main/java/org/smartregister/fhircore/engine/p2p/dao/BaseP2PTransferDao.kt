@@ -22,7 +22,6 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncDataParams
@@ -118,22 +117,22 @@ constructor(
 
       Timber.e("loadResources() after dispatcher")
       /*val search =
-        Search(type = classType.newInstance().resourceType).apply {
-          filter(
-            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-            {
-              value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-            }
-          )
+      Search(type = classType.newInstance().resourceType).apply {
+        filter(
+          DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+          {
+            value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+          }
+        )
 
-          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-          from = offset
-          count = batchSize
-        }*/
+        sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+        from = offset
+        count = batchSize
+      }*/
 
       Timber.e("loadResources starting search")
-      //fhirEngine.search(search)
+      // fhirEngine.search(search)
 
       val searchQuery =
         SearchQuery(

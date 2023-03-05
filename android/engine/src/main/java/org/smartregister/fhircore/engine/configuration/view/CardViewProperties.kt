@@ -30,11 +30,13 @@ data class CardViewProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
+  override val visible: String = "true",
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
   val header: CompoundTextProperties? = null,
   val headerBackgroundColor: String = "#F2F4F7",
   val viewAllAction: Boolean = false,
-  val emptyContentMessage: String = ""
+  val emptyContentMessage: String = "",
+  val contentPadding: Int = 16
 ) : ViewProperties()

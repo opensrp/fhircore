@@ -28,10 +28,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -89,7 +93,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#000000",
             primaryTextFontWeight = TextFontWeight.SEMI_BOLD
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -105,7 +109,7 @@ class ViewGeneratorTest {
             primaryText = "Sex",
             primaryTextColor = "#5A5A5A",
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -118,7 +122,7 @@ class ViewGeneratorTest {
       GenerateView(
         properties =
           CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -138,7 +142,7 @@ class ViewGeneratorTest {
             separator = ".",
             secondaryTextBackgroundColor = "#FFA500"
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -163,7 +167,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -183,7 +187,7 @@ class ViewGeneratorTest {
             primaryText = "Richard Brown, M, 21",
             primaryTextColor = "#000000",
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -201,7 +205,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#6F7274",
             padding = 16
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -219,7 +223,7 @@ class ViewGeneratorTest {
             primaryTextColor = "#6F7274",
             padding = 16
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -244,7 +248,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -269,7 +273,7 @@ class ViewGeneratorTest {
                 )
               )
           ),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -281,7 +285,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Sex"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -293,7 +297,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Female"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -305,7 +309,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "DOB"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -317,7 +321,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "01 2000"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -329,7 +333,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "Age"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -341,7 +345,7 @@ class ViewGeneratorTest {
     composeRule.setContent {
       GenerateView(
         properties = CompoundTextProperties(primaryText = "22y"),
-        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController
       )
     }
@@ -351,14 +355,146 @@ class ViewGeneratorTest {
   @Test
   fun testGenerateViewRendersVerticalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = 16F, width = null)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(VERTICAL_SPACER_TEST_TAG).assertExists()
   }
 
   @Test
   fun testGenerateViewRendersHorizontalSpacerViewCorrectly() {
     val spacerProperties = SpacerProperties(height = null, width = 16F)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
+    composeRule.setContent {
+      GenerateView(
+        properties = spacerProperties,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+        navController = navController
+      )
+    }
     composeRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
+  }
+
+  @Test
+  fun testColumnIsRenderedWhenViewTypeIsColumnAndPropertyWrapContentIsTrue() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = true,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task"),
+                ButtonProperties(status = "READY", text = "Ready Task"),
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testColumnIsRenderedWhenViewTypeIsColumnAndWrapContentIsFalse() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.CENTER,
+            arrangement = ColumnArrangement.TOP,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
+                ButtonProperties(status = "READY", text = "Ready Task", visible = "true"),
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertDoesNotExist()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testChildIsVisibleTogglesVisibilityOfComponentsNestedInColumn() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.START,
+            arrangement = ColumnArrangement.TOP,
+            children =
+              listOf(
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Richard Brown, M, 29",
+                        primaryTextColor = "#000000",
+                        visible = "false"
+                      )
+                    )
+                ),
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Jane Brown, M, 26",
+                        primaryTextColor = "#000000",
+                      )
+                    )
+                ),
+                CardViewProperties(
+                  viewType = ViewType.CARD,
+                  content =
+                    listOf(
+                      CompoundTextProperties(
+                        primaryText = "Billy Brown, M, 20",
+                        primaryTextColor = "#000000",
+                        visible = "false"
+                      )
+                    )
+                )
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
+    composeRule
+      .onNodeWithText("Jane Brown, M, 26", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Billy Brown, M, 20", useUnmergedTree = true).assertDoesNotExist()
   }
 }

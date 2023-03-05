@@ -27,23 +27,13 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
-import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
-import com.google.android.fhir.sync.SyncDataParams
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.IntegerType
-import org.hl7.fhir.r4.model.Patient
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -53,6 +43,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -130,12 +121,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       schedulePeriodicJobs()
     }
 
-    syncBroadcaster.run {
-      with(appMainViewModel.syncSharedFlow) {
-        runSync(this)
-        schedulePeriodicSync(this)
-      }
-    }
+    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
@@ -147,66 +133,69 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       var fetches = 0
       var offset = 0
 
-      //do {
-        Timber.e("loadResources starting search")
-        val startTime = System.currentTimeMillis()
-        /*
-        val search =
-          Search(type = ResourceType.Task).apply {
-            filter(
-              DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-              {
-                value = of(DateTimeType(Date(0)))
-                prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-              }
-            )
+      // do {
+      Timber.e("loadResources starting search")
+      val startTime = System.currentTimeMillis()
+      /*
+      val search =
+        Search(type = ResourceType.Task).apply {
+          filter(
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+            {
+              value = of(DateTimeType(Date(0)))
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            }
+          )
 
-            sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-            from = offset
-            count = 25
-          }
+          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+          from = offset
+          count = 25
+        }
 
-        val tasks = fhirEngine.search<Task>(search)*/
+      val tasks = fhirEngine.search<Task>(search)*/
 
       /*val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
       fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)*/
 
-        /*val searchQuery =
-          SearchQuery(
-            """
-            SELECT a.serializedResource
-            FROM ResourceEntity a
-            LEFT JOIN DateTimeIndexEntity c
-            ON a.resourceUuid = c.resourceUuid
-            WHERE a.resourceUuid IN (
-            SELECT resourceUuid FROM DateTimeIndexEntity
-            WHERE resourceType = 'Task' AND index_name = '_lastUpdated' AND index_to >= 0 ORDER BY index_from ASC, id ASC LIMIT 25 OFFSET 0
-            )
-            AND (
-            c.index_name = "_lastUpdated")
-            ORDER BY 
-            c.index_from ASC, a.id ASC
-            LIMIT 25 OFFSET 0
-          """.trimIndent(),
-            emptyList()
+      /*val searchQuery =
+        SearchQuery(
+          """
+          SELECT a.serializedResource
+          FROM ResourceEntity a
+          LEFT JOIN DateTimeIndexEntity c
+          ON a.resourceUuid = c.resourceUuid
+          WHERE a.resourceUuid IN (
+          SELECT resourceUuid FROM DateTimeIndexEntity
+          WHERE resourceType = 'Task' AND index_name = '_lastUpdated' AND index_to >= 0 ORDER BY index_from ASC, id ASC LIMIT 25 OFFSET 0
           )
+          AND (
+          c.index_name = "_lastUpdated")
+          ORDER BY
+          c.index_from ASC, a.id ASC
+          LIMIT 25 OFFSET 0
+        """.trimIndent(),
+          emptyList()
+        )
 
-        val tasks = fhirEngine.search<Task>(searchQuery)
+      val tasks = fhirEngine.search<Task>(searchQuery)
 
-        val stopTime = System.currentTimeMillis()
-        val timeTaken = stopTime - startTime
-        Timber.e("Time take = ${timeTaken/1000} s | $timeTaken ms")
-        offset += 25*/
-        //} while (tasks.isNotEmpty())
+      val stopTime = System.currentTimeMillis()
+      val timeTaken = stopTime - startTime
+      Timber.e("Time take = ${timeTaken/1000} s | $timeTaken ms")
+      offset += 25*/
+      // } while (tasks.isNotEmpty())
 
       try {
-      val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
-      fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
-        } catch(ex: SQLException) {
-          Timber.e(ex)
-        }
+        val addDateTimeIndexEntityIndexFromIndexQuery =
+          SearchQuery(
+            "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+            emptyList()
+          )
+        fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+      } catch (ex: SQLException) {
+        Timber.e(ex)
+      }
     }
-
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -252,6 +241,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
       else -> {
         /*Do nothing */
+      }
+    }
+  }
+
+  private fun runSync(syncBroadcaster: SyncBroadcaster) {
+    syncBroadcaster.run {
+      if (isDeviceOnline()) {
+        with(appMainViewModel.syncSharedFlow) {
+          runSync(this)
+          schedulePeriodicSync(this)
+        }
       }
     }
   }

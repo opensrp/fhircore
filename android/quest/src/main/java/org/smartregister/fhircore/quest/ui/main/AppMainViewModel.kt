@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -151,7 +152,11 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
+      is AppMainEvent.SyncData -> {
+        if (event.context.isDeviceOnline()) {
+          syncBroadcaster.runSync(syncSharedFlow)
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
@@ -287,11 +292,15 @@ constructor(
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(workId = FhirTaskPlanWorker.WORK_ID)
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        requiresNetwork = false
+      )
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration)
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.

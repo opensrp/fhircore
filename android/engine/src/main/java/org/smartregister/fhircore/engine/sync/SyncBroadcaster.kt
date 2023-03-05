@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.NetworkType
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -103,7 +104,8 @@ constructor(
         Sync.periodicSync<AppSyncWorker>(
             context,
             PeriodicSyncConfiguration(
-              syncConstraints = Constraints.Builder().build(),
+              syncConstraints =
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
               repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
             )
           )

@@ -31,6 +31,7 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -45,7 +46,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
-class ConfigExtensionsKtTest : RobolectricTest() {
+class ConfigExtensionsTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
@@ -62,7 +63,6 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       baseResourceId = patient.logicalId,
       baseResourceType = ResourceType.Patient,
       computedValuesMap = mapOf("logicalId" to patient.id, "name" to patient.name),
-      listResourceDataMap = emptyMap(),
     )
   }
 
@@ -86,7 +86,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
-    Assert.assertEquals(3, slotBundle.captured.size())
+    Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
     Assert.assertEquals(patient.logicalId, slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
@@ -207,5 +207,20 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         actionParams = any()
       )
     }
+  }
+
+  @Test
+  fun testViewIsVisibleReturnsCorrectValue() {
+    val computedValuesMap = mapOf("visible" to "true", "invisible" to "false")
+    val visibleButtonProperties =
+      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{visible}")
+    val invisibleButtonProperties =
+      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{invisible}")
+
+    val visible = visibleButtonProperties.isVisible(computedValuesMap)
+    Assert.assertEquals(true, visible)
+
+    val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
+    Assert.assertEquals(false, invisible)
   }
 }

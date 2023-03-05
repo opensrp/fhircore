@@ -1,0 +1,156 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "Questionnaire/3435",
+  "subject": {
+    "reference": "Patient/TEST_PATIENT"
+  },
+  "item": [
+    {
+      "linkId": "bio",
+      "item": [
+        {
+          "linkId": "PR-name",
+          "item": [
+            {
+              "linkId": "PR-name-family",
+              "answer": [
+                {
+                  "valueString": "Hadi"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-name-given",
+              "answer": [
+                {
+                  "valueString": "Bareera"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-identifier-info",
+          "item": [
+            {
+              "linkId": "PR-identifier-nid",
+              "answer": [
+                {
+                  "valueString": "3456"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-birth-date",
+          "answer": [
+            {
+              "valueDate": "1998-12-14"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-marital-status",
+          "answer": [
+            {
+              "valueCoding": {
+                "code": "married",
+                "display": "Married"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "is_pregnant",
+          "answer": [
+            {
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "77386006",
+                "display": "Pregnant"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-address",
+          "item": [
+            {
+              "linkId": "PR-address-city",
+              "answer": [
+                {
+                  "valueString": "NAIROBI"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-address-country",
+              "answer": [
+                {
+                  "valueString": "Kenya"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-ethnicity-group",
+          "item": [
+            {
+              "linkId": "PR-ethnicity-authority",
+              "answer": [
+                {
+                  "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-ethnicity",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "black",
+                    "display": "Black"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-occupation-group",
+          "item": [
+            {
+              "linkId": "PR-occupation-authority",
+              "answer": [
+                {
+                  "valueString": "http://hl7.org.nz/fhir/StructureDefinition/current-occupation"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-occupation",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "employed",
+                    "display": "Employed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-active",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
