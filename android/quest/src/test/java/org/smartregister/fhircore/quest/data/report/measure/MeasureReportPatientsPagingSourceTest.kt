@@ -37,11 +37,8 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-
   private val reportRepository = mockk<MeasureReportRepository>()
-
   private lateinit var reportPatientsPagingSource: MeasureReportPatientsPagingSource
 
   @Before
@@ -59,7 +56,6 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
           baseResourceId = "resourceId",
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-          listResourceDataMap = emptyMap(),
         )
       )
 

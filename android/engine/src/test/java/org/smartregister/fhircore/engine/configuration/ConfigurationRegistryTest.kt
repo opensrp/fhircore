@@ -28,12 +28,10 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @Inject lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
-
     hiltRule.inject()
     Assert.assertNotNull(configRegistry)
   }

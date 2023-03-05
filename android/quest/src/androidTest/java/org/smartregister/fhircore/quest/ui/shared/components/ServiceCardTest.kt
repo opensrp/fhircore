@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class ServiceCardTest {
 
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-  private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
+  private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap())
 
   @get:Rule val composeRule = createComposeRule()
 

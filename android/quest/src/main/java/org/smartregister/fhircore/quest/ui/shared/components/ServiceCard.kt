@@ -339,7 +339,7 @@ private fun ServiceCardServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -393,7 +393,7 @@ private fun ServiceCardServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -447,7 +447,7 @@ private fun ServiceCardServiceUpcomingPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -482,7 +482,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -535,7 +535,7 @@ private fun ServiceCardServiceCompletedPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -583,7 +583,7 @@ private fun ServiceCardANCServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -639,7 +639,7 @@ private fun ServiceCardANCServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }

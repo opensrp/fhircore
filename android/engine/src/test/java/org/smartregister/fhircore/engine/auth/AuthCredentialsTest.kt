@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.profile
+package org.smartregister.fhircore.engine.auth
 
-import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-data class ProfileUiState(
-  val resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null,
-  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
-  val showDataLoadProgressIndicator: Boolean = true
-)
+class AuthCredentialsTest() {
+  private var username = "username"
+  private var password = "password"
+  private lateinit var authCredentials: AuthCredentials
+
+  @Before
+  fun setUp() {
+    authCredentials = AuthCredentials(username, password)
+  }
+
+  @Test
+  fun testGetUsername() {
+    Assert.assertEquals(username, authCredentials.username)
+  }
+
+  @Test
+  fun testGetPassword() {
+    Assert.assertEquals(password, authCredentials.password)
+  }
+}
