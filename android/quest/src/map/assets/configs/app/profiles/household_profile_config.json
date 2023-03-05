@@ -168,13 +168,9 @@
         },
         {
           "viewType": "LIST",
-<<<<<<< HEAD
           "listResource": "Patient",
           "padding": 16,
           "relatedResources": [
-=======
-          "resources": [
->>>>>>> eeeb9757af4526b3242ef198114d9f7f1d203be4
             {
               "id": "householdPatients",
               "resourceType": "Patient",
