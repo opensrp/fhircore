@@ -22,10 +22,10 @@ comment:
 flags:
   engine:
     paths:
-      - "/home/runner/work/fhircore/fhircore/android/engine"
+      - "/Users/runner/work/fhircore/fhircore/android/engine"
   geowidget:
     paths:
-      - "/home/runner/work/fhircore/fhircore/android/geowidget"
+      - "/Users/runner/work/fhircore/fhircore/android/geowidget"
   quest:
     paths:
-      - "/home/runner/work/fhircore/fhircore/android/quest"
+      - "/Users/runner/work/fhircore/fhircore/android/quest"
