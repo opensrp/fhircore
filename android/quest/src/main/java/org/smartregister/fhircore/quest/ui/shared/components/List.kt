@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -61,7 +62,7 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
+  val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
       Text(
@@ -78,10 +79,6 @@ fun List(
           .background(
             viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
           )
-          .padding(
-            horizontal = viewProperties.padding.dp,
-            vertical = viewProperties.padding.div(4).dp
-          )
           .testTag(VERTICAL_ORIENTATION)
     ) {
       when (viewProperties.orientation) {
@@ -95,11 +92,19 @@ fun List(
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
+              Column(
+                modifier =
+                  Modifier.padding(
+                    horizontal = viewProperties.padding.dp,
+                    vertical = viewProperties.padding.div(4).dp
+                  )
+              ) {
+                ViewRenderer(
+                  viewProperties = viewProperties.registerCard.views,
+                  resourceData = listResourceData,
+                  navController = navController,
+                )
+              }
               Spacer(modifier = modifier.height(6.dp))
               if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
                 Divider(color = DividerColor, thickness = 0.5.dp)
@@ -136,7 +141,8 @@ private fun ListWithHorizontalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          listResource = ResourceType.CarePlan.name,
+          resources =
+            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -178,19 +184,7 @@ private fun ListWithHorizontalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap(),
-          listResourceDataMap =
-            mapOf(
-              "listId" to
-                listOf(
-                  ResourceData(
-                    baseResourceId = "carePlan1",
-                    baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = emptyMap(),
-                    listResourceDataMap = emptyMap()
-                  )
-                )
-            )
+          computedValuesMap = emptyMap()
         )
     )
   }
@@ -211,7 +205,8 @@ private fun ListWithVerticalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          listResource = ResourceType.CarePlan.name,
+          resources =
+            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(
@@ -240,19 +235,7 @@ private fun ListWithVerticalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap(),
-          listResourceDataMap =
-            mapOf(
-              "listId" to
-                listOf(
-                  ResourceData(
-                    baseResourceId = "carePlan1",
-                    baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = emptyMap(),
-                    listResourceDataMap = emptyMap()
-                  )
-                )
-            )
+          computedValuesMap = emptyMap()
         )
     )
   }

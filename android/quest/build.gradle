@@ -158,32 +158,36 @@ android {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
             versionNameSuffix "-afyayangu"
-            versionCode 1
-            versionName "0.0.1"
         }
 
         map {
             dimension "apps"
             applicationIdSuffix ".map"
             versionNameSuffix "-map"
-            versionCode 1
-            versionName "0.0.1"
         }
 
         echis {
             dimension "apps"
             applicationIdSuffix ".echis"
             versionNameSuffix "-echis"
-            versionCode 1
-            versionName "0.0.1"
         }
 
-        sid {
+        bunda {
             dimension "apps"
-            applicationIdSuffix ".sid"
-            versionNameSuffix "-sid"
-            versionCode 1
-            versionName "0.0.1"
+            applicationIdSuffix ".bunda"
+            versionNameSuffix "-bunda"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
+        }
+
+        zeir {
+            dimension "apps"
+            applicationIdSuffix ".zeir"
+            versionNameSuffix "-zeir"
         }
     }
     sourceSets {

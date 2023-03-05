@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
@@ -52,12 +51,13 @@ import org.hl7.fhir.r4.model.Resource
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.findPercentage
 import org.smartregister.fhircore.engine.util.extension.findPopulation
@@ -90,9 +89,9 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
 import timber.log.Timber
 
-@SuppressLint("DiscouragedPrivateApi")
 @HiltViewModel
 class MeasureReportViewModel
 @Inject
@@ -104,7 +103,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
@@ -132,12 +132,6 @@ constructor(
   val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  private val practitionerId: String? by lazy {
-    sharedPreferencesHelper
-      .read(key = SharedPreferenceKey.PRACTITIONER_ID.name, null)
-      ?.extractLogicalIdUuid()
-  }
-
   fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
@@ -146,8 +140,18 @@ constructor(
 
   fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
     val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
-    return Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) {
-        MeasureReportRepository(measureReportConfiguration, registerRepository)
+    val registerConfiguration =
+      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+        ConfigType.Register,
+        measureReportConfiguration.registerId
+      )
+    return Pager(PagingConfig(DEFAULT_PAGE_SIZE)) {
+        MeasureReportRepository(
+          measureReportConfiguration = measureReportConfiguration,
+          registerConfiguration = registerConfiguration,
+          registerRepository = registerRepository,
+          rulesExecutor = rulesExecutor
+        )
       }
       .flow
       .cachedIn(viewModelScope)
@@ -183,7 +187,7 @@ constructor(
               endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
             )
         }
-        refereshData()
+        refreshData()
         evaluateMeasure(event.navController)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -225,20 +229,30 @@ constructor(
     }
   }
 
-  private fun refereshData() {
+  private fun refreshData() {
     _measureReportPopulationResultList.clear()
     measureReportPopulationResults.value = _measureReportPopulationResultList
   }
 
   fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
     val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
+    val registerConfiguration =
+      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+        ConfigType.Register,
+        measureReportConfig.registerId
+      )
     patientsData.value =
       Pager(
-          config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
+          config = PagingConfig(DEFAULT_PAGE_SIZE),
           pagingSourceFactory = {
             MeasureReportPatientsPagingSource(
-              MeasureReportRepository(measureReportConfig, registerRepository),
-              measureReportPatientViewDataMapper
+              MeasureReportRepository(
+                measureReportConfiguration = measureReportConfig,
+                registerConfiguration = registerConfiguration,
+                registerRepository = registerRepository,
+                rulesExecutor = rulesExecutor
+              ),
+              measureReportPatientViewDataMapper,
             )
           }
         )
@@ -365,13 +379,14 @@ constructor(
 
   /**
    * Run and generate MeasureReport for given measure and subject.
+   *
    * @param measureUrl url of measure to generate report for
    * @param reportType type of report (population | subject)
    * @param startDateFormatted start date of measure period with format yyyy-MM-dd
    * @param endDateFormatted end date of measure period with format yyyy-MM-dd
    * @param subject the individual subject reference (ResourceType/id) to run report for
    */
-  fun runMeasureReport(
+  private fun runMeasureReport(
     measureUrl: String,
     reportType: String,
     startDateFormatted: String,
@@ -406,27 +421,31 @@ constructor(
       "All Measure Reports in module should have same type"
     }
 
+    val indicatorUrlToTitleMap = indicators.associateBy({ it.url }, { it.title })
+
     measureReports
-      .takeIf { it.all { it.type == MeasureReport.MeasureReportType.INDIVIDUAL } }
+      .takeIf {
+        it.all { measureReport -> measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL }
+      }
       ?.groupBy { it.subject.reference }
-      ?.forEach {
-        val reference = Reference().apply { reference = it.key }
+      ?.forEach { entry ->
+        val reference = Reference().apply { reference = entry.key }
         val subject =
-          fhirEngine.get(reference.extractType()!!, reference.extractId()).let {
-            when (it) {
-              is Patient -> it.nameFirstRep.nameAsSingleString
-              is Group -> it.name
+          fhirEngine.get(reference.extractType()!!, reference.extractId()).let { resource ->
+            when (resource) {
+              is Patient -> resource.nameFirstRep.nameAsSingleString
+              is Group -> resource.name
               else ->
                 throw UnsupportedOperationException(
-                  "${it.resourceType} as individual subject not allowed"
+                  "${resource.resourceType} as individual subject not allowed"
                 )
             }
           }
 
-        val indicators =
-          it.value.flatMap { report ->
+        val theIndicators =
+          entry.value.flatMap { report ->
             val formatted = formatSupplementalData(report.contained, report.type)
-            val title = indicators.find { it.url == report.measure }?.title ?: ""
+            val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
             if (formatted.isEmpty())
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             else if (formatted.size == 1)
@@ -450,14 +469,16 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (indicators.size == 1) indicators.first().count.toInt() else null,
-            dataList = if (indicators.size > 1) indicators else emptyList()
+              if (theIndicators.size == 1) theIndicators.first().count.toInt() else null,
+            dataList = if (theIndicators.size > 1) theIndicators else emptyList()
           )
         )
       }
 
     measureReports
-      .takeIf { it.all { it.type != MeasureReport.MeasureReportType.INDIVIDUAL } }
+      .takeIf {
+        it.all { measureReport -> measureReport.type != MeasureReport.MeasureReportType.INDIVIDUAL }
+      }
       ?.forEach { report ->
         Timber.d(report.encodeResourceToString())
 
@@ -473,21 +494,19 @@ constructor(
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
                 .map { stratifier ->
-                  stratifier.findPopulation(MeasurePopulationType.NUMERATOR)!!.let {
-                    MeasureReportIndividualResult(
-                      title = stratifier.value.text,
-                      percentage = stratifier.findPercentage(denominator!!).toString(),
-                      count = stratifier.findRatio(denominator),
-                      description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
-                    )
-                  }
+                  MeasureReportIndividualResult(
+                    title = stratifier.value.text,
+                    percentage = stratifier.findPercentage(denominator!!).toString(),
+                    count = stratifier.findRatio(denominator),
+                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                  )
                 }
           }
           .mapNotNull {
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle = indicators.find { it.url == report.measure }?.title ?: "",
+                indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
                 measureReportDenominator = count.count
               )
             }
@@ -504,28 +523,29 @@ constructor(
    * coding.code=populationId and value as codeableConcept. For individual i.e. subject specific
    * reports it is key value map with exact value of variable. For multiple subjects it is a number
    * for each subject which should be counted by for each entry for given code.
+   *
    * @param list the list of resources output into MeasureReport.contained
    * @param type type of report for which supplemental data was output
    */
-  fun formatSupplementalData(
+  private fun formatSupplementalData(
     list: List<Resource>,
     type: MeasureReport.MeasureReportType
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
       .filterIsInstance<Observation>()
-      .let {
+      .let { observations ->
         // the observations would have key as coding.code=populationId and value as codeableConcept
-        it
+        observations
           .groupBy { it.codingOf(POPULATION_OBS_URL)?.display }
           .filter { it.key.isNullOrBlank().not() }
-          .map {
-            it.key!! to
+          .map { entry ->
+            entry.key!! to
               if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
               // for subject specific reports it is key value map with exact value
-              it.value.joinToString { it.valueCode() ?: "" }
+              entry.value.joinToString { it.valueCode() ?: "" }
               // for multiple subjects it is a number for each which should be counted by entries
-              else it.value.count().toString()
+              else entry.value.count().toString()
           }
       }
       .map {

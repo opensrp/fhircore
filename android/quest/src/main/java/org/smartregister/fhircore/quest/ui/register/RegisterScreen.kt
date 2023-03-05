@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -44,7 +46,6 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
-import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -71,6 +72,8 @@ fun RegisterScreen(
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
+  val lazyListState: LazyListState = rememberLazyListState()
+
   Scaffold(
     topBar = {
       Column {
@@ -93,24 +96,14 @@ fun RegisterScreen(
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
-    bottomBar = {
-      // Bottom section has a pagination footer
-      Column {
-        if (searchText.value.isEmpty() && pagingItems.itemCount > 0) {
-          RegisterFooter(
-            resultCount = pagingItems.itemCount,
-            currentPage = currentPage.value.plus(1),
-            pagesCount = registerUiState.pagesCount,
-            previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
-            nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
-          )
-        }
-      }
-    },
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-        ExtendedFab(fabActions = fabActions, navController = navController)
+        ExtendedFab(
+          fabActions = fabActions,
+          navController = navController,
+          lazyListState = lazyListState
+        )
       }
     }
   ) { innerPadding ->
@@ -122,7 +115,12 @@ fun RegisterScreen(
         RegisterCardList(
           registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
-          navController = navController
+          navController = navController,
+          lazyListState = lazyListState,
+          onEvent = onEvent,
+          registerUiState = registerUiState,
+          currentPage = currentPage,
+          showPagination = searchText.value.isEmpty()
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->

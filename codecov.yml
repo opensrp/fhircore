@@ -1,17 +1,18 @@
 codecov:
   disable_default_path_fixes: yes
   notify:
-    after_n_builds: 3
     wait_for_ci: yes
 
 coverage:
   status:
     project:
-      enabled: yes
-      target: auto
-      threshold: 1%
-    patch: 
-      target: 60%
+      default:
+        enabled: yes
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 60%
     changes: no
   precision: 1
   round: down

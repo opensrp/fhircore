@@ -29,6 +29,7 @@ data class QuestionnaireConfig(
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = true,
   val setOrganizationDetails: Boolean = true,
+  val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,

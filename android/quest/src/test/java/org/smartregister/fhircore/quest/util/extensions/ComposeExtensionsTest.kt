@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.app
+package org.smartregister.fhircore.quest.util.extensions
 
-import kotlinx.serialization.Serializable
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import io.mockk.spyk
+import io.mockk.verify
+import org.junit.Test
 
-@Serializable
-data class RepeatIntervalConfig(
-  val hours: Int = 0, // 24 hours format starts from 0-24 (0=>12am)
-  val minutes: Int = 0,
-)
+class ComposeExtensionsTest {
+
+  @Test
+  fun testConditionalModifier() {
+    val modifier = spyk(Modifier)
+    modifier.conditional(true, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxWidth() }
+    modifier.conditional(false, { fillMaxWidth() }, { fillMaxHeight() })
+    verify { modifier.fillMaxHeight() }
+  }
+}
