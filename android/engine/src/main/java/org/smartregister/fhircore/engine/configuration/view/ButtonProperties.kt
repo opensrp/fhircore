@@ -21,7 +21,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class ButtonProperties (
+data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
   override val weight: Float = 0f,
   override val backgroundColor: String? = null,

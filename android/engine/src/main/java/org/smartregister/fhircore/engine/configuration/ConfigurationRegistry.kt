@@ -97,8 +97,7 @@ constructor(
   }
 
   /**
-   * Receives [paramsMap] , @
-   * [configKey] and [ConfigJsonMap] as inputs and interpolates the value if
+   * Receives [paramsMap], @ [configKey] and [ConfigJsonMap] as inputs and interpolates the value if
    * found and if [paramsMap] are not empty return the result return the value if key is found and
    * [paramsMap] is empty
    */
