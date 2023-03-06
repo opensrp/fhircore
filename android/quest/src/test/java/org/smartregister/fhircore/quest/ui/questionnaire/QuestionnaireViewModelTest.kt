@@ -80,6 +80,9 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -88,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -414,6 +418,54 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("patient-first-name", result.item[0].linkId)
     Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
     Assert.assertTrue(result.item[1].readOnly)
+  }
+
+  @Test
+  fun testLoadQuestionnaireShouldPrepopulateFieldsWithPrepopulationParams() {
+
+    val prePopulationParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age",
+          dataType = DataType.INTEGER,
+          key = "patientAge",
+          value = "100"
+        )
+      )
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertEquals("100", result.item[1].initial[0].value.valueToString())
   }
 
   @Test
@@ -1186,6 +1238,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val group = Group().apply { id = "123" }
     questionnaireViewModel.appendOrganizationInfo(group)
     Assert.assertEquals("Organization/105", group.managingEntity.reference)
+  }
+
+  @Test
+  fun testAppVersionIsAppendedToPatientResource() {
+    // Version name
+    val versionName = BuildConfig.VERSION_NAME
+
+    // For Patient
+    val patient = samplePatient()
+    questionnaireViewModel.appendAppVersion(resource = patient)
+    val tag = patient.meta.tag
+    val appVersionTag = tag[0]
+    Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
+    Assert.assertEquals(versionName, appVersionTag.code)
+    Assert.assertEquals("Application Version", appVersionTag.display)
   }
 
   @Test

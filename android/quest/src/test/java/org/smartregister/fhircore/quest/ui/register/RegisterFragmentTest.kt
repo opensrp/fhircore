@@ -16,10 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import com.google.android.fhir.sync.SyncJobStatus
@@ -44,11 +41,8 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
 
-  val inflater = mockk<LayoutInflater>()
-  val container: ViewGroup? = mockk()
   val view = mockk<View>()
-  val savedInstance: Bundle? = mockk()
-  val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk())
+  val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk(), mockk())
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
 

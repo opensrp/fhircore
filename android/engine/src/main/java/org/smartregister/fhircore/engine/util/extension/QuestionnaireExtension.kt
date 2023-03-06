@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
-import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Locale
 import org.hl7.fhir.r4.model.BooleanType
@@ -135,20 +135,28 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
 }
 
 /** Pre-Populate Questionnaire items with initial values */
+// TODO: handle interpolation for null values on rules engine and not where the values are used
 fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
+  interpolationPrefix: String,
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    prePopulationParams.firstOrNull { it.linkId == item.linkId }?.let { actionParam ->
-      item.initial =
-        arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
-          Questionnaire.QuestionnaireItemInitialComponent().apply {
-            value = actionParam.dataType?.let { actionParam.value.castToType(it) }
-          }
-        )
-    }
+    prePopulationParams
+      .firstOrNull {
+        it.linkId == item.linkId &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(interpolationPrefix)
+      }
+      ?.let { actionParam ->
+        item.initial =
+          arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+            Questionnaire.QuestionnaireItemInitialComponent().apply {
+              value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+            }
+          )
+      }
     if (item.item.isNotEmpty()) {
-      item.item.prePopulateInitialValues(prePopulationParams)
+      item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
     }
   }
 }

@@ -17,26 +17,34 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -75,7 +83,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSyncWithSyncStateInProgress() {
-    appMainActivity.onSync(SyncJobStatus.InProgress(resourceType = null))
+    appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
     Assert.assertTrue(
       appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
         "Sync in progress",
@@ -165,5 +173,47 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
       questionnaireSubmission?.questionnaireResponse?.status
     )
+  }
+
+  @Test
+  fun testRunSyncWhenDeviceIsOnline() {
+
+    mockkStatic(Context::isDeviceOnline)
+
+    every { appMainActivity.isDeviceOnline() } returns true
+
+    val syncBroadcaster =
+      mockk<SyncBroadcaster> {
+        every { runSync(any()) } returns Unit
+        every { schedulePeriodicSync(any()) } returns Unit
+      }
+
+    ReflectionHelpers.callInstanceMethod<Unit>(
+      appMainActivity,
+      "runSync",
+      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
+    )
+
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
+  }
+
+  @Test
+  fun testDoNotRunSyncWhenDeviceIsOffline() {
+
+    mockkStatic(Context::isDeviceOnline)
+
+    every { appMainActivity.isDeviceOnline() } returns false
+
+    val syncBroadcaster = mockk<SyncBroadcaster>()
+
+    ReflectionHelpers.callInstanceMethod<Unit>(
+      appMainActivity,
+      "runSync",
+      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
+    )
+
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
   }
 }

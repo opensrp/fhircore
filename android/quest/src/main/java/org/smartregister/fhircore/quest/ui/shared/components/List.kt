@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -43,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -50,10 +50,9 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
-const val VERTICAL_HORIENTATION = "verticalOrientation"
+const val VERTICAL_ORIENTATION = "verticalOrientation"
 const val HORIZONTAL_ORIENTATION = "horizontalOrientation"
 
 @Composable
@@ -63,11 +62,11 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
+  val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
       Text(
-        text = viewProperties.emptyList?.message ?: stringResource(id = R.string.no_visits),
+        text = viewProperties.emptyList?.message ?: "",
         modifier = modifier.padding(8.dp).align(Alignment.Center),
         color = DefaultColor,
         fontStyle = FontStyle.Italic
@@ -80,11 +79,7 @@ fun List(
           .background(
             viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
           )
-          .padding(
-            horizontal = viewProperties.padding.dp,
-            vertical = viewProperties.padding.div(4).dp
-          )
-          .testTag(VERTICAL_HORIENTATION)
+          .testTag(VERTICAL_ORIENTATION)
     ) {
       when (viewProperties.orientation) {
         ListOrientation.VERTICAL ->
@@ -93,15 +88,23 @@ fun List(
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-                .testTag(VERTICAL_HORIENTATION)
+                .testTag(VERTICAL_ORIENTATION)
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
-              ViewRenderer(
-                viewProperties = viewProperties.registerCard.views,
-                resourceData = listResourceData,
-                navController = navController,
-              )
+              Column(
+                modifier =
+                  Modifier.padding(
+                    horizontal = viewProperties.padding.dp,
+                    vertical = viewProperties.padding.div(4).dp
+                  )
+              ) {
+                ViewRenderer(
+                  viewProperties = viewProperties.registerCard.views,
+                  resourceData = listResourceData,
+                  navController = navController,
+                )
+              }
               Spacer(modifier = modifier.height(6.dp))
               if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
                 Divider(color = DividerColor, thickness = 0.5.dp)
@@ -138,7 +141,8 @@ private fun ListWithHorizontalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          baseResource = ResourceType.CarePlan,
+          resources =
+            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -180,19 +184,7 @@ private fun ListWithHorizontalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap(),
-          listResourceDataMap =
-            mapOf(
-              "listId" to
-                listOf(
-                  ResourceData(
-                    baseResourceId = "carePlan1",
-                    baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = emptyMap(),
-                    listResourceDataMap = emptyMap()
-                  )
-                )
-            )
+          computedValuesMap = emptyMap()
         )
     )
   }
@@ -213,7 +205,8 @@ private fun ListWithVerticalOrientationPreview() {
           padding = 8,
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
-          baseResource = ResourceType.CarePlan,
+          resources =
+            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(
@@ -242,19 +235,7 @@ private fun ListWithVerticalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap(),
-          listResourceDataMap =
-            mapOf(
-              "listId" to
-                listOf(
-                  ResourceData(
-                    baseResourceId = "carePlan1",
-                    baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = emptyMap(),
-                    listResourceDataMap = emptyMap()
-                  )
-                )
-            )
+          computedValuesMap = emptyMap()
         )
     )
   }

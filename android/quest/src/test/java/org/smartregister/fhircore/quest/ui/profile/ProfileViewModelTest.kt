@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -49,9 +50,13 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -64,21 +69,14 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var registerRepository: RegisterRepository
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var parser: IParser
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
-
   private lateinit var resourceData: ResourceData
-
   private lateinit var expectedBaseResource: Patient
 
   @Before
@@ -89,11 +87,11 @@ class ProfileViewModelTest : RobolectricTest() {
       ResourceData(
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
-        computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
+        computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
+    coEvery { registerRepository.loadProfileData(any(), any()) } returns
+      RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -107,13 +105,21 @@ class ProfileViewModelTest : RobolectricTest() {
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        parser = parser,
+        rulesExecutor = rulesExecutor
       )
   }
 
   @Test
   fun testRetrieveProfileUiState() {
-    runBlocking { profileViewModel.retrieveProfileUiState("householdProfile", "sampleId") }
+    runBlocking {
+      profileViewModel.retrieveProfileUiState(
+        "householdProfile",
+        "sampleId",
+        paramsList = emptyArray()
+      )
+    }
 
     assertNotNull(profileViewModel.profileUiState.value)
     val theResourceData = profileViewModel.profileUiState.value.resourceData
@@ -136,13 +142,22 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -155,6 +170,10 @@ class ProfileViewModelTest : RobolectricTest() {
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
         )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
       }
     } returns listOf(questionnaireResponse)
 
@@ -166,13 +185,27 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     profileViewModel.onEvent(event)
 
+    coVerify {
+      registerRepository.fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${ResourceType.Patient.name}/999" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
+        )
+      }
+    }
+
     val slot = slot<Bundle>()
     verify {
       (context as QuestionnaireHandler).launchQuestionnaire<Any>(
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -189,15 +222,25 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
 
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
+
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
 
@@ -207,6 +250,10 @@ class ProfileViewModelTest : RobolectricTest() {
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/444" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
         )
       }
     } returns listOf()
@@ -225,7 +272,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = resourceData.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 
@@ -242,13 +289,22 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -273,7 +329,17 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444")
+        questionnaire = QuestionnaireConfig(id = "444"),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
       )
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
@@ -292,7 +358,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        computedValuesMap = event.resourceData?.computedValuesMap
+        actionParams = actionConfig.params
       )
     }
 

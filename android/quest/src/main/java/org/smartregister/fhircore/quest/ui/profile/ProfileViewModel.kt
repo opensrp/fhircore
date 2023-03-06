@@ -16,16 +16,18 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.LinkedList
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -37,21 +39,28 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
 import timber.log.Timber
 
 @HiltViewModel
@@ -61,43 +70,72 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val parser: IParser,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
-  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
-  val launchQuestionnaireLiveData = MutableLiveData(false)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
-
   private lateinit var profileConfiguration: ProfileConfiguration
+  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
+      val repoResourceData =
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
+      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig)
+        rulesExecutor
+          .processResourceData(
+            baseResource = repoResourceData.resource,
+            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+            ruleConfigs = profileConfigs.rules,
+            ruleConfigsKey = profileConfigs::class.java.canonicalName,
+            paramsMap
+          )
+          .copy(listResourceDataMap = listResourceDataMapState)
+
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
-          profileConfiguration = retrieveProfileConfiguration(profileId),
-          snackBarTheme = applicationConfiguration.snackBarTheme
+          profileConfiguration = profileConfigs,
+          snackBarTheme = applicationConfiguration.snackBarTheme,
+          showDataLoadProgressIndicator = false
         )
+      val timeToFireRules = measureTimeMillis {
+        profileConfigs.views.retrieveListProperties().forEach {
+          val listResourceData =
+            rulesExecutor.processListResourceData(
+              listProperties = it,
+              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+              computedValuesMap =
+                resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+            )
+          listResourceDataMapState[it.id] = listResourceData
+        }
+      }
     }
   }
 
-  private fun retrieveProfileConfiguration(profileId: String): ProfileConfiguration {
+  private fun retrieveProfileConfiguration(
+    profileId: String,
+    paramsMap: Map<String, String>?
+  ): ProfileConfiguration {
     // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId)
+        configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
     }
     return profileConfiguration
   }
@@ -113,12 +151,33 @@ constructor(
                   viewModelScope.launch {
                     var questionnaireResponse: String? = null
 
+                    val questionnaireConfigInterpolated =
+                      questionnaireConfig.interpolate(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      )
+                    val params =
+                      actionConfig
+                        .params
+                        .map {
+                          ActionParameter(
+                            key = it.key,
+                            paramType = it.paramType,
+                            dataType = it.dataType,
+                            linkId = it.linkId,
+                            value =
+                              it.value.interpolate(
+                                event.resourceData?.computedValuesMap ?: emptyMap()
+                              )
+                          )
+                        }
+                        .toTypedArray()
+
                     if (event.resourceData != null) {
                       questionnaireResponse =
                         searchQuestionnaireResponses(
                           subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
                           subjectType = event.resourceData.baseResourceType,
-                          questionnaireId = questionnaireConfig.id
+                          questionnaireId = questionnaireConfigInterpolated.id
                         )
                           .maxByOrNull { it.authored } // Get latest version
                           ?.let { parser.encodeResourceToString(it) }
@@ -136,8 +195,8 @@ constructor(
                     (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
                       context = event.navController.context,
                       intentBundle = intentBundle,
-                      questionnaireConfig = questionnaireConfig,
-                      computedValuesMap = event.resourceData?.computedValuesMap
+                      questionnaireConfig = questionnaireConfigInterpolated,
+                      actionParams = params.toList()
                     )
                   }
                 }
@@ -185,17 +244,21 @@ constructor(
       val eligibleManagingEntities: List<EligibleManagingEntity> =
         group
           ?.member
-          ?.map {
-            registerRepository.loadResource(
-              it.entity.extractId(),
-              event.managingEntity.resourceType
-            )
+          ?.mapNotNull {
+            try {
+              registerRepository.loadResource(
+                it.entity.extractId(),
+                event.managingEntity.resourceType!!
+              )
+            } catch (resourceNotFoundException: ResourceNotFoundException) {
+              null
+            }
           }
           ?.filter { managingEntityResource ->
             fhirPathDataExtractor
               .extractValue(
                 base = managingEntityResource,
-                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression
+                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression!!
               )
               .toBoolean()
           }
@@ -204,7 +267,10 @@ constructor(
               groupId = event.resourceData.baseResourceId,
               logicalId = it.logicalId.extractLogicalIdUuid(),
               memberInfo =
-                fhirPathDataExtractor.extractValue(it, event.managingEntity.nameFhirPathExpression)
+                fhirPathDataExtractor.extractValue(
+                  it,
+                  event.managingEntity.nameFhirPathExpression!!
+                )
             )
           }
           ?: emptyList()
@@ -250,6 +316,10 @@ constructor(
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+        filter(
+          QuestionnaireResponse.STATUS,
+          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
         )
       }
     }

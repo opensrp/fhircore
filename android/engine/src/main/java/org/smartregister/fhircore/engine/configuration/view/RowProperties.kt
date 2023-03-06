@@ -31,6 +31,7 @@ data class RowProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
+  override val visible: String = "true",
   val spacedBy: Int = 8,
   val arrangement: RowArrangement? = null,
   val wrapContent: Boolean = false,
