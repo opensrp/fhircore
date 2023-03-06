@@ -200,12 +200,10 @@ dependencies {
 
     api('javax.xml.stream:stax-api:1.0')
     api('com.github.ben-manes.caffeine:caffeine:2.9.1')
-    
-    api('org.smartregister:data-capture:0.1.0-beta06-preview7-SNAPSHOT') {
+
+    api("com.google.android.fhir:data-capture:1.0.0") {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'com.google.android.fhir', module: 'common'
-        exclude group: 'org.smartregister', module: 'engine'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
@@ -220,19 +218,15 @@ dependencies {
         exclude group: 'com.github.ben-manes.caffeine'
     }
 
-    api('org.smartregister:common:0.1.0-alpha03-preview4-SNAPSHOT') {
+    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview4-SNAPSHOT') {
         transitive = true
-        exclude group: 'ca.uhn.hapi.fhir'
-    }
-
-    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT') {
-        transitive = true
+        exclude group: 'org.smartregister', module: 'data-capture'
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview10-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview13-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'

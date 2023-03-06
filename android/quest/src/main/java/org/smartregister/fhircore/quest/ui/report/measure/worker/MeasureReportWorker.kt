@@ -147,9 +147,7 @@ constructor(
           endDateFormatted,
           measureUrl
         )
-      if (result != null) {
-        if (result.isNotEmpty()) defaultRepository.delete(result.last())
-      }
+      if (result.isNotEmpty()) defaultRepository.delete(result.last())
       defaultRepository.addOrUpdate(resource = measureReport)
     }
   }
