@@ -33,11 +33,15 @@ fun <A, B> nonNullGetOrDefault(map: Map<A, B>, key: A?, defaultValue: B): B {
 }
 
 /**
- * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA] to a map of their
- * keys to values.
- * It also returns [emptyMap] if [actionParameters] is an [emptyArray]
+ * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
+ * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is an
+ * [emptyArray]
  */
-fun convertActionParameterArrayToMap(actionParameters: Array<ActionParameter>?): Map<String, String> {
-  return actionParameters?.filter { it.paramType == ActionParameterType.PARAMDATA }
-    ?.associate { it.key to it.value } ?: emptyMap()
+fun convertActionParameterArrayToMap(
+  actionParameters: Array<ActionParameter>?
+): Map<String, String> {
+  return actionParameters?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
+    it.key to it.value
+  }
+    ?: emptyMap()
 }
