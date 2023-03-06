@@ -1,6 +1,7 @@
 codecov:
   notify:
     wait_for_ci: true
+  max_report_age: off
   require_ci_to_pass: true
 comment:
   behavior: default
@@ -24,15 +25,16 @@ coverage:
         enabled: true
         target: auto
         threshold: 1.0
-flags:
-  engine:
-    paths:
-    - ^/home/runner/work/fhircore/fhircore/android/engine.*
-  geowidget:
-    paths:
-    - ^/home/runner/work/fhircore/fhircore/android/geowidget.*
-  quest:
-    paths:
-    - ^/home/runner/work/fhircore/fhircore/android/quest.*
-github_checks:
-  annotations: true
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+      - type: patch
+        target: 60%
+ignore:
+  - "**/androidTest"  # ignore all files in a folder called androidTest
+  - "**/debug"  # ignore all files in a folder called debug
+  - "**/test"  # ignore all files in a folder called test
