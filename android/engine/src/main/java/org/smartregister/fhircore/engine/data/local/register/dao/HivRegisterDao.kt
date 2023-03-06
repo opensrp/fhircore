@@ -77,6 +77,7 @@ constructor(
 
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
+      !patient.hasDeceased() &&
       patient.hasName() &&
       patient.hasGender() &&
       patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
