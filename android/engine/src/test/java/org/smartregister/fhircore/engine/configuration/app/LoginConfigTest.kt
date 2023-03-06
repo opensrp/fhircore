@@ -31,15 +31,21 @@ class LoginConfigTest() {
   @Test
   fun testGetShowLogo() {
     Assert.assertTrue(loginConfig.showLogo)
+    loginConfig = LoginConfig(showLogo = false, enablePin = true, pinLength = 8)
+    Assert.assertFalse(loginConfig.showLogo)
   }
 
   @Test
   fun testGetEnablePin() {
     Assert.assertEquals(false, loginConfig.enablePin)
+    loginConfig = LoginConfig(showLogo = false, enablePin = true, pinLength = 8)
+    Assert.assertEquals(true, loginConfig.enablePin)
   }
 
   @Test
   fun testGetPinLength() {
     Assert.assertEquals(4, loginConfig.pinLength)
+    loginConfig = LoginConfig(showLogo = false, enablePin = true, pinLength = 8)
+    Assert.assertEquals(8, loginConfig.pinLength)
   }
 }
