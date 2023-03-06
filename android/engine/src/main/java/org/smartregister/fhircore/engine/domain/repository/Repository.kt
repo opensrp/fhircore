@@ -54,6 +54,6 @@ interface Repository {
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>? = emptyArray()
+    paramsMap: Map<String, String>? = emptyMap()
   ): RepositoryResourceData?
 }

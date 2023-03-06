@@ -33,22 +33,11 @@ fun <A, B> nonNullGetOrDefault(map: Map<A, B>, key: A?, defaultValue: B): B {
 }
 
 /**
- * Function to convert the elements of an array that have paramType PARAM_DATA to a map of their
+ * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA] to a map of their
  * keys to values.
- *
- * @property array The array of ActionParameter elements to convert
- *
- * @return Map of the values or emptyMap if [array] is null
+ * It also returns [emptyMap] if [actionParameters] is an [emptyArray]
  */
-fun convertActionParameterArrayToMap(array: Array<ActionParameter>?): Map<String, String> {
-  val paramsMap: MutableMap<String, String> = mutableMapOf()
-  if (array != null) {
-    for (param in array) {
-      if (param.paramType == ActionParameterType.PARAMDATA && !param.value.isNullOrEmpty()) {
-        paramsMap[param.key] = param.value
-      }
-    }
-    return paramsMap.toMap()
-  }
-  return emptyMap()
+fun convertActionParameterArrayToMap(actionParameters: Array<ActionParameter>?): Map<String, String> {
+  return actionParameters?.filter { it.paramType == ActionParameterType.PARAMDATA }
+    ?.associate { it.key to it.value } ?: emptyMap()
 }

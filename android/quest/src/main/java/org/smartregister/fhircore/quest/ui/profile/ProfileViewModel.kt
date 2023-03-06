@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -91,9 +92,9 @@ constructor(
     paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
-      val repoResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val repoResourceData =
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
         rulesExecutor

@@ -76,6 +76,7 @@ fun List<ActionConfig>.handleClickEvent(
               resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
             ),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+            Pair(NavigationArg.PARAMS,interpolateActionParamsValue(actionConfig, resourceData))
           )
 
         // Register is the entry point destination, clear back stack with every register switch

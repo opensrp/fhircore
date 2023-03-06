@@ -276,13 +276,8 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
-    paramsList: Array<ActionParameter>?
+    paramsMap: Map<String, String>?
   ): RepositoryResourceData {
-    val paramsMap: Map<String, String> =
-      paramsList
-        ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
-        ?.associate { it.key to it.value }
-        ?: emptyMap()
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,

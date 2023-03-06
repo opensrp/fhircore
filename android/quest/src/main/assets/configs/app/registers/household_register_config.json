@@ -90,7 +90,7 @@
         "name": "practitionerId",
         "condition": "true",
         "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id\")"
         ]
       },
       {

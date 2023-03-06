@@ -58,6 +58,11 @@
           {
             "resource": "RelatedPerson",
             "fhirPathExpression": "patient"
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ],
         "sortConfigs": [
@@ -150,6 +155,13 @@
       "condition": "true",
       "actions": [
         "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    },
+    {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id\")"
       ]
     },
     {
@@ -500,7 +512,6 @@
                       },
                       {
                         "paramType": "PARAMDATA",
-                        "dataType": "STRING",
                         "key": "practitionerId",
                         "value": "@{practitionerId}"
                       }
