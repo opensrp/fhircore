@@ -129,61 +129,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     syncListenerManager.registerSyncListener(this, lifecycle)
 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
-      var total = 0
-      var fetches = 0
-      var offset = 0
-
-      // do {
-      Timber.e("loadResources starting search")
-      val startTime = System.currentTimeMillis()
-      /*
-      val search =
-        Search(type = ResourceType.Task).apply {
-          filter(
-            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-            {
-              value = of(DateTimeType(Date(0)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-            }
-          )
-
-          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-          from = offset
-          count = 25
-        }
-
-      val tasks = fhirEngine.search<Task>(search)*/
-
-      /*val addDateTimeIndexEntityIndexFromIndexQuery = SearchQuery("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)", emptyList())
-      fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)*/
-
-      /*val searchQuery =
-        SearchQuery(
-          """
-          SELECT a.serializedResource
-          FROM ResourceEntity a
-          LEFT JOIN DateTimeIndexEntity c
-          ON a.resourceUuid = c.resourceUuid
-          WHERE a.resourceUuid IN (
-          SELECT resourceUuid FROM DateTimeIndexEntity
-          WHERE resourceType = 'Task' AND index_name = '_lastUpdated' AND index_to >= 0 ORDER BY index_from ASC, id ASC LIMIT 25 OFFSET 0
-          )
-          AND (
-          c.index_name = "_lastUpdated")
-          ORDER BY
-          c.index_from ASC, a.id ASC
-          LIMIT 25 OFFSET 0
-        """.trimIndent(),
-          emptyList()
-        )
-
-      val tasks = fhirEngine.search<Task>(searchQuery)
-
-      val stopTime = System.currentTimeMillis()
-      val timeTaken = stopTime - startTime
-      Timber.e("Time take = ${timeTaken/1000} s | $timeTaken ms")
-      offset += 25*/
-      // } while (tasks.isNotEmpty())
 
       try {
         val addDateTimeIndexEntityIndexFromIndexQuery =
