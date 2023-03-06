@@ -5,7 +5,7 @@ codecov:
   require_ci_to_pass: true
 comment:
   behavior: default
-  layout: header, diff, changes, uncovered, tree
+  layout: "reach, diff, flags, files"
   show_carryforward_flags: false
 coverage:
   precision: 1
@@ -15,8 +15,6 @@ coverage:
   round: down
   status:
     changes: false
-    default_rules:
-      flag_coverage_not_uploaded_behavior: include
     patch:
       default:
         target: 60.0
@@ -28,12 +26,6 @@ coverage:
 flag_management:
   default_rules:
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 1%
-      - type: patch
-        target: 60%
 ignore:
   - "**/androidTest"  # ignore all files in a folder called androidTest
   - "**/debug"  # ignore all files in a folder called debug
