@@ -113,13 +113,6 @@
       "actions": [
         "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
       ]
-    },
-    {
-      "name": "practitionerId",
-      "condition": "true",
-      "actions": [
-        "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
-      ]
     }
   ],
   "views": [
@@ -222,13 +215,6 @@
                       {
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
-                      },
-                      {
-                        "name": "practitionerId",
-                        "condition": "true",
-                        "actions": [
-                          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
-                        ]
                       }
                     ]
                   }

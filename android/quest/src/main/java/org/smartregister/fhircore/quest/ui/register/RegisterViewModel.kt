@@ -179,10 +179,10 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    paramsList: Array<ActionParameter>?
+    params: Array<ActionParameter>? = emptyArray()
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(params)
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data

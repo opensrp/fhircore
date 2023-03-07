@@ -78,5 +78,4 @@ class IterableUtilTest {
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals(mapOf("k" to "v"), convertActionParameterArrayToMap(array))
   }
-
 }

@@ -205,7 +205,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        actionParams = actionConfig.params
+        params = actionConfig.params
       )
     }
 
@@ -272,7 +272,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        actionParams = actionConfig.params
+        params = actionConfig.params
       )
     }
 
@@ -358,7 +358,7 @@ class ProfileViewModelTest : RobolectricTest() {
         context = context,
         intentBundle = capture(slot),
         questionnaireConfig = actionConfig.questionnaire,
-        actionParams = actionConfig.params
+        params = actionConfig.params
       )
     }
 

@@ -25,6 +25,16 @@
             "system": "https://www.snomed.org",
             "code": "35359004"
           }
+        },
+        {
+          "id": "householdQueryPractitionerId",
+          "filterType": "TOKEN",
+          "key": "_tag",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "https://smartregister.org/",
+            "code": "@{practitionerId}"
+          }
         }
       ],
       "sortConfigs": [
@@ -50,11 +60,6 @@
           },
           {
             "resource": "Task",
-            "searchParameter": "subject"
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
             "searchParameter": "subject"
           }
         ]
@@ -84,13 +89,6 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
-        ]
-      },
-      {
-        "name": "practitionerId",
-        "condition": "true",
-        "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id\")"
         ]
       },
       {
@@ -158,11 +156,6 @@
                     {
                       "key": "familyId",
                       "value": "@{familyId}"
-                    },
-                    {
-                      "paramType": "PARAMDATA",
-                      "key": "practitionerId",
-                      "value": "@{practitionerId}"
                     }
                   ]
                 }
@@ -177,11 +170,6 @@
                   {
                     "key": "familyId",
                     "value": "@{familyId}"
-                  },
-                  {
-                    "paramType": "PARAMDATA",
-                    "key": "practitionerId",
-                    "value": "@{practitionerId}"
                   }
                 ]
               }

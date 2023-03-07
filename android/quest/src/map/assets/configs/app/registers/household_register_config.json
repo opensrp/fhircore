@@ -40,11 +40,6 @@
           {
             "resource": "CarePlan",
             "searchParameter": "subject"
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
           }
         ]
       },
@@ -101,13 +96,6 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
-        ]
-      },
-      {
-        "name": "practitionerId",
-        "condition": "true",
-        "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
         ]
       }
     ],

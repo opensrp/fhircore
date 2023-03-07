@@ -204,7 +204,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        actionParams = any()
+        params = any()
       )
     }
   }
