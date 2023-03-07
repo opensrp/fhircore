@@ -99,7 +99,19 @@ class HivRegisterDaoTest : RobolectricTest() {
       family = "doe",
       given = "jane",
       gender = null,
-      patientType = "exposed-infant"
+      patientType = "exposed-infant",
+    )
+      .apply { active = true }
+
+  private val testPatientDeceased =
+    buildPatient(
+      id = "4",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234",
+      deceased = false
     )
       .apply { active = true }
 
@@ -161,7 +173,8 @@ class HivRegisterDaoTest : RobolectricTest() {
       {
         val search = firstArg<Search>()
         when (search.type) {
-          ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
+          ResourceType.Patient ->
+            listOf<Patient>(testPatient, testPatientGenderNull, testPatientDeceased)
           ResourceType.Task -> listOf<Task>(testTask1, testTask2)
           ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
@@ -221,6 +234,12 @@ class HivRegisterDaoTest : RobolectricTest() {
           it.logicalId != testPatientGenderNull.logicalId
       }
     }
+  }
+
+  @Test
+  fun `test if the patient is valid `() = runTest {
+    val isValid = hivRegisterDao.isValidPatient(testPatientDeceased)
+    assertTrue(isValid)
   }
 
   @Test
@@ -376,7 +395,7 @@ class HivRegisterDaoTest : RobolectricTest() {
   @Test
   fun testCountRegisterData() = runTest {
     val count = hivRegisterDao.countRegisterData("HIV")
-    assertEquals(1, count)
+    assertEquals(2, count)
   }
 
   private val testHivPatient =
