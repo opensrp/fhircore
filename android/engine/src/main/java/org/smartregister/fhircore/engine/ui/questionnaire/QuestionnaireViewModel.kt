@@ -539,6 +539,19 @@ constructor(
       }
   }
 
+  private suspend fun getLastActiveCarePlan(patientId: String): CarePlan? {
+    val carePlans =
+      fhirEngine.search<CarePlan> {
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
+          operation = Operation.OR
+        )
+      }
+    return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
+  }
+
   suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
     return fhirEngine
       .search<Appointment> {
