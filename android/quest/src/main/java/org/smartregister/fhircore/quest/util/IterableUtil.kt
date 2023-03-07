@@ -34,7 +34,8 @@ fun <A, B> nonNullGetOrDefault(map: Map<A, B>, key: A?, defaultValue: B): B {
 
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
- * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is an
+ * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
+ *
  * @property array The array of ActionParameter elements to convert
  * @return Map of the values or emptyMap if [array] is null
  */
