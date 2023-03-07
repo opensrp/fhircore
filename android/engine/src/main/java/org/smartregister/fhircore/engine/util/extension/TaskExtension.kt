@@ -43,7 +43,7 @@ fun Task.clinicVisitOrder(systemTag: String) =
     .filter { it.system.equals(systemTag, true) }
     .filterNot { it.code.isNullOrBlank() }
     .map { it.code.replace("_", "-").substringAfterLast("-").trim() }
-    .map { it.toDouble() }
+    .map { it.toDoubleOrNull() }
     .lastOrNull()
 
 fun Task.isGuardianVisit(systemTag: String) =
