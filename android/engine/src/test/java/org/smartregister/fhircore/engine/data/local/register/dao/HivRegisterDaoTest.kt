@@ -266,6 +266,27 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadRelatedPersons() = runTest {
+    val relatedPerson =
+      RelatedPerson().apply {
+        id = "23"
+        gender = Enumerations.AdministrativeGender.MALE
+        birthDate = DateType(Date()).apply { add(Calendar.YEAR, -32) }.dateTimeValue().value
+      }
+    val personReference = relatedPerson.asReference()
+    coEvery { fhirEngine.get(ResourceType.RelatedPerson, relatedPerson.logicalId) } returns
+      relatedPerson
+    testPatient.apply {
+      link = mutableListOf(Patient.PatientLinkComponent().apply { other = personReference })
+    }
+
+    val result = hivRegisterDao.loadRelatedPerson(relatedPerson.logicalId)
+    coVerify { fhirEngine.get(ResourceType.RelatedPerson, relatedPerson.logicalId) }
+    assertNotNull(result)
+    assertEquals(relatedPerson.logicalId, result.logicalId)
+  }
+
+  @Test
   fun testSearchRegisterDataByName() = runTest {
     val data =
       hivRegisterDao.searchByName(nameQuery = "John", currentPage = 0, appFeatureName = "HIV")
