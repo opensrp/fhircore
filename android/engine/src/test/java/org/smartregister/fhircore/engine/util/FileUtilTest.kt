@@ -65,7 +65,7 @@ class FileUtilTest {
   @Test
   fun recurseFoldersTest() {
     val baseTestPathMeasureAssets =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -80,7 +80,7 @@ class FileUtilTest {
   fun testWriteFileOnInternalStorage() {
     val exampleFileName = "example.json"
     val baseDir =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -98,7 +98,7 @@ class FileUtilTest {
     f1.delete()
 
     val baseDir2 =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -122,7 +122,7 @@ class FileUtilTest {
   fun testReadFileFromInternalStorage() {
     every { context.filesDir } returns
       File(
-        System.getProperty("user.dir") +
+        System.getProperty("user.dir")!! +
           File.separator +
           "src" +
           File.separator +
