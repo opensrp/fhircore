@@ -190,7 +190,6 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           addressPhysicalLocator = inputModel.addressPhysicalLocator,
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
-          observations = inputModel.observations,
           practitioners = inputModel.practitioners,
           conditions = inputModel.conditions,
           tracingTasks = inputModel.tasks

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
@@ -66,6 +67,18 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   }
 
   return configuration
+}
+
+/** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */
+fun Context.appVersion(): Pair<Long, String> {
+  val packageInfo: PackageInfo? = this.packageManager.getPackageInfo(this.packageName, 0)
+  val versionCode =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      packageInfo?.longVersionCode
+    } else {
+      packageInfo?.versionCode?.toLong()
+    }
+  return Pair(versionCode ?: 1, packageInfo?.versionName?.substringBefore("-") ?: "0.0.1")
 }
 
 fun Context.getDrawable(name: String): Drawable {

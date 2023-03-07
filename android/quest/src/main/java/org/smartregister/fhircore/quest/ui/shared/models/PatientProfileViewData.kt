@@ -28,36 +28,35 @@ sealed class ProfileViewData(
   open val identifier: String? = null,
 ) {
   data class PatientProfileViewData(
-          override val logicalId: String = "",
-          override val name: String = "",
-          override val identifier: String? = null,
-          val givenName: String = "",
-          val familyName: String = "",
-          val status: String? = null,
-          val sex: String = "",
-          val age: String = "",
-          val dob: String = "",
-          val showListsHighlights: Boolean = true,
-          val tasks: List<PatientProfileRowItem> = emptyList(),
-          val forms: List<FormButtonData> = emptyList(),
-          val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
-          val upcomingServices: List<PatientProfileRowItem> = emptyList(),
-          val ancCardData: List<PatientProfileRowItem> = emptyList(),
-          val address: String = "",
-          val identifierKey: String = "",
-          val showIdentifierInProfile: Boolean = false,
-          val carePlans: List<CarePlan> = emptyList(),
-          val conditions: List<Condition> = emptyList(),
-          val otherPatients: List<Resource> = emptyList(),
-          val viewChildText: String = "",
-          val guardians: List<Guardian> = emptyList(),
-          val observations: List<Observation> = emptyList(),
-          val tracingTask: Task = Task(),
-          val addressDistrict: String = "",
-          val addressTracingCatchment: String = "",
-          val addressPhysicalLocator: String = "",
-          val phoneContacts: List<String> = emptyList(),
-          val practitioners: List<Practitioner> = emptyList()
+    override val logicalId: String = "",
+    override val name: String = "",
+    override val identifier: String? = null,
+    val givenName: String = "",
+    val familyName: String = "",
+    val status: String? = null,
+    val sex: String = "",
+    val age: String = "",
+    val dob: String = "",
+    val showListsHighlights: Boolean = true,
+    val tasks: List<PatientProfileRowItem> = emptyList(),
+    val forms: List<FormButtonData> = emptyList(),
+    val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
+    val upcomingServices: List<PatientProfileRowItem> = emptyList(),
+    val ancCardData: List<PatientProfileRowItem> = emptyList(),
+    val address: String = "",
+    val identifierKey: String = "",
+    val showIdentifierInProfile: Boolean = false,
+    val carePlans: List<CarePlan> = emptyList(),
+    val conditions: List<Condition> = emptyList(),
+    val otherPatients: List<Resource> = emptyList(),
+    val viewChildText: String = "",
+    val guardians: List<Guardian> = emptyList(),
+    val tracingTask: Task = Task(),
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
       carePlans.isNotEmpty() &&
@@ -101,13 +100,12 @@ sealed class ProfileViewData(
     val tracingTasks: List<Task> = emptyList(),
     val carePlans: List<CarePlan> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
-    val observations: List<Observation> = emptyList(),
     val practitioners: List<Practitioner> = emptyList(),
     val conditions: List<Condition> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name) {
     val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
     val populationResources: ArrayList<Resource> by lazy {
-      val resources = conditions + guardiansRelatedPersonResource + observations
+      val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }

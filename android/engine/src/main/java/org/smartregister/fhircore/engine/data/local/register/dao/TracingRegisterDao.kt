@@ -68,8 +68,17 @@ constructor(
 ) : RegisterDao {
   protected abstract val tracingCoding: Coding
 
+  private val alternateTracingCoding = lazy {
+    tracingCoding.copy().apply { system = "http://snomed.info/sct" }
+  }
+
   private fun Search.validTasksFilters() {
-    filter(TokenClientParam("_tag"), { value = of(tracingCoding) })
+    filter(
+      TokenClientParam("_tag"),
+      { value = of(tracingCoding) },
+      { value = of(alternateTracingCoding.value) },
+      operation = Operation.OR
+    )
     filter(
       Task.STATUS,
       { value = of(Task.TaskStatus.READY.toCode()) },
@@ -133,7 +142,6 @@ constructor(
         services = patient.activeCarePlans(),
         conditions = patient.activeConditions(),
         guardians = patient.guardians(),
-        observations = patient.observations(),
         practitioners = patient.practitioners()
       )
     }

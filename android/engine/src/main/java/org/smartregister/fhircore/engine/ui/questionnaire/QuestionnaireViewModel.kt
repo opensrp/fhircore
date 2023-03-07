@@ -83,6 +83,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -91,6 +92,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -558,6 +560,19 @@ constructor(
       }
   }
 
+  private suspend fun getLastActiveCarePlan(patientId: String): CarePlan? {
+    val carePlans =
+      fhirEngine.search<CarePlan> {
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
+          operation = Operation.OR
+        )
+      }
+    return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
+  }
+
   suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
     return fhirEngine
       .search<Appointment> {
@@ -657,6 +672,12 @@ constructor(
         loadScheduledAppointments(patientId).forEach {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
         }
+
+        val lastCarePlan = getLastActiveCarePlan(patientId)
+        if (lastCarePlan != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(lastCarePlan))
+        }
+
         resourcesList[bundleIndex] = currentBundle
       }
 
