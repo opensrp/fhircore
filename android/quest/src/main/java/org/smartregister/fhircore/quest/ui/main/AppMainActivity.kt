@@ -189,7 +189,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       // } while (tasks.isNotEmpty())
 
       // Add index for DateTimeIndexEntity (index_from)
-      try {
+      /*try {
         val addDateTimeIndexEntityIndexFromIndexQuery =
           SearchQuery(
             "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
@@ -210,7 +210,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
       } catch (ex: SQLException) {
         Timber.e(ex)
-      }
+      }*/
+      runQuery<Task>("""
+        DROP INDEX IF EXISTS index_DateTimeIndexEntity_index_from
+      """.trimIndent(),
+        emptyList()
+      )
+      runQuery<Task>("""
+        DROP INDEX IF EXISTS index_ResourceEntity_resourceId
+      """.trimIndent(),
+        emptyList()
+      )
+
       //
 
       createAndUpdateRelationalTable()
