@@ -63,6 +63,13 @@ class TaskExtensionTest {
   }
 
   @Test
+  fun `task clinicVisitOrder`() {
+    val systemTag = "https://d-tree.org"
+    Assert.assertNull(testTask1.clinicVisitOrder(systemTag))
+    Assert.assertEquals(testTask2.clinicVisitOrder(systemTag), 1.0)
+  }
+
+  @Test
   fun `task isNotCompleted`() {
     Assert.assertTrue(testTask1.isNotCompleted())
     Assert.assertFalse(testTask2.isNotCompleted())
