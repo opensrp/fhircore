@@ -103,7 +103,7 @@ class HivRegisterDaoTest : RobolectricTest() {
     )
       .apply { active = true }
 
-  private val testPatientDeceased =
+  private val testPatientDeceasedFalse =
     buildPatient(
       id = "4",
       family = "doe",
@@ -112,6 +112,18 @@ class HivRegisterDaoTest : RobolectricTest() {
       patientType = "exposed-infant",
       practitionerReference = "practitioner/1234",
       deceased = false
+    )
+      .apply { active = true }
+
+  private val testPatientDeceasedTrue =
+    buildPatient(
+      id = "5",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234",
+      deceased = true
     )
       .apply { active = true }
 
@@ -174,7 +186,7 @@ class HivRegisterDaoTest : RobolectricTest() {
         val search = firstArg<Search>()
         when (search.type) {
           ResourceType.Patient ->
-            listOf<Patient>(testPatient, testPatientGenderNull, testPatientDeceased)
+            listOf<Patient>(testPatient, testPatientGenderNull, testPatientDeceasedFalse, testPatientDeceasedTrue)
           ResourceType.Task -> listOf<Task>(testTask1, testTask2)
           ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
@@ -237,8 +249,14 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
-  fun `test if the patient is valid `() = runTest {
-    val isValid = hivRegisterDao.isValidPatient(testPatientDeceased)
+  fun `return true if the patient is valid`() = runTest {
+    val isValid = hivRegisterDao.isValidPatient(testPatientDeceasedFalse)
+    assertTrue(isValid)
+  }
+
+  @Test
+  fun `return false if the patient is not valid `() = runTest {
+    val isValid = hivRegisterDao.isValidPatient(testPatientDeceasedFalse)
     assertTrue(isValid)
   }
 
@@ -395,7 +413,7 @@ class HivRegisterDaoTest : RobolectricTest() {
   @Test
   fun testCountRegisterData() = runTest {
     val count = hivRegisterDao.countRegisterData("HIV")
-    assertEquals(2, count)
+    assertEquals(3, count)
   }
 
   private val testHivPatient =

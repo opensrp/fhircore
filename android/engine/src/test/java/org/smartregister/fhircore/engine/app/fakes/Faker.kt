@@ -115,7 +115,7 @@ object Faker {
       )
 
       this.generalPractitionerFirstRep.apply { reference = practitionerReference }
-      this.deceased = if (deceased) DateType(Date()) else null
+      this.deceased = deceasedBooleanType
     }
   }
 }
