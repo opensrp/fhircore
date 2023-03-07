@@ -52,7 +52,7 @@ class PatientExtensionTest : RobolectricTest() {
     Assert.assertEquals(expectedAge3, calculateAge(getDateFromDaysAgo(372), context))
 
     val expectedAge4 = "1m"
-    Assert.assertEquals(expectedAge4, calculateAge(getDateFromDaysAgo(35), context))
+    Assert.assertEquals(expectedAge4, calculateAge(getDateFromDaysAgo(32), context))
 
     val expectedAge5 = "1m 2w"
     Assert.assertEquals(expectedAge5, calculateAge(getDateFromDaysAgo(49), context))
