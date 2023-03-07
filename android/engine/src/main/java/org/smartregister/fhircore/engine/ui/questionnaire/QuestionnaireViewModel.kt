@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -90,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -636,6 +638,12 @@ constructor(
         loadScheduledAppointments(patientId).forEach {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
         }
+
+        val lastCarePlan = getLastActiveCarePlan(patientId)
+        if (lastCarePlan != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(lastCarePlan))
+        }
+
         resourcesList[bundleIndex] = currentBundle
       }
 
