@@ -247,6 +247,8 @@ class HivRegisterDaoTest : RobolectricTest() {
     val hivProfileData = data as ProfileData.HivProfileData
     val order = hivProfileData.tasks.none { it.clinicVisitOrder("") != null }
     Assert.assertEquals(hivProfileData.tasks.isEmpty(), false)
+    val sorted = hivProfileData.tasks.sortedWith(compareBy { it.description }).isEmpty()
+    Assert.assertFalse(sorted)
     Assert.assertEquals(order, true)
     assertEquals("50y", hivProfileData.age)
     assertEquals("Dist 1 City 1", hivProfileData.address)
