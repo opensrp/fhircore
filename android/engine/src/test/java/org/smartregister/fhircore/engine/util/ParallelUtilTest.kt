@@ -55,10 +55,13 @@ class ParallelUtilTest {
 
   @Test
   fun testForEachAsyncExecutesAgainstAllMembersOfIterable() {
-    val output = mutableListOf<Int>()
+    // Because it is async we cannot guarantee an order so a set will always pass but a list will
+    // fail sometimes.
+    val output = mutableSetOf<Int>()
     runBlocking(Dispatchers.Default) {
       testIterable.forEachAsync { output.add(it + 1) }
-      Assert.assertTrue(output == listOf(2, 3, 4))
+      print(output)
+      Assert.assertTrue(output == setOf(2, 3, 4))
     }
   }
 
