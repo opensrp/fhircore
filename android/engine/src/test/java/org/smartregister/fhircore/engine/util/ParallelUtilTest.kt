@@ -59,9 +59,9 @@ class ParallelUtilTest {
     // fail sometimes.
     val output = mutableSetOf<Int>()
     runBlocking(Dispatchers.Default) {
-      testIterable.forEachAsync { output.add(it + 1) }
-      print(output)
+      val result = testIterable.forEachAsync { output.add(it + 1) }
       Assert.assertTrue(output == setOf(2, 3, 4))
+      Assert.assertSame(Unit.javaClass, result.javaClass)
     }
   }
 
