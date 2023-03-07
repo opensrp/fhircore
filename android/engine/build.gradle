@@ -40,14 +40,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=compatibility', '-opt-in=kotlin.RequiresOptIn']
+        freeCompilerArgs = ['-Xjvm-default=all-compatibility', '-opt-in=kotlin.RequiresOptIn']
     }
     buildFeatures {
         compose true
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.4.2'
     }
 
     //CQL
@@ -107,12 +107,12 @@ dependencies {
     implementation 'androidx.preference:preference-ktx:1.2.0'
     coreLibraryDesugaring deps.desugar
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
-    implementation 'androidx.fragment:fragment-ktx:1.4.1'
+    api 'androidx.core:core-ktx:1.9.0'
+    api 'androidx.appcompat:appcompat:1.6.1'
+    api 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation 'androidx.fragment:fragment-ktx:1.5.5'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
     implementation 'org.smartregister:fhir-common-utils:0.0.3-SNAPSHOT'
@@ -154,31 +154,31 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
-    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
+    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
+    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
 
     // P2P dependency
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
 
     //Configure Jetpack Compose
-    def composeVersion = "1.1.1"
+    def composeVersion = "1.3.3"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
-    api("androidx.compose.foundation:foundation:$composeVersion")
-    api("androidx.compose.material:material:$composeVersion")
-    api("androidx.compose.material:material-icons-core:$composeVersion")
-    api("androidx.compose.material:material-icons-extended:$composeVersion")
+    api("androidx.compose.foundation:foundation:1.3.1")
+    api("androidx.compose.material:material:1.3.1")
+    api("androidx.compose.material:material-icons-core:1.3.1")
+    api("androidx.compose.material:material-icons-extended:1.3.1")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    api("androidx.navigation:navigation-compose:2.5.0-alpha03")
+    api("androidx.navigation:navigation-compose:2.5.3")
     api ("androidx.hilt:hilt-navigation-compose:1.0.0")
-    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-alpha04")
-    api("androidx.paging:paging-compose:1.0.0-alpha16")
-    api("androidx.activity:activity-compose:1.4.0")
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
-    api("androidx.work:work-runtime-ktx:2.7.1")
-    testImplementation 'androidx.work:work-testing:2.7.1'
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    api("androidx.paging:paging-compose:1.0.0-alpha18")
+    api("androidx.activity:activity-compose:1.6.1")
+    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2'
+    api("androidx.work:work-runtime-ktx:2.8.0")
+    testApi 'androidx.work:work-testing:2.8.0'
 
-    def coroutineVersion = '1.6.0'
+    def coroutineVersion = '1.6.4'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT"){
@@ -250,6 +250,14 @@ dependencies {
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20210307'
 
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    debugApi("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testApi("androidx.compose.ui:ui-test-junit4:$composeVersion")
+}
+
+kapt {
+    correctErrorTypes true
+}
+
+hilt {
+    enableAggregatingTask = true
 }

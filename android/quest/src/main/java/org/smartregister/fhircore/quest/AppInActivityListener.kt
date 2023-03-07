@@ -19,8 +19,8 @@ package org.smartregister.fhircore.quest
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
-import androidx.ui.core.inMilliseconds
-import androidx.ui.core.minutes
+import androidx.ui.unit.inMilliseconds
+import androidx.ui.unit.minutes
 import timber.log.Timber
 
 class AppInActivityListener(val ignoreList: List<String>, onTimeLapse: () -> Unit) {

@@ -8,14 +8,14 @@ buildscript {
 
     }
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
-        classpath "org.jetbrains.kotlin:kotlin-serialization:1.6.10"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.39.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10'
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.8.10"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.45'
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
         classpath deps.dokka_plugin
-        classpath "com.android.tools.build:gradle:7.1.2"
+        classpath "com.android.tools.build:gradle:7.1.3"
     }
 }
 
