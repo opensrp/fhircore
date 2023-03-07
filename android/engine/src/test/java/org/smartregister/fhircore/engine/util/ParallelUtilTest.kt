@@ -40,10 +40,10 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-          (1..100).pmap {
-            delay(timeDelayInMillis)
-            it * 2
-          }
+        (1..100).pmap {
+          delay(timeDelayInMillis)
+          it * 2
+        }
       }
 
       // if it was sequential this would take 100x as long
@@ -69,10 +69,10 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-          (1..100).forEachAsync {
-            delay(timeDelayInMillis)
-            it * 2
-          }
+        (1..100).forEachAsync {
+          delay(timeDelayInMillis)
+          it * 2
+        }
       }
 
       // if it was sequential this would take 100x as long

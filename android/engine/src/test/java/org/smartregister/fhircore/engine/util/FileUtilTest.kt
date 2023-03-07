@@ -133,17 +133,17 @@ class FileUtilTest {
     val exampleFileName = "example.json"
     val baseDir =
       System.getProperty("user.dir")!! +
-              File.separator +
-              "src" +
-              File.separator +
-              File.separator +
-              "test/resources/cql/libraryevaluator/"
+        File.separator +
+        "src" +
+        File.separator +
+        File.separator +
+        "test/resources/cql/libraryevaluator/"
 
     val completeFile = baseDir + File.separator + exampleFileName
 
     every { context.filesDir } returns File(baseDir)
 
-    FileUtil.writeFileOnInternalStorage(context, exampleFileName, dirName="")
+    FileUtil.writeFileOnInternalStorage(context, exampleFileName, dirName = "")
 
     val f1 = File(completeFile)
     Assert.assertNotNull(f1)
