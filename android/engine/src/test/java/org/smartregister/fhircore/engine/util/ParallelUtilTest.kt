@@ -28,7 +28,7 @@ class ParallelUtilTest {
   private val testIterable = listOf(1, 2, 3)
 
   @Test
-  fun testExecutesAgainstAllMembersOfIterable() {
+  fun testPmapExecutesAgainstAllMembersOfIterable() {
     runBlocking(Dispatchers.Default) {
       val output = testIterable.pmap { it + 1 }.toList()
       Assert.assertTrue(output == listOf(2, 3, 4))
@@ -36,12 +36,39 @@ class ParallelUtilTest {
   }
 
   @Test
-  fun testAppearsToBeRunningInParallel() {
+  fun testPmapAppearsToBeRunningInParallel() {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
         val output =
           (1..100).pmap {
+            delay(timeDelayInMillis)
+            it * 2
+          }
+      }
+
+      // if it was sequential this would take 100x as long
+      // if it is parallel it should be closer to 1x and not over 10x
+      Assert.assertTrue(time < timeDelayInMillis * 10)
+    }
+  }
+
+  @Test
+  fun testForEachAsyncExecutesAgainstAllMembersOfIterable() {
+    val output = mutableListOf<Int>()
+    runBlocking(Dispatchers.Default) {
+      testIterable.forEachAsync { output.add(it + 1) }
+      Assert.assertTrue(output == listOf(2, 3, 4))
+    }
+  }
+
+  @Test
+  fun testForEachAsyncAppearsToBeRunningInParallel() {
+    val timeDelayInMillis: Long = 100
+    runBlocking(Dispatchers.Default) {
+      val time = measureTimeMillis {
+        val output =
+          (1..100).forEachAsync {
             delay(timeDelayInMillis)
             it * 2
           }
