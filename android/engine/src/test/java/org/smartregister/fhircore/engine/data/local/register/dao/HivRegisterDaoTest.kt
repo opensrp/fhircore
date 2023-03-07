@@ -186,7 +186,12 @@ class HivRegisterDaoTest : RobolectricTest() {
         val search = firstArg<Search>()
         when (search.type) {
           ResourceType.Patient ->
-            listOf<Patient>(testPatient, testPatientGenderNull, testPatientDeceasedFalse, testPatientDeceasedTrue)
+            listOf<Patient>(
+              testPatient,
+              testPatientGenderNull,
+              testPatientDeceasedFalse,
+              testPatientDeceasedTrue
+            )
           ResourceType.Task -> listOf<Task>(testTask1, testTask2)
           ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
