@@ -67,6 +67,8 @@ class TaskExtensionTest {
     val systemTag = "https://d-tree.org"
     Assert.assertNull(testTask1.clinicVisitOrder(systemTag))
     Assert.assertEquals(testTask2.clinicVisitOrder(systemTag), 1.0)
+    val task = testTask1.copy().apply { meta.tag.first().code = systemTag }
+    Assert.assertNull(task.clinicVisitOrder(systemTag))
   }
 
   @Test
