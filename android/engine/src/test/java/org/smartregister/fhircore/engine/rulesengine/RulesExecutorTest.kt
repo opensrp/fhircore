@@ -124,11 +124,7 @@ class RulesExecutorTest : RobolectricTest() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
     val patient = Faker.buildPatient()
-    val listResource =
-      ListResource(
-        "id",
-        resourceType = ResourceType.Patient
-      )
+    val listResource = ListResource("id", resourceType = ResourceType.Patient)
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
