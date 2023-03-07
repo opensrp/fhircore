@@ -295,6 +295,11 @@ constructor(
                       appointmentList = listOf("Followup")
               ),
               TestItem.DividerItem,
+              TestItem.QuestItem(
+                      title = "TB History regimen",
+                      questionnaire = "tests/tb_history_and_regimen.json",
+                      appointmentList = listOf("Followup")
+              ),
 
       )
   }

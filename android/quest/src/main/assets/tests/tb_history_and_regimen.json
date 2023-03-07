@@ -1,0 +1,2328 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "art-client-tb-history-and-regimen",
+  "meta": {
+    "versionId": "14",
+    "lastUpdated": "2022-10-13T12:03:22.210+03:00",
+    "source": "#pjYa2kSq6smf7JKv"
+  },
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/art-client-tb-history-and-regimen"
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode": "prior-edit"
+    }
+  ],
+  "title": "TB History and Regimen",
+  "status": "active",
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 1"
+              }
+            ],
+            "text": "Page 1"
+          }
+        }
+      ],
+      "linkId": "page-1",
+      "type": "group",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ],
+                "text": "Radio Button"
+              }
+            }
+          ],
+          "linkId": "tb-history",
+          "text": "* <b>SELECT: </b>Client's TB History",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "on-treatment",
+                "display": "Currently on treatment"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-two-years",
+                "display": "Treatment in the last 2 years"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "never",
+                "display": "Never/treated over two years ago"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 2"
+              }
+            ],
+            "text": "Page 2"
+          }
+        }
+      ],
+      "linkId": "page-2",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "weight-group",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "weighing-scale-available",
+              "text": "Is the weighing scale available?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "linkId": "weight",
+              "text": "<b>ENTER</b> weight",
+              "type": "decimal",
+              "enableWhen": [
+                {
+                  "question": "weighing-scale-available",
+                  "operator": "=",
+                  "answerBoolean": true
+                }
+              ],
+              "enableBehavior": "all",
+              "required": true
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "previous-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": false
+            }
+          ],
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PP",
+                "display": "4PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "4PA",
+                "display": "4PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "4A",
+                "display": "4A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "5A",
+                "display": "5A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "7A",
+                "display": "7A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "8A",
+                "display": "8A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PP",
+                "display": "9PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PA",
+                "display": "9PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9A",
+                "display": "9A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "10A",
+                "display": "10A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PP",
+                "display": "11PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PA",
+                "display": "11PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11A",
+                "display": "11A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PP",
+                "display": "12PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PA",
+                "display": "12PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12A",
+                "display": "12A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "13A",
+                "display": "13A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14PP",
+                "display": "14PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14PA",
+                "display": "14PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14A",
+                "display": "14A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15PP",
+                "display": "15PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15PA",
+                "display": "15PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15A",
+                "display": "15A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PP",
+                "display": "17PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PA",
+                "display": "17PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17A",
+                "display": "17A"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "three-to-13-9-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 3
+            },
+            {
+              "question": "weight",
+              "operator": "<",
+              "answerDecimal": 14
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PP",
+                "display": "4PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PP",
+                "display": "9PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PP",
+                "display": "11PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14PP",
+                "display": "14PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15PP",
+                "display": "15PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PP",
+                "display": "17PP"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "fourteen-to-19-9-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 14
+            },
+            {
+              "question": "weight",
+              "operator": "<",
+              "answerDecimal": 20
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PP",
+                "display": "4PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PP",
+                "display": "9PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PP",
+                "display": "11PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PP",
+                "display": "12PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14PP",
+                "display": "14PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PP",
+                "display": "17PP"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "twenty-to-24-9-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 20
+            },
+            {
+              "question": "weight",
+              "operator": "<",
+              "answerDecimal": 25
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PP",
+                "display": "4PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PP",
+                "display": "9PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PP",
+                "display": "11PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PP",
+                "display": "12PP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14PA",
+                "display": "14PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15PA",
+                "display": "15PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PA",
+                "display": "17PA"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "twentyfive-to-29-9-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 25
+            },
+            {
+              "question": "weight",
+              "operator": "<",
+              "answerDecimal": 30
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PA",
+                "display": "4PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PA",
+                "display": "9PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11PA",
+                "display": "11PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PA",
+                "display": "12PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14A",
+                "display": "14A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15A",
+                "display": "15A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17PA",
+                "display": "17PA"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "thirty-to-34-9-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 30
+            },
+            {
+              "question": "weight",
+              "operator": "<",
+              "answerDecimal": 35
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4PA",
+                "display": "4PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "5A",
+                "display": "5A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "7A",
+                "display": "7A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "8A",
+                "display": "8A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9PA",
+                "display": "9PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12PA",
+                "display": "12PA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "13A",
+                "display": "13A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "13A",
+                "display": "13A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14A",
+                "display": "14A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15A",
+                "display": "15A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17A",
+                "display": "17A"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "thirtyfive-plus-kg-curr-regimen-type",
+          "text": "Select Regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "weighing-scale-available",
+              "operator": "=",
+              "answerBoolean": true
+            },
+            {
+              "question": "weight",
+              "operator": ">=",
+              "answerDecimal": 35
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "4A",
+                "display": "4A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "5A",
+                "display": "5A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "7A",
+                "display": "7A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "8A",
+                "display": "8A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "9A",
+                "display": "9A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "10A",
+                "display": "10A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "11A",
+                "display": "11A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "12A",
+                "display": "12A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "13A",
+                "display": "13A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "13A",
+                "display": "13A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "14A",
+                "display": "14A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15A",
+                "display": "15A"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "17A",
+                "display": "17A"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 3"
+              }
+            ],
+            "text": "Page 3"
+          }
+        }
+      ],
+      "linkId": "page-3",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "select-dsd-model",
+          "text": "Select which DSD model the client will receive ART care in the future",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "dsd-model-facility",
+                "display": "This Facility"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dsd-model-transfer-out",
+                "display": "Transfer Out"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "select-this-facility-female-greater-than-12",
+          "text": "Select DSD model",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-facility"
+              }
+            },
+            {
+              "question": "patient-gender",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female"
+              }
+            },
+            {
+              "question": "client-older-than-12-years",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "art-clinic",
+                "display": "ART Clinic day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "teen-club",
+                "display": "Teen Club"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tinyade",
+                "display": "Tinyade"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "community-clinic",
+                "display": "Community ART Distribution"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mip",
+                "display": "MIP"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "anc",
+                "display": "ANC"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "select-this-facility-male",
+          "text": "Select DSD model",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-facility"
+              }
+            },
+            {
+              "question": "patient-gender",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "male"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "art-clinic",
+                "display": "ART Clinic day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "teen-club",
+                "display": "Teen Club"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tinyade",
+                "display": "Tinyade"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "community-clinic",
+                "display": "Community ART Distribution"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "men-clinic",
+                "display": "Men's Clinic"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "select-this-facility-female",
+          "text": "Select DSD model",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-facility"
+              }
+            },
+            {
+              "question": "patient-gender",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female"
+              }
+            },
+            {
+              "question": "client-older-than-12-years",
+              "operator": "=",
+              "answerBoolean": false
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "art-clinic",
+                "display": "ART Clinic day"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "teen-club",
+                "display": "Teen Club"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tinyade",
+                "display": "Tinyade"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "community-clinic",
+                "display": "Community ART Distribution"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "select-transfer-out",
+          "text": "<b>ASK:</b> Where is the client transfering to?",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "balaka",
+                "display": "Balaka"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "blantyre",
+                "display": "Blantyre"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chikwawa",
+                "display": "Chikwawa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiradzulu",
+                "display": "Chiradzulu"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chitipa",
+                "display": "Chitipa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dedza",
+                "display": "Dedza"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dowa",
+                "display": "Dowa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "karonga",
+                "display": "Karonga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kasungu",
+                "display": "Kasungu"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "likoma",
+                "display": "Likoma"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lilongwe",
+                "display": "Lilongwe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "machinga",
+                "display": "Machinga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mangochi",
+                "display": "Mangochi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mchinji",
+                "display": "Mchinji"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mozambique",
+                "display": "Mozambique"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mulanje",
+                "display": "Mulanje"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mwanza",
+                "display": "Mwanza"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mzimba",
+                "display": "Mzimba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "neno",
+                "display": "Neno"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nkhatabay",
+                "display": "Nkhata Bay"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nkhotakota",
+                "display": "Nkhotakota"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nsanje",
+                "display": "Nsanje"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ntcheu",
+                "display": "Ntcheu"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ntchisi",
+                "display": "Ntchisi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "phalombe",
+                "display": "Phalombe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "rumphi",
+                "display": "Rumphi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "salima",
+                "display": "Salima"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "thyolo",
+                "display": "Thyolo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "zomba",
+                "display": "Zomba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "balaka-facility",
+          "text": "* Select facility the client is going to",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-transfer-out",
+              "operator": "=",
+              "answerCoding": {
+                "code": "balaka"
+              }
+            },
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unknown-facility",
+                "display": "Facility Unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "balaka-dho",
+                "display": "Balaka DHO"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "balaka-opd",
+                "display": "Balaka OPD"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiendausiku",
+                "display": "Chiendausiku"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chimatilo",
+                "display": "Chimatilo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kalembo",
+                "display": "Kalembo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kankao",
+                "display": "Kankao"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kwitanda",
+                "display": "Kwitanda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mbera",
+                "display": "Mbera"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namanolo",
+                "display": "Namanolo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nandumbo",
+                "display": "Nandumbo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "phalula",
+                "display": "Phalula"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "phimbi",
+                "display": "Phimbi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ulongwe",
+                "display": "Ulongwe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "utale-1",
+                "display": "Utale1"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "utale-2",
+                "display": "Utale2"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "phalombe-facility",
+          "text": "* Select facility the client is going to",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-transfer-out",
+              "operator": "=",
+              "answerCoding": {
+                "code": "phalombe"
+              }
+            },
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unknown-facility",
+                "display": "Facility unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiringa",
+                "display": "Chiringa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chitekesa",
+                "display": "Chitekesa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gogo-nazombe",
+                "display": "Gogo Nazombe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "holy-family",
+                "display": "Holy Family"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kalinde",
+                "display": "Kalinde"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "migowi",
+                "display": "Migowi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mpasa",
+                "display": "Mpasa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mulungu-alinafe",
+                "display": "Mulungu Alinafe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mwanga",
+                "display": "Mwanga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nambazo",
+                "display": "Nambazo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nkhulambe",
+                "display": "Nkhulambe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nkhwayi",
+                "display": "Nkhwayi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "phalombe-hc",
+                "display": "Phalombe Health Center"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sukasuka",
+                "display": "Sukasuka"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "machinga-facility",
+          "text": "* Select facility the client is going to",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-transfer-out",
+              "operator": "=",
+              "answerCoding": {
+                "code": "machinga"
+              }
+            },
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unknown-facility",
+                "display": "Facility unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chamba",
+                "display": "Chamba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chikweo",
+                "display": "Chikweo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gawanani",
+                "display": "Gawanani"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kawinga",
+                "display": "Kawinga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "liwonde-medical-clinic",
+                "display": "Liwonde Medical Clinic"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "machinga-dho",
+                "display": "Machinga DHO"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "machinga-health-center",
+                "display": "Machinga Health Center"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mangamba",
+                "display": "Mangamba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mbonechera",
+                "display": "Mbonechera"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mkwepere",
+                "display": "Mkwepere"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mpiri",
+                "display": "Mpiri"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mposa",
+                "display": "Mposa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "malomba",
+                "display": "Malomba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namandanje",
+                "display": "Namandanje"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namanja",
+                "display": "Namanja"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nayinunje",
+                "display": "Nayinunje"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nayuchi",
+                "display": "Nayuchi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ngokwe",
+                "display": "Ngokwe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nsanama",
+                "display": "Nsanama"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ntaja",
+                "display": "Ntaja"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ntholowa",
+                "display": "Ntholowa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nyambi",
+                "display": "Nyambi"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "mangochi-facility",
+          "text": "* Select facility the client is going to",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-transfer-out",
+              "operator": "=",
+              "answerCoding": {
+                "code": "mangochi"
+              }
+            },
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unknown-facility",
+                "display": "Facility unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "assalaam",
+                "display": "Assalaam Clinic"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "billy-Riodan",
+                "display": "Billy Riodan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chikole",
+                "display": "Chikole"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chilipa",
+                "display": "Chilipa"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chilonga",
+                "display": "Chilonga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiombangame",
+                "display": "Chiombangame"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiponde",
+                "display": "Chiponde"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chiunda",
+                "display": "Chiunda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "iba",
+                "display": "Iba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "jalasi",
+                "display": "jalasi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kapire",
+                "display": "Kapire"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "katema",
+                "display": "Katema"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "katuli",
+                "display": "Katuli"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "koche",
+                "display": "Koche"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kukalanga",
+                "display": "Kukalanga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lugola",
+                "display": "Lugola"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lulanga",
+                "display": "Lulanga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lungwena",
+                "display": "Lungwena"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "luwanika",
+                "display": "Luwanika"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "makanjira",
+                "display": "Makanjira"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "malembo",
+                "display": "Malembo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "malombe",
+                "display": "Malombe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "malukula",
+                "display": "Malukula"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mama-khadija",
+                "display": "Mama Khadija"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mangochi-dho",
+                "display": "Mangochi DHO"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mase",
+                "display": "Mase"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mehboob",
+                "display": "Mehboob"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mkumba",
+                "display": "Mkumba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "monkey-bay",
+                "display": "Monkey Bay"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mpondasi",
+                "display": "Mpondasi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mtimabii",
+                "display": "Mtimabii"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mulibwanji",
+                "display": "Mulibwanji"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namalaka",
+                "display": "Namalaka"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namkumba",
+                "display": "Namkumba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "namwera",
+                "display": "Namwera"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nancholi",
+                "display": "Nancholi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nangalamu",
+                "display": "Nangalamu"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nankhwali",
+                "display": "Nankhwali"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ngapani",
+                "display": "Ngapani"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nkope",
+                "display": "Nkope"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "phirilongwe",
+                "display": "Phirilongwe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sinyala",
+                "display": "Sinyala"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sister-martha",
+                "display": "Sister Martha"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "somba",
+                "display": "Somba"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "st-martins",
+                "display": "St Martins"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "salima-facility",
+          "text": "* Select facility the client is going to",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "select-transfer-out",
+              "operator": "=",
+              "answerCoding": {
+                "code": "salima"
+              }
+            },
+            {
+              "question": "select-dsd-model",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dsd-model-transfer-out"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unknown-facility",
+                "display": "Facility unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chagunda",
+                "display": "Chagunda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chinguluwe",
+                "display": "Chinguluwe"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chipoka",
+                "display": "Chipoka"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chitala",
+                "display": "Chitala"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "kaphatenga",
+                "display": "Kaphatenga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "khombedza",
+                "display": "Khombedza"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lifeline",
+                "display": "Lifeline"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lifuwu",
+                "display": "Lifuwu"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "maganga",
+                "display": "Maganga"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "makioni",
+                "display": "Makioni"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mchoka",
+                "display": "Mchoka"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ngozi",
+                "display": "Ngozi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "salima-dho",
+                "display": "Salima DHO"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "senga-bay-baptist",
+                "display": "Senga Bay Baptist"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "thavite",
+                "display": "Thavite"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.id"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "patient-id",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+          "type": "string"
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate <= (today() - ((12 * 365).toString() + ' days').toQuantity())"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "client-older-than-12-years",
+          "text": "Client older than 12 years",
+          "type": "boolean",
+          "required": true,
+          "readOnly": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.gender"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "patient-gender",
+          "text": "Client gender",
+          "type": "choice",
+          "readOnly": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

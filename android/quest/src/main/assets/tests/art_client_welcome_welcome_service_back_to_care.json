@@ -1,6 +1,11 @@
 {
   "resourceType": "Questionnaire",
   "id": "art-client-welcome-service-back-to-care",
+  "meta": {
+    "versionId": "4",
+    "lastUpdated": "2022-10-20T15:57:50.045+03:00",
+    "source": "#y7FEDF5K87BFKXLP"
+  },
   "language": "en",
   "extension": [
     {
@@ -8,16 +13,13 @@
       "valueCode": "https://fhir-dev.d-tree.org/StructureMap/art-client-welcome-service-back-to-care"
     },
     {
-      "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
-      "valueCode" : "prior-edit"
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode": "prior-edit"
     }
-
   ],
   "title": "Welcome Service",
   "status": "active",
-  "subjectType": [
-    "Patient"
-  ],
+  "subjectType": ["Patient"],
   "publisher": "mcore",
   "contact": [
     {
@@ -818,8 +820,6 @@
           "linkId": "priorities-advice",
           "text": "<ol> <li>Attend appointment on possible day before scheduled date</li> <li>Weekend appointment</li> <li>Early morning or lunch hour clinic if available </li> <li>Call clinic to notify of missing appointment but has enough meds</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
           "type": "display",
-          "required": false,
-          "enableBehavior": "any",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -835,14 +835,14 @@
                 "code": "other-priorities"
               }
             }
-          ]
+          ],
+          "enableBehavior": "any",
+          "required": false
         },
         {
           "linkId": "travel-advice",
           "text": "<ol> <li>Attend appointment before scheduled date</li> <li>Emergency refill</li> <li>MMS </li> <li>Notify clinic if missing appointment</li><li>Ask providers for next visit on best time of the week or month to set appointment</li> </ol> ",
           "type": "display",
-          "required": false,
-          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -851,14 +851,14 @@
                 "code": "travel"
               }
             }
-          ]
+          ],
+          "enableBehavior": "all",
+          "required": false
         },
         {
           "linkId": "relocation-advice",
           "text": "<ol> <li>Emergency refill</li> <li>Refill at Drop in centre/KP programs and seek assistance from CBOs</li> <li>Transfer out to nearby clinic </li> <li>Call clinic to notify of situation</li></ol> ",
           "type": "display",
-          "required": false,
-          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -867,14 +867,14 @@
                 "code": "relocation"
               }
             }
-          ]
+          ],
+          "enableBehavior": "all",
+          "required": false
         },
         {
           "linkId": "o-transport-funds-advice",
           "text": "<ol> <li>Ask for next appointment date after pay day</li> <li>Flash clinic if you will miss appointment to let them know</li> <li>Ask for MMS </li> <li>Move to clinic closer to home/CAD</li></ol> ",
           "type": "display",
-          "required": false,
-          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "unable-on-scheduled-date-reason",
@@ -883,7 +883,9 @@
                 "code": "no-transport-funds"
               }
             }
-          ]
+          ],
+          "enableBehavior": "all",
+          "required": false
         }
       ]
     },
@@ -1035,8 +1037,6 @@
           "linkId": "did-not-miss-dose-clinic-meds-display",
           "text": "<ol> <li>Encourage the client to continue coming to the clinic as indicated. <b>ACTION: </b> Correct the EMR before client leaves today </li> <li><b>SAY:</b> Great job coming to clinic before your ART finished. Please try to come when you have at least 2 tabs remaining so if there is any reason you cannot get to clinic when you plan, then you will still have some doses. Don't want until meds are all gone</li> <li>Show the clinician how many tabs you have and they will give you a later clinic date </li></ol>",
           "type": "display",
-          "required": false,
-          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "did-not-miss-dose-advice",
@@ -1045,14 +1045,14 @@
                 "code": "meds-from-clinic"
               }
             }
-          ]
+          ],
+          "enableBehavior": "all",
+          "required": false
         },
         {
           "linkId": "did-not-miss-dose-borrowed-meds-display",
           "text": "<ol> <li>Praise the client for not missing doses and review importance of not sharing meds and not all ART is the same </li> <li>Review their ART name </li></ol>",
           "type": "display",
-          "required": false,
-          "enableBehavior": "all",
           "enableWhen": [
             {
               "question": "did-not-miss-dose-advice",
@@ -1061,7 +1061,9 @@
                 "code": "borrowed-meds"
               }
             }
-          ]
+          ],
+          "enableBehavior": "all",
+          "required": false
         },
         {
           "linkId": "did-not-miss-dose-action",
@@ -1141,42 +1143,14 @@
           ],
           "enableBehavior": "any",
           "required": true
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Summary Page"
-              }
-            ],
-            "text": "Summary Page"
-          }
-        }
-      ],
-      "linkId": "summary-page",
-      "type": "group",
-      "item": [
-        {
-          "linkId": "summary-page",
-          "text": "Summary Page",
-          "type": "display",
-          "required": false
         },
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
               "valueExpression": {
-                "name": "encounter",
-                "language": "application/x-fhir-query",
-                "expression": "Encounter"
+                "language": "text/fhirpath",
+                "expression": "Patient.id"
               }
             },
             {
@@ -1184,21 +1158,8 @@
               "valueBoolean": true
             }
           ],
-          "linkId": "encounter-context",
-          "type": "group",
-          "item": [
-            {
-              "linkId": "encounter-status",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Encounter#Encounter.status",
-              "type": "string",
-              "required": true,
-              "initial": [
-                {
-                  "valueString": "finished"
-                }
-              ]
-            }
-          ]
+          "linkId": "patient-id",
+          "type": "string"
         }
       ]
     }
