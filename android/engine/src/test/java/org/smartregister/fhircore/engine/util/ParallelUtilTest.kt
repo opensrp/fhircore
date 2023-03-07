@@ -40,7 +40,6 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-        val output =
           (1..100).pmap {
             delay(timeDelayInMillis)
             it * 2
@@ -60,7 +59,7 @@ class ParallelUtilTest {
     val output = mutableSetOf<Int>()
     runBlocking(Dispatchers.Default) {
       val result = testIterable.forEachAsync { output.add(it + 1) }
-      Assert.assertTrue(output == setOf(2, 3, 4))
+      Assert.assertEquals(output, setOf(2, 3, 4))
       Assert.assertSame(Unit.javaClass, result.javaClass)
     }
   }
@@ -70,7 +69,6 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-        val output =
           (1..100).forEachAsync {
             delay(timeDelayInMillis)
             it * 2
