@@ -24,6 +24,7 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -100,10 +102,17 @@ class RulesExecutorTest : RobolectricTest() {
   fun processListResourceData() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
-    val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
+    val listResource =
+      ListResource("id", resourceType = ResourceType.Patient, conditionalFhirPathExpression = "*")
+    val resources = listOf(listResource)
+    val listProperties =
+      ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+    val repositoryResourceData = RepositoryResourceData(resource = Patient())
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+    relatedRepositoryResourceData.add(repositoryResourceData)
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
