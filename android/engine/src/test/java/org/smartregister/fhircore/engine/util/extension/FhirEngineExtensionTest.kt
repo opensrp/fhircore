@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -33,12 +34,12 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
-    coEvery { fhirEngine.search<Composition>(any()) } returns
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
       listOf(Composition().apply { id = "123" })
 
     val result = fhirEngine.searchCompositionByIdentifier("appId")
 
-    coVerify { fhirEngine.search<Composition>(any()) }
+    coVerify { fhirEngine.search<Composition>(any<Search>()) }
 
     Assert.assertEquals("123", result!!.logicalId)
   }

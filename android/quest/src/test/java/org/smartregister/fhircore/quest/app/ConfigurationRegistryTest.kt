@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.search.Search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -104,7 +105,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
@@ -136,7 +137,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
