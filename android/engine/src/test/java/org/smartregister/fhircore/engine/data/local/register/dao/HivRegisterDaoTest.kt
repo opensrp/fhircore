@@ -23,7 +23,9 @@ import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import java.util.Calendar
 import java.util.Date
 import kotlin.test.assertEquals
@@ -181,6 +183,8 @@ class HivRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
     coEvery { fhirEngine.get(ResourceType.Task, testTask2.logicalId) } returns testTask2
 
+    coEvery { fhirEngine.update(any()) } just runs
+
     coEvery { fhirEngine.search<Resource>(any()) } answers
       {
         val search = firstArg<Search>()
@@ -284,6 +288,17 @@ class HivRegisterDaoTest : RobolectricTest() {
     coVerify { fhirEngine.get(ResourceType.RelatedPerson, relatedPerson.logicalId) }
     assertNotNull(result)
     assertEquals(relatedPerson.logicalId, result.logicalId)
+  }
+
+  @Test
+  fun testRemovePatient() = runTest {
+    val patient =
+      Patient().apply {
+        id = "1"
+        active = true
+      }
+    hivRegisterDao.removePatient(patient.id)
+    coVerify { fhirEngine.update(any()) }
   }
 
   @Test
