@@ -18,6 +18,9 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AuthenticatorException
+import android.content.OperationApplicationException
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,7 +34,10 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verifyOrder
+import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
+import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.junit.After
@@ -48,13 +54,14 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toSha1
+import retrofit2.HttpException
 import retrofit2.Response
 
 @HiltAndroidTest
 class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
-  @get:Rule val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
@@ -64,6 +71,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   private val sampleUsername = "demo"
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     tokenAuthenticator =
@@ -126,6 +134,31 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
+  fun testGetAccessTokenShouldReturnEmptyStringIfAccountNull() {
+    every { tokenAuthenticator.findAccount() } returns null
+    Assert.assertEquals("", tokenAuthenticator.getAccessToken())
+  }
+
+  @Test
+  fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
+    val account = Account(sampleUsername, PROVIDER)
+    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.isTokenActive(any()) } returns true
+    val accessToken = "gibberishaccesstoken"
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(OperationApplicationException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(IOException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(AuthenticatorException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchTokenShouldRetrieveNewTokenAndCreateAccount() {
     val token = "goodToken"
     val refreshToken = "refreshToken"
@@ -164,6 +197,39 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchTokenShouldShouldCatchHttpAndUnknownHostAndSSLHandshakeExceptions() {
+    val username = sampleUsername
+    val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
+
+    val httpException = HttpException(Response.success(null))
+
+    coEvery { oAuthService.fetchToken(any()) }.throws(httpException)
+
+    runTest {
+      var result = tokenAuthenticator.fetchAccessToken(username, password)
+      Assert.assertEquals(Result.failure<HttpException>(httpException), result)
+    }
+
+    val unknownHostException = UnknownHostException()
+
+    coEvery { oAuthService.fetchToken(any()) }.throws(unknownHostException)
+
+    runTest {
+      var result = tokenAuthenticator.fetchAccessToken(username, password)
+      Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)
+    }
+
+    val sslHandshakeException = SSLHandshakeException("reason")
+
+    coEvery { oAuthService.fetchToken(any()) }.throws(sslHandshakeException)
+
+    runTest {
+      var result = tokenAuthenticator.fetchAccessToken(username, password)
+      Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
+    }
+  }
+  @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
     val refreshToken = "gibberishaccesstoken"
@@ -178,6 +244,28 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns "oldToken"
     val result = tokenAuthenticator.logout()
     Assert.assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun testLogoutShouldShouldCatchHttpAndUnknownHostExceptions() {
+    val account = Account(sampleUsername, PROVIDER)
+    val refreshToken = "gibberishaccesstoken"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns refreshToken
+
+    val httpException = HttpException(Response.success(null))
+
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(httpException)
+
+    var result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<HttpException>(httpException), result)
+
+    val unknownHostException = UnknownHostException()
+
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(unknownHostException)
+
+    result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)
   }
 
   @Test
