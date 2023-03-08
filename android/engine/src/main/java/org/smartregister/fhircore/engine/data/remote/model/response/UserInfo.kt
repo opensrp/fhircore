@@ -18,7 +18,9 @@ package org.smartregister.fhircore.engine.data.remote.model.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class UserInfo(
   @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,

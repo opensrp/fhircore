@@ -204,6 +204,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `countTotalRecordsForSync() calls fhirEngine#count`() = runTest {
     every { baseP2PTransferDao.getDataTypes() } returns
       TreeSet<DataType>().apply {

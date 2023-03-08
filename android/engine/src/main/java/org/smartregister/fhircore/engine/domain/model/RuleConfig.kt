@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class RuleConfig(
   val name: String,

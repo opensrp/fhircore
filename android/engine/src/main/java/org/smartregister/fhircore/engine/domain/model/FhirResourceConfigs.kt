@@ -26,9 +26,9 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
  * which can be accompanied by [relatedResources].
  */
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
-@ExcludeFromJacocoGeneratedReport
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
   val relatedResources: List<ResourceConfig> = emptyList()
@@ -48,9 +48,9 @@ data class FhirResourceConfig(
  *
  * Nested [ResourceConfig] are proved via the [relatedResources] property.
  */
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
-@ExcludeFromJacocoGeneratedReport
 data class ResourceConfig(
   val id: String? = null,
   val resource: String,
@@ -61,9 +61,9 @@ data class ResourceConfig(
   val sortConfigs: List<SortConfig> = emptyList()
 ) : Parcelable
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
-@ExcludeFromJacocoGeneratedReport
 data class SortConfig(
   val paramName: String,
   val dataType: DataType,

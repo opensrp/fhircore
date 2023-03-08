@@ -25,7 +25,9 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class ProfileConfiguration(
   override var appId: String,

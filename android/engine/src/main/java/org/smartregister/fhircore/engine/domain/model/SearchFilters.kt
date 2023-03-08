@@ -22,7 +22,9 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
 /** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
@@ -38,6 +40,7 @@ data class DataQuery(
   val paramPrefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
 ) : Parcelable
 
+@ExcludeFromJacocoGeneratedReport
 @Stable
 @Serializable
 @Parcelize

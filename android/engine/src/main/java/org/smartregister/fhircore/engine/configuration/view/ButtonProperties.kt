@@ -19,7 +19,9 @@ package org.smartregister.fhircore.engine.configuration.view
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,

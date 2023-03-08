@@ -19,7 +19,9 @@ package org.smartregister.fhircore.engine.domain.model
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class TopBarConfig(
   val title: CompoundTextProperties? = null,

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /**
  * Represent the resource types that are used on a Register.
@@ -28,6 +29,7 @@ import org.hl7.fhir.r4.model.ResourceType
  * For example. For every Patient resource we return also their Immunization and Observation
  * resources but precompute the values needed by firing the configured rules.
  */
+@ExcludeFromJacocoGeneratedReport
 @Stable
 data class ResourceData(
   val baseResourceId: String,

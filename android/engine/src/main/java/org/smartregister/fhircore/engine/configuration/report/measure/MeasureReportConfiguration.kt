@@ -19,7 +19,9 @@ package org.smartregister.fhircore.engine.configuration.report.measure
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class MeasureReportConfiguration(
   override var appId: String,
