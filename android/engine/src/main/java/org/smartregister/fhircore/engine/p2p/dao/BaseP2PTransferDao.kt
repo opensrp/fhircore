@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.sync.DataType
-import timber.log.Timber
 
 open class BaseP2PTransferDao
 constructor(
@@ -91,31 +90,8 @@ constructor(
     offset: Int,
     classType: Class<out Resource>
   ): List<Resource> {
-    Timber.e("loadResources() before dispatcher")
     return withContext(dispatcherProvider.io()) {
       // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
-
-      /*  val searchQuery =
-        SearchQuery(
-          """
-      SELECT a.serializedResource, b.index_to
-      FROM ResourceEntity a
-      LEFT JOIN DateTimeIndexEntity b
-      ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = '${classType.newInstance().resourceType}'
-      AND a.resourceId IN (
-      SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to > ?
-      )
-      ORDER BY b.index_from ASC
-      LIMIT ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize)
-        )
-
-      fhirEngine.search(searchQuery)*/
-
-      Timber.e("loadResources() after dispatcher")
       /*val search =
       Search(type = classType.newInstance().resourceType).apply {
         filter(
@@ -129,10 +105,9 @@ constructor(
         sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
         from = offset
         count = batchSize
-      }*/
-
-      Timber.e("loadResources starting search")
-      // fhirEngine.search(search)
+      }
+      fhirEngine.search(search)
+       */
 
       val searchQuery =
         SearchQuery(
