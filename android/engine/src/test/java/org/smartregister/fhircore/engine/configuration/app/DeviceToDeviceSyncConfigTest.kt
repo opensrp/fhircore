@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -32,11 +34,16 @@ class DeviceToDeviceSyncConfigTest() {
   @Test
   fun testGetResourcesToSync() {
     Assert.assertEquals(resourcesToSync, deviceToDeviceSyncConfig.resourcesToSync)
+    Assert.assertEquals(
+      "{\"resourcesToSync\":[\"a\"]}",
+      Json.encodeToString(deviceToDeviceSyncConfig)
+    )
   }
 
   @Test
   fun testNullResourcesToSync() {
-    deviceToDeviceSyncConfig = DeviceToDeviceSyncConfig(null)
+    deviceToDeviceSyncConfig = DeviceToDeviceSyncConfig()
     Assert.assertEquals(null, deviceToDeviceSyncConfig.resourcesToSync)
+    Assert.assertEquals("{}", Json.encodeToString(deviceToDeviceSyncConfig))
   }
 }
