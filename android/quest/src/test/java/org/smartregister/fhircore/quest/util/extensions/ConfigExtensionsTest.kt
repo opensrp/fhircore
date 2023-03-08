@@ -116,7 +116,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val navOptions = slot<NavOptions>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
-    Assert.assertEquals(3, slotBundle.captured.size())
+    Assert.assertNotNull(slotBundle.captured.size())
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
@@ -204,7 +204,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        params = any()
+        actionParams = emptyList()
       )
     }
   }

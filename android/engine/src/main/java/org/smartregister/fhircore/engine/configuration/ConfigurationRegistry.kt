@@ -85,13 +85,13 @@ constructor(
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      getConfigValueWithParam(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
+      getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
     else
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template = getConfigValueWithParam(paramsMap, configKey, configsJsonMap)
+          template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
         )
         .decodeJson(jsonInstance = json)
   }
@@ -101,7 +101,7 @@ constructor(
    * found and if [paramsMap] are not empty return the result return the value if key is found and
    * [paramsMap] is empty
    */
-  inline fun getConfigValueWithParam(
+  inline fun <reified T : Configuration> getConfigValueWithParam(
     paramsMap: Map<String, String>?,
     configKey: String,
     configsJsonMap: Map<String, String>
