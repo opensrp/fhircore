@@ -24,13 +24,13 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Serializable
 sealed class GeoWidgetEvent {
 
-  @Serializable
   @ExcludeFromJacocoGeneratedReport
+  @Serializable
   data class OpenProfile(val data: String, val geoWidgetConfiguration: GeoWidgetConfiguration) :
     GeoWidgetEvent()
 
-  @Serializable
   @ExcludeFromJacocoGeneratedReport
+  @Serializable
   data class RegisterClient(val data: String, val questionnaire: QuestionnaireConfig) :
     GeoWidgetEvent()
 }
