@@ -247,6 +247,28 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
+  fun testLogoutShouldShouldCatchHttpAndUnknownHostExceptions() {
+    val account = Account(sampleUsername, PROVIDER)
+    val refreshToken = "gibberishaccesstoken"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns refreshToken
+
+    val httpException = HttpException(Response.success(null))
+
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(httpException)
+
+    var result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<HttpException>(httpException), result)
+
+    val unknownHostException = UnknownHostException()
+
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(unknownHostException)
+
+    result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)
+  }
+
+  @Test
   fun testRefreshTokenShouldReturnToken() {
     val accessToken = "soRefreshingNewToken"
     val oAuthResponse =
