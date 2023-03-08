@@ -18,8 +18,10 @@ package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Serializable
+@ExcludeFromJacocoGeneratedReport
 data class ExtractedResource(
   val id: String? = null,
   val resourceType: ResourceType,

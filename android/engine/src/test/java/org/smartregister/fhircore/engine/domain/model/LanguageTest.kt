@@ -16,14 +16,16 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.material.SnackbarDuration
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.junit.Assert
+import org.junit.Test
 
-@kotlinx.serialization.Serializable
-@ExcludeFromJacocoGeneratedReport
-data class SnackBarMessageConfig(
-  val message: String = "",
-  val actionLabel: String? = null,
-  val duration: SnackbarDuration = SnackbarDuration.Short,
-  val snackBarActions: List<ActionConfig> = emptyList(),
-) : java.io.Serializable
+class LanguageTest {
+
+  @Test
+  fun testToString() {
+    val displayName = "display name"
+    val language = Language("tag", displayName)
+
+    Assert.assertEquals(displayName, language.toString())
+  }
+}

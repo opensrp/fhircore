@@ -19,15 +19,18 @@ package org.smartregister.fhircore.geowidget.model
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Serializable
 sealed class GeoWidgetEvent {
 
   @Serializable
+  @ExcludeFromJacocoGeneratedReport
   data class OpenProfile(val data: String, val geoWidgetConfiguration: GeoWidgetConfiguration) :
     GeoWidgetEvent()
 
   @Serializable
+  @ExcludeFromJacocoGeneratedReport
   data class RegisterClient(val data: String, val questionnaire: QuestionnaireConfig) :
     GeoWidgetEvent()
 }
