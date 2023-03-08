@@ -66,10 +66,16 @@ class IterableUtilTest {
   }
 
   @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfNullValue() {
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+    val array = emptyArray<ActionParameter>()
+    Assert.assertEquals(emptyMap<String, String>(), convertActionParameterArrayToMap(array))
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals(emptyMap<String, String>(), convertActionParameterArrayToMap(array))
+    Assert.assertEquals("", convertActionParameterArrayToMap(array)["k"])
   }
 
   @Test
