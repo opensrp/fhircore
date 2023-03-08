@@ -129,7 +129,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     syncListenerManager.registerSyncListener(this, lifecycle)
 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
-
       try {
         val addDateTimeIndexEntityIndexFromIndexQuery =
           SearchQuery(
