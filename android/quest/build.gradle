@@ -139,7 +139,7 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.7-rc1"
+            versionName "0.1.9-rc3"
         }
 
         g6pd {
@@ -158,32 +158,36 @@ android {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
             versionNameSuffix "-afyayangu"
-            versionCode 1
-            versionName "0.0.1"
         }
 
         map {
             dimension "apps"
             applicationIdSuffix ".map"
             versionNameSuffix "-map"
-            versionCode 1
-            versionName "0.0.1"
         }
 
         echis {
             dimension "apps"
             applicationIdSuffix ".echis"
             versionNameSuffix "-echis"
-            versionCode 1
-            versionName "0.0.1"
         }
 
-        sid {
+        bunda {
             dimension "apps"
-            applicationIdSuffix ".sid"
-            versionNameSuffix "-sid"
-            versionCode 1
-            versionName "0.0.1"
+            applicationIdSuffix ".bunda"
+            versionNameSuffix "-bunda"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
+        }
+
+        zeir {
+            dimension "apps"
+            applicationIdSuffix ".zeir"
+            versionNameSuffix "-zeir"
         }
     }
     sourceSets {
@@ -255,6 +259,7 @@ tasks.withType(Test) {
 
 configurations {
     all*.exclude group: 'xpp3'
+    all*.exclude group: 'commons-logging'
 }
 
 dependencies {
@@ -271,7 +276,7 @@ dependencies {
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.4.0'){
         exclude group: 'xpp3'
     }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
@@ -319,5 +324,5 @@ dependencies {
    // debugImplementation because LeakCanary should only run in debug builds.
    // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
-    testImplementation 'info.cqframework:cql-to-elm:2.2.0'
+    testImplementation 'info.cqframework:cql-to-elm:2.4.0'
 }

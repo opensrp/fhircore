@@ -31,11 +31,18 @@ data class ButtonProperties(
   override val fillMaxWidth: Boolean = true,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  val visible: String = "true",
+  override val visible: String = "true",
   val enabled: String = "true",
   val text: String? = null,
   val status: String,
   val smallSized: Boolean = false,
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
+  val buttonType: ButtonType = ButtonType.MEDIUM,
 ) : ViewProperties()
+
+enum class ButtonType {
+  TINY,
+  MEDIUM,
+  BIG
+}

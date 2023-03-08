@@ -20,8 +20,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -33,7 +35,10 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
+import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.ui.register.RegisterEvent
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
 
@@ -48,9 +53,14 @@ fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  lazyListState: LazyListState,
+  onEvent: (RegisterEvent) -> Unit,
+  registerUiState: RegisterUiState,
+  currentPage: MutableState<Int>,
+  showPagination: Boolean = false
 ) {
-  LazyColumn(Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG)) {
+  LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     itemsIndexed(pagingItems) { _, item ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
@@ -81,6 +91,19 @@ fun RegisterCardList(
             ErrorMessage(message = error.error.localizedMessage!!, onClickRetry = { retry() })
           }
         }
+      }
+    }
+
+    // Register pagination
+    item {
+      if (pagingItems.itemCount > 0 && showPagination) {
+        RegisterFooter(
+          resultCount = pagingItems.itemCount,
+          currentPage = currentPage.value.plus(1),
+          pagesCount = registerUiState.pagesCount,
+          previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
+          nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
+        )
       }
     }
   }

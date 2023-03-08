@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
@@ -113,12 +114,12 @@ fun ServiceCard(
             }
           )
     ) {
-      // When show div
       Column(
         modifier =
           modifier
             .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f),
+        verticalArrangement = Arrangement.Center
       ) {
         serviceCardProperties.details.forEach {
           CompoundText(
@@ -173,7 +174,8 @@ fun ServiceCard(
           if (serviceCardProperties.serviceButton!!.smallSized) {
             Column {
               ActionableButton(
-                buttonProperties = serviceCardProperties.serviceButton!!,
+                buttonProperties =
+                  serviceCardProperties.serviceButton!!.copy(buttonType = ButtonType.TINY),
                 navController = navController,
                 resourceData = resourceData
               )
@@ -187,10 +189,10 @@ fun ServiceCard(
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
-                buttonProperties = buttonProperties,
+                buttonProperties = buttonProperties.copy(buttonType = ButtonType.TINY),
                 navController = navController,
                 resourceData = resourceData
               )
@@ -245,6 +247,14 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
+        .clickable {
+          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
+          }
+        }
         .width(140.dp)
         .height(80.dp)
         .padding(8.dp)
@@ -256,15 +266,7 @@ private fun BigServiceButton(
         )
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        )
-        .clickable {
-          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData
-            )
-          }
-        },
+        ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -327,7 +329,7 @@ private fun ServiceCardServiceOverduePreview() {
                   visible = "true",
                   status = ServiceStatus.OVERDUE.name,
                   text = "1",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -337,7 +339,7 @@ private fun ServiceCardServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -381,7 +383,7 @@ private fun ServiceCardServiceDuePreview() {
                   visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -391,7 +393,7 @@ private fun ServiceCardServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -435,7 +437,7 @@ private fun ServiceCardServiceUpcomingPreview() {
                   visible = "true",
                   status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -445,7 +447,7 @@ private fun ServiceCardServiceUpcomingPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -480,7 +482,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -523,7 +525,7 @@ private fun ServiceCardServiceCompletedPreview() {
                   visible = "true",
                   status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated against COVID 19 virus",
-                  smallSized = false
+                  buttonType = ButtonType.BIG
                 )
             )
           )
@@ -533,7 +535,7 @@ private fun ServiceCardServiceCompletedPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -571,7 +573,7 @@ private fun ServiceCardANCServiceDuePreview() {
                 ButtonProperties(
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
-                  smallSized = true,
+                  buttonType = ButtonType.TINY
                 )
             )
           )
@@ -581,7 +583,7 @@ private fun ServiceCardANCServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }
@@ -620,13 +622,13 @@ private fun ServiceCardANCServiceOverduePreview() {
                     visible = "true",
                     status = ServiceStatus.COMPLETED.name,
                     text = "Pregnancy Outcome 1",
-                    smallSized = true
+                    buttonType = ButtonType.TINY
                   ),
                   ButtonProperties(
                     visible = "true",
                     status = ServiceStatus.OVERDUE.name,
                     text = "ANC Visit 2",
-                    smallSized = true
+                    buttonType = ButtonType.TINY
                   )
                 )
             )
@@ -637,7 +639,7 @@ private fun ServiceCardANCServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }

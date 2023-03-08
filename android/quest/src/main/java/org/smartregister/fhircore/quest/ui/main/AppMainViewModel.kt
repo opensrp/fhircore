@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -158,7 +159,11 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
+      is AppMainEvent.SyncData -> {
+        if (event.context.isDeviceOnline()) {
+          syncBroadcaster.runSync(syncSharedFlow)
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
