@@ -28,5 +28,5 @@ captures/
 # Fleet
 .fleet/
 .docusaurus/
-android/quest/src/main/assets/configs/chss/
+android/quest/src/main/assets/configs/
 

@@ -35,6 +35,8 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -222,5 +224,44 @@ class ConfigExtensionsTest : RobolectricTest() {
 
     val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
     Assert.assertEquals(false, invisible)
+  }
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfEmpty() {
+    Assert.assertEquals(
+      emptyMap<String, String>(),
+      convertActionParameterArrayToMap<String, String>(null)
+    )
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
+    val array = arrayOf(ActionParameter(key = "k", value = "v"))
+    Assert.assertEquals(
+      emptyMap<String, String>(),
+      convertActionParameterArrayToMap<String, String>(array)
+    )
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+    val array = emptyArray<ActionParameter>()
+    Assert.assertEquals(
+      emptyMap<String, String>(),
+      convertActionParameterArrayToMap<String, String>(array)
+    )
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals("", convertActionParameterArrayToMap<String, String>(array)["k"])
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals(mapOf("k" to "v"), convertActionParameterArrayToMap<String, String>(array))
   }
 }
