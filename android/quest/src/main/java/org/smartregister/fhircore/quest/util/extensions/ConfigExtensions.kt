@@ -45,22 +45,12 @@ fun List<ActionConfig>.handleClickEvent(
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated =
             questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
-          val actionParams =
-            actionConfig.params.map {
-              ActionParameter(
-                key = it.key,
-                paramType = it.paramType,
-                dataType = it.dataType,
-                linkId = it.linkId,
-                value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
-              )
-            }
 
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = actionParams
+              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
             )
           }
         }
@@ -71,7 +61,8 @@ fun List<ActionConfig>.handleClickEvent(
             bundleOf(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
-              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig
+              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
+              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData)
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -111,6 +102,20 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
+private fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
+  actionConfig
+    .params
+    .map {
+      ActionParameter(
+        key = it.key,
+        paramType = it.paramType,
+        dataType = it.dataType,
+        linkId = it.linkId,
+        value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+      )
+    }
+    .toTypedArray()
+
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
@@ -119,3 +124,6 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
+
+fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
+  this.visible.interpolate(computedValuesMap).toBoolean()

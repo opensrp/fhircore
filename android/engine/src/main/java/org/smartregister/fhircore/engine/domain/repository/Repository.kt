@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -27,7 +29,11 @@ interface Repository {
    * data query extracted from the retrieved configuration is used to filter the register data (FHIR
    * resources wrapped in [ResourceData]
    */
-  suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
+  suspend fun loadRegisterData(
+    currentPage: Int,
+    registerId: String,
+    paramsMap: Map<String, String>? = emptyMap()
+  ): List<RepositoryResourceData>
 
   suspend fun loadRegisterData2(currentPage: Int, registerId: String): List<ResourceData>
 
@@ -35,7 +41,10 @@ interface Repository {
    * This function uses the provided [registerId] to retrieve the register configuration from the
    * registry, then proceeds to count the data based on the configured query parameters
    */
-  suspend fun countRegisterData(registerId: String): Long
+  suspend fun countRegisterData(
+    registerId: String,
+    paramsMap: Map<String, String>? = emptyMap()
+  ): Long
 
   /**
    * This function returns data used on the profile for the given [resourceId]. Profile
@@ -46,6 +55,7 @@ interface Repository {
   suspend fun loadProfileData(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null
-  ): ResourceData?
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsList: Array<ActionParameter>? = emptyArray()
+  ): RepositoryResourceData?
 }

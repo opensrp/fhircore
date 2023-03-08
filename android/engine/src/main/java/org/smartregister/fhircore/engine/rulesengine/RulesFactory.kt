@@ -26,6 +26,10 @@ import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.DateType
@@ -44,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.performance.Timer
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -61,13 +66,12 @@ class RulesFactory
 constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val dispatcherProvider: DispatcherProvider
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
     JexlBuilder()
       .namespaces(
@@ -82,6 +86,9 @@ constructor(
       .strict(false)
       .create()
 
+  private var facts: Facts = Facts()
+  private val ruleConfigsCache = mutableMapOf<String, Rules>()
+
   init {
     rulesEngine.registerRuleListener(this)
   }
@@ -90,6 +97,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
+      val computedValuesMap = facts.get(DATA) as Map<String, Any>
       Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
@@ -120,83 +128,75 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  suspend fun fireRule(
-    ruleConfigs: List<RuleConfig>,
-    baseResource: Resource,
+  @Suppress("UNCHECKED_CAST")
+  suspend fun fireRules(
+    rules: Rules,
+    baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
     fhirEngine: FhirEngine? = null
   ): Map<String, Any> {
-    // Reset previously computed values and init facts
-    computedValuesMap.clear()
-    facts.apply {
-      clear()
-      put(FHIR_PATH, fhirPathDataExtractor)
-      put(DATA, computedValuesMap)
-      put(SERVICE, rulesEngineService)
-    }
+    return withContext(dispatcherProvider.io()) {
+      // Initialize new facts and fire rules in background
+      facts =
+        Facts().apply {
+          put(FHIR_PATH, fhirPathDataExtractor)
+          put(DATA, mutableMapOf<String, Any>())
+          put(SERVICE, rulesEngineService)
+          if (baseResource != null) {
+            put(baseResource.resourceType.name, baseResource)
+          }
+          relatedResourcesMap.forEach { put(it.key, it.value) }
+        }
 
-    val timer = Timer(methodName = "fireRule")
 
-    // Fetch the resourceUUIDs of the members
-    /*val memberUUIDs = mutableListOf<String>()
-    var groupUUID = ""
-    if (fhirEngine != null) {
-      val timer2 = Timer(methodName = "fireRule.executeFetchMembersQuery")
-      var searchQuery =
-        SearchQuery(
-          """
-          SELECT resourceUuid FROM ResourceEntity WHERE resourceType = "Patient" AND resourceId IN (
-          SELECT SUBSTR(index_value, 9) FROM ReferenceIndexEntity WHERE index_name = "member" 
-          AND resourceUuid = (SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?)
+      val timer = Timer(methodName = "fireRule")
+
+      // Fetch the resourceUUIDs of the members
+      /*val memberUUIDs = mutableListOf<String>()
+      var groupUUID = ""
+      if (fhirEngine != null) {
+        val timer2 = Timer(methodName = "fireRule.executeFetchMembersQuery")
+        var searchQuery =
+          SearchQuery(
+            """
+            SELECT resourceUuid FROM ResourceEntity WHERE resourceType = "Patient" AND resourceId IN (
+            SELECT SUBSTR(index_value, 9) FROM ReferenceIndexEntity WHERE index_name = "member"
+            AND resourceUuid = (SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?)
+            )
+          """.trimIndent(),
+            listOf(baseResource.logicalId)
           )
-        """.trimIndent(),
-          listOf(baseResource.logicalId)
-        )
 
-      memberUUIDs.addAll(fhirEngine.getUUIDs(searchQuery))
-      Timber.e("Member UUIDs -> $memberUUIDs")
+        memberUUIDs.addAll(fhirEngine.getUUIDs(searchQuery))
+        Timber.e("Member UUIDs -> $memberUUIDs")
 
-      searchQuery =
-        SearchQuery(
-          """
-          SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?
-        """.trimIndent(),
-          listOf(baseResource.logicalId)
-        )
+        searchQuery =
+          SearchQuery(
+            """
+            SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?
+          """.trimIndent(),
+            listOf(baseResource.logicalId)
+          )
 
-      groupUUID = fhirEngine.getUUIDs(searchQuery).first()
+        groupUUID = fhirEngine.getUUIDs(searchQuery).first()
 
-      timer2.stop()
-    }
+        timer2.stop()
+      }
 
 
-    val memberSelector = genMemberUuidsSelector(memberUUIDs)
-    val birthDate = LocalDate.now()
-      .minusYears(5)
-      .toEpochDay()*/
+      val memberSelector = genMemberUuidsSelector(memberUUIDs)
+      val birthDate = LocalDate.now()
+        .minusYears(5)
+        .toEpochDay()*/
 
-    val customRules = mutableSetOf<Rule>()
-    ruleConfigs.forEach { ruleConfig ->
+      if (BuildConfig.DEBUG) {
+        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+      } else {
+        rulesEngine.fire(rules, facts)
 
-      // Create JEXL rule
-      val customRule: JexlRule =
-        JexlRule(jexlEngine)
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .priority(ruleConfig.priority)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })
-
-      ruleConfig.actions.forEach { customRule.then(it) }
-      customRules.add(customRule)
-    }
-
-    // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    facts.put(baseResource.resourceType.name, baseResource)
-
-    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
-    rulesEngine.fire(Rules(customRules), facts)
-
-    /*ruleConfigs.forEach { ruleConfig ->
+        // Alternative firing of rules
+        /*ruleConfigs.forEach { ruleConfig ->
 
 
       ruleConfig.actions.forEach {
@@ -209,11 +209,11 @@ constructor(
           val searchQuery =
             SearchQuery(
               """
-            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Task" AND index_name = "status" 
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Task" AND index_name = "status"
             AND resourceUuid IN (
-            SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Task" AND index_name = "subject" 
+            SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Task" AND index_name = "subject"
             AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE resourceUuid = x'$groupUUID' AND index_name = "member")
-            ) 
+            )
             AND (index_value = "failed" OR index_value = "completed" OR index_value = "cancelled")
 
           """.trimIndent(),
@@ -230,9 +230,9 @@ constructor(
           var searchQuery =
             SearchQuery(
               """
-            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Condition" 
-            AND index_name = "code" AND index_system = "http://snomed.info/sct" AND index_value = "77386006" 
-            AND resourceUuid IN (SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Condition" 
+            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Condition"
+            AND index_name = "code" AND index_system = "http://snomed.info/sct" AND index_value = "77386006"
+            AND resourceUuid IN (SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Condition"
             AND index_name = "subject" AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE index_name = "member" AND resourceUuid = x'$groupUUID') )
           """.trimIndent(),
               emptyList()
@@ -243,8 +243,8 @@ constructor(
 
           val timer5 = Timer(methodName = "fireRule.executeChildrenCountQuery")
           searchQuery = SearchQuery("""
-            SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid  
-            WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true" 
+            SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid
+            WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true"
             AND b.index_name = "birthdate" AND b.index_from >= ?
           """.trimIndent(),
             listOf(birthDate)
@@ -262,13 +262,41 @@ constructor(
       }
     }*/
 
-    computedValuesMap.forEach {
-      Timber.e("computedValuesMap for ${baseResource.logicalId} -> ${it.key} = ${it.value}")
+        val computedValuesMap = facts.get<Map<String, Any>>(DATA)
+        computedValuesMap.forEach {
+          Timber.e("computedValuesMap for ${baseResource!!.logicalId} -> ${it.key} = ${it.value}")
+        }
+
+        timer.stop()
+      }
+      facts.get(DATA) as Map<String, Any>
     }
+  }
 
-    timer.stop()
+  fun generateRules(ruleConfigsKey: String, ruleConfigs: List<RuleConfig>): Rules {
+    val jexlRules =
+      ruleConfigsCache.getOrDefault(
+        ruleConfigsKey,
+        Rules(
+            runBlocking(Dispatchers.Default) {
+                ruleConfigs.map { ruleConfig ->
+                  val customRule: JexlRule =
+                    JexlRule(jexlEngine)
+                      .name(ruleConfig.name)
+                      .description(ruleConfig.description)
+                      .priority(ruleConfig.priority)
+                      .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-    return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
+                  ruleConfig.actions.forEach { customRule.then(it) }
+                  customRule
+                }
+              }
+              .toSet()
+          )
+          .also { ruleConfigsCache[ruleConfigsKey] = it }
+      )
+
+    return jexlRules
   }
 
   fun genQuestionMarks(N: Int) : String {
@@ -474,8 +502,8 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function filters resource provided the condition exracted from the [fhirPathExpression]
-     * is met
+     * This function filters resources provided the condition extracted from the
+     * [fhirPathExpression] is met
      */
     fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
@@ -485,6 +513,14 @@ constructor(
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
         ?: emptyList()
+    }
+
+    /** This function combines all string indexes to comma separated */
+    fun joinToString(source: MutableList<String?>): String {
+      source.removeIf { it == null }
+      val inputString = source.joinToString()
+      val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
+      return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
     }
 
     fun mapResourcesToExtractedValues(

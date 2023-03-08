@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Bundle
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -53,10 +55,11 @@ data class ActionConfig(
 }
 
 @Serializable
+@Parcelize
 data class ActionParameter(
   val key: String,
   val paramType: ActionParameterType? = null,
   val dataType: DataType? = null,
   val value: String,
   val linkId: String? = null
-) : java.io.Serializable
+) : Parcelable

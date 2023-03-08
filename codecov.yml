@@ -1,33 +1,32 @@
 codecov:
-  disable_default_path_fixes: yes
   notify:
-    after_n_builds: 3
-    wait_for_ci: yes
-
-coverage:
-  status:
-    project:
-      enabled: yes
-      target: auto
-      threshold: 1%
-    patch: 
-      target: 60%
-    changes: no
-  precision: 1
-  round: down
-  range: "75...100"
-
+    wait_for_ci: true
+  max_report_age: off
+  require_ci_to_pass: true
 comment:
-  layout: "header, diff, changes, uncovered, tree"
   behavior: default
-
-flags:
-  engine:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/engine"
-  geowidget:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/geowidget"
-  quest:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/quest"
+  layout: "reach, diff, flags, files"
+  show_carryforward_flags: false
+coverage:
+  precision: 1
+  range:
+  - 75.0
+  - 100.0
+  round: down
+  status:
+    changes: false
+    patch:
+      default:
+        target: 60.0
+    project:
+      default:
+        enabled: true
+        target: auto
+        threshold: 1.0
+flag_management:
+  default_rules:
+    carryforward: true
+ignore:
+  - "**/androidTest"  # ignore all files in a folder called androidTest
+  - "**/debug"  # ignore all files in a folder called debug
+  - "**/test"  # ignore all files in a folder called test

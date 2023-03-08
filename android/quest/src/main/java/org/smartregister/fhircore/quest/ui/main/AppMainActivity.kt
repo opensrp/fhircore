@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -126,12 +127,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       workManager.cancelAllWork()
     }
 
-    syncBroadcaster.run {
-      with(appMainViewModel.syncSharedFlow) {
-        runSync(this)
-        // schedulePeriodicSync(this)
-      }
-    }
+    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
@@ -172,9 +168,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           """
             SELECT a.serializedResource, a.resourceUuid
             FROM ResourceEntity a
-            JOIN ReferenceIndexEntity b ON a.resourceUuid = b.resourceUuid 
+            JOIN ReferenceIndexEntity b ON a.resourceUuid = b.resourceUuid
             WHERE b.resourceType = 'Task'
-            AND b.index_name = 'subject' 
+            AND b.index_name = 'subject'
             AND b.index_value = 'Patient/29af5cd1-bed0-46b7-b968-92dcf80b6098'
           """.trimIndent(),
           emptyList()
@@ -453,6 +449,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
       else -> {
         /*Do nothing */
+      }
+    }
+  }
+
+  private fun runSync(syncBroadcaster: SyncBroadcaster) {
+    syncBroadcaster.run {
+      if (isDeviceOnline()) {
+        with(appMainViewModel.syncSharedFlow) {
+          runSync(this)
+          schedulePeriodicSync(this)
+        }
       }
     }
   }
