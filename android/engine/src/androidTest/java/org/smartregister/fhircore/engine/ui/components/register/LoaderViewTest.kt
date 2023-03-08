@@ -26,13 +26,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 
-class LoaderViewKtTest {
-
+class LoaderViewTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
   fun testLoaderDialogView() {
-
     composeRule.setContent { LoaderDialog() }
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertExists()
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertIsDisplayed()
