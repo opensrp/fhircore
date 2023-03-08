@@ -170,7 +170,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val profileData =
         registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
       Assert.assertNotNull(profileData)
-      Assert.assertEquals(ResourceType.Patient, profileData?.resource?.resourceType)
+      Assert.assertEquals(ResourceType.Patient, profileData.resource?.resourceType)
     }
   }
 
@@ -192,9 +192,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
 
-    runBlocking {
-      val listResourceData = registerRepository.loadRegisterData(1, "patientRegisterSecondary")
-    }
+    runBlocking { registerRepository.loadRegisterData(1, "patientRegisterSecondary") }
 
     coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
 
@@ -243,6 +241,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadRegisterDataWithParamsReturnsFilteredResources() = runTest {
     val group =
       Group().apply {
