@@ -56,7 +56,6 @@ data class ActionConfig(
 
 @Parcelize
 @Serializable
-@Parcelize
 data class ActionParameter(
   val key: String,
   val paramType: ActionParameterType? = null,

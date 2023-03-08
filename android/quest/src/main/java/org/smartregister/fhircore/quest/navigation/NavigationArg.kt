@@ -28,7 +28,6 @@ object NavigationArg {
   const val REPORT_ID = "reportId"
   const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
-  const val PARAMS = "params"
 
   /** Create route paths */
   fun routePathsOf(vararg navArg: String): String =
