@@ -18,6 +18,9 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AuthenticatorException
+import android.content.OperationApplicationException
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,6 +34,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verifyOrder
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
@@ -123,6 +127,30 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.invalidateAuthToken(account.type, accessToken)
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any(), true, any(), any())
     }
+  }
+
+  @Test
+  fun testGetAccessTokenShouldReturnEmptyStringIfAccountNull() {
+    every { tokenAuthenticator.findAccount() } returns null
+    Assert.assertEquals("", tokenAuthenticator.getAccessToken())
+  }
+
+  @Test
+  fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
+    val account = Account(sampleUsername, PROVIDER)
+    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.isTokenActive(any()) } returns true
+    val accessToken = "gibberishaccesstoken"
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(OperationApplicationException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(IOException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
+      .throws(AuthenticatorException())
+    Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
   }
 
   @Test
