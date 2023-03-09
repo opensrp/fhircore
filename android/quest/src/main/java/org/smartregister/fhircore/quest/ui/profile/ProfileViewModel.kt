@@ -101,7 +101,6 @@ constructor(
             baseResource = repoResourceData.resource,
             relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
             ruleConfigs = profileConfigs.rules,
-            ruleConfigsKey = profileConfigs::class.java.canonicalName,
             paramsMap
           )
           .copy(listResourceDataMap = listResourceDataMapState)

@@ -31,7 +31,6 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
@@ -111,18 +110,18 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
       )
 
-      var factsSlot = slot<Facts>()
-      var rulesSlot = slot<Rules>()
+      val factsSlot = slot<Facts>()
+      val rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -132,7 +131,7 @@ class RulesFactoryTest : RobolectricTest() {
         capturedBaseResource.address[0].city,
       )
 
-      var capturedRule = rulesSlot.captured.first()
+      val capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
     }
@@ -152,14 +151,14 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(rules = rules, baseResource = baseResource)
 
-      var factsSlot = slot<Facts>()
-      var rulesSlot = slot<Rules>()
+      val factsSlot = slot<Facts>()
+      val rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -169,7 +168,7 @@ class RulesFactoryTest : RobolectricTest() {
         capturedBaseResource.address[0].city,
       )
 
-      var capturedRule = rulesSlot.captured.first()
+      val capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
     }
@@ -190,7 +189,7 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
 
       val factsSlot = slot<Facts>()

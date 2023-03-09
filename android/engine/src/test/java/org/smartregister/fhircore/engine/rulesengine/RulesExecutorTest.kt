@@ -24,7 +24,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -87,7 +86,6 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          "",
           emptyMap()
         )
 

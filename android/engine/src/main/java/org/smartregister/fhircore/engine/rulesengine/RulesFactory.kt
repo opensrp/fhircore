@@ -24,8 +24,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
@@ -81,7 +79,6 @@ constructor(
       .create()
 
   private var facts: Facts = Facts()
-  private val ruleConfigsCache = mutableMapOf<String, Rules>()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -150,31 +147,24 @@ constructor(
     }
   }
 
-  fun generateRules(ruleConfigsKey: String, ruleConfigs: List<RuleConfig>): Rules {
-    val jexlRules =
-      ruleConfigsCache.getOrDefault(
-        ruleConfigsKey,
-        Rules(
-            runBlocking(Dispatchers.Default) {
-                ruleConfigs.map { ruleConfig ->
-                  val customRule: JexlRule =
-                    JexlRule(jexlEngine)
-                      .name(ruleConfig.name)
-                      .description(ruleConfig.description)
-                      .priority(ruleConfig.priority)
-                      .`when`(ruleConfig.condition.ifEmpty { TRUE })
+  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
+    withContext(dispatcherProvider.io()) {
+      Rules(
+        ruleConfigs
+          .map { ruleConfig ->
+            val customRule: JexlRule =
+              JexlRule(jexlEngine)
+                .name(ruleConfig.name)
+                .description(ruleConfig.description)
+                .priority(ruleConfig.priority)
+                .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-                  ruleConfig.actions.forEach { customRule.then(it) }
-                  customRule
-                }
-              }
-              .toSet()
-          )
-          .also { ruleConfigsCache[ruleConfigsKey] = it }
+            ruleConfig.actions.forEach { customRule.then(it) }
+            customRule
+          }
+          .toSet()
       )
-
-    return jexlRules
-  }
+    }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
@@ -286,7 +276,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String
-    ): String? =
+    ): String =
       resources
         ?.mapNotNull {
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
@@ -309,7 +299,7 @@ constructor(
       resource: Resource,
       fhirPathExpression: String,
       label: String
-    ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+    ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)

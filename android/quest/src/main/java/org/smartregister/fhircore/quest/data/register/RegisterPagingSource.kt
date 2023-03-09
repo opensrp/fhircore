@@ -78,7 +78,6 @@ class RegisterPagingSource(
             baseResource = repoResourceData.resource,
             relatedRepositoryResourceData = repoResourceData.relatedResources,
             ruleConfigs = ruleConfigs,
-            ruleConfigsKey = ruleConfigsKey,
             emptyMap()
           )
         }
