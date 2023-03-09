@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.quest.util
 
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-
 /**
  * Helper to return a defaultValue when getting maybe null keys from a map.
  *
@@ -30,25 +27,4 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
  */
 fun <A, B> nonNullGetOrDefault(map: Map<A, B>, key: A?, defaultValue: B): B {
   return if (key != null) map.getOrDefault(key, defaultValue) else defaultValue
-}
-
-/**
- * Function to convert the elements of an array that have paramType PARAM_DATA to a map of their
- * keys to values.
- *
- * @property array The array of ActionParameter elements to convert
- *
- * @return Map of the values or emptyMap if [array] is null
- */
-fun convertActionParameterArrayToMap(array: Array<ActionParameter>?): Map<String, String> {
-  val paramsMap: MutableMap<String, String> = mutableMapOf()
-  if (array != null) {
-    for (param in array) {
-      if (param.paramType == ActionParameterType.PARAMDATA && !param.value.isNullOrEmpty()) {
-        paramsMap[param.key] = param.value
-      }
-    }
-    return paramsMap.toMap()
-  }
-  return emptyMap()
 }

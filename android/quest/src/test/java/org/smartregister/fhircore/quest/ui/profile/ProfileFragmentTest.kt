@@ -34,6 +34,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.quest.R
@@ -75,7 +77,15 @@ class ProfileFragmentTest : RobolectricTest() {
           bundleOf(
             NavigationArg.PROFILE_ID to "defaultProfile",
             NavigationArg.RESOURCE_ID to patient.id,
-            NavigationArg.RESOURCE_CONFIG to resourceConfig
+            NavigationArg.RESOURCE_CONFIG to resourceConfig,
+            NavigationArg.PARAMS to
+              arrayOf(
+                ActionParameter(
+                  key = "anyId",
+                  paramType = ActionParameterType.PARAMDATA,
+                  value = "anyValue"
+                )
+              )
           )
       }
     activityController.create().resume()
