@@ -170,7 +170,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val profileData =
         registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
       Assert.assertNotNull(profileData)
-      Assert.assertEquals(ResourceType.Patient, profileData.resource?.resourceType)
+      Assert.assertEquals(ResourceType.Patient, profileData.resource.resourceType)
     }
   }
 

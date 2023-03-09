@@ -509,8 +509,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
     coEvery { fhirEngine.get(ResourceType.Patient, memberId) } returns patient
 
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
-      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 

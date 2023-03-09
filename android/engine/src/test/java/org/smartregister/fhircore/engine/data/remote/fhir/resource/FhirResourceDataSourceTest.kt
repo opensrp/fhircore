@@ -26,18 +26,17 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 class FhirResourceDataSourceTest {
 
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
   private val resourceService: FhirResourceService = mockk()
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }

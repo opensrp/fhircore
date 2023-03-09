@@ -38,7 +38,9 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 class ReferenceUrlResolverTest : RobolectricTest() {
-  @get:Rule val coroutineTestRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule
+  val coroutineTestRule = CoroutineTestRule()
   private lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   private val fhirEngine = mockk<FhirEngine>()
