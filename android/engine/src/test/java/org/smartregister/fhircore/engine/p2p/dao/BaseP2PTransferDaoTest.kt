@@ -171,16 +171,6 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     coVerify { fhirEngine.search<Patient>(capture(searchQuerySlot)) }
     assertEquals(25, searchQuerySlot.captured.args[1])
     assertEquals(expectedQuery, searchQuerySlot.captured.query)
-
-    // Uncomment this when use of custom queries is no longer required
-    /*    assertEquals(ResourceType.Patient, searchSlot.captured.type)
-
-    val dateTimeFilterCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(searchSlot.captured, "dateTimeFilterCriteria")
-    val tokenFilters: MutableList<DateParamFilterCriterion> =
-      ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
-    assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    assertEquals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS, tokenFilters[0].prefix)*/
   }
 
   @Test

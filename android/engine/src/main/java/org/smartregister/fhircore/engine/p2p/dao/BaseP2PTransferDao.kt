@@ -91,24 +91,6 @@ constructor(
     classType: Class<out Resource>
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
-      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
-      /*val search =
-      Search(type = classType.newInstance().resourceType).apply {
-        filter(
-          DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-          {
-            value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-          }
-        )
-
-        sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-        from = offset
-        count = batchSize
-      }
-      fhirEngine.search(search)
-       */
-
       val searchQuery =
         SearchQuery(
           """

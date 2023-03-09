@@ -19,13 +19,18 @@ package org.smartregister.fhircore.engine.util.extension
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.SearchQuery
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
+import java.sql.SQLException
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class FhirEngineExtensionTest : RobolectricTest() {
@@ -42,5 +47,26 @@ class FhirEngineExtensionTest : RobolectricTest() {
     coVerify { fhirEngine.search<Composition>(any<Search>()) }
 
     Assert.assertEquals("123", result!!.logicalId)
+  }
+
+  @Test
+  fun testAddDateTimeIndexThrowsExceptionGivenInvalidSearchQuery() {
+    coEvery { fhirEngine.search<Task>(any<SearchQuery>()) } throws SQLException()
+
+    runBlocking { assertThrows<SQLException> { fhirEngine.addDateTimeIndex() } }
+  }
+
+  @Test
+  fun testAddDateTimeIndexUsesCorrectSql() {
+    coEvery { fhirEngine.search<Task>(any<SearchQuery>()) } returns listOf()
+
+    runBlocking { fhirEngine.addDateTimeIndex() }
+    val searchQuerySlot = slot<SearchQuery>()
+    coVerify { fhirEngine.search<Task>(capture(searchQuerySlot)) }
+
+    Assert.assertEquals(
+      "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+      searchQuerySlot.captured.query
+    )
   }
 }
