@@ -74,7 +74,9 @@ fun ActionableButton(
     val clickable = buttonProperties.clickable(resourceData)
     OutlinedButton(
       onClick = {
-        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
+        if (buttonEnabled &&
+            (status == ServiceStatus.DUE || status == ServiceStatus.OVERDUE || clickable)
+        ) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData
