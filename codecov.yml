@@ -3,6 +3,7 @@ codecov:
     wait_for_ci: true
   max_report_age: off
   require_ci_to_pass: true
+  allow_coverage_offsets: true
 comment:
   behavior: default
   layout: "reach, diff, flags, files"
@@ -18,6 +19,8 @@ coverage:
     patch:
       default:
         target: 60.0
+        base: auto 
+        threshold: 0
     project:
       default:
         enabled: true

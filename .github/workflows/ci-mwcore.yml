@@ -11,7 +11,7 @@ env:
 
 jobs:
   engine-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel Previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -41,11 +41,16 @@ jobs:
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: android
+          flags: engine
+          files: engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+          verbose: true
 
   quest-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout 🛎️
@@ -71,5 +76,10 @@ jobs:
         working-directory: android
 
       - name: Upload Quest Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: android
+          flags: quest
+          files: quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+          verbose: true
