@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -68,13 +67,12 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -85,7 +83,6 @@ import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 class AppMainViewModel
 @Inject
 constructor(
-  val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
@@ -148,7 +145,6 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      AppMainEvent.Logout -> accountAuthenticator.logout()
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
@@ -156,25 +152,9 @@ constructor(
           getActivity()?.refresh()
         }
       }
-      AppMainEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
-      is AppMainEvent.RefreshAuthToken -> {
-        viewModelScope.launch {
-          accountAuthenticator.refreshSessionAuthToken().let { bundle ->
-            bundle.getString(AccountManager.KEY_ERROR_MESSAGE)?.let { event.context.showToast(it) }
-            if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              // syncBroadcaster.runSync()
-              retrieveAppMainUiState()
-              return@let
-            }
-            if (bundle.containsKey(AccountManager.KEY_ERROR_CODE) &&
-                bundle.getInt(AccountManager.KEY_ERROR_CODE) ==
-                  AccountManager.ERROR_CODE_NETWORK_ERROR
-            ) {
-              return@let
-            } else {
-              accountAuthenticator.logout()
-            }
-          }
+      is AppMainEvent.SyncData -> {
+        if (event.context.isDeviceOnline()) {
+          syncBroadcaster.runSync(syncSharedFlow)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -250,8 +230,7 @@ constructor(
             bundleOf(
               Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
             ),
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = null
+          questionnaireConfig = questionnaireConfig
         )
     }
   }
@@ -309,22 +288,19 @@ constructor(
     )
   }
 
-  fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      formatLastSyncTimestamp(timestamp)
-    )
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(workId = FhirTaskPlanWorker.WORK_ID)
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        requiresNetwork = false
+      )
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration)
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
@@ -334,7 +310,7 @@ constructor(
     }
   }
 
-  suspend fun onQuestionnaireSubmit(questionnaireSubmission: QuestionnaireSubmission) {
+  suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {

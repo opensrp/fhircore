@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,6 +259,78 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
           .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+      }
+  }
+
+  @Test
+  fun testGenerateCarePlanForHouseHold() = runTest {
+    val plandefinition =
+      "plans/household-wash-check-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val group =
+      "plans/household-wash-check-routine-visit/sample/group.json"
+        .readFile()
+        .decodeResourceFromString<Group>()
+
+    val structureMapScript = "plans/household-wash-check-routine-visit/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
+        // The parser does not recognize the time unit i.e. months and prints as '',
+        // so use only months and that would have the unit replaced with 'months'
+        it.encodeResourceToString().replace("''", "'month'")
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Household Routine WASH Check Plan", carePlan.title)
+        Assert.assertEquals(
+          "This defines the schedule of service for WASH Check on households",
+          carePlan.description
+        )
+        Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertNotNull(carePlan.period.start)
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty() && list.size > 59 && list.size < 62) }
           .all { task ->
             task.status == Task.TaskStatus.REQUESTED &&
               LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
@@ -809,11 +881,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               )
               Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
               Assert.assertTrue(
-                task.reasonCode.text ==
-                  "Administration of vaccine to produce active immunity (procedure)"
+                task.code.text == "Administration of vaccine to produce active immunity (procedure)"
               )
+              Assert.assertTrue(task.code.hasCoding())
+              Assert.assertTrue(task.code.coding.get(0).code == "33879002")
+              Assert.assertTrue(task.reasonCode.text == "Immunization at 9.5 years")
               Assert.assertTrue(task.reasonCode.hasCoding())
-              Assert.assertTrue(task.reasonCode.coding.get(0).code == "33879002")
+              Assert.assertTrue(
+                task.reasonCode.coding.get(0).code == "immunization_at_9_half_years"
+              )
             }
           }
           .all { task ->

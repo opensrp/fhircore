@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,22 +29,16 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
-import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.jeasy.rules.api.Facts
@@ -63,21 +57,17 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
+  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
   private val rulesEngine = mockk<DefaultRulesEngine>()
-
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private lateinit var rulesFactory: RulesFactory
-
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
@@ -86,9 +76,10 @@ class RulesFactoryTest : RobolectricTest() {
     rulesFactory =
       spyk(
         RulesFactory(
-          ApplicationProvider.getApplicationContext(),
-          configurationRegistry,
-          fhirPathDataExtractor
+          context = ApplicationProvider.getApplicationContext(),
+          configurationRegistry = configurationRegistry,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          dispatcherProvider = coroutineRule.testDispatcherProvider
         )
       )
     rulesEngineService = rulesFactory.RulesEngineService()
@@ -106,53 +97,122 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
+  fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
+    runTest {
+      val baseResource = Faker.buildPatient()
+      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val ruleConfig =
+        RuleConfig(
+          name = "patientName",
+          description = "Retrieve patient name",
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        )
+      val ruleConfigs = listOf(ruleConfig)
 
-    val baseResource = populateTestPatient()
-    val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
-    val ruleConfig =
-      RuleConfig(
-        name = "patientName",
-        description = "Retrieve patient name",
-        actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+      every { rulesEngine.fire(any(), any()) } just runs
+      val rules = rulesFactory.generateRules("", ruleConfigs)
+      rulesFactory.fireRules(
+        rules = rules,
+        baseResource = baseResource,
+        relatedResourcesMap = relatedResourcesMap
       )
-    val ruleConfigs = listOf(ruleConfig)
 
-    ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
-    every { rulesEngine.fire(any(), any()) } just runs
-    rulesFactory.fireRule(
-      ruleConfigs = ruleConfigs,
-      baseResource = baseResource,
-      relatedResourcesMap = relatedResourcesMap
-    )
+      var factsSlot = slot<Facts>()
+      var rulesSlot = slot<Rules>()
+      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-    val factsSlot = slot<Facts>()
-    val rulesSlot = slot<Rules>()
-    verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
+      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
+      Assert.assertTrue(capturedBaseResource.active)
+      Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
+      Assert.assertEquals(baseResource.name[0].given, capturedBaseResource.name[0].given)
+      Assert.assertEquals(
+        baseResource.address[0].city,
+        capturedBaseResource.address[0].city,
+      )
 
-    val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
-    Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
-    Assert.assertTrue(capturedBaseResource.active)
-    Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
-    Assert.assertEquals(baseResource.name[0].given, capturedBaseResource.name[0].given)
-    Assert.assertEquals(
-      baseResource.address[0].city,
-      capturedBaseResource.address[0].city,
-    )
-
-    val capturedRule = rulesSlot.captured.first()
-    Assert.assertEquals(ruleConfig.name, capturedRule.name)
-    Assert.assertEquals(ruleConfig.description, capturedRule.description)
+      var capturedRule = rulesSlot.captured.first()
+      Assert.assertEquals(ruleConfig.name, capturedRule.name)
+      Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
   }
 
+  @Test
+  fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFactsWhenMissingRelatedResourcesMap() {
+    runTest {
+      val baseResource = Faker.buildPatient()
+      val ruleConfig =
+        RuleConfig(
+          name = "patientName",
+          description = "Retrieve patient name",
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        )
+      val ruleConfigs = listOf(ruleConfig)
+
+      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+      every { rulesEngine.fire(any(), any()) } just runs
+      val rules = rulesFactory.generateRules("", ruleConfigs)
+      rulesFactory.fireRules(rules = rules, baseResource = baseResource)
+
+      var factsSlot = slot<Facts>()
+      var rulesSlot = slot<Rules>()
+      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
+
+      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
+      Assert.assertTrue(capturedBaseResource.active)
+      Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
+      Assert.assertEquals(baseResource.name[0].given, capturedBaseResource.name[0].given)
+      Assert.assertEquals(
+        baseResource.address[0].city,
+        capturedBaseResource.address[0].city,
+      )
+
+      var capturedRule = rulesSlot.captured.first()
+      Assert.assertEquals(ruleConfig.name, capturedRule.name)
+      Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
+  }
+
+  @Test
+  fun fireRulesIgnoresBaseResourceWhenNull() {
+    runTest {
+      val baseResource = Faker.buildPatient()
+      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val ruleConfig =
+        RuleConfig(
+          name = "patientName",
+          description = "Retrieve patient name",
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        )
+      val ruleConfigs = listOf(ruleConfig)
+
+      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+      every { rulesEngine.fire(any(), any()) } just runs
+      val rules = rulesFactory.generateRules("", ruleConfigs)
+      rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
+
+      val factsSlot = slot<Facts>()
+      val rulesSlot = slot<Rules>()
+      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
+
+      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      Assert.assertNull(capturedBaseResource)
+
+      val capturedRule = rulesSlot.captured.first()
+      Assert.assertEquals(ruleConfig.name, capturedRule.name)
+      Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
+  }
   @Test
   fun retrieveRelatedResourcesReturnsCorrectResource() {
     populateFactsWithResources()
     val result =
       rulesEngineService.retrieveRelatedResources(
-        resource = populateTestPatient(),
-        relatedResourceType = ResourceType.CarePlan,
-        fhirPathExpression = "CarePlan.subject.reference"
+        resource = Faker.buildPatient(),
+        relatedResourceKey = ResourceType.CarePlan.name,
+        referenceFhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
@@ -164,12 +224,12 @@ class RulesFactoryTest : RobolectricTest() {
     populateFactsWithResources()
     val result =
       rulesEngineService.retrieveParentResource(
-        childResource = populateCarePlan(),
+        childResource = Faker.buildCarePlan(),
         parentResourceType = "Patient",
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
-    Assert.assertEquals("patient-1", result.logicalId)
+    Assert.assertEquals("sampleId", result.logicalId)
   }
 
   @Test
@@ -376,6 +436,58 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testJoinToStringWithNulls() {
+    val source = mutableListOf("apple", null, "banana", "cherry", null, "date")
+    val expected = "apple, banana, cherry, date"
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
+  fun testJoinToStringWithoutNulls() {
+    val source = mutableListOf("apple", "banana", "cherry", "date")
+    val expected = "apple, banana, cherry, date"
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source.toMutableList()))
+  }
+
+  @Test
+  fun testJoinToStringWithWhitespace() {
+    val source = mutableListOf("apple", "banana", " cherry", "   ", "date ")
+    val expected = "apple, banana, cherry, date "
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source.toMutableList()))
+  }
+
+  @Test
+  fun testJoinToStringWithEmptyList() {
+    val source = mutableListOf<String?>()
+    val expected = ""
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
+  fun testJoinToStringWithExtraCommasAndSpaces() {
+    val source =
+      mutableListOf(
+        "apple",
+        null,
+        " cherry",
+        "date ",
+        ",   ",
+        " ,",
+        ", ",
+        ",     ",
+        "  ,   ",
+        "   ,     ",
+        "   ,",
+        ", ",
+        ",     ",
+        "     ,   ",
+        "      , "
+      )
+    val expected = "apple, cherry, date "
+    Assert.assertTrue(expected == rulesEngineService.joinToString(source))
+  }
+
+  @Test
   fun pickCodesFromCertainConditions() {
     val resources =
       listOf(
@@ -398,6 +510,36 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun filterResourcesIsEmptyWhenEmptyExpression() {
+    val result = rulesEngineService.filterResources(listOf(), "")
+    Assert.assertEquals(result.size, 0)
+  }
+  @Test
+  fun filterResourcesIsEmptyWhenEmptyResources() {
+    val result = rulesEngineService.filterResources(listOf(), "something")
+    Assert.assertEquals(result.size, 0)
+  }
+  @Test
+  fun mapResourcesToExtractedValuesIsEmptyWhenEmptyExpression() {
+    val result = rulesEngineService.mapResourcesToExtractedValues(listOf(), "")
+    Assert.assertEquals(result.size, 0)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesIsEmptyWhenEmptyResources() {
+    val result = rulesEngineService.mapResourcesToExtractedValues(listOf(), "something")
+    Assert.assertEquals(result.size, 0)
+  }
+
+  @Test
+  fun evaluateToBooleanReturnsFalseWhenResourcesNull() {
+    val fhirPathExpression = ""
+
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(null, fhirPathExpression, true))
+    Assert.assertFalse(rulesEngineService.evaluateToBoolean(null, fhirPathExpression, false))
+  }
+
+  @Test
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
     val fhirPathExpression = "Patient.active"
     val patients =
@@ -407,6 +549,15 @@ class RulesFactoryTest : RobolectricTest() {
 
     patients.add(Patient().setActive(false))
     Assert.assertFalse(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
+  }
+
+  @Test
+  fun evaluateToBooleanDefaultMatchAllIsFalse() {
+    val fhirPathExpression = "Patient.active"
+    val patients =
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+
+    Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
   }
 
   @Test
@@ -499,8 +650,8 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   private fun populateFactsWithResources() {
-    val carePlanRelatedResource = mutableListOf(populateCarePlan())
-    val patientRelatedResource = mutableListOf(populateTestPatient())
+    val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
+    val patientRelatedResource = mutableListOf(Faker.buildPatient())
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
@@ -508,51 +659,6 @@ class RulesFactoryTest : RobolectricTest() {
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
-
-  private fun populateTestPatient(): Patient {
-    val patientId = "patient-1"
-    val patient: Patient =
-      Patient().apply {
-        id = patientId
-        active = true
-        birthDate = LocalDate.parse("1999-10-03").toDate()
-        gender = Enumerations.AdministrativeGender.MALE
-        address =
-          listOf(
-            Address().apply {
-              city = "Nairobi"
-              country = "Kenya"
-            }
-          )
-        name =
-          listOf(
-            HumanName().apply {
-              given = mutableListOf(StringType("Kiptoo"))
-              family = "Maina"
-            }
-          )
-        telecom = listOf(ContactPoint().apply { value = "12345" })
-        meta = Meta().apply { lastUpdated = Date() }
-      }
-    return patient
-  }
-
-  private fun populateCarePlan(): CarePlan {
-    val carePlan: CarePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        identifier =
-          mutableListOf(
-            Identifier().apply {
-              use = Identifier.IdentifierUse.OFFICIAL
-              value = "value-1"
-            }
-          )
-        subject = Reference().apply { reference = "Patient/patient-1" }
-      }
-    return carePlan
-  }
-
   @Test
   fun testPrettifyDateReturnXDaysAgo() {
     val weeksAgo = 2

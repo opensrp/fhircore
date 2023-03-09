@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -49,12 +50,14 @@ fun ViewRenderer(
   navController: NavController
 ) {
   viewProperties.forEach { properties ->
-    GenerateView(
-      modifier = generateModifier(properties),
-      properties = properties,
-      resourceData = resourceData,
-      navController = navController
-    )
+    if (properties.isVisible(resourceData.computedValuesMap)) {
+      GenerateView(
+        modifier = generateModifier(properties),
+        properties = properties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
   }
 }
 
@@ -86,7 +89,7 @@ private fun PreviewWeightedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -141,7 +144,7 @@ private fun PreviewWrappedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -178,7 +181,7 @@ private fun PreviewSameSizedViewInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }
@@ -296,7 +299,7 @@ private fun PreviewCardViewWithRows() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
   )
 }

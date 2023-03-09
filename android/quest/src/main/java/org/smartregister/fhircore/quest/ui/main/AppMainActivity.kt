@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -104,18 +105,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
     }
 
+    // Register sync listener then run sync in that order
+    syncListenerManager.registerSyncListener(this, lifecycle)
+
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
       schedulePeriodicJobs()
     }
 
-    syncBroadcaster.run {
-      with(appMainViewModel.syncSharedFlow) {
-        runSync(this)
-        schedulePeriodicSync(this)
-      }
-    }
+    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
@@ -154,17 +153,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
       }
-      is SyncJobStatus.Failed -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            syncJobStatus,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              appMainViewModel.retrieveLastSyncTimestamp()
-            else getString(R.string.syncing_failed)
-          )
-        )
-      }
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -176,6 +165,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
       else -> {
         /*Do nothing */
+      }
+    }
+  }
+
+  private fun runSync(syncBroadcaster: SyncBroadcaster) {
+    syncBroadcaster.run {
+      if (isDeviceOnline()) {
+        with(appMainViewModel.syncSharedFlow) {
+          runSync(this)
+          schedulePeriodicSync(this)
+        }
       }
     }
   }

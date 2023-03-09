@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -150,6 +151,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
+        offset = 0,
         classType = classType
       )
     }
@@ -164,7 +166,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     val tokenFilters: MutableList<DateParamFilterCriterion> =
       ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
     assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+    assertEquals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS, tokenFilters[0].prefix)
   }
 
   @Test
@@ -194,6 +196,10 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
         .name
         .resourceClassType()
+    )
+    assertEquals(
+      ListResource::class.java,
+      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0).name.resourceClassType()
     )
   }
 

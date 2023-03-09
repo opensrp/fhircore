@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -41,12 +43,14 @@ fun List<ActionConfig>.handleClickEvent(
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
+          val questionnaireConfigInterpolated =
+            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              questionnaireConfig = questionnaireConfig,
-              computedValuesMap = resourceData?.computedValuesMap,
-              actionParams = actionConfig.params
+              questionnaireConfig = questionnaireConfigInterpolated,
+              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
             )
           }
         }
@@ -57,7 +61,8 @@ fun List<ActionConfig>.handleClickEvent(
             bundleOf(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
-              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig
+              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
+              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData)
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -97,6 +102,20 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
+private fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
+  actionConfig
+    .params
+    .map {
+      ActionParameter(
+        key = it.key,
+        paramType = it.paramType,
+        dataType = it.dataType,
+        linkId = it.linkId,
+        value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+      )
+    }
+    .toTypedArray()
+
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
@@ -105,3 +124,6 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
+
+fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
+  this.visible.interpolate(computedValuesMap).toBoolean()

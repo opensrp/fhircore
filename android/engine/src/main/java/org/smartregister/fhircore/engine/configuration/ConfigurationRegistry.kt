@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,19 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import java.net.UnknownHostException
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -45,13 +45,16 @@ import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
+import retrofit2.HttpException
 import timber.log.Timber
 
 @Singleton
@@ -62,18 +65,13 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
-  val configService: ConfigService
+  val configService: ConfigService,
+  val json: Json
 ) {
-
-  val json = Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
-    isLenient = true
-  }
 
   val configsJsonMap = mutableMapOf<String, String>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
-  val supportedFileExtensions = listOf("json", "properties")
+  private val supportedFileExtensions = listOf("json", "properties")
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -82,36 +80,35 @@ constructor(
   // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
-    configId: String? = null
+    configId: String? = null,
+    paramsMap: Map<String, String>? = emptyMap()
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      configsJsonMap.getValue(configKey).decodeResourceFromString()
+      getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
     else
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template =
-            configsJsonMap.getValue(
-              configKey
-            ) // java.util.NoSuchElementException: Key application is missing in the map.
+          template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
         )
         .decodeJson(jsonInstance = json)
   }
 
-  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
-    configsJsonMap.values
-      .map {
-        localizationHelper
-          .parseTemplate(
-            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            locale = Locale.getDefault(),
-            template = configsJsonMap.getValue(it)
-          )
-          .decodeJson<T>(jsonInstance = json)
-      }
-      .filter { it.configType.equals(configType.name, ignoreCase = true) }
+  /**
+   * Receives @paramsMap , @configKey and @ConfigJsonMap as inputs and interpolates the value if
+   * found and if paramsMap are not empty return the result return the value if key is found and
+   * paramsMap is empty
+   */
+  inline fun <reified T : Configuration> getConfigValueWithParam(
+    paramsMap: Map<String, String>?,
+    configKey: String,
+    configsJsonMap: Map<String, String>
+  ) =
+    configsJsonMap.getValue(configKey).let { jsonValue ->
+      if (paramsMap?.isNullOrEmpty() == false) jsonValue.interpolate(paramsMap) else jsonValue
+    }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -210,7 +207,7 @@ constructor(
             }
           if (iconConfigs.isNotEmpty()) {
             val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
-            fhirResourceDataSource.loadData(
+            fhirResourceDataSource.getResource(
                 "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
               )
               .entry
@@ -278,9 +275,13 @@ constructor(
 
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
+  /**
+   * Reads supported files from the asset/config directory recursively, populates all sub directory
+   * in a queue, then reads all the nested files for each.
+   *
+   * @return A list of strings of config files.
+   */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    // Reads supported files from asset/config/* directory recursively
-    // Populates all sub directory in a queue then reads all the nested files for each
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
@@ -314,30 +315,52 @@ constructor(
    * comma separated values), thus generating a search query like the following 'Resource
    * Type'?_id='comma,separated,list,of,ids'
    */
-  fun fetchNonWorkflowConfigResources() {
-    // TODO load these type of configs from assets too
-    CoroutineScope(dispatcherProvider.io()).launch {
-      try {
-        sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
-          fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
-            composition
-              .retrieveCompositionSections()
-              .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
-              .filterNot { isAppConfig(it.key) }
-              .forEach { resourceGroup ->
-                val resourceIds =
-                  resourceGroup.value.joinToString(",") { sectionComponent ->
-                    sectionComponent.focus.extractId()
+  @Throws(UnknownHostException::class, HttpException::class)
+  suspend fun fetchNonWorkflowConfigResources() {
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+      fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
+        composition
+          .retrieveCompositionSections()
+          .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
+          .filter {
+            it.key == ResourceType.Questionnaire.name ||
+              it.key == ResourceType.StructureMap.name ||
+              it.key == ResourceType.List.name ||
+              it.key == ResourceType.PlanDefinition.name ||
+              it.key == ResourceType.Library.name ||
+              it.key == ResourceType.Measure.name
+          }
+          .forEach { resourceGroup ->
+            val resourceIds =
+              resourceGroup.value.joinToString(",") { sectionComponent ->
+                sectionComponent.focus.extractId()
+              }
+            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+
+            fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
+              when (bundleEntryComponent.resource) {
+                is ListResource -> {
+                  addOrUpdate(bundleEntryComponent.resource)
+                  val list = bundleEntryComponent.resource as ListResource
+                  list.entry.forEach { listEntryComponent ->
+                    val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+                    val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+
+                    val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                    fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+                      listEntryResourceBundle ->
+                      addOrUpdate(listEntryResourceBundle.resource)
+                      Timber.d("Fetched and processed list reference $listResourceUrlPath")
+                    }
                   }
-                val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
-                fhirResourceDataSource.loadData(searchPath).entry.forEach {
-                  addOrUpdate(it.resource)
+                }
+                else -> {
+                  addOrUpdate(bundleEntryComponent.resource)
+                  Timber.d("Fetched and processed resources $searchPath")
                 }
               }
+            }
           }
-        }
-      } catch (exception: Exception) {
-        Timber.e(exception)
       }
     }
   }
@@ -358,7 +381,6 @@ constructor(
   suspend fun create(vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach { it.generateMissingId() }
-
       fhirEngine.create(*resource)
     }
   }
@@ -378,7 +400,6 @@ constructor(
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
     const val DEBUG_SUFFIX = "/debug"
     const val ORGANIZATION = "organization"
-    const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"

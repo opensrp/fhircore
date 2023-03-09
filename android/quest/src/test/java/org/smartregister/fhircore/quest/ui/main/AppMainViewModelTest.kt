@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
@@ -32,22 +30,28 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkClass
+import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -62,24 +66,26 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var gson: Gson
 
   @Inject lateinit var workManager: WorkManager
 
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
-
-  private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
 
   private val secureSharedPreference: SecureSharedPreference = mockk()
 
@@ -95,8 +101,6 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -108,7 +112,6 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel =
       spyk(
         AppMainViewModel(
-          accountAuthenticator = accountAuthenticator,
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
@@ -119,17 +122,7 @@ class AppMainViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
       )
-
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
-  }
-
-  @Test
-  fun testOnEventLogout() {
-    val appMainEvent = AppMainEvent.Logout
-
-    appMainViewModel.onEvent(appMainEvent)
-
-    verify { accountAuthenticator.logout() }
   }
 
   @Test
@@ -146,11 +139,22 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventSyncData() {
-    val appMainEvent = AppMainEvent.SyncData
+  fun testOnEventSyncDataWhenDeviceIsOnline() {
+    val appMainEvent = AppMainEvent.SyncData(application)
     appMainViewModel.onEvent(appMainEvent)
 
-    verify { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+  }
+
+  @Test
+  fun testOnEventDoNotSyncDataWhenDeviceIsOffline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+    val appMainEvent = AppMainEvent.SyncData(context)
+    appMainViewModel.onEvent(appMainEvent)
+
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
   }
 
   @Test
@@ -242,39 +246,66 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun onRefreshAuthTokenRunsSyncWhenTokenRefreshed() {
-    val bundle = bundleOf(Pair(AccountManager.KEY_AUTHTOKEN, "authToken"))
-    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+  fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
-
-    coVerify { accountAuthenticator.refreshSessionAuthToken() }
-    // verify { syncBroadcaster.runSync() }
-    verify { appMainViewModel.retrieveAppMainUiState() }
-  }
-
-  @Test
-  fun onRefreshAuthTokenLogsOutIfTokenNotAvailable() {
-    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns Bundle()
-
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
-
-    coVerify { accountAuthenticator.refreshSessionAuthToken() }
-    verify { accountAuthenticator.logout() }
-  }
-
-  @Test
-  fun onRefreshAuthTokenShowsErrorMessageIfNetworkErrorEncountered() {
-    val errorMessage = "Check connectivity"
-    val bundle =
-      bundleOf(
-        Pair(AccountManager.KEY_ERROR_CODE, AccountManager.ERROR_CODE_NETWORK_ERROR),
-        Pair(AccountManager.KEY_ERROR_MESSAGE, errorMessage)
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse = QuestionnaireResponse()
       )
-    coEvery { accountAuthenticator.refreshSessionAuthToken() } returns bundle
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(application))
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
 
-    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains(errorMessage, ignoreCase = true))
+  @Test
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+
+    appMainViewModel.onQuestionnaireSubmission(
+      QuestionnaireSubmission(
+        questionnaireResponse = QuestionnaireResponse(),
+        questionnaireConfig = QuestionnaireConfig(taskId = null, id = "qId")
+      )
+    )
+
+    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
   }
 }
