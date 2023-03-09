@@ -19,13 +19,11 @@ package org.smartregister.fhircore.engine.domain.model
 import androidx.compose.runtime.Stable
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /**
  * @property resource A valid FHIR resource
  * @property relatedResources Nested list of [RepositoryResourceData]
  */
-@ExcludeFromJacocoGeneratedReport
 @Stable
 data class RepositoryResourceData(
   val configId: String? = null,

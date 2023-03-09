@@ -22,9 +22,7 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class ListProperties(
   override val viewType: ViewType,
@@ -51,7 +49,6 @@ enum class ListOrientation {
 }
 
 @Serializable
-@ExcludeFromJacocoGeneratedReport
 data class ListResource(
   val id: String,
   val relatedResourceId: String? = null,

@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.engine.data.remote.model.response
 
 import com.google.gson.annotations.SerializedName
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 data class OAuthResponse(
   @SerializedName("access_token") var accessToken: String? = null,
   @SerializedName("token_type") var tokenType: String? = null,

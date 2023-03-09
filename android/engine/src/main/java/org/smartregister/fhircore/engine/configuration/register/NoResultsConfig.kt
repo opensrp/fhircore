@@ -18,9 +18,7 @@ package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class NoResultsConfig(
   val title: String = "",

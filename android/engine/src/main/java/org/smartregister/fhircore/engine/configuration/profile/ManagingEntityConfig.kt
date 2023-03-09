@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration.profile
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /**
  * @property nameFhirPathExpression FHIRPath expression used to extract the name of the
@@ -39,7 +38,6 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
  * @property dialogContentMessage A message displayed to the user informing them about the action
  * they are about to perform
  */
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class ManagingEntityConfig(
   val nameFhirPathExpression: String? = null,

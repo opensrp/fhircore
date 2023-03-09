@@ -20,9 +20,7 @@ import android.graphics.Bitmap
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class NavigationMenuConfig(
   val id: String,
@@ -34,7 +32,6 @@ data class NavigationMenuConfig(
   val actions: List<ActionConfig>? = null,
 )
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class MenuIconConfig(
   val type: String? = null,

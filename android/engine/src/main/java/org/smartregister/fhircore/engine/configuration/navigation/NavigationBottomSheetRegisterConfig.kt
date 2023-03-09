@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.navigation
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class NavigationBottomSheetRegisterConfig(
   val visible: Boolean = true,

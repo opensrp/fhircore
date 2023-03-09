@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.configuration
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -42,7 +41,6 @@ data class QuestionnaireConfig(
   val snackBarMessage: SnackBarMessageConfig? = null
 ) : java.io.Serializable
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class ConfirmationDialog(
   val title: String = "",
@@ -50,7 +48,6 @@ data class ConfirmationDialog(
   val actionButtonText: String = ""
 ) : java.io.Serializable
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 data class GroupResourceConfig(
   val groupIdentifier: String,

@@ -20,13 +20,11 @@ import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
  * which can be accompanied by [relatedResources].
  */
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
 data class FhirResourceConfig(
@@ -48,7 +46,6 @@ data class FhirResourceConfig(
  *
  * Nested [ResourceConfig] are proved via the [relatedResources] property.
  */
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
 data class ResourceConfig(
@@ -61,7 +58,6 @@ data class ResourceConfig(
   val sortConfigs: List<SortConfig> = emptyList()
 ) : Parcelable
 
-@ExcludeFromJacocoGeneratedReport
 @Serializable
 @Parcelize
 data class SortConfig(

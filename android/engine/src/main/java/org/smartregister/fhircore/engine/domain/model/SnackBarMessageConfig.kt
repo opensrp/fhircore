@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.material.SnackbarDuration
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @kotlinx.serialization.Serializable
 data class SnackBarMessageConfig(
   val message: String = "",
