@@ -350,7 +350,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .addEntry(
             Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
           )
-      )!!
+      )
       .also {
         Assert.assertNull(it)
 
@@ -390,7 +390,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       emptyList()
     coEvery { defaultRepository.addOrUpdate(any(), capture(updatedTasksSlot)) } just Runs
     coEvery { fhirEngine.update(any()) } just runs
-    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+    coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
+      structureMapReferral
 
     coEvery { fhirEngine.search<CarePlan>(any()) } returns
       listOf(
@@ -461,7 +462,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
+    coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
+      structureMap
 
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
 
@@ -597,8 +599,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient,
           lmp,
           lmp.plusMonths(9),
-          8
-        ) // 8 visits for each month of ANC
+          5
+        ) // 5 visits for each month of ANC
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
         // 5 visits and tasks
@@ -667,8 +669,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient,
           lmp,
           lmp.plusMonths(9),
-          8
-        ) // 8 visits for each month of ANC
+          1
+        ) // 1 visits for next month of ANC
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
         assertEquals(1, carePlan.activityFirstRep.outcomeReference.size)

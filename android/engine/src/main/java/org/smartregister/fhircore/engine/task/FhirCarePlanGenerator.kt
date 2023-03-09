@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateType
@@ -51,6 +52,7 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
@@ -94,7 +96,13 @@ constructor(
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
         }
         .firstOrNull()
-        ?: CarePlan()
+        ?: CarePlan().apply {
+          // TODO delete this section once all existing old plan-definitions are using new
+          // recommended approach
+          this.title = planDefinition.title
+          this.description = planDefinition.description
+          this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
+        }
 
     var carePlanModified = false
 
@@ -135,11 +143,9 @@ constructor(
               dynamicValue.expression.expression
                 .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
                 ?.let { evaluatedValue ->
-                  val p = dynamicValue.path
-                  p.length
                   TerserUtil.setFieldByFhirPath(
                     FhirContext.forR4Cached(),
-                    dynamicValue.path,
+                    dynamicValue.path.removePrefix("${definition.kind.display}."),
                     output,
                     evaluatedValue.firstOrNull()
                   )

@@ -123,7 +123,6 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
-          "count": 1,
           "duration": 1,
           "durationUnit": "mo",
           "period": 1,
@@ -159,7 +158,6 @@
   ],
   "name": "ANC Follow Up Plan",
   "title": "ANC Follow Up Plan",
-  "status": "active",
   "description": "This defines the schedule of care for pregnant women",
   "action": [
     {
