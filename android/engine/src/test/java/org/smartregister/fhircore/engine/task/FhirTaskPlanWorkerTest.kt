@@ -23,6 +23,7 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.Task
@@ -45,7 +46,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully`() {
-    coEvery { fhirEngine.search<Task>(any()) } returns
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
       listOf(Task().apply { status = Task.TaskStatus.REQUESTED })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -57,7 +58,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when status is inProgress`() {
-    coEvery { fhirEngine.search<Task>(any()) } returns
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
       listOf(Task().apply { status = Task.TaskStatus.INPROGRESS })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -69,7 +70,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when status is failed`() {
-    coEvery { fhirEngine.search<Task>(any()) } returns
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
       listOf(Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -81,7 +82,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when task isReady`() {
-    coEvery { fhirEngine.search<Task>(any()) } returns
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
       listOf(Task().apply { status = Task.TaskStatus.REQUESTED }.apply { isReady() })
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)

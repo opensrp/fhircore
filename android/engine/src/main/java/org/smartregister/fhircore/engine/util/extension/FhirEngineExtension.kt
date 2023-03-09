@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.database.SQLException
 import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import org.hl7.fhir.r4.model.Composition
@@ -29,6 +31,7 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -85,3 +88,16 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+suspend fun FhirEngine.addDateTimeIndex() {
+  try {
+    val addDateTimeIndexEntityIndexFromIndexQuery =
+      SearchQuery(
+        "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+        emptyList()
+      )
+    search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+  } catch (ex: SQLException) {
+    Timber.e(ex)
+  }
+}
