@@ -55,6 +55,8 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 
 const val PIN_CELL_TEST_TAG = "pinCell"
+const val PIN_CELL_TEXT_TEST_TAG = "pinCellText"
+const val PIN_TEXT_FIELD_TEST_TAG = "pinTextField"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -111,7 +113,7 @@ fun PinInput(
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
     singleLine = true,
-    modifier = modifier.focusRequester(focusRequester).size(0.dp),
+    modifier = modifier.focusRequester(focusRequester).size(0.dp).testTag(PIN_TEXT_FIELD_TEST_TAG),
   )
 
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -168,7 +170,14 @@ fun PinCell(
         )
         .clickable { onPinCellClick() },
     contentAlignment = Alignment.Center
-  ) { if (inputMode) Text(text = number, textAlign = TextAlign.Center) }
+  ) {
+    if (inputMode)
+      Text(
+        modifier = modifier.testTag(PIN_CELL_TEXT_TEST_TAG),
+        text = number,
+        textAlign = TextAlign.Center
+      )
+  }
 }
 
 @Composable
