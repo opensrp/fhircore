@@ -97,9 +97,9 @@ constructor(
   }
 
   /**
-   * Receives @paramsMap , @configKey and @ConfigJsonMap as inputs and interpolates the value if
-   * found and if paramsMap are not empty return the result return the value if key is found and
-   * paramsMap is empty
+   * Receives [paramsMap], [configKey] and [ConfigJsonMap] as inputs and interpolates the value if
+   * found and if [paramsMap] are not empty return the result return the value if key is found and
+   * [paramsMap] is empty
    */
   inline fun <reified T : Configuration> getConfigValueWithParam(
     paramsMap: Map<String, String>?,
@@ -107,7 +107,7 @@ constructor(
     configsJsonMap: Map<String, String>
   ) =
     configsJsonMap.getValue(configKey).let { jsonValue ->
-      if (paramsMap?.isNullOrEmpty() == false) jsonValue.interpolate(paramsMap) else jsonValue
+      if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
     }
 
   /**

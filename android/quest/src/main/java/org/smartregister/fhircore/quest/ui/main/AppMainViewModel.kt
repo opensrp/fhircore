@@ -110,7 +110,7 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
 
   val navigationConfiguration: NavigationConfiguration by lazy {
