@@ -23,6 +23,7 @@ import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.DateUtils.today
 
 const val GUARDIAN_VISIT_CODE = "guardian-visit"
+const val CLINICAL_VISIT_ORDER_CODE_REGEX_FORMAT = "clinic-visit-task-order-\\d*\\.?\\d*\$"
 
 fun Task.hasPastEnd() =
   this.hasExecutionPeriod() &&
@@ -36,13 +37,17 @@ fun Task.hasStarted() =
 
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
 
-fun Task.clinicVisitOrder(systemTag: String) =
+fun Task.clinicVisitOrder(systemTag: String): Double? =
   this.meta
     .tag
     .asSequence()
     .filter { it.system.equals(systemTag, true) }
-    .filterNot { it.code.isNullOrBlank() }
-    .map { it.code.replace("_", "-").substringAfterLast("-").trim() }
+    .filter { !it.code.isNullOrBlank() }
+    .map { it.code.replace("_", "-") }
+    .filter {
+      it.matches(Regex(CLINICAL_VISIT_ORDER_CODE_REGEX_FORMAT, option = RegexOption.IGNORE_CASE))
+    }
+    .map { it.substringAfterLast("-").trim() }
     .map { it.toDoubleOrNull() }
     .lastOrNull()
 
