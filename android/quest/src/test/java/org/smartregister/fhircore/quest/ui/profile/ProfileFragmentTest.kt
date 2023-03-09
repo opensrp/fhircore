@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -35,8 +34,10 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -76,7 +77,15 @@ class ProfileFragmentTest : RobolectricTest() {
           bundleOf(
             NavigationArg.PROFILE_ID to "defaultProfile",
             NavigationArg.RESOURCE_ID to patient.id,
-            NavigationArg.RESOURCE_CONFIG to resourceConfig
+            NavigationArg.RESOURCE_CONFIG to resourceConfig,
+            NavigationArg.PARAMS to
+              arrayOf(
+                ActionParameter(
+                  key = "anyId",
+                  paramType = ActionParameterType.PARAMDATA,
+                  value = "anyValue"
+                )
+              )
           )
       }
     activityController.create().resume()
@@ -86,13 +95,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any()) } returns
-      ResourceData(
-        baseResourceId = "resourceId",
-        baseResourceType = ResourceType.Patient,
-        listResourceDataMap = emptyMap(),
-        computedValuesMap =
-          mapOf("patientName" to patient.name, "patientId" to patient.identifierFirstRep),
-      )
+      RepositoryResourceData(resource = Faker.buildPatient())
   }
 
   @Test

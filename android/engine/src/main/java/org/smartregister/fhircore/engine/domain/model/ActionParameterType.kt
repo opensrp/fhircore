@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +21,6 @@ import kotlinx.serialization.json.JsonNames
 /** Represents different types of parameters that can be defined within the config actions */
 enum class ActionParameterType {
   /** Represents parameters that are used to pre-populate Questionnaire items with initial values */
-  @JsonNames("pre_populate", "PrePopulate") PREPOPULATE
+  @JsonNames("pre_populate", "PrePopulate") PREPOPULATE,
+  @JsonNames("param_data", "ParamData") PARAMDATA
 }

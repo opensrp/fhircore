@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
@@ -62,7 +61,7 @@ class ActionableButtonTest {
                   )
                 )
             ),
-          resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+          resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
           navController = navController
         )
       }

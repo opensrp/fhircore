@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -125,7 +126,7 @@ class GeoWidgetViewModelTest {
     val location = locationJson.decodeResourceFromString<Location>()
     val group = groupJson.decodeResourceFromString<Group>()
 
-    coEvery { fhirEngine.search<Group>(any()) } returns listOf(group)
+    coEvery { fhirEngine.search<Group>(any<Search>()) } returns listOf(group)
     coEvery { fhirEngine.get(ResourceType.Location, any()) } returns location
 
     val familiesWithLocations = runBlocking { geoWidgetViewModel.getFamilies() }

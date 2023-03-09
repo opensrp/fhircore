@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ sealed class UserSettingsEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : UserSettingsEvent()
   data class ShowResetDatabaseConfirmationDialog(val isShow: Boolean) : UserSettingsEvent()
   data class SwitchToP2PScreen(val context: Context) : UserSettingsEvent()
-  data class ResetDatabaseFlag(val isReset: Boolean) : UserSettingsEvent()
-  object SyncData : UserSettingsEvent()
-  object Logout : UserSettingsEvent()
+  data class ResetDatabaseFlag(val isReset: Boolean, val context: Context) : UserSettingsEvent()
+  data class Logout(val context: Context) : UserSettingsEvent()
   data class ShowLoaderView(val show: Boolean, val messageResourceId: Int) : UserSettingsEvent()
+  data class SyncData(val context: Context) : UserSettingsEvent()
 }

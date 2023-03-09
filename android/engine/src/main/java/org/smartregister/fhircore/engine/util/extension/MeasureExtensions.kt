@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
   endDateFormatted: String,
   measureUrl: String,
   queryOperation: Operation = Operation.AND
-): List<MeasureReport>? {
+): List<MeasureReport> {
   return fhirEngine
     .search<MeasureReport> {
       filter(
@@ -117,5 +117,5 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
       filter(MeasureReport.MEASURE, { value = measureUrl })
       operation = queryOperation
     }
-    ?.filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+    .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
 }

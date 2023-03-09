@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -120,7 +121,7 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
-        item.prePopulateInitialValues(prePopulationParams)
+        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -204,6 +205,10 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
+          if (questionnaireConfig.setAppVersion) {
+            appendAppVersion(bundleEntry.resource)
+          }
+
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -265,12 +270,8 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty() ||
-        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty()
-    ) {
-      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
-    }
+    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
   }
 
   fun savePartialQuestionnaireResponse(
@@ -310,6 +311,25 @@ constructor(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
           )
     }
+  }
+
+  /**
+   * This creates a meta tag that records the App Version as defined in the build.gradle and updates
+   * all resources created by the App with the relevant app version name. The tag defines three
+   * strings: 'setSystem - The code system' , 'setCode - The code would be the App Version defined
+   * on the build.gradle.', and 'setDisplay - The display name'. All resources created by the App
+   * will have a tag of the App Version on the meta.tag.
+   *
+   * @property resource The resource to add the meta tag to.
+   */
+  fun appendAppVersion(resource: Resource) {
+    // Create a tag with the app version
+    val metaTag = resource.meta.addTag()
+    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
+      "Application Version"
+
+    // Update resource with metaTag
+    resource.meta.apply { addTag(metaTag) }
   }
 
   suspend fun extractCarePlan(
@@ -587,5 +607,6 @@ constructor(
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
     private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
       "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+    private const val STRING_INTERPOLATION_PREFIX = "@{"
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,14 @@ import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -38,13 +42,14 @@ object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
-  val authCredentials =
-    AuthCredentials(
-      username = "demo",
-      password = "51r1K4l1".toSha1(),
-      sessionToken = "49fad390491a5b547d0f782309b6a5b33f7ac087",
-      refreshToken = "USrAgmSf5MJ8N_RLQODa7rZ3zNs1Sj1GkSIsTsb4n-Y"
-    )
+  val authCredentials = AuthCredentials(username = "demo", password = "51r1K4l1".toSha1())
+
+  val json = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+    isLenient = true
+    useAlternativeNames = true
+  }
 
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -65,7 +70,8 @@ object Faker {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          json = json
         )
       )
 
@@ -102,5 +108,21 @@ object Faker {
         city = "City 1"
       }
     }
+  }
+
+  fun buildCarePlan(referenceString: String = "Patient/sampleId"): CarePlan {
+    val carePlan: CarePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "value-1"
+            }
+          )
+        subject = Reference().apply { reference = referenceString }
+      }
+    return carePlan
   }
 }

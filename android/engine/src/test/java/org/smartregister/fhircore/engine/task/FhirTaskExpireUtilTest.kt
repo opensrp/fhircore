@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.task
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -97,7 +98,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
       )
     }
 
-    coEvery { mockFhirEngine.search<Task>(any()) } returns taskList
+    coEvery { mockFhirEngine.search<Task>(any<Search>()) } returns taskList
     coEvery { mockFhirEngine.update(any()) } just runs
 
     val (maxDate, tasks) =

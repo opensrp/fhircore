@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,6 +273,78 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  fun testGenerateCarePlanForHouseHold() = runTest {
+    val plandefinition =
+      "plans/household-wash-check-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val group =
+      "plans/household-wash-check-routine-visit/sample/group.json"
+        .readFile()
+        .decodeResourceFromString<Group>()
+
+    val structureMapScript = "plans/household-wash-check-routine-visit/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
+        // The parser does not recognize the time unit i.e. months and prints as '',
+        // so use only months and that would have the unit replaced with 'months'
+        it.encodeResourceToString().replace("''", "'month'")
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Household Routine WASH Check Plan", carePlan.title)
+        Assert.assertEquals(
+          "This defines the schedule of service for WASH Check on households",
+          carePlan.description
+        )
+        Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertNotNull(carePlan.period.start)
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty() && list.size > 59 && list.size < 62) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+      }
+  }
+
+  @Test
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val planDefinitionResources =
       loadPlanDefinitionResources("sick-child-visit", listOf("register-over2m"))
@@ -393,7 +465,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMapReferral
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
       listOf(
         CarePlan().apply {
           instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
@@ -465,7 +537,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMap
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
@@ -725,7 +797,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate,
           patient.birthDate.plusDays(4017),
           20
-        ) // TODO????
+        )
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -734,34 +806,57 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             it as Task
           }
           .also {
-            // TODO validate whole schedule
-            //            it.last().let { task ->
-            //              Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
-            //              Assert.assertTrue(
-            //                task.reasonCode.text ==
-            //                  "Administration of vaccine to produce active immunity (procedure)"
-            //              )
-            //              Assert.assertTrue(task.reasonCode.hasCoding())
-            //              Assert.assertTrue(task.reasonCode.coding.get(0).code == "33879002")
-            //            }
-          }
-          .also {
-            Assert.assertTrue(
+            assertTrue(it.all { it.status == TaskStatus.REQUESTED })
+            assertTrue(
               it.all {
                 it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
               }
             )
+            assertTrue(
+              it.all {
+                it.code.codingFirstRep.display ==
+                  "Administration of vaccine to produce active immunity (procedure)" &&
+                  it.code.codingFirstRep.code == "33879002"
+              }
+            )
+            assertTrue(it.all { it.description.contains(it.reasonCode.text, true) })
+            assertTrue(
+              it.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+            )
+            assertTrue(it.all { it.basedOnFirstRep.reference == carePlan.asReference().reference })
           }
-          .all { task -> task.status == Task.TaskStatus.REQUESTED /*&&
-              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-                localDate.dayOfMonth == localDate.lengthOfMonth()
-              }*/ }
+          .also { tasks ->
+            val vaccines =
+              mutableMapOf<String, Date>(
+                "BCG" to patient.birthDate,
+                "OPV 0" to patient.birthDate,
+                "PENTA 1" to patient.birthDate.plusDays(42),
+                "OPV 1" to patient.birthDate.plusDays(42),
+                "PCV 1" to patient.birthDate.plusDays(42),
+                "ROTA 1" to patient.birthDate.plusDays(42),
+                "PENTA 2" to patient.birthDate.plusDays(70),
+                "OPV 2" to patient.birthDate.plusDays(70),
+                "PCV 2" to patient.birthDate.plusDays(70),
+                "ROTA 2" to patient.birthDate.plusDays(70),
+                "PENTA 3" to patient.birthDate.plusDays(98),
+                "OPV 3" to patient.birthDate.plusDays(98),
+                "PCV 3" to patient.birthDate.plusDays(98),
+                "IPV" to patient.birthDate.plusDays(98),
+                "MEASLES 1" to patient.birthDate.plusMonths(9),
+                "MEASLES 2" to patient.birthDate.plusMonths(15),
+                "YELLOW FEVER" to patient.birthDate.plusMonths(9),
+                "TYPHOID" to patient.birthDate.plusMonths(9),
+                "HPV 1" to patient.birthDate.plusDays(3285),
+                "HPV 2" to patient.birthDate.plusDays(3467),
+              )
+            vaccines.forEach { vaccine ->
+              println(vaccine)
 
-        /* val task1 = resourcesSlot[1] as Task
-        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
-        Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
-        Assert.assertTrue(task1.description.isNotEmpty())
-        Assert.assertTrue(task1.description == "OPV at Birth Vaccine")*/
+              val task = tasks.find { it.description.startsWith(vaccine.key) }
+              assertNotNull(task)
+              assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+            }
+          }
       }
   }
 

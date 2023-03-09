@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
@@ -28,8 +30,12 @@ import timber.log.Timber
  * @property _registerPagingSourceState as state containing the properties used in the
  * [RegisterRepository] function for loading data to the paging source.
  */
-class RegisterPagingSource(private val registerRepository: RegisterRepository) :
-  PagingSource<Int, ResourceData>() {
+class RegisterPagingSource(
+  private val registerRepository: RegisterRepository,
+  val rulesExecutor: RulesExecutor,
+  private val ruleConfigs: List<RuleConfig>,
+  val ruleConfigsKey: String
+) : PagingSource<Int, ResourceData>() {
 
   private lateinit var _registerPagingSourceState: RegisterPagingSourceState
 
@@ -66,7 +72,17 @@ class RegisterPagingSource(private val registerRepository: RegisterRepository) :
           else -> null
         }
 
-      LoadResult.Page(data = registerData, prevKey = prevKey, nextKey = nextKey)
+      val data =
+        registerData.map { repoResourceData ->
+          rulesExecutor.processResourceData(
+            baseResource = repoResourceData.resource,
+            relatedRepositoryResourceData = repoResourceData.relatedResources,
+            ruleConfigs = ruleConfigs,
+            ruleConfigsKey = ruleConfigsKey,
+            emptyMap()
+          )
+        }
+      LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)
