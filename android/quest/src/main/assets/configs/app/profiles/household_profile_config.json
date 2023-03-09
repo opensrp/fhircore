@@ -25,16 +25,6 @@
             "system": "https://www.snomed.org",
             "code": "35359004"
           }
-        },
-        {
-          "id": "householdQueryPractitionerId",
-          "filterType": "TOKEN",
-          "key": "_tag",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "https://smartregister.org/",
-            "code": "@{practitionerId}"
-          }
         }
       ]
     },

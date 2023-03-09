@@ -75,13 +75,6 @@
         "actions": [
           "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
         ]
-      },
-      {
-        "name": "practitionerId",
-        "condition": "true",
-        "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, 'Practitioner.id.replace(\"Practitioner/\",\"\")').split(\"/\").get(0))"
-        ]
       }
     ],
     "views": [
@@ -93,7 +86,7 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{practitionerNam e}",
+                "primaryText": "@{practitionerName}",
                 "primaryTextColor": "#000000"
               },
               {
@@ -130,14 +123,7 @@
               {
                 "trigger": "ON_CLICK",
                 "workflow": "LAUNCH_PROFILE",
-                "id": "practitionerProfile",
-                "params": [
-                  {
-                    "paramType": "PARAMDATA",
-                    "key": "practitionerId",
-                    "value": "@{practitionerId}"
-                  }
-                ]
+                "id": "practitionerProfile"
               }
             ]
           }
