@@ -221,7 +221,8 @@ class RegisterRepositoryTest : RobolectricTest() {
       val profileData =
         registerRepository.loadProfileData(
           profileId = "patientProfileSecondary",
-          resourceId = "12345"
+          resourceId = "12345",
+          paramsMap = emptyMap()
         )
       Assert.assertNotNull(profileData)
     }

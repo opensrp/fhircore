@@ -59,6 +59,13 @@
       "actions": [
         "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
       ]
+    },
+    {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.replace(\"Practitioner/","\").split(\"/\").get(0)\")"
+      ]
     }
   ],
   "views": [
@@ -136,7 +143,14 @@
                           "trigger": "ON_CLICK",
                           "workflow": "LAUNCH_REGISTER",
                           "id": "householdRegister",
-                          "display": "@{practitionerName} - Household Register"
+                          "display": "@{practitionerName} - Household Register",
+                          "params": [
+                            {
+                              "paramType": "PARAMDATA",
+                              "key": "practitionerId",
+                              "value": "@{practitionerId}"
+                            }
+                          ]
                         }
                       ]
                     }
