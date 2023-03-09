@@ -67,6 +67,13 @@
   "registerCard": {
     "rules": [
       {
+        "name": "familyLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
+      {
         "name": "familyName",
         "condition": "true",
         "actions": [
@@ -143,8 +150,9 @@
                   "id": "householdProfile",
                   "params": [
                     {
-                      "key": "familyId",
-                      "value": "@{familyId}"
+                      "paramType": "PARAMDATA",
+                      "key": "familyLogicalId",
+                      "value": "@{familyLogicalId}"
                     }
                   ]
                 }
@@ -157,8 +165,9 @@
                 "id": "householdProfile",
                 "params": [
                   {
-                    "key": "familyId",
-                    "value": "@{familyId}"
+                    "paramType": "PARAMDATA",
+                    "key": "familyLogicalId",
+                    "value": "@{familyLogicalId}"
                   }
                 ]
               }

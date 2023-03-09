@@ -495,6 +495,7 @@
                     "id": "defaultProfile",
                     "params": [
                       {
+                        "paramType": "PARAMDATA",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
                       }
@@ -524,7 +525,13 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{familyLogicalId}"
+            "resourceIdentifier": "@{familyLogicalId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
+            ]
           }
         }
       ]

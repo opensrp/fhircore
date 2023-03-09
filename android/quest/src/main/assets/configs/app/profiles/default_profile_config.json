@@ -827,7 +827,6 @@
   ],
   "views": [
     {
-
       "viewType": "COLUMN",
       "children": [
         {
@@ -3170,7 +3169,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{param_groupId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           },
           "params": [
             {
@@ -3574,7 +3578,12 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "a881d53a-590c-4d52-ae0f-c87b7ff04148"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient",
+              "removeGroup": false
+            }
           }
         }
       ]
@@ -3594,12 +3603,7 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
-            ],
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient",
-              "removeGroup": false
-            }
+            ]
           },
           "params": [
             {
@@ -3615,6 +3619,10 @@
               "dataType": "INTEGER",
               "key": "femaleCondomPreviousBalance",
               "value": "@{femaleCondomPreviousBalance}"
+            },
+            {
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}"
             },
             {
               "paramType": "PREPOPULATE",
@@ -3793,11 +3801,12 @@
               "55d89227-3a06-4a9a-b526-2819dcb1d301",
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
             ],
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient",
-              "removeGroup": false
-            }
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
+            ]
           }
         }
       ]
