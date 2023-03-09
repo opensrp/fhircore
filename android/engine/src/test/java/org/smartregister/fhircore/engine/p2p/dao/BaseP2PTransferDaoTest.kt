@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.DateParamFilterCriterion
+import com.google.android.fhir.search.SearchQuery
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -49,7 +47,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -144,6 +141,20 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
   @Test
   fun `loadResources() calls fhirEngine#search()`() {
+    val expectedQuery =
+      "SELECT a.serializedResource\n" +
+        "  FROM ResourceEntity a\n" +
+        "  LEFT JOIN DateIndexEntity b\n" +
+        "  ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid \n" +
+        "  LEFT JOIN DateTimeIndexEntity c\n" +
+        "  ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid\n" +
+        "  WHERE a.resourceUuid IN (\n" +
+        "  SELECT resourceUuid FROM DateTimeIndexEntity\n" +
+        "  WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to >= ?\n" +
+        "  )\n" +
+        "  AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')\n" +
+        "  ORDER BY c.index_from ASC, a.id ASC\n" +
+        "  LIMIT ? OFFSET ?"
 
     val patientDataType = DataType("Patient", DataType.Filetype.JSON, 1)
     val classType = patientDataType.name.resourceClassType()
@@ -156,17 +167,10 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       )
     }
 
-    val searchSlot = slot<Search>()
-    coVerify { fhirEngine.search<Patient>(capture(searchSlot)) }
-    assertEquals(25, searchSlot.captured.count)
-    assertEquals(ResourceType.Patient, searchSlot.captured.type)
-
-    val dateTimeFilterCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(searchSlot.captured, "dateTimeFilterCriteria")
-    val tokenFilters: MutableList<DateParamFilterCriterion> =
-      ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
-    assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    assertEquals(ParamPrefixEnum.GREATERTHAN_OR_EQUALS, tokenFilters[0].prefix)
+    val searchQuerySlot = slot<SearchQuery>()
+    coVerify { fhirEngine.search<Patient>(capture(searchQuerySlot)) }
+    assertEquals(25, searchQuerySlot.captured.args[1])
+    assertEquals(expectedQuery, searchQuerySlot.captured.query)
   }
 
   @Test

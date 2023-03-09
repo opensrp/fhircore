@@ -547,7 +547,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns
       listOf(
         CarePlan().apply {
           instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
@@ -618,7 +618,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       emptyList()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns listOf()
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
