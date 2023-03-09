@@ -27,7 +27,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/*Companion*.*',
             '**/*$Result.*',
             '**/*$Result$*.*',
-            '**/engine/configuration/app/*DeviceToDeviceSyncConfig*.*',
+            '**/engine/configuration/app/*DeviceToDeviceSyncConfig*',
             // DI (Dagger and Hilt)
             '**/*_MembersInjector.class',
             '**/Dagger*Component.class',
