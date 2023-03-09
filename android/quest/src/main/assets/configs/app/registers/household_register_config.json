@@ -51,11 +51,6 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
           }
         ]
       }
@@ -66,8 +61,7 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId",
-      "practitionerId"
+      "familyId"
     ]
   },
   "registerCard": {

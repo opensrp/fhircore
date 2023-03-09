@@ -102,7 +102,7 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
-private fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
+fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig
     .params
     .map {
