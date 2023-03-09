@@ -17,10 +17,9 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.SerializableExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
-@Serializable
+@SerializableExcludeFromJacocoGeneratedReport
 data class SnackBarThemeConfig(
   val messageTextColor: String = "#FFFFFF",
   val actionTextColor: String = "#FFE400",

@@ -15,7 +15,6 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**Constant*.*',
             '**/*$ViewBinder*.*',
             'android/**/*.*',
-            '**/*Application*.*',
             '**/*Test*.*',
             '**/*$ViewInjector*.*',
             '**/BuildConfig.*',
@@ -23,8 +22,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/Manifest*.*',
             '**/R.class',
             '**/R$*.class',
-            '**/*Preview*.*',
-            // kotlin (Sealed and Data classes)
+            // Kotlin (Sealed and Data classes)
             '**/*$Lambda$*.*',
             '**/*Companion*.*',
             '**/*$Result.*',
@@ -47,6 +45,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             // Data Binding
             '**/databinding/*',
             'org/hl7/fhir/*'
+
     ]
 
     def moduleVariant = project.name == "quest" ? "questDebug" : "debug"

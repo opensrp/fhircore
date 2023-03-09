@@ -16,6 +16,21 @@
 
 package org.smartregister.fhircore.engine.util.annotation
 
+import kotlin.reflect.KClass
+import kotlinx.serialization.KSerializer
+
 @Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR, AnnotationTarget.FUNCTION)
+@Target(
+  AnnotationTarget.CLASS,
+  AnnotationTarget.CONSTRUCTOR,
+  AnnotationTarget.FUNCTION,
+  AnnotationTarget.PROPERTY,
+  AnnotationTarget.TYPE
+)
 annotation class ExcludeFromJacocoGeneratedReport
+
+@ExcludeFromJacocoGeneratedReport
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
+annotation class SerializableExcludeFromJacocoGeneratedReport(
+  val with: KClass<out KSerializer<*>> = KSerializer::class
+)
