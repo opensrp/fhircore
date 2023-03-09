@@ -60,7 +60,7 @@ import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomShee
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import org.smartregister.fhircore.quest.util.extensions.convertActionParameterArrayToMap
+import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
 @HiltViewModel
@@ -91,7 +91,7 @@ constructor(
     paramsList: Array<ActionParameter>? = emptyArray()
   ) {
     if (resourceId.isNotEmpty()) {
-      val paramsMap = convertActionParameterArrayToMap<String, String>(paramsList)
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val repoResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)

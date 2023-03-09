@@ -104,7 +104,7 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
-private fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
+fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig
     .params
     .map {
@@ -137,9 +137,8 @@ fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
  * @property array The array of ActionParameter elements to convert
  * @return Map of the values or emptyMap if [array] is null
  */
-fun <A, B> convertActionParameterArrayToMap(actionParameters: Array<ActionParameter>?) =
-  actionParameters
-    ?.asSequence()
-    ?.filter { it.paramType == ActionParameterType.PARAMDATA }
-    ?.associate { it.key as A to it.value as B }
+fun <K, V> Array<ActionParameter>?.toParamDataMap() =
+  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
+    it.key to it.value
+  }
     ?: emptyMap()

@@ -225,43 +225,30 @@ class ConfigExtensionsTest : RobolectricTest() {
     val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
     Assert.assertEquals(false, invisible)
   }
-  @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfEmpty() {
-    Assert.assertEquals(
-      emptyMap<String, String>(),
-      convertActionParameterArrayToMap<String, String>(null)
-    )
-  }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
     val array = arrayOf(ActionParameter(key = "k", value = "v"))
-    Assert.assertEquals(
-      emptyMap<String, String>(),
-      convertActionParameterArrayToMap<String, String>(array)
-    )
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
     val array = emptyArray<ActionParameter>()
-    Assert.assertEquals(
-      emptyMap<String, String>(),
-      convertActionParameterArrayToMap<String, String>(array)
-    )
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals("", convertActionParameterArrayToMap<String, String>(array)["k"])
+    Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals(mapOf("k" to "v"), convertActionParameterArrayToMap<String, String>(array))
+    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
   }
 }
