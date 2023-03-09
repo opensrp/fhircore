@@ -25,6 +25,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import kotlin.test.assertEquals
 
 class ConfigExtensionsTest : RobolectricTest() {
 
@@ -229,43 +229,47 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testInterpolateValueWithANonNullComputedValuesMapReturnsValues() {
-    val actionConfig = ActionConfig(
-      ActionTrigger.ON_CLICK,
-      ApplicationWorkflow.LAUNCH_PROFILE,
-      params = listOf(
-        ActionParameter(
-          key = "param1",
-          value = "@{practitionerId-1}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param2",
-          value = "@{practitionerId-2}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param3",
-          value = "@{practitionerId-3}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param4",
-          value = "@{practitionerId-4}",
-          paramType = ActionParameterType.PARAMDATA
-        )
+    val actionConfig =
+      ActionConfig(
+        ActionTrigger.ON_CLICK,
+        ApplicationWorkflow.LAUNCH_PROFILE,
+        params =
+          listOf(
+            ActionParameter(
+              key = "param1",
+              value = "@{practitionerId-1}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param2",
+              value = "@{practitionerId-2}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param3",
+              value = "@{practitionerId-3}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param4",
+              value = "@{practitionerId-4}",
+              paramType = ActionParameterType.PARAMDATA
+            )
+          )
       )
-    )
-    val resourceData = ResourceData(
-      baseResourceId = "testResourceId",
-      ResourceType.CarePlan,
-      computedValuesMap = mapOf(
-        "practitionerId-1" to "1234",
-        "practitionerId-2" to "1235",
-        "practitionerId-3" to "1236",
-        "practitionerId-4" to "1237"
+    val resourceData =
+      ResourceData(
+        baseResourceId = "testResourceId",
+        ResourceType.CarePlan,
+        computedValuesMap =
+          mapOf(
+            "practitionerId-1" to "1234",
+            "practitionerId-2" to "1235",
+            "practitionerId-3" to "1236",
+            "practitionerId-4" to "1237"
+          )
       )
-    )
-    val resultOfInterpolatedValues = interpolateActionParamsValue(
-      actionConfig,
-      resourceData
-    )
+    val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
     assertEquals(4, resultOfInterpolatedValues.size)
     assertEquals("param2", resultOfInterpolatedValues[1].key)
     assertEquals("1235", resultOfInterpolatedValues[1].value)
@@ -273,39 +277,37 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testInterpolateValueWithNullComputedValuesMapReturnsEmptyArray() {
-    val actionConfig = ActionConfig(
-      ActionTrigger.ON_CLICK,
-      ApplicationWorkflow.LAUNCH_PROFILE,
-      params = listOf(
-        ActionParameter(
-          key = "param1",
-          value = "@{practitionerId-1}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param2",
-          value = "@{practitionerId-2}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param3",
-          value = "@{practitionerId-3}",
-          paramType = ActionParameterType.PARAMDATA
-        ), ActionParameter(
-          key = "param4",
-          value = "@{practitionerId-4}",
-          paramType = ActionParameterType.PARAMDATA
-        )
+    val actionConfig =
+      ActionConfig(
+        ActionTrigger.ON_CLICK,
+        ApplicationWorkflow.LAUNCH_PROFILE,
+        params =
+          listOf(
+            ActionParameter(
+              key = "param1",
+              value = "@{practitionerId-1}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param2",
+              value = "@{practitionerId-2}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param3",
+              value = "@{practitionerId-3}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param4",
+              value = "@{practitionerId-4}",
+              paramType = ActionParameterType.PARAMDATA
+            )
+          )
       )
-    )
-    val resourceData = ResourceData(
-      baseResourceId = "test",
-      ResourceType.Task,
-      computedValuesMap = emptyMap()
-    )
-    val resultOfInterpolatedValues = interpolateActionParamsValue(
-      actionConfig,
-      resourceData
-    )
+    val resourceData =
+      ResourceData(baseResourceId = "test", ResourceType.Task, computedValuesMap = emptyMap())
+    val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
     assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
-
   }
 }
