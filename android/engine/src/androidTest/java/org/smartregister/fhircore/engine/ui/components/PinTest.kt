@@ -25,7 +25,7 @@ import androidx.compose.ui.test.performTextInput
 import org.junit.Rule
 import org.junit.Test
 
-internal class PinKtTest {
+internal class PinTest {
 
   @get:Rule val composeRule = createComposeRule()
 
