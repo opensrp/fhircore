@@ -44,6 +44,11 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ]
       },

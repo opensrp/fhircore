@@ -56,7 +56,6 @@
             app:nullable="false" />
         <argument
             android:name="params"
-            android:defaultValue="@null"
             app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
             app:nullable="true" />
         <argument
