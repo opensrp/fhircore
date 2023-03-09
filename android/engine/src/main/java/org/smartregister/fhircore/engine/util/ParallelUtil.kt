@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import timber.log.Timber
 
 /**
  * Launch a new coroutine for each map iteration using async. From
@@ -29,7 +31,7 @@ import kotlinx.coroutines.coroutineScope
  * @param f the function to apply to the elements
  * @return the resulting list after apply *f* to the elements of the iterable
  */
-suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutineScope {
+suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
   map { async { f(it) } }.awaitAll()
 }
 
@@ -41,3 +43,6 @@ suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutin
 suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
   forEach { async { action(it) } }
 }
+
+fun <T> ConcurrentLinkedQueue<T>.printDets(tag: String = ""): Unit =
+  Timber.d("Milliseconds : Size of it is ${this.size} at $tag")

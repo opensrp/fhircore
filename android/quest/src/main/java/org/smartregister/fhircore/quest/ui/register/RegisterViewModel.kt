@@ -101,21 +101,15 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(
-            registerRepository,
-            rulesExecutor,
-            ruleConfigs,
-            ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
-          )
-          .apply {
-            setPatientPagingSourceState(
-              RegisterPagingSourceState(
-                registerId = registerId,
-                loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value
-              )
+        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+          setPatientPagingSourceState(
+            RegisterPagingSourceState(
+              registerId = registerId,
+              loadAll = loadAll,
+              currentPage = if (loadAll) 0 else currentPage.value
             )
-          }
+          )
+        }
       }
     )
   }

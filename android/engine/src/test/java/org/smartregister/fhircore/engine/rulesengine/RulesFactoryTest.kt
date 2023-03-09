@@ -111,7 +111,7 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
         baseResource = baseResource,
@@ -152,7 +152,7 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(rules = rules, baseResource = baseResource)
 
       var factsSlot = slot<Facts>()
@@ -190,7 +190,7 @@ class RulesFactoryTest : RobolectricTest() {
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules("", ruleConfigs)
+      val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
 
       val factsSlot = slot<Facts>()

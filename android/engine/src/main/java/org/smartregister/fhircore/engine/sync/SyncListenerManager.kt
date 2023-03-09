@@ -115,6 +115,7 @@ constructor(
               ?.code
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
+          "_prettyx" -> "false"
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
@@ -146,7 +147,10 @@ constructor(
               // add another parameter if there is a matching resource type
               // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
               // _count=100})]
-              val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+              val updatedPair =
+                pair.second.toMutableMap().apply { put(sp.code, expressionValue) }.apply {
+                  put("_pretty", "false")
+                }
               val index = pairs.indexOfFirst { it.first == resourceType }
               pairs.set(index, Pair(resourceType, updatedPair))
             }

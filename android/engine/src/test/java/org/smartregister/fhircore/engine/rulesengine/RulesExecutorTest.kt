@@ -20,7 +20,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
-import java.util.LinkedList
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -71,8 +71,8 @@ class RulesExecutorTest : RobolectricTest() {
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData: ConcurrentLinkedQueue<RepositoryResourceData> =
+      ConcurrentLinkedQueue<RepositoryResourceData>()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -87,7 +87,6 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          "",
           emptyMap()
         )
 
@@ -103,8 +102,8 @@ class RulesExecutorTest : RobolectricTest() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
     val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData: ConcurrentLinkedQueue<RepositoryResourceData> =
+      ConcurrentLinkedQueue<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
     runBlocking(Dispatchers.Default) {
@@ -129,8 +128,8 @@ class RulesExecutorTest : RobolectricTest() {
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
     val repositoryResourceData = RepositoryResourceData(resource = patient)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData: ConcurrentLinkedQueue<RepositoryResourceData> =
+      ConcurrentLinkedQueue<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
     relatedRepositoryResourceData.add(repositoryResourceData)
@@ -164,8 +163,8 @@ class RulesExecutorTest : RobolectricTest() {
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
     val repositoryResourceData = RepositoryResourceData(resource = patient)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData: ConcurrentLinkedQueue<RepositoryResourceData> =
+      ConcurrentLinkedQueue<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
     relatedRepositoryResourceData.add(repositoryResourceData)

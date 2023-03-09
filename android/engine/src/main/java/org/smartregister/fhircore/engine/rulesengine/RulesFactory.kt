@@ -24,8 +24,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
@@ -53,6 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
+import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RulesFactory
@@ -81,7 +80,6 @@ constructor(
       .create()
 
   private var facts: Facts = Facts()
-  private val ruleConfigsCache = mutableMapOf<String, Rules>()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -98,6 +96,7 @@ constructor(
 
   override fun onFailure(rule: Rule, facts: Facts, exception: Exception) =
     if (exception is JexlException) {
+      Timber.e("Rule executed: Exception Total Facts ${facts.count()}")
       when (exception) {
         // Just display error message for undefined variable; expected for missing facts
         is JexlException.Variable ->
@@ -150,30 +149,27 @@ constructor(
     }
   }
 
-  fun generateRules(ruleConfigsKey: String, ruleConfigs: List<RuleConfig>): Rules {
-    val jexlRules =
-      ruleConfigsCache.getOrDefault(
-        ruleConfigsKey,
-        Rules(
-            runBlocking(Dispatchers.Default) {
-                ruleConfigs.map { ruleConfig ->
-                  val customRule: JexlRule =
-                    JexlRule(jexlEngine)
-                      .name(ruleConfig.name)
-                      .description(ruleConfig.description)
-                      .priority(ruleConfig.priority)
-                      .`when`(ruleConfig.condition.ifEmpty { TRUE })
+  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules {
+    val start = System.currentTimeMillis()
+    val customRules =
+      ruleConfigs
+        .pmap { ruleConfig ->
+          val customRule: JexlRule =
+            JexlRule(jexlEngine)
+              .name(ruleConfig.name)
+              .description(ruleConfig.description)
+              .priority(ruleConfig.priority)
+              .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-                  ruleConfig.actions.forEach { customRule.then(it) }
-                  customRule
-                }
-              }
-              .toSet()
-          )
-          .also { ruleConfigsCache[ruleConfigsKey] = it }
-      )
-
-    return jexlRules
+          ruleConfig.actions.forEach { customRule.then(it) }
+          customRule
+        }
+        .toSet()
+    val rules = Rules(customRules)
+    Timber.d(
+      "generateRules of size ${customRules.size} executed in ${System.currentTimeMillis() - start} millisecond(s)"
+    )
+    return rules
   }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
@@ -388,7 +384,6 @@ constructor(
       val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
       return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
     }
-
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String

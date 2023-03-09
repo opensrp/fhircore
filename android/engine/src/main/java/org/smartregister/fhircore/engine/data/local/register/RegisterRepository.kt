@@ -25,9 +25,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import java.util.LinkedList
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -52,7 +55,9 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.engine.util.pmap
+import org.smartregister.fhircore.engine.util.printDets
 import timber.log.Timber
 
 class RegisterRepository
@@ -79,13 +84,14 @@ constructor(
     registerId: String,
     paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
+    val start = System.currentTimeMillis()
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
     val secondaryResourceConfig = registerConfiguration.secondaryResources
-    val secondaryResourceData = LinkedList<RepositoryResourceData>()
+    val secondaryResourceData = ConcurrentLinkedQueue<RepositoryResourceData>()
 
     // retrieve secondary ResourceData if secondaryResources are configured
     if (!secondaryResourceConfig.isNullOrEmpty()) {
@@ -105,10 +111,10 @@ constructor(
 
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
-    return baseResources.map { baseResource: Resource ->
-      val currentRelatedResources = LinkedList<RepositoryResourceData>()
+    return baseResources.pmap { baseResource: Resource ->
+      val currentRelatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
 
-      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+      relatedResourcesConfig.forEachAsync { resourceConfig: ResourceConfig ->
         val relatedResources =
           withContext(dispatcherProvider.io()) {
             searchRelatedResources(
@@ -120,6 +126,10 @@ constructor(
           }
         currentRelatedResources.addAll(relatedResources)
       }
+
+      Timber.d(
+        "loadRegisterData.searchRelatedResources  ${baseResource.resourceType.name} executed in ${System.currentTimeMillis() - start} millisecond(s)"
+      )
 
       // Include secondary resourceData in each row if secondaryResources are configured
       RepositoryResourceData(
@@ -135,11 +145,11 @@ constructor(
     baseResourceType: ResourceType,
     baseResource: Resource,
     fhirPathExpression: String?
-  ): LinkedList<RepositoryResourceData> {
+  ): ConcurrentLinkedQueue<RepositoryResourceData> {
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
-    val relatedResourcesData = LinkedList<RepositoryResourceData>()
+    val relatedResourcesData = ConcurrentLinkedQueue<RepositoryResourceData>()
     if (fhirPathExpression.isNullOrEmpty()) {
       val relatedResourceSearch =
         Search(type = relatedResourceType).apply {
@@ -151,14 +161,14 @@ constructor(
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           sort(resourceConfig.sortConfigs)
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(
+
+      fhirEngine.search<Resource>(relatedResourceSearch).forEachAsync { resource ->
+        relatedResourcesData.add(
           RepositoryResourceData(
             configId = resourceConfig.id ?: resource.resourceType.name,
             resource = resource
           )
         )
-
         postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
       }
     } else {
@@ -178,7 +188,7 @@ constructor(
         }
         .forEach { resource ->
           resource?.let {
-            relatedResourcesData.addLast(
+            relatedResourcesData.add(
               RepositoryResourceData(
                 configId = resourceConfig.id ?: resource.resourceType.name,
                 resource = resource
@@ -193,21 +203,35 @@ constructor(
 
   private suspend fun postProcessRelatedResourcesData(
     relatedResources: List<ResourceConfig>,
-    relatedResourcesData: LinkedList<RepositoryResourceData>
+    relatedResourcesData: ConcurrentLinkedQueue<RepositoryResourceData>
   ) {
+    if (relatedResourcesData.isNullOrEmpty()) return
 
-    if (relatedResourcesData.size < 1) return
+    val start = System.currentTimeMillis()
 
-    relatedResources.forEach {
+    relatedResources.forEachAsync {
       val searchRelatedResources =
         searchRelatedResources(
           resourceConfig = it,
-          baseResourceType = relatedResourcesData.last.resource.resourceType,
-          baseResource = relatedResourcesData.last.resource,
+          baseResourceType = relatedResourcesData.last().resource.resourceType,
+          baseResource = relatedResourcesData.last().resource,
           fhirPathExpression = it.fhirPathExpression
         )
+      relatedResourcesData.last().relatedResources.addAll(searchRelatedResources)
+    }
 
-      relatedResourcesData.last.relatedResources.addAll(searchRelatedResources)
+    relatedResourcesData.printDets(object {}.javaClass.enclosingMethod.name)
+
+    if (relatedResourcesData.peek().resource is Patient) {
+      Timber.d(
+        "postProcessRelatedResourcesData.searchRelatedResources peek Patient = " +
+          "${((relatedResourcesData.peek().resource as Patient).name[0] as HumanName).given[0]} ${((relatedResourcesData.peek().resource as Patient).name[0] as HumanName).family} " +
+          "${(relatedResourcesData.peek().resource as Patient).id} executed in ${System.currentTimeMillis() - start} millisecond(s) : Total related resources ${relatedResourcesData.last().relatedResources.size}"
+      )
+    } else {
+      Timber.d(
+        "postProcessRelatedResourcesData.searchRelatedResources peek = ${relatedResourcesData.peek().resource.resourceType} executed in ${System.currentTimeMillis() - start} millisecond(s) : Total related resources ${relatedResourcesData.last().relatedResources.size}"
+      )
     }
   }
 
@@ -276,6 +300,7 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?
   ): RepositoryResourceData {
+    val start = System.currentTimeMillis()
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
@@ -294,9 +319,9 @@ constructor(
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    val relatedResources = LinkedList<RepositoryResourceData>()
+    val relatedResources = ConcurrentLinkedQueue<RepositoryResourceData>()
 
-    relatedResourcesConfig.forEach { config: ResourceConfig ->
+    relatedResourcesConfig.forEachAsync { config: ResourceConfig ->
       val resources =
         withContext(dispatcherProvider.io()) {
           searchRelatedResources(
@@ -313,6 +338,10 @@ constructor(
       relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
 
+    Timber.d(
+      "loadProfileData.searchRelatedResources ${(baseResource as Group).name} executed in ${System.currentTimeMillis() - start} millisecond(s)"
+    )
+
     return RepositoryResourceData(
       configId = baseResourceConfig.id ?: baseResourceType.name,
       resource = baseResource,
@@ -322,10 +351,12 @@ constructor(
 
   private suspend fun retrieveSecondaryResources(
     resourceConfigList: List<FhirResourceConfig>
-  ): LinkedList<RepositoryResourceData> {
-    val repositoryResourceData = LinkedList<RepositoryResourceData>()
+  ): ConcurrentLinkedQueue<RepositoryResourceData> {
+    val repositoryResourceData = ConcurrentLinkedQueue<RepositoryResourceData>()
 
-    resourceConfigList.map { fhirResourceConfig: FhirResourceConfig ->
+    val start = System.currentTimeMillis()
+
+    resourceConfigList.pmap { fhirResourceConfig: FhirResourceConfig ->
       val baseResources: List<Resource> =
         withContext(dispatcherProvider.io()) {
           searchResource(
@@ -335,9 +366,9 @@ constructor(
           )
         }
 
-      baseResources.map { baseResource: Resource ->
-        val baseRelatedResourceList = LinkedList<RepositoryResourceData>()
-        fhirResourceConfig.relatedResources.forEach { resourceConfig: ResourceConfig ->
+      baseResources.pmap { baseResource: Resource ->
+        val baseRelatedResourceList = ConcurrentLinkedQueue<RepositoryResourceData>()
+        fhirResourceConfig.relatedResources.forEachAsync { resourceConfig: ResourceConfig ->
           val currentRelatedResources =
             withContext(dispatcherProvider.io()) {
               searchRelatedResources(
@@ -358,6 +389,10 @@ constructor(
         )
       }
     }
+
+    Timber.d(
+      "retrieveSecondaryResources.searchRelatedResources  ${resourceConfigList[0].baseResource.resource.resourceClassType()} executed in ${System.currentTimeMillis() - start} millisecond(s)"
+    )
 
     return repositoryResourceData
   }

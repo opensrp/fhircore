@@ -25,7 +25,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -55,6 +54,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -99,9 +99,8 @@ constructor(
         rulesExecutor
           .processResourceData(
             baseResource = repoResourceData.resource,
-            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+            relatedRepositoryResourceData = repoResourceData.relatedResources,
             ruleConfigs = profileConfigs.rules,
-            ruleConfigsKey = profileConfigs::class.java.canonicalName,
             paramsMap
           )
           .copy(listResourceDataMap = listResourceDataMapState)
@@ -114,17 +113,20 @@ constructor(
           showDataLoadProgressIndicator = false
         )
       val timeToFireRules = measureTimeMillis {
-        profileConfigs.views.retrieveListProperties().forEach {
+        profileConfigs.views.retrieveListProperties().forEachAsync {
           val listResourceData =
             rulesExecutor.processListResourceData(
               listProperties = it,
-              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+              relatedRepositoryResourceData = repoResourceData.relatedResources,
               computedValuesMap =
                 resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
             )
           listResourceDataMapState[it.id] = listResourceData
         }
       }
+      Timber.d(
+        "profileConfigs.views.retrieveListProperties() > rulesExecutor.processListResourceData executed in $timeToFireRules millisecond(s)"
+      )
     }
   }
 
