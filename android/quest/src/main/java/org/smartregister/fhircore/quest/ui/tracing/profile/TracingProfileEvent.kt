@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import android.content.Context
+import androidx.navigation.NavHostController
 
 sealed class TracingProfileEvent {
 
@@ -29,7 +30,7 @@ sealed class TracingProfileEvent {
     TracingProfileEvent()
 
   data class OverflowMenuClick(
-    //    val navController: NavHostController,
+    val navController: NavHostController,
     val context: Context,
     val menuId: Int
   ) : TracingProfileEvent()

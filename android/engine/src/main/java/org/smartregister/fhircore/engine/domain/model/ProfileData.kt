@@ -111,6 +111,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val address: String,
     val chwAssigned: Reference,
     val healthStatus: HealthStatus,
+    val currentAttempt: CurrentTracingAttempt?,
     val age: String = birthdate.toAgeDisplay(),
     val gender: Enumerations.AdministrativeGender,
     val addressDistrict: String = "",
@@ -122,6 +123,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val showIdentifierInProfile: Boolean = false,
     val conditions: List<Condition> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList()
+    val practitioners: List<Practitioner> = emptyList(),
+    val tracingHistory: List<TracingHistory> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)
 }

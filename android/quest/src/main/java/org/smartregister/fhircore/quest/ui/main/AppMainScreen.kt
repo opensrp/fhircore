@@ -52,6 +52,8 @@ import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRo
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
+import org.smartregister.fhircore.quest.ui.tracing.history.TracingHistoryScreen
+import org.smartregister.fhircore.quest.ui.tracing.outcomes.TracingOutcomesScreen
 import org.smartregister.fhircore.quest.ui.tracing.profile.TracingProfileScreen
 import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterScreen
 
@@ -244,6 +246,18 @@ private fun AppMainNavigationGraph(
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { ChildContactsProfileScreen(navController = navController) }
+        MainNavigationScreen.TracingHistory ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingHistoryScreen(navController = navController) }
+        MainNavigationScreen.TracingOutcomes ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingOutcomesScreen(navController = navController) }
       }
     }
   }

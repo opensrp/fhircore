@@ -79,28 +79,30 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 fun TracingProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: TracingProfileViewModel = hiltViewModel()
+  viewModel: TracingProfileViewModel = hiltViewModel()
 ) {
 
   TracingProfilePage(
+    navController,
     modifier = modifier,
-    patientProfileViewModel = patientProfileViewModel,
+    tracingProfileViewModel = viewModel,
     onBackPress = { navController.popBackStack() }
   )
 }
 
 @Composable
 fun TracingProfilePage(
+  navController: NavHostController,
   modifier: Modifier = Modifier,
   onBackPress: () -> Unit,
-  patientProfileViewModel: TracingProfileViewModel,
+  tracingProfileViewModel: TracingProfileViewModel,
 ) {
 
   val context = LocalContext.current
-  val profileViewDataState = patientProfileViewModel.patientProfileViewData.collectAsState()
+  val profileViewDataState = tracingProfileViewModel.patientProfileViewData.collectAsState()
   val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val viewState = patientProfileViewModel.patientTracingProfileUiState.value
+  val viewState = tracingProfileViewModel.patientTracingProfileUiState.value
 
   Scaffold(
     topBar = {
@@ -125,8 +127,12 @@ fun TracingProfilePage(
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  patientProfileViewModel.onEvent(
-                    TracingProfileEvent.OverflowMenuClick(context, it.id)
+                  tracingProfileViewModel.onEvent(
+                    TracingProfileEvent.OverflowMenuClick(
+                      navController = navController,
+                      context,
+                      it.id
+                    )
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -153,7 +159,7 @@ fun TracingProfilePage(
               LoginFieldBackgroundColor
             ),
           onClick = {
-            patientProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
+            tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
           },
           modifier = modifier.fillMaxWidth()
         ) {
@@ -308,8 +314,8 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
 @Composable
 private fun TracingReasonBox(
   tracingTask: Task,
+  modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
-  modifier: Modifier = Modifier
 ) {
   Card(
     elevation = 3.dp,

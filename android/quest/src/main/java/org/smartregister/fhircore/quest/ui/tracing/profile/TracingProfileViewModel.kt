@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
@@ -59,11 +60,11 @@ class TracingProfileViewModel
 constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
-  val overflowMenuFactory: OverflowMenuFactory,
+  private val overflowMenuFactory: OverflowMenuFactory,
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper,
-  val registerViewDataMapper: RegisterViewDataMapper
+  val registerViewDataMapper: RegisterViewDataMapper,
 ) : ViewModel() {
 
   val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
@@ -139,8 +140,15 @@ constructor(
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          R.id.tracing_history -> event.context.showToast("//todo Tracing History action here")
-          else -> {}
+          R.id.tracing_history -> {
+            val urlParams = NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, patientId))
+            event.navController.navigate(
+              route = MainNavigationScreen.TracingHistory.route + urlParams
+            )
+          }
+          else -> {
+            event.context.showToast("//todo Tracing action here")
+          }
         }
       }
       is TracingProfileEvent.OpenTaskForm ->

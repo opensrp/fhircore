@@ -142,7 +142,8 @@ constructor(
         services = patient.activeCarePlans(),
         conditions = patient.activeConditions(),
         guardians = patient.guardians(),
-        practitioners = patient.practitioners()
+        practitioners = patient.practitioners(),
+              currentAttempt = null
       )
     }
   }
