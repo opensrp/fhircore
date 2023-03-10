@@ -308,29 +308,29 @@ class ConfigExtensionsTest : RobolectricTest() {
       ResourceData(baseResourceId = "test", ResourceType.Task, computedValuesMap = emptyMap())
     val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
     assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
-    fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
-      val array = arrayOf(ActionParameter(key = "k", value = "v"))
-      Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
-    }
+  }
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
+    val array = arrayOf(ActionParameter(key = "k", value = "v"))
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+  }
 
-    @Test
-    fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
-      val array = emptyArray<ActionParameter>()
-      Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
-    }
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+    val array = emptyArray<ActionParameter>()
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+  }
 
-    @Test
-    fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
-      val array =
-        arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
-      Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
-    }
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
+  }
 
-    @Test
-    fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
-      val array =
-        arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
-      Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
-    }
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
   }
 }
