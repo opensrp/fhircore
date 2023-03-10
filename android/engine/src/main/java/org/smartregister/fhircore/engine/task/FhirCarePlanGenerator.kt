@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.model.Timing
+import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -252,7 +253,18 @@ constructor(
 
   private fun extractTaskPeriodsFromTiming(timing: Timing, carePlan: CarePlan): List<Period> {
     val taskPeriods = mutableListOf<Period>()
-    val count = timing.repeat.count
+    // TODO handle properties used by older plandefintions. If any plan definition is using
+    //  countMax, frequency, durationUnit of hour, consider as non compliant and assume
+    //  all handling would be done into structure map. Once all plan definitions are using
+    //  recommended approach and using plan definitions properly change line below to use
+    //  timing.repeat.count only
+    val count =
+      if (timing.repeat.hasFrequency() ||
+          timing.repeat.hasCountMax() ||
+          timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true
+      )
+        0
+      else timing.repeat.count
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
