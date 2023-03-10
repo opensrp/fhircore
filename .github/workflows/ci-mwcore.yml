@@ -47,6 +47,7 @@ jobs:
         with:
           working-directory: android
           flags: engine
+          commit_parent: 758a5e4cc344a8d80aa1b7871af1592e35461f04
           files: engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           fail_ci_if_error: true
           verbose: true
@@ -81,6 +82,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           working-directory: android
+          commit_parent: 758a5e4cc344a8d80aa1b7871af1592e35461f04
           flags: quest
           files: quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           fail_ci_if_error: false
