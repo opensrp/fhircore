@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -76,6 +77,7 @@ fun List<ActionConfig>.handleClickEvent(
               resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
             ),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
           )
 
         // Register is the entry point destination, clear back stack with every register switch
@@ -127,3 +129,16 @@ fun ViewProperties.clickable(ResourceData: ResourceData) =
 
 fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
   this.visible.interpolate(computedValuesMap).toBoolean()
+
+/**
+ * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
+ * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
+ *
+ * @property array The array of ActionParameter elements to convert
+ * @return Map of the values or emptyMap if [array] is null
+ */
+fun <K, V> Array<ActionParameter>?.toParamDataMap() =
+  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
+    it.key to it.value
+  }
+    ?: emptyMap()

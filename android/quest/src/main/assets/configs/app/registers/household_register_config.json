@@ -81,13 +81,6 @@
         ]
       },
       {
-        "name": "practitionerId",
-        "condition": "true",
-        "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
-        ]
-      },
-      {
         "name": "familyVillage",
         "condition": "true",
         "actions": [
@@ -152,11 +145,6 @@
                     {
                       "key": "familyId",
                       "value": "@{familyId}"
-                    },
-                    {
-                      "paramType": "PARAMDATA",
-                      "key": "practitionerId",
-                      "value": "@{practitionerId}"
                     }
                   ]
                 }
@@ -171,11 +159,6 @@
                   {
                     "key": "familyId",
                     "value": "@{familyId}"
-                  },
-                  {
-                    "paramType": "PARAMDATA",
-                    "key": "practitionerId",
-                    "value": "@{practitionerId}"
                   }
                 ]
               }
