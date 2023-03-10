@@ -184,6 +184,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
+      is SyncJobStatus.InProgress ->
+        lifecycleScope.launch {
+          registerViewModel.emitPercentageProgressState(
+            syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1
+          )
+        }
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {

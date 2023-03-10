@@ -19,7 +19,7 @@
     <string name="select_language">Select Language</string>
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
-    <string name="syncing">Syncing&#8230;</string>
+    <string name="syncing">Syncing</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
@@ -142,4 +142,5 @@
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
+    <string name="percentage_progress" translatable="false">%1$d%%</string>
 </resources>

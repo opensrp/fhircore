@@ -70,6 +70,7 @@ constructor(
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   private val _totalRecordsCount = mutableStateOf(0L)
+  private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
 
@@ -175,6 +176,7 @@ constructor(
     screenTitle: String,
     params: Array<ActionParameter>? = emptyArray()
   ) {
+
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
       viewModelScope.launch(dispatcherProvider.io()) {
@@ -200,7 +202,8 @@ constructor(
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
-                .toInt()
+                .toInt(),
+            progressPercentage = _percentageProgress
           )
       }
     }
@@ -208,5 +211,8 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+  suspend fun emitPercentageProgressState(progress: Int) {
+    _percentageProgress.emit(progress)
   }
 }

@@ -173,7 +173,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
       }
       else -> {
-        /*Do nothing */
+        /* Do nothing*/
       }
     }
   }
