@@ -29,6 +29,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/*$Result$*.*',
             // Data classes and enums without functions or methods
             'org/smartregister/fhircore/engine/auth/*',
+            'org/smartregister/fhircore/engine/configuration/ConfigType.*',
             'org/smartregister/fhircore/engine/configuration/app/*',
             'org/smartregister/fhircore/engine/configuration/geowidget/*',
             'org/smartregister/fhircore/engine/configuration/navigation/*',

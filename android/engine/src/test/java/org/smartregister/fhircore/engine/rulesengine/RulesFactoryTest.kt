@@ -64,7 +64,8 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 class RulesFactoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
