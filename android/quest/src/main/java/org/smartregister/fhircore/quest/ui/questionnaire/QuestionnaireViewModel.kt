@@ -270,8 +270,10 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    if (bundle?.entry?.isNotEmpty()!!) {
+      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    }
   }
 
   fun savePartialQuestionnaireResponse(
@@ -438,12 +440,12 @@ constructor(
         viewModelScope.launch {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(
-              context.getString(R.string.structure_map_missing_message, questionnaire.name),
+              context.getString(R.string.structure_map_missing_message),
               Toast.LENGTH_LONG
             )
           } else {
             context.showToast(
-              context.getString(R.string.structure_error_message, questionnaire.name),
+              context.getString(R.string.structuremap_failed, questionnaire.name),
               Toast.LENGTH_LONG
             )
           }

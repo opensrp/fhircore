@@ -1073,7 +1073,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
     questionnaire.name = "eCBIS Add Family Member Registration"
-    val errorMessage = context.getString(R.string.structure_error_message, questionnaire.name)
+    val errorMessage = context.getString(R.string.structuremap_failed, questionnaire.name)
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
@@ -1081,7 +1081,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
-    coVerify { context.getString(R.string.structure_error_message, questionnaire.name) }
+    coVerify { context.getString(R.string.structuremap_failed, questionnaire.name) }
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
   }
 
