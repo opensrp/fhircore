@@ -177,7 +177,7 @@ constructor(
     }
 
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+      questionnaire.useContext.asSequence().filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { coding ->
           questionnaireResponse.meta.addTag(coding)
         }

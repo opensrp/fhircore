@@ -192,8 +192,10 @@ constructor(
       if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
         carePlan
           .activity
+          .asSequence()
           .flatMap { it.outcomeReference }
           .filter { it.reference.startsWith(ResourceType.Task.name) }
+          .toList()
           .mapNotNull { getTask(it.extractId()) }
           .forEach {
             if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {

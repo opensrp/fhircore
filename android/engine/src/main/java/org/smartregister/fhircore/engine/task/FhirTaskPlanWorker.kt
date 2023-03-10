@@ -61,6 +61,7 @@ constructor(
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
       }
+      .asSequence()
       .filter {
         it.status == Task.TaskStatus.REQUESTED ||
           it.status == Task.TaskStatus.READY ||

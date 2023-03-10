@@ -491,6 +491,7 @@ constructor(
             group to
               group
                 .stratifier
+                .asSequence()
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
                 .map { stratifier ->
@@ -538,7 +539,9 @@ constructor(
         // the observations would have key as coding.code=populationId and value as codeableConcept
         observations
           .groupBy { it.codingOf(POPULATION_OBS_URL)?.display }
+          .asSequence()
           .filter { it.key.isNullOrBlank().not() }
+          .toList()
           .map { entry ->
             entry.key!! to
               if (type == MeasureReport.MeasureReportType.INDIVIDUAL)

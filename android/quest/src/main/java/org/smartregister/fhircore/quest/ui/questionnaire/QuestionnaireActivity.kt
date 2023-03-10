@@ -101,11 +101,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         ?: emptyList()
 
     prePopulationParams =
-      actionParams.filter {
-        it.paramType == ActionParameterType.PREPOPULATE &&
-          !it.value.isNullOrEmpty() &&
-          !it.value.contains(STRING_INTERPOLATION_PREFIX)
-      }
+      actionParams
+        .asSequence()
+        .filter {
+          it.paramType == ActionParameterType.PREPOPULATE &&
+            !it.value.isNullOrEmpty() &&
+            !it.value.contains(STRING_INTERPOLATION_PREFIX)
+        }
+        .toList()
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
@@ -268,7 +271,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         this.authored = Date()
       }
 
-      this@QuestionnaireActivity.questionnaire.useContext
+      this@QuestionnaireActivity.questionnaire
+        .useContext
+        .asSequence()
         .filter { it.hasValueCodeableConcept() }
         .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
 

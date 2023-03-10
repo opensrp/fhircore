@@ -277,6 +277,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       )
     val paramsMap =
       paramsList
+        .asSequence()
         .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
         .associate { it.key to it.value }
 
@@ -318,6 +319,7 @@ class RegisterRepositoryTest : RobolectricTest() {
         ),
       )
     paramsList
+      .asSequence()
       .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
       .associate { it.key to it.value }
     val paramsMap = emptyMap<String, String>()

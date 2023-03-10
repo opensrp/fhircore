@@ -117,5 +117,7 @@ suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureRepo
       filter(MeasureReport.MEASURE, { value = measureUrl })
       operation = queryOperation
     }
+    .asSequence()
     .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+    .toList()
 }

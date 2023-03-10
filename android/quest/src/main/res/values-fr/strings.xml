@@ -72,6 +72,6 @@
     <string name="appointment_clients">Rendez-vous</string>
     <string name="structure_success">Ressources extraites avec succès pour %1$s</string>
     <string name="structuremap_failed">Échec de l\'extraction des ressources pour le %1$s</string>
-    <string name="structure_map_missing_message">Ressources manquantes pour le questionnaire</string>
+    <string name="structure_map_missing_message">StructureMap manquante pour Questionnaire , QuestionnaireResponse enregistré</string>
 
 </resources>

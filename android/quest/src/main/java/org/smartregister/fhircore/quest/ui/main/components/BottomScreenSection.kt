@@ -51,7 +51,7 @@ fun BottomScreenSection(
   ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.id
-    mainNavigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
+    mainNavigationScreens.asSequence().filter { it.showInBottomNav }.forEach { navigationScreen ->
       if (navigationScreen.titleResource != null) {
         BottomNavigationItem(
           icon = {
