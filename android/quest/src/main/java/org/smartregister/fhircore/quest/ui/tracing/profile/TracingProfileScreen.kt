@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.ui.tracing.components.InfoBoxItem
 
 @Composable
 fun TracingProfileScreen(
@@ -249,14 +250,6 @@ fun PatientInfo(
         }
       }
     }
-  }
-}
-
-@Composable
-private fun InfoBoxItem(title: String, value: String, modifier: Modifier = Modifier) {
-  Row(modifier = modifier.padding(4.dp)) {
-    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor, fontSize = 18.sp)
-    Text(text = value, fontSize = 18.sp)
   }
 }
 

@@ -40,7 +40,7 @@ sealed class MainNavigationScreen(
   object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
   object TracingHistory : MainNavigationScreen(route = "tracingHistory")
   object TracingOutcomes : MainNavigationScreen(route = "tracingOutcome")
-
+  object TracingHistoryDetails : MainNavigationScreen(route = "tracingHistoryDetails ")
   companion object {
     val appScreens =
       listOf(
@@ -55,7 +55,8 @@ sealed class MainNavigationScreen(
         GuardianProfile,
         TracingProfile,
         TracingHistory,
-        TracingOutcomes
+        TracingOutcomes,
+        TracingHistoryDetails
       )
   }
 }

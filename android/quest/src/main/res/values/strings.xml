@@ -129,6 +129,7 @@
     <string name="guardian_phone_owner_1">Guardian Phone Owner 1</string>
     <string name="guardian_phone_number_2">Guardian Phone Number 2</string>
     <string name="guardian_phone_owner_2">Guardian Phone Owner 2</string>
+    <string name="tracing_history_details">Tracing History Details</string>
 
 
 </resources>

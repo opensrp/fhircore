@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.outcomes
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,8 +26,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -38,16 +35,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import java.util.Date
-import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
 @Composable
 fun TracingOutcomesScreen(
   navController: NavHostController,
+  viewModel: TracingOutcomesViewModel = hiltViewModel()
 ) {
   Scaffold(
     topBar = {
@@ -60,25 +60,38 @@ fun TracingOutcomesScreen(
         },
       )
     }
-  ) { innerPadding -> TracingOutcomesScreenContainer(modifier = Modifier.padding(innerPadding)) {} }
+  ) { innerPadding ->
+    TracingOutcomesScreenContainer(
+      viewModel = viewModel,
+      navController = navController,
+      modifier = Modifier.padding(innerPadding)
+    )
+  }
 }
 
 @Composable
 fun TracingOutcomesScreenContainer(
+  viewModel: TracingOutcomesViewModel,
+  navController: NavHostController,
   modifier: Modifier = Modifier,
-  onOutcomeClick: () -> Unit,
 ) {
+  val context = LocalContext.current
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
     modifier = modifier.fillMaxSize().padding(horizontal = 12.dp)
   ) {
     item { Spacer(modifier = Modifier.height(8.dp)) }
     items(listOf(1, 2, 3, 4)) {
-      Card(
-        elevation = 0.dp,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(width = 2.dp, color = StatusTextColor),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onOutcomeClick)
+      OutlineCard(
+        modifier =
+          Modifier.clickable {
+            viewModel.onEvent(
+              TracingOutcomesEvent.OpenHistoryDetailsScreen(
+                context = context,
+                navController = navController
+              )
+            )
+          }
       ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
           Text(text = "Start Date:", Modifier.fillMaxWidth().padding(bottom = 8.dp))

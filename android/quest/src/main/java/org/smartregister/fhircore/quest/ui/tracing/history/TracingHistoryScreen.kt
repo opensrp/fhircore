@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.history
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,8 +27,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -44,8 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
 @Composable
 fun TracingHistoryScreen(
@@ -85,22 +82,18 @@ fun TracingHistoryScreenContainer(
   ) {
     item { Spacer(modifier = Modifier.height(8.dp)) }
     items(listOf(1, 2, 3, 4)) {
-      Card(
-        elevation = 0.dp,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(width = 2.dp, color = StatusTextColor),
+      OutlineCard(
         modifier =
-          Modifier.fillMaxWidth()
-            .clickable(
-              onClick = {
-                viewModel.onEvent(
-                  TracingHistoryEvent.OpenOutComesScreen(
-                    context = context,
-                    navController = navController
-                  )
+          Modifier.clickable(
+            onClick = {
+              viewModel.onEvent(
+                TracingHistoryEvent.OpenOutComesScreen(
+                  context = context,
+                  navController = navController
                 )
-              }
-            )
+              )
+            }
+          )
       ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
           Row(modifier = Modifier.fillMaxWidth()) { Text(text = "Start Date:") }
