@@ -123,6 +123,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForPatient() = runTest {
     val plandefinition =
       "plans/child-routine-visit/plandefinition.json"
@@ -205,6 +206,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForGroup() = runTest {
     val plandefinition =
       "plans/household-routine-visit/plandefinition.json"
@@ -272,6 +274,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForHouseHold() = runTest {
     val plandefinition =
       "plans/household-wash-check-routine-visit/plandefinition.json"
@@ -345,6 +348,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   @Ignore("Passing local failing CI")
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -472,6 +476,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildUnder2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -521,6 +526,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testCompleteCarePlanForSickChildFollowup() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -566,7 +572,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )!!
       .also { carePlan: CarePlan ->
-        val carePlan = carePlan
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
         createdTasksSlot.forEach { resource -> println(resource.encodeResourceToString()) }
@@ -589,6 +594,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testUpdateCarePlanForSickChildReferral() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -646,6 +652,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForANCVisit() = runTest {
     val plandefinition =
       "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
@@ -984,6 +991,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun `transitionTaskTo should update task status`() = runTest {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
     coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs

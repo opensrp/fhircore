@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
@@ -71,6 +72,7 @@ class RulesFactoryTest : RobolectricTest() {
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -97,6 +99,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
@@ -139,6 +142,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFactsWhenMissingRelatedResourcesMap() {
     runTest {
       val baseResource = Faker.buildPatient()
@@ -155,11 +159,11 @@ class RulesFactoryTest : RobolectricTest() {
       val rules = rulesFactory.generateRules("", ruleConfigs)
       rulesFactory.fireRules(rules = rules, baseResource = baseResource)
 
-      var factsSlot = slot<Facts>()
-      var rulesSlot = slot<Rules>()
+      val factsSlot = slot<Facts>()
+      val rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      var capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -169,13 +173,14 @@ class RulesFactoryTest : RobolectricTest() {
         capturedBaseResource.address[0].city,
       )
 
-      var capturedRule = rulesSlot.captured.first()
+      val capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
     }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesIgnoresBaseResourceWhenNull() {
     runTest {
       val baseResource = Faker.buildPatient()

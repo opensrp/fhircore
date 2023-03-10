@@ -54,7 +54,7 @@ abstract class RobolectricTest {
 
   companion object {
     private val SYSTEM_PATH =
-      (System.getProperty("user.dir") +
+      (System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
