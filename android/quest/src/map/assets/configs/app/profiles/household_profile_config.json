@@ -44,6 +44,11 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ]
       },
@@ -168,7 +173,9 @@
         },
         {
           "viewType": "LIST",
-          "resources": [
+          "listResource": "Patient",
+          "padding": 16,
+          "relatedResources": [
             {
               "id": "householdPatients",
               "resourceType": "Patient",
