@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -322,6 +323,11 @@ class HivRegisterDaoTest : RobolectricTest() {
     }
     assertNotNull(data)
     val hivProfileData = data as ProfileData.HivProfileData
+    val order = hivProfileData.tasks.none { it.clinicVisitOrder("") != null }
+    Assert.assertEquals(hivProfileData.tasks.isEmpty(), false)
+    val sorted = hivProfileData.tasks.sortedWith(compareBy { it.description }).isEmpty()
+    Assert.assertFalse(sorted)
+    Assert.assertEquals(order, true)
     assertEquals("50y", hivProfileData.age)
     assertEquals("Dist 1 City 1", hivProfileData.address)
     assertEquals("John Doe", hivProfileData.name)
