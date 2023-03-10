@@ -1,6 +1,8 @@
 name: CI MwCore
 
 on:
+  push:
+    branches: [ mwcore-dev ]
   pull_request:
     branches: [ mwcore-dev ]
 
