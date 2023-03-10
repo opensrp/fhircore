@@ -63,6 +63,60 @@ class TaskExtensionTest {
   }
 
   @Test
+  fun `task clinicVisitOrder`() {
+    val systemTag = "https://d-tree.org"
+    Assert.assertEquals(3.0, testTask1.clinicVisitOrder(systemTag))
+    Assert.assertEquals(testTask2.clinicVisitOrder(systemTag), 1.0)
+    val task = testTask1.copy().apply { meta.tag.first().code = systemTag }
+    Assert.assertNull(task.clinicVisitOrder(systemTag))
+  }
+
+  @Test
+  fun `task clinicVisitOrder null when clinic-visit-order code invalid`() {
+    val systemTag = "https://d-tree.org"
+    val task =
+      Task().apply {
+        meta.addTag(
+          Coding().apply {
+            system = systemTag
+            code = "clinic-visit-task-order-NAN"
+          }
+        )
+      }
+    Assert.assertNull(task.clinicVisitOrder(systemTag))
+  }
+
+  @Test
+  fun `task clinicVisitOrder when clinic-visit-order code is double`() {
+    val systemTag = "https://d-tree.org"
+    val task =
+      Task().apply {
+        meta.addTag(
+          Coding().apply {
+            system = systemTag
+            code = "clinic-visit-task-order-34.2"
+          }
+        )
+      }
+    Assert.assertEquals(34.2, task.clinicVisitOrder(systemTag))
+  }
+
+  @Test
+  fun `task clinicVisitOrder with when clinic-visit-order code mixed - and _`() {
+    val systemTag = "https://d-tree.org"
+    val task =
+      Task().apply {
+        meta.addTag(
+          Coding().apply {
+            system = systemTag
+            code = "CLINIC_VISIT-TASK-ORDER_48.1"
+          }
+        )
+      }
+    Assert.assertEquals(48.1, task.clinicVisitOrder(systemTag))
+  }
+
+  @Test
   fun `task isNotCompleted`() {
     Assert.assertTrue(testTask1.isNotCompleted())
     Assert.assertFalse(testTask2.isNotCompleted())
