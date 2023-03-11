@@ -24,7 +24,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType
 import okhttp3.ResponseBody
@@ -57,7 +56,7 @@ class ReferenceUrlResolverTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResolveBinaryResourceShouldReturnBinary() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val binary = Binary().apply { id = "bId" }
       coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
       Assert.assertEquals(

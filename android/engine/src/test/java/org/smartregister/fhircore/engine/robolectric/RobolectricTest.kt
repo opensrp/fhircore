@@ -49,7 +49,7 @@ abstract class RobolectricTest {
       }
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
-    return data[0] as T?
+    @Suppress("UNCHECKED_CAST") return data[0] as T?
   }
 
   companion object {

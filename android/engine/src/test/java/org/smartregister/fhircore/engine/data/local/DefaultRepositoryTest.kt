@@ -472,6 +472,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val relatedPersonId = "1234"
     val relatedPerson = RelatedPerson().setId(relatedPersonId)
+    @Suppress("UNCHECKED_CAST")
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(relatedPerson) as List<RelatedPerson>
     coEvery { defaultRepository.delete(any()) } just runs

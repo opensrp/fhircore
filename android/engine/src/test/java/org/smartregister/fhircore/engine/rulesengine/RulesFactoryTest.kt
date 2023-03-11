@@ -276,7 +276,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun shouldFormatDateWithExpectedFormat() {
-    val inputDate = Date("2021/10/10")
+    val inputDate = LocalDate.parse("2021-10-10").toDate()
 
     val expectedFormat = "dd-MM-yyyy"
     Assert.assertEquals("10-10-2021", rulesEngineService.formatDate(inputDate, expectedFormat))

@@ -35,6 +35,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -666,7 +667,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     // start of plan is lmp date | set lmp date to 4 months , and 15th of month
-    val lmp = Date().plusMonths(-4).apply { date = 15 }
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.MONTH, -4)
+    calendar.set(Calendar.DAY_OF_MONTH, 15)
+    val lmp = calendar.time
 
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
