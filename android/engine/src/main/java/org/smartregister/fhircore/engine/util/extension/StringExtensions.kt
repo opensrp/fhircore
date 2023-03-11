@@ -23,6 +23,7 @@ import java.util.Locale
 import java.util.regex.Pattern
 import org.apache.commons.text.CaseUtils
 import org.apache.commons.text.StringSubstitutor
+import timber.log.Timber
 
 /**
  * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
@@ -42,15 +43,19 @@ fun String.interpolate(
   prefix: String = "@{",
   suffix: String = "}"
 ): String =
-  StringSubstitutor.replace(
-    this.replace(Pattern.quote(prefix).plus(".*?").plus(Pattern.quote(suffix)).toRegex()) {
-      it.value.replace("\\s+".toRegex(), "")
-    },
-    lookupMap,
-    prefix,
-    suffix
-  )
-
+  try {
+    StringSubstitutor.replace(
+      this.replace(Pattern.quote(prefix).plus(".*?").plus(Pattern.quote(suffix)).toRegex()) {
+        it.value.replace("\\s+".toRegex(), "")
+      },
+      lookupMap,
+      prefix,
+      suffix
+    )
+  } catch (e: Exception) {
+    Timber.e(e)
+    this
+  }
 /**
  * Wrapper method around the Java text formatter
  *
