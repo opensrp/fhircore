@@ -32,6 +32,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -82,7 +83,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSyncWithSyncStateInProgress() {
-    appMainActivity.onSync(SyncJobStatus.InProgress(resourceType = null))
+    appMainActivity.onSync(SyncJobStatus.InProgress(ResourceType.Patient))
     Assert.assertTrue(
       appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
         "Sync in progress",

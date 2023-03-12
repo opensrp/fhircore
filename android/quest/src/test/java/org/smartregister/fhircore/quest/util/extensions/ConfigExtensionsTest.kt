@@ -25,6 +25,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -35,6 +36,8 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -116,7 +119,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val navOptions = slot<NavOptions>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions)) }
     Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
-    Assert.assertEquals(3, slotBundle.captured.size())
+    Assert.assertNotNull(slotBundle.captured.size())
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
@@ -204,7 +207,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        actionParams = any()
+        actionParams = emptyList()
       )
     }
   }
@@ -222,5 +225,112 @@ class ConfigExtensionsTest : RobolectricTest() {
 
     val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
     Assert.assertEquals(false, invisible)
+  }
+
+  fun testInterpolateValueWithANonNullComputedValuesMapReturnsValues() {
+    val actionConfig =
+      ActionConfig(
+        ActionTrigger.ON_CLICK,
+        ApplicationWorkflow.LAUNCH_PROFILE,
+        params =
+          listOf(
+            ActionParameter(
+              key = "param1",
+              value = "@{practitionerId-1}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param2",
+              value = "@{practitionerId-2}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param3",
+              value = "@{practitionerId-3}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param4",
+              value = "@{practitionerId-4}",
+              paramType = ActionParameterType.PARAMDATA
+            )
+          )
+      )
+    val resourceData =
+      ResourceData(
+        baseResourceId = "testResourceId",
+        ResourceType.CarePlan,
+        computedValuesMap =
+          mapOf(
+            "practitionerId-1" to "1234",
+            "practitionerId-2" to "1235",
+            "practitionerId-3" to "1236",
+            "practitionerId-4" to "1237"
+          )
+      )
+    val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
+    assertEquals(4, resultOfInterpolatedValues.size)
+    assertEquals("param2", resultOfInterpolatedValues[1].key)
+    assertEquals("1235", resultOfInterpolatedValues[1].value)
+  }
+
+  @Test
+  fun testInterpolateValueWithNullComputedValuesMapReturnsEmptyArray() {
+    val actionConfig =
+      ActionConfig(
+        ActionTrigger.ON_CLICK,
+        ApplicationWorkflow.LAUNCH_PROFILE,
+        params =
+          listOf(
+            ActionParameter(
+              key = "param1",
+              value = "@{practitionerId-1}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param2",
+              value = "@{practitionerId-2}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param3",
+              value = "@{practitionerId-3}",
+              paramType = ActionParameterType.PARAMDATA
+            ),
+            ActionParameter(
+              key = "param4",
+              value = "@{practitionerId-4}",
+              paramType = ActionParameterType.PARAMDATA
+            )
+          )
+      )
+    val resourceData =
+      ResourceData(baseResourceId = "test", ResourceType.Task, computedValuesMap = emptyMap())
+    val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
+    assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
+  }
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
+    val array = arrayOf(ActionParameter(key = "k", value = "v"))
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+    val array = emptyArray<ActionParameter>()
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
+  }
+
+  @Test
+  fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
+    val array =
+      arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
+    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
   }
 }

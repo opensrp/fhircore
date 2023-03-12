@@ -48,7 +48,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
+import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 
 @HiltViewModel
 class RegisterViewModel
@@ -179,10 +179,10 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    paramsList: Array<ActionParameter>?
+    params: Array<ActionParameter>? = emptyArray()
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
