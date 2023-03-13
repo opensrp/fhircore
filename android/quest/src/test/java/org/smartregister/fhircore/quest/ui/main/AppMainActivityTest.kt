@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -32,7 +33,6 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -83,7 +83,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSyncWithSyncStateInProgress() {
-    appMainActivity.onSync(SyncJobStatus.InProgress(ResourceType.Patient))
+    appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
     Assert.assertTrue(
       appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
         "Sync in progress",
