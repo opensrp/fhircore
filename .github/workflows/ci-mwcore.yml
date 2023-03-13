@@ -1,6 +1,8 @@
 name: CI MwCore
 
 on:
+  push:
+    branches: [ mwcore-dev ]
   pull_request:
     branches: [ mwcore-dev ]
 
@@ -11,7 +13,7 @@ env:
 
 jobs:
   engine-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel Previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -41,11 +43,17 @@ jobs:
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: android
+          flags: engine
+          commit_parent: 758a5e4cc344a8d80aa1b7871af1592e35461f04
+          files: engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+          verbose: true
 
   quest-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout 🛎️
@@ -71,5 +79,11 @@ jobs:
         working-directory: android
 
       - name: Upload Quest Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: android
+          commit_parent: 758a5e4cc344a8d80aa1b7871af1592e35461f04
+          flags: quest
+          files: quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: false
+          verbose: true

@@ -28,6 +28,7 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Reference
@@ -46,6 +47,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
@@ -211,18 +213,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchNonWorkflowConfigResources() {
+  fun testFetchNonWorkflowConfigResources() = runTest {
     coEvery { configurationRegistry.repository.searchCompositionByIdentifier(testAppId) } returns
       Composition().apply {
         addSection().apply { this.focus = Reference().apply { reference = "Questionnaire/123" } }
       }
 
-    runBlocking {
-      configurationRegistry.appId = testAppId
-      configurationRegistry.fetchNonWorkflowConfigResources()
-    }
+    configurationRegistry.appId = testAppId
+    configurationRegistry.fetchNonWorkflowConfigResources()
 
     //    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
+    advanceUntilIdle()
     coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
   }
 

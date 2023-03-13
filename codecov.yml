@@ -1,33 +1,35 @@
 codecov:
-  disable_default_path_fixes: true
-
-coverage:
-  status:
-    project:
-      enabled: yes
-      target: auto
-      threshold: 1%
-    patch: 
-      target: 60%
-    changes: no
-  precision: 1
-  round: down
-  range: "75...100"
-
+  notify:
+    wait_for_ci: true
+  max_report_age: off
+  require_ci_to_pass: true
+  allow_coverage_offsets: true
 comment:
-  layout: "header, diff, changes, uncovered, tree"
   behavior: default
-
-flags:
-  eir:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/eir"
-  anc:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/anc"
-  engine:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/engine"
-  quest:
-    paths:
-      - "/home/runner/work/fhircore/fhircore/android/quest"
+  layout: "reach, diff, flags, files"
+  show_carryforward_flags: false
+coverage:
+  precision: 1
+  range:
+  - 75.0
+  - 100.0
+  round: down
+  status:
+    changes: false
+    patch:
+      default:
+        target: 60.0
+        base: auto 
+        threshold: 0
+    project:
+      default:
+        enabled: true
+        target: auto
+        threshold: 1.0
+flag_management:
+  default_rules:
+    carryforward: true
+ignore:
+  - "**/androidTest"  # ignore all files in a folder called androidTest
+  - "**/debug"  # ignore all files in a folder called debug
+  - "**/test"  # ignore all files in a folder called test
