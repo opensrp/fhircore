@@ -101,14 +101,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         ?: emptyList()
 
     prePopulationParams =
-      actionParams
-        .asSequence()
-        .filter {
-          it.paramType == ActionParameterType.PREPOPULATE &&
-            !it.value.isNullOrEmpty() &&
-            !it.value.contains(STRING_INTERPOLATION_PREFIX)
-        }
-        .toList()
+      actionParams.filter {
+        it.paramType == ActionParameterType.PREPOPULATE &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(STRING_INTERPOLATION_PREFIX)
+      }
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }

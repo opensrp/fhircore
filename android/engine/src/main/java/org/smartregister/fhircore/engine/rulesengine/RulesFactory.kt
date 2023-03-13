@@ -214,15 +214,10 @@ constructor(
             facts.getFact(relatedResourceKey).value as List<Resource>
           else emptyList()
 
-      return value
-        .asSequence()
-        .filter {
-          resource.logicalId ==
-            fhirPathDataExtractor
-              .extractValue(it, referenceFhirPathExpression)
-              .extractLogicalIdUuid()
-        }
-        .toList()
+      return value.filter {
+        resource.logicalId ==
+          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
+      }
     }
 
     /**
@@ -381,7 +376,6 @@ constructor(
         return emptyList()
       }
       return resources
-        ?.asSequence()
         ?.filter { fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean() }
         ?.toList()
         ?: emptyList()

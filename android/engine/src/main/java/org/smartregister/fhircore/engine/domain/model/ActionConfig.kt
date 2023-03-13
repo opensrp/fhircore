@@ -41,7 +41,7 @@ data class ActionConfig(
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.asSequence().filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
+      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
         putString(it.key, it.value.interpolate(computedValuesMap))
       }
     }
