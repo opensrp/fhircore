@@ -70,9 +70,7 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
           count = tasksCount
           sort(Task.AUTHORED_ON, Order.ASCENDING)
         }
-        .asSequence()
         .filter { it.isPastExpiry() }
-        .toList()
         .onEach { task ->
           task.status = Task.TaskStatus.CANCELLED
           fhirEngine.update(task)
