@@ -26,7 +26,3 @@ coverage:
 flag_management:
   default_rules:
     carryforward: true
-ignore:
-  - "**/androidTest"  # ignore all files in a folder called androidTest
-  - "**/debug"  # ignore all files in a folder called debug
-  - "**/test"  # ignore all files in a folder called test

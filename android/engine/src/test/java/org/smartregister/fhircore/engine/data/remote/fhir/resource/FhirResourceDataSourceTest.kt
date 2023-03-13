@@ -19,33 +19,32 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 class FhirResourceDataSourceTest {
 
-  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   private val resourceService: FhirResourceService = mockk()
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testLoadDataShouldRetrieveResource() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val bundle = Bundle()
       coEvery { resourceService.getResource(any()) } returns bundle
       Assert.assertEquals(bundle, fhirResourceDataSource.getResource("http://fake.url"))
@@ -53,8 +52,9 @@ class FhirResourceDataSourceTest {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testInsertShouldAddResource() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val resource = Patient()
       coEvery { resourceService.insertResource(any(), any(), any()) } returns resource
       Assert.assertEquals(
@@ -65,8 +65,9 @@ class FhirResourceDataSourceTest {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testUpdateShouldUpdateResource() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val operationOutcome = OperationOutcome()
       coEvery { resourceService.updateResource(any(), any(), any()) } returns operationOutcome
       Assert.assertEquals(
@@ -77,9 +78,9 @@ class FhirResourceDataSourceTest {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testDeleteShouldRemoveResource() {
-
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val operationOutcome = OperationOutcome()
       coEvery { resourceService.deleteResource(any(), any()) } returns operationOutcome
       Assert.assertEquals(
@@ -90,8 +91,9 @@ class FhirResourceDataSourceTest {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testSearchResourceShouldReturnBundle() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val bundle = Bundle()
       coEvery { resourceService.searchResource(any(), any()) } returns bundle
       Assert.assertEquals(
