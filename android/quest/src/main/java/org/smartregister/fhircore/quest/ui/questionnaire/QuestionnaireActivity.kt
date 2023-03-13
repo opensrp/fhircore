@@ -102,14 +102,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     prePopulationParams =
       actionParams.filter {
-        it.paramType == ActionParameterType.PREPOPULATE &&
+        (it.paramType == ActionParameterType.PREPOPULATE ||
+          it.paramType == ActionParameterType.UPDATEABLEIDS) &&
           !it.value.isNullOrEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
-    questionnaireViewModel.setFamilyLogicalIdActionParam(
-      actionParams.firstOrNull { it.paramType == ActionParameterType.UPDATEABLEIDS }
-    )
-
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
 

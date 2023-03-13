@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -109,13 +110,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
-  private var familyLogicalIdActionParam: ActionParameter? = null
-
-  fun setFamilyLogicalIdActionParam(params: ActionParameter?) {
-    if (params != null) {
-      this.familyLogicalIdActionParam = params
-    }
-  }
+  private var actionParamUpdatableId: ActionParameter? = null
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -128,6 +123,8 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
+        actionParamUpdatableId =
+          prePopulationParams.firstOrNull { it.paramType == ActionParameterType.UPDATEABLEIDS }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 
@@ -416,11 +413,11 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse) // update resource
     // update the group/Or any other resource which is associated with this resource
-    if (familyLogicalIdActionParam != null) {
+    if (actionParamUpdatableId != null) {
       val resource =
         defaultRepository.loadResource(
-          familyLogicalIdActionParam!!.value.extractLogicalIdUuid(),
-          ResourceType.fromCode(familyLogicalIdActionParam!!.value.substringBefore("/"))
+          actionParamUpdatableId!!.value.extractLogicalIdUuid(),
+          ResourceType.fromCode(actionParamUpdatableId!!.value.substringBefore("/"))
         )
       defaultRepository.addOrUpdate(resource = resource)
     }
