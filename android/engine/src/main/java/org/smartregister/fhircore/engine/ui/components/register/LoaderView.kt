@@ -103,7 +103,6 @@ fun LoaderDialog(
                       ),
                     modifier =
                       modifier
-                        .testTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
                         .padding(horizontal = 3.dp, vertical = 16.dp),
                   )
                 }
