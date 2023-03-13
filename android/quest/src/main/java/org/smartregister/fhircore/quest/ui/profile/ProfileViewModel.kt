@@ -27,7 +27,6 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -45,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
@@ -95,11 +95,12 @@ constructor(
       val repoResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+      val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
       val resourceData =
         rulesExecutor
           .processResourceData(
-            baseResource = repoResourceData.resource,
-            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+            baseResource = queryResult.resource,
+            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
             ruleConfigs = profileConfigs.rules,
             paramsMap
           )
@@ -112,17 +113,16 @@ constructor(
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false
         )
-      val timeToFireRules = measureTimeMillis {
-        profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData =
-            rulesExecutor.processListResourceData(
-              listProperties = it,
-              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
-              computedValuesMap =
-                resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
-            )
-          listResourceDataMapState[it.id] = listResourceData
-        }
+
+      profileConfigs.views.retrieveListProperties().forEach {
+        val listResourceData =
+          rulesExecutor.processListResourceData(
+            listProperties = it,
+            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+            computedValuesMap =
+              resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+          )
+        listResourceDataMapState[it.id] = listResourceData
       }
     }
   }

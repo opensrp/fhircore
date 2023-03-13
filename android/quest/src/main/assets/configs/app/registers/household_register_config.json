@@ -50,6 +50,12 @@
           },
           {
             "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
             "searchParameter": "subject"
           }
         ]
@@ -91,14 +97,15 @@
         "name": "taskCount",
         "condition": "true",
         "actions": [
-          "data.put('taskCount', size(service.filterResources(Task, \"Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'\")))"
+          "data.put('taskCount', Task == null ? '' :  Task.get(0))"
         ]
       },
       {
         "name": "serviceStatus",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' :'UPCOMING')"
+          "data.put('serviceStatus', taskCount == '' ? 'UPCOMING' : 'DUE' )"
         ]
       },
       {

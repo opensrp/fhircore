@@ -41,7 +41,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     ruleConfigs: List<RuleConfig>,
     params: Map<String, String>?
   ): ResourceData {
-    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
+    val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
     val computedValuesMap =
       computeRules(
         ruleConfigs = ruleConfigs,
@@ -51,7 +51,8 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,
-      computedValuesMap = computedValuesMap.toMutableMap().plus(params!!).toMap()
+      computedValuesMap =
+        if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap()
     )
   }
 
@@ -64,11 +65,14 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
-    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
+    val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
     return listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
-          relatedResourcesMap = relatedResourcesMap,
+          relatedResourcesMap =
+            relatedResourcesMap.mapValues { entry ->
+              entry.value.map { (it as RepositoryResourceData.QueryResult.Search).resource }
+            },
           ruleConfigs = listProperties.registerCard.rules,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
@@ -79,7 +83,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
-    relatedResourcesMap: Map<String, List<Resource>>
+    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>>
   ): Map<String, Any> =
     // Compute values via rules engine and return a map. Rule names MUST be unique
     rulesFactory.fireRules(
@@ -89,7 +93,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     )
 
   private suspend fun List<Resource>.mapToResourceData(
-    relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
+    relatedResourcesMap: Map<String, List<Resource>>,
     ruleConfigs: List<RuleConfig>,
     listRelatedResources: List<ExtractedResource>,
     computedValuesMap: Map<String, Any>
@@ -111,7 +115,10 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         computeRules(
           ruleConfigs = ruleConfigs,
           baseResource = resource,
-          relatedResourcesMap = listItemRelatedResources
+          relatedResourcesMap =
+            listItemRelatedResources.mapValues { entry ->
+              entry.value.map { RepositoryResourceData.QueryResult.Search(resource = it) }
+            }
         )
 
       // LIST view should reuse the previously computed values
@@ -128,26 +135,26 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    * extraction of the [ListResource] conditional FHIR path expression
    */
   private fun filteredListResources(
-    relatedResourceMap: MutableMap<String, MutableList<Resource>>,
+    relatedResourceMap: Map<String, List<RepositoryResourceData.QueryResult>>,
     listResource: ListResource
-  ): MutableList<Resource> {
+  ): List<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
-    val newListRelatedResources = relatedResourceMap[relatedResourceKey]
+    val newListRelatedResources =
+      relatedResourceMap[relatedResourceKey]?.map {
+        (it as RepositoryResourceData.QueryResult.Search).resource
+      }
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
     if (newListRelatedResources != null &&
         !listResource.conditionalFhirPathExpression.isNullOrEmpty()
     ) {
-      return rulesFactory
-        .rulesEngineService
-        .filterResources(
-          resources = newListRelatedResources,
-          fhirPathExpression = listResource.conditionalFhirPathExpression
-        )
-        .toMutableList()
+      return rulesFactory.rulesEngineService.filterResources(
+        resources = newListRelatedResources,
+        fhirPathExpression = listResource.conditionalFhirPathExpression
+      )
     }
 
-    return newListRelatedResources ?: mutableListOf()
+    return newListRelatedResources ?: listOf()
   }
 }
 
@@ -169,17 +176,27 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
  * config Id ( or resource type if the id is not configured) as key and value as list of [Resource]
  * s in the map.
  */
-fun LinkedList<RepositoryResourceData>.createRelatedResourcesMap():
-  MutableMap<String, MutableList<Resource>> {
-  val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
+fun LinkedList<RepositoryResourceData>.createQueryResultMap():
+  MutableMap<String, MutableList<RepositoryResourceData.QueryResult>> {
+  val relatedResourcesMap = mutableMapOf<String, MutableList<RepositoryResourceData.QueryResult>>()
   while (this.isNotEmpty()) {
     val relatedResourceData = this.removeFirst()
-    relatedResourcesMap
-      .getOrPut(relatedResourceData.configId ?: relatedResourceData.resource.resourceType.name) {
-        mutableListOf()
+    when (relatedResourceData.queryResult) {
+      is RepositoryResourceData.QueryResult.Count ->
+        relatedResourcesMap
+          .getOrPut(relatedResourceData.id ?: relatedResourceData.queryResult.resourceType.name) {
+            mutableListOf()
+          }
+          .add(relatedResourceData.queryResult)
+      is RepositoryResourceData.QueryResult.Search -> {
+        relatedResourcesMap
+          .getOrPut(
+            relatedResourceData.id ?: relatedResourceData.queryResult.resource.resourceType.name
+          ) { mutableListOf() }
+          .add(relatedResourceData.queryResult)
+        relatedResourceData.queryResult.relatedResources.forEach { this.addLast(it) }
       }
-      .add(relatedResourceData.resource)
-    relatedResourceData.relatedResources.forEach { this.addLast(it) }
+    }
   }
   return relatedResourcesMap
 }

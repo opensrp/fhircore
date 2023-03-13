@@ -19,14 +19,24 @@ package org.smartregister.fhircore.engine.domain.model
 import androidx.compose.runtime.Stable
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 
 /**
- * @property resource A valid FHIR resource
- * @property relatedResources Nested list of [RepositoryResourceData]
+ * @property id A unique name retrieved from the configs used to identify the data represented by
+ * this data class; more like a variable name used to access the object in rules engine facts map
+ * @property queryResult The response returned from the database query. The response can either be a
+ * [QueryResult.Search] or [QueryResult.Count]. [QueryResult.Search] includes a [Resource] and
+ * optionally a list of related [RepositoryResourceData], typically this result is produced when a
+ * SELECT query returns FHIR [Resource]'s. [QueryResult.Count] represents the count for the
+ * configured resources
  */
 @Stable
-data class RepositoryResourceData(
-  val configId: String? = null,
-  val resource: Resource,
-  val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
-)
+data class RepositoryResourceData(val id: String? = null, val queryResult: QueryResult) {
+  sealed class QueryResult {
+    data class Search(
+      val resource: Resource,
+      val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
+    ) : QueryResult()
+    data class Count(val resourceType: ResourceType, val count: Long) : QueryResult()
+  }
+}

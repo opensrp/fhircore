@@ -39,6 +39,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -123,7 +124,7 @@ constructor(
   suspend fun fireRules(
     rules: Rules,
     baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
   ): Map<String, Any> {
     return withContext(dispatcherProvider.io()) {
       // Initialize new facts and fire rules in background
@@ -135,7 +136,16 @@ constructor(
           if (baseResource != null) {
             put(baseResource.resourceType.name, baseResource)
           }
-          relatedResourcesMap.forEach { put(it.key, it.value) }
+          relatedResourcesMap.forEach {
+            val actualValue =
+              it.value.map { queryResult ->
+                when (queryResult) {
+                  is RepositoryResourceData.QueryResult.Count -> queryResult.count
+                  is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+                }
+              }
+            put(it.key, actualValue)
+          }
         }
       if (BuildConfig.DEBUG) {
         val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }

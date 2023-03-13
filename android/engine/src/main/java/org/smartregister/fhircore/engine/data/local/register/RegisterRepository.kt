@@ -123,9 +123,12 @@ constructor(
 
       // Include secondary resourceData in each row if secondaryResources are configured
       RepositoryResourceData(
-        configId = baseResourceConfig.id ?: baseResourceType.name,
-        resource = baseResource,
-        relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
+        id = baseResourceConfig.id ?: baseResourceType.name,
+        queryResult =
+          RepositoryResourceData.QueryResult.Search(
+            resource = baseResource,
+            relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
+          )
       )
     }
   }
@@ -141,7 +144,7 @@ constructor(
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
     val relatedResourcesData = LinkedList<RepositoryResourceData>()
     if (fhirPathExpression.isNullOrEmpty()) {
-      val relatedResourceSearch =
+      val search =
         Search(type = relatedResourceType).apply {
           filterByResourceTypeId(
             ReferenceClientParam(resourceConfig.searchParameter),
@@ -149,16 +152,29 @@ constructor(
             baseResource.logicalId
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
-          sort(resourceConfig.sortConfigs)
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+      if (resourceConfig.resultAsCount) {
+        val count = fhirEngine.count(search)
         relatedResourcesData.addLast(
           RepositoryResourceData(
-            configId = resourceConfig.id ?: resource.resourceType.name,
-            resource = resource
+            id = resourceConfig.id ?: relatedResourceType.name,
+            queryResult =
+              RepositoryResourceData.QueryResult.Count(
+                resourceType = relatedResourceType,
+                count = count
+              )
           )
         )
-
+      } else {
+        val relatedResourceSearch = search.apply { sort(resourceConfig.sortConfigs) }
+        fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+          relatedResourcesData.addLast(
+            RepositoryResourceData(
+              id = resourceConfig.id ?: resource.resourceType.name,
+              queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
+            )
+          )
+        }
         postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
       }
     } else {
@@ -180,8 +196,8 @@ constructor(
           resource?.let {
             relatedResourcesData.addLast(
               RepositoryResourceData(
-                configId = resourceConfig.id ?: resource.resourceType.name,
-                resource = resource
+                id = resourceConfig.id ?: resource.resourceType.name,
+                queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
               )
             )
           }
@@ -196,18 +212,20 @@ constructor(
     relatedResourcesData: LinkedList<RepositoryResourceData>
   ) {
 
-    if (relatedResourcesData.size < 1) return
+    if (relatedResourcesData.isEmpty()) return
 
     relatedResources.forEach {
+      val repositoryResourceData =
+        relatedResourcesData.last.queryResult as RepositoryResourceData.QueryResult.Search
       val searchRelatedResources =
         searchRelatedResources(
           resourceConfig = it,
-          baseResourceType = relatedResourcesData.last.resource.resourceType,
-          baseResource = relatedResourcesData.last.resource,
+          baseResourceType = repositoryResourceData.resource.resourceType,
+          baseResource = repositoryResourceData.resource,
           fhirPathExpression = it.fhirPathExpression
         )
 
-      relatedResourcesData.last.relatedResources.addAll(searchRelatedResources)
+      repositoryResourceData.relatedResources.addAll(searchRelatedResources)
     }
   }
 
@@ -314,9 +332,12 @@ constructor(
     }
 
     return RepositoryResourceData(
-      configId = baseResourceConfig.id ?: baseResourceType.name,
-      resource = baseResource,
-      relatedResources = relatedResources
+      id = baseResourceConfig.id ?: baseResourceType.name,
+      queryResult =
+        RepositoryResourceData.QueryResult.Search(
+          resource = baseResource,
+          relatedResources = relatedResources
+        )
     )
   }
 
@@ -351,9 +372,12 @@ constructor(
         }
         repositoryResourceData.add(
           RepositoryResourceData(
-            configId = fhirResourceConfig.baseResource.id,
-            resource = baseResource,
-            relatedResources = baseRelatedResourceList
+            id = fhirResourceConfig.baseResource.id,
+            queryResult =
+              RepositoryResourceData.QueryResult.Search(
+                resource = baseResource,
+                relatedResources = baseRelatedResourceList
+              )
           )
         )
       }
