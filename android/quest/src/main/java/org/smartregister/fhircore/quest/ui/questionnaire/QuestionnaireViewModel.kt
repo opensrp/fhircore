@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -110,21 +109,11 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+  private val paramDataActionParameter: MutableList<ActionParameter> = mutableListOf()
 
-  private fun readFileFromAssets(filename: String, application: Application): String {
-    return application.assets.open(filename).bufferedReader().use { it.readText() }
+  fun setParamData(params: List<ActionParameter>) {
+    this.paramDataActionParameter.addAll(params)
   }
-  //  suspend fun loadQuestionnaire(
-  //    application: Application,
-  //    id: String,
-  //    type: QuestionnaireType,
-  //    prePopulationParams: List<ActionParameter>? = emptyList()
-  //  ): Questionnaire? {
-  //    val question = readFileFromAssets("test-questionnaire.json", application).trimIndent()
-  //    val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-  //    return parser.parseResource(org.hl7.fhir.r4.model.Questionnaire::class.java, question) as
-  //      Questionnaire
-  //  }
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -423,7 +412,17 @@ constructor(
       )
       return
     }
-    defaultRepository.addOrUpdate(resource = questionnaireResponse)
+    defaultRepository.addOrUpdate(resource = questionnaireResponse) // update resource
+    // update the group/Or any other resource which is associated with this resource
+
+    if (paramDataActionParameter.isNotEmpty() && paramDataActionParameter[0].value.contains("/")) {
+      val resource =
+        defaultRepository.loadResource(
+          paramDataActionParameter[0].value.extractLogicalIdUuid(),
+          ResourceType.fromCode(paramDataActionParameter[0].value.substringBefore("/"))
+        )
+      defaultRepository.addOrUpdate(resource = resource)
+    }
   }
 
   suspend fun performExtraction(

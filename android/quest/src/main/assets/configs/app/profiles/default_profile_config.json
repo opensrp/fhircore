@@ -3148,7 +3148,8 @@
             "params": [
               {
                 "key": "familyLogicalId",
-                "value": "@{familyLogicalId}"
+                "value": "@{familyLogicalId}",
+                "paramType": "PARAMDATA"
               }
             ]
           }
@@ -3175,7 +3176,8 @@
           "params": [
             {
               "key": "familyLogicalId",
-              "value": "@{familyLogicalId}"
+              "value": "@{familyLogicalId}",
+              "paramType": "PARAMDATA"
             },
             {
               "paramType": "PREPOPULATE",
@@ -3557,7 +3559,8 @@
             "params": [
               {
                 "key": "familyLogicalId",
-                "value": "@{familyLogicalId}"
+                "value": "@{familyLogicalId}",
+                "paramType": "PARAMDATA"
               }
             ]
           }
@@ -3583,7 +3586,8 @@
             "params": [
               {
                 "key": "familyLogicalId",
-                "value": "@{familyLogicalId}"
+                "value": "@{familyLogicalId}",
+                "paramType": "PARAMDATA"
               }
             ]
           }
@@ -3609,6 +3613,7 @@
           },
           "params": [
             {
+              "paramType": "PARAMDATA",
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}"
             },
@@ -3679,7 +3684,8 @@
           "params": [
             {
               "key": "familyLogicalId",
-              "value": "@{familyLogicalId}"
+              "value": "@{familyLogicalId}",
+              "paramType": "PARAMDATA"
             },
             {
               "paramType": "PREPOPULATE",
@@ -3809,6 +3815,7 @@
             ],
             "params": [
               {
+                "paramType": "PARAMDATA",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
@@ -3834,6 +3841,7 @@
             "saveButtonText": "Update registration",
             "params": [
               {
+                "paramType": "PARAMDATA",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }

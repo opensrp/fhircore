@@ -38,7 +38,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
@@ -156,15 +155,10 @@ constructor(
                       questionnaireConfig.interpolate(
                         event.resourceData?.computedValuesMap ?: emptyMap()
                       )
-                    var groupResourceId: String? = null
-
                     val params =
                       actionConfig
                         .params
                         .map {
-                          if (it.key == "familyLogicalId") {
-                            groupResourceId = it.value
-                          }
                           ActionParameter(
                             key = it.key,
                             paramType = it.paramType,
@@ -188,10 +182,7 @@ constructor(
                           .maxByOrNull { it.authored } // Get latest version
                           ?.let { parser.encodeResourceToString(it) }
                     }
-                    groupResourceId?.let {
-                      val groupResource = GroupResourceConfig(it, "")
-                      questionnaireConfigInterpolated.groupResource = groupResource
-                    }
+
                     val intentBundle =
                       actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
                         .apply {

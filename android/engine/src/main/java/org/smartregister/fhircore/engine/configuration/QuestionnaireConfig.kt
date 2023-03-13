@@ -35,7 +35,7 @@ data class QuestionnaireConfig(
   val resourceIdentifier: String? = null,
   val resourceType: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
-  var groupResource: GroupResourceConfig? = null,
+  val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null
@@ -66,7 +66,7 @@ fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
     groupResource =
       groupResource?.copy(
         groupIdentifier =
-          groupResource?.groupIdentifier?.interpolate(computedValuesMap)!!.extractLogicalIdUuid()
+          groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid()
       ),
     confirmationDialog =
       confirmationDialog?.copy(
