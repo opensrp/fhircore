@@ -1,21 +1,29 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Feature
+about: Working on a feature (New, Enhancement e.t.c)
 title: ''
-labels: 'enhancement'
+labels: 'feature'
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Describe the feature request.**
+A clear and concise description of the feature or what problem is being solved 
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+If available add any other context or screenshots about the feature here.
 
+**Acceptance criteria**
+A check list of all things to verify once the implementation by the engineer is complete
+
+**Area path**
+A list of ordered steps in the app for useage of the feature to support anyone testing it e.g. Code reviewer, QA e.g.
+1. Login to the app
+2. Open _Navigation bar_
+3. Click on _Children register_
+4. Click on _Child profile_
+5. Click on _Edit profile_ from menu
+
+**Implementation plan (For Engineers)**
+The plan for implementing the solution e.g. via a _description_ or a _check list_ for the various ordered tasks that will need to be completed.
+_i.e. Describe how you intend to solve the problem_
