@@ -23,7 +23,9 @@ import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import java.util.Calendar
 import java.util.Date
 import kotlin.test.assertEquals
@@ -100,7 +102,31 @@ class HivRegisterDaoTest : RobolectricTest() {
       family = "doe",
       given = "jane",
       gender = null,
-      patientType = "exposed-infant"
+      patientType = "exposed-infant",
+    )
+      .apply { active = true }
+
+  private val testPatientDeceasedFalse =
+    buildPatient(
+      id = "4",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234",
+      deceased = false
+    )
+      .apply { active = true }
+
+  private val testPatientDeceasedTrue =
+    buildPatient(
+      id = "5",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234",
+      deceased = true
     )
       .apply { active = true }
 
@@ -158,11 +184,19 @@ class HivRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
     coEvery { fhirEngine.get(ResourceType.Task, testTask2.logicalId) } returns testTask2
 
+    coEvery { fhirEngine.update(any()) } just runs
+
     coEvery { fhirEngine.search<Resource>(any()) } answers
       {
         val search = firstArg<Search>()
         when (search.type) {
-          ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
+          ResourceType.Patient ->
+            listOf<Patient>(
+              testPatient,
+              testPatientGenderNull,
+              testPatientDeceasedFalse,
+              testPatientDeceasedTrue
+            )
           ResourceType.Task -> listOf<Task>(testTask1, testTask2)
           ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
@@ -222,6 +256,50 @@ class HivRegisterDaoTest : RobolectricTest() {
           it.logicalId != testPatientGenderNull.logicalId
       }
     }
+  }
+
+  @Test
+  fun `return true if the patient is valid`() = runTest {
+    val isValid = hivRegisterDao.isValidPatient(testPatientDeceasedFalse)
+    assertTrue(isValid)
+  }
+
+  @Test
+  fun `return false if the patient is not valid `() = runTest {
+    val isValid = hivRegisterDao.isValidPatient(testPatientDeceasedFalse)
+    assertTrue(isValid)
+  }
+
+  @Test
+  fun testLoadRelatedPersons() = runTest {
+    val relatedPerson =
+      RelatedPerson().apply {
+        id = "23"
+        gender = Enumerations.AdministrativeGender.MALE
+        birthDate = DateType(Date()).apply { add(Calendar.YEAR, -32) }.dateTimeValue().value
+      }
+    val personReference = relatedPerson.asReference()
+    coEvery { fhirEngine.get(ResourceType.RelatedPerson, relatedPerson.logicalId) } returns
+      relatedPerson
+    testPatient.apply {
+      link = mutableListOf(Patient.PatientLinkComponent().apply { other = personReference })
+    }
+
+    val result = hivRegisterDao.loadRelatedPerson(relatedPerson.logicalId)
+    coVerify { fhirEngine.get(ResourceType.RelatedPerson, relatedPerson.logicalId) }
+    assertNotNull(result)
+    assertEquals(relatedPerson.logicalId, result.logicalId)
+  }
+
+  @Test
+  fun testRemovePatient() = runTest {
+    val patient =
+      Patient().apply {
+        id = "1"
+        active = true
+      }
+    hivRegisterDao.removePatient(patient.id)
+    coVerify { fhirEngine.update(any()) }
   }
 
   @Test
@@ -382,7 +460,7 @@ class HivRegisterDaoTest : RobolectricTest() {
   @Test
   fun testCountRegisterData() = runTest {
     val count = hivRegisterDao.countRegisterData("HIV")
-    assertEquals(1, count)
+    assertEquals(3, count)
   }
 
   private val testHivPatient =

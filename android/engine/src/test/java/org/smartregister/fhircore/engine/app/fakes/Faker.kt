@@ -88,7 +88,8 @@ object Faker {
     age: Int = 78,
     gender: Enumerations.AdministrativeGender? = Enumerations.AdministrativeGender.MALE,
     patientType: String = "",
-    practitionerReference: String = ""
+    practitionerReference: String = "",
+    deceased: Boolean = false
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -114,6 +115,7 @@ object Faker {
       )
 
       this.generalPractitionerFirstRep.apply { reference = practitionerReference }
+      this.deceased = deceasedBooleanType
     }
   }
 }
