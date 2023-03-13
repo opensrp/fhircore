@@ -47,14 +47,16 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val PIN_CELL_TEST_TAG = "pinCell"
+const val PIN_CELL_TEXT_TEST_TAG = "pinCellText"
+const val PIN_TEXT_FIELD_TEST_TAG = "pinTextField"
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -111,7 +113,7 @@ fun PinInput(
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
     singleLine = true,
-    modifier = modifier.focusRequester(focusRequester).size(0.dp),
+    modifier = modifier.focusRequester(focusRequester).size(0.dp).testTag(PIN_TEXT_FIELD_TEST_TAG),
   )
 
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -168,17 +170,24 @@ fun PinCell(
         )
         .clickable { onPinCellClick() },
     contentAlignment = Alignment.Center
-  ) { if (inputMode) Text(text = number, textAlign = TextAlign.Center) }
+  ) {
+    if (inputMode)
+      Text(
+        modifier = modifier.testTag(PIN_CELL_TEXT_TEST_TAG),
+        text = number,
+        textAlign = TextAlign.Center
+      )
+  }
 }
 
 @Composable
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 private fun PinViewWithActiveInputModePreview() {
   PinInput(pinLength = 4, inputMode = true, onPinSet = {}, onPinVerified = {}, onShowPinError = {})
 }
 
 @Composable
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 private fun PinViewWithInActiveInputModePreview() {
   PinInput(
     pinLength = 4,

@@ -29,6 +29,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -658,7 +659,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(relatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
 
     runBlocking {
       val list = questionnaireViewModel.loadRelatedPerson("1")
@@ -683,7 +684,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testGetPopulationResourcesShouldReturnListOfResources() {
 
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(RelatedPerson().apply { id = "2" })
 
     val intent = Intent()
