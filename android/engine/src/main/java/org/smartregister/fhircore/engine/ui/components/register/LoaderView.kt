@@ -101,9 +101,7 @@ fun LoaderDialog(
                         id = R.string.percentage_progress,
                         percentageProgressFlow.collectAsState(0).value
                       ),
-                    modifier =
-                      modifier
-                        .padding(horizontal = 3.dp, vertical = 16.dp),
+                    modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
                   )
                 }
               }
