@@ -35,6 +35,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -123,6 +124,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForPatient() = runTest {
     val plandefinition =
       "plans/child-routine-visit/plandefinition.json"
@@ -205,6 +207,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForGroup() = runTest {
     val plandefinition =
       "plans/household-routine-visit/plandefinition.json"
@@ -272,6 +275,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForHouseHold() = runTest {
     val plandefinition =
       "plans/household-wash-check-routine-visit/plandefinition.json"
@@ -345,6 +349,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   @Ignore("Passing local failing CI")
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -472,6 +477,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildUnder2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -521,6 +527,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testCompleteCarePlanForSickChildFollowup() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -566,7 +573,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )!!
       .also { carePlan: CarePlan ->
-        val carePlan = carePlan
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
         createdTasksSlot.forEach { resource -> println(resource.encodeResourceToString()) }
@@ -589,6 +595,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testUpdateCarePlanForSickChildReferral() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -646,6 +653,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForANCVisit() = runTest {
     val plandefinition =
       "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
@@ -659,7 +667,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     // start of plan is lmp date | set lmp date to 4 months , and 15th of month
-    val lmp = Date().plusMonths(-4).apply { date = 15 }
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.MONTH, -4)
+    calendar.set(Calendar.DAY_OF_MONTH, 15)
+    val lmp = calendar.time
 
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
@@ -984,6 +995,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun `transitionTaskTo should update task status`() = runTest {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
     coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
