@@ -50,7 +50,7 @@ data class ConfirmationDialog(
 
 @Serializable
 data class GroupResourceConfig(
-  var groupIdentifier: String,
+  val groupIdentifier: String,
   val memberResourceType: String,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,

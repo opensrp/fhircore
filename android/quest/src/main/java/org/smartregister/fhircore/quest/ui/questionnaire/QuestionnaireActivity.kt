@@ -83,7 +83,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
   private lateinit var prePopulationParams: List<ActionParameter>
-  private lateinit var paramDataActionParams: List<ActionParameter>
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -107,13 +106,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.isNullOrEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
-    paramDataActionParams =
-      actionParams.filter {
-        it.paramType == ActionParameterType.PARAMDATA &&
-          !it.value.isNullOrEmpty() &&
-          !it.value.contains(STRING_INTERPOLATION_PREFIX)
-      }
-    questionnaireViewModel.setParamData(paramDataActionParams)
+    questionnaireViewModel.setFamilyLogicalIdActionParam(
+      actionParams.firstOrNull { it.paramType == ActionParameterType.UPDATEABLEIDS }
+    )
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }

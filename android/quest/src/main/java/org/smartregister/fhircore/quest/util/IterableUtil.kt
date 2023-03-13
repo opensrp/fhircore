@@ -44,7 +44,9 @@ fun convertActionParameterArrayToMap(array: Array<ActionParameter>?): Map<String
   val paramsMap: MutableMap<String, String> = mutableMapOf()
   if (array != null) {
     for (param in array) {
-      if (param.paramType == ActionParameterType.PARAMDATA && !param.value.isNullOrEmpty()) {
+      if ((param.paramType == ActionParameterType.PARAMDATA) ||
+          (param.paramType == ActionParameterType.UPDATEABLEIDS) && !param.value.isNullOrEmpty()
+      ) {
         paramsMap[param.key] = param.value
       }
     }

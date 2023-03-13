@@ -280,7 +280,10 @@ constructor(
   ): RepositoryResourceData {
     val paramsMap: Map<String, String> =
       paramsList
-        ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        ?.filter {
+          (it.paramType == ActionParameterType.PARAMDATA ||
+            it.paramType == ActionParameterType.UPDATEABLEIDS) && !it.value.isNullOrEmpty()
+        }
         ?.associate { it.key to it.value }
         ?: emptyMap()
     val profileConfiguration =

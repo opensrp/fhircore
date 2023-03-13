@@ -109,10 +109,12 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
-  private val paramDataActionParameter: MutableList<ActionParameter> = mutableListOf()
+  private var familyLogicalIdActionParam: ActionParameter? = null
 
-  fun setParamData(params: List<ActionParameter>) {
-    this.paramDataActionParameter.addAll(params)
+  fun setFamilyLogicalIdActionParam(params: ActionParameter?) {
+    if (params != null) {
+      this.familyLogicalIdActionParam = params
+    }
   }
 
   suspend fun loadQuestionnaire(
@@ -414,12 +416,11 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse) // update resource
     // update the group/Or any other resource which is associated with this resource
-
-    if (paramDataActionParameter.isNotEmpty() && paramDataActionParameter[0].value.contains("/")) {
+    if (familyLogicalIdActionParam != null) {
       val resource =
         defaultRepository.loadResource(
-          paramDataActionParameter[0].value.extractLogicalIdUuid(),
-          ResourceType.fromCode(paramDataActionParameter[0].value.substringBefore("/"))
+          familyLogicalIdActionParam!!.value.extractLogicalIdUuid(),
+          ResourceType.fromCode(familyLogicalIdActionParam!!.value.substringBefore("/"))
         )
       defaultRepository.addOrUpdate(resource = resource)
     }

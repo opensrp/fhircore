@@ -3149,7 +3149,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "PARAMDATA"
+                "paramType": "UPDATEABLEIDS"
               }
             ]
           }
@@ -3177,7 +3177,7 @@
             {
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}",
-              "paramType": "PARAMDATA"
+              "paramType": "UPDATEABLEIDS"
             },
             {
               "paramType": "PREPOPULATE",
@@ -3560,7 +3560,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "PARAMDATA"
+                "paramType": "UPDATEABLEIDS"
               }
             ]
           }
@@ -3587,7 +3587,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "PARAMDATA"
+                "paramType": "UPDATEABLEIDS"
               }
             ]
           }
@@ -3613,7 +3613,7 @@
           },
           "params": [
             {
-              "paramType": "PARAMDATA",
+              "paramType": "UPDATEABLEIDS",
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}"
             },
@@ -3685,7 +3685,7 @@
             {
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}",
-              "paramType": "PARAMDATA"
+              "paramType": "UPDATEABLEIDS"
             },
             {
               "paramType": "PREPOPULATE",
@@ -3815,7 +3815,7 @@
             ],
             "params": [
               {
-                "paramType": "PARAMDATA",
+                "paramType": "UPDATEABLEIDS",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
@@ -3841,7 +3841,7 @@
             "saveButtonText": "Update registration",
             "params": [
               {
-                "paramType": "PARAMDATA",
+                "paramType": "UPDATEABLEIDS",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
