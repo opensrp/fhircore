@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -417,7 +418,12 @@ constructor(
       val resource =
         defaultRepository.loadResource(
           actionParamUpdatableId!!.value.extractLogicalIdUuid(),
-          ResourceType.fromCode(actionParamUpdatableId!!.value.substringBefore("/"))
+          actionParamUpdatableId!!
+            .value
+            .substringBefore("/")
+            .resourceClassType()
+            .newInstance()
+            .resourceType
         )
       defaultRepository.addOrUpdate(resource = resource)
     }
