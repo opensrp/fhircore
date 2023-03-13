@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.domain.model
 
 import org.junit.Assert
 import org.junit.Test
 
-class MeasureReportConfigTest {
-
-  private val measureReportConfig =
-    MeasureReportConfig(
-      id = "1234",
-      title = "title",
-      description = "description",
-      url = "measureURL",
-      module = "module"
-    )
+class LanguageTest {
 
   @Test
-  fun testMeasureReportConfig() {
-    Assert.assertEquals("1234", measureReportConfig.id)
-    Assert.assertEquals("title", measureReportConfig.title)
-    Assert.assertEquals("description", measureReportConfig.description)
-    Assert.assertEquals("measureURL", measureReportConfig.url)
-    Assert.assertEquals("module", measureReportConfig.module)
+  fun testToString() {
+    val displayName = "display name"
+    val language = Language("tag", displayName)
+
+    Assert.assertEquals(displayName, language.toString())
   }
 }
