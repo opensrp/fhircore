@@ -66,15 +66,18 @@ import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.CurrentTracingAttempt
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.tracing.components.InfoBoxItem
+import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
 @Composable
 fun TracingProfileScreen(
@@ -199,10 +202,16 @@ fun TracingProfilePageView(
         // TracingVisitDue(profileViewData.tracingTask.executionPeriod.end.asDdMmYyyy())
         Spacer(modifier = modifier.height(20.dp))
         // Tracing Reason
-        repeat(profileViewData.tracingTasks.size) {
-          TracingReasonBox(profileViewData.tracingTasks[it], displayForHomeTrace = true)
-          Spacer(modifier = modifier.height(20.dp))
+        if (profileViewData.currentAttempt != null) {
+          TracingReasonCard(
+            tracingTasks = profileViewData.tracingTasks,
+            attempts = profileViewData.attempts,
+            currentAttempt = profileViewData.currentAttempt,
+            lastAttempt = profileViewData.lastAttempt,
+            displayForHomeTrace = true
+          )
         }
+        Spacer(modifier = modifier.height(20.dp))
         // Tracing Patient address/contact
         TracingContactAddress(profileViewData, displayForHomeTrace = false)
         Spacer(modifier = modifier.height(20.dp))
@@ -305,39 +314,40 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TracingReasonBox(
-  tracingTask: Task,
+private fun TracingReasonCard(
+  tracingTasks: List<Task>,
+  attempts: Int,
+  currentAttempt: CurrentTracingAttempt,
+  lastAttempt: CurrentTracingAttempt?,
   modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
 ) {
-  Card(
-    elevation = 3.dp,
+  OutlineCard(
     modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
-    border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
     Column(modifier = modifier.padding(horizontal = 4.dp)) {
       TracingReasonItem(
         title = stringResource(R2.string.reason_for_trace),
-        value = tracingTask.reasonCode?.codingFirstRep?.display ?: ""
+        value =
+          tracingTasks.joinToString(separator = ",") {
+            it.reasonCode?.codingFirstRep?.display ?: ""
+          }
       )
-      if (displayForHomeTrace)
-        TracingReasonItem(
-          title = stringResource(R2.string.last_home_trace_outcome),
-          value = "Todo display reason text here",
-          verticalRenderOrientation = true
-        )
-      else
-        TracingReasonItem(
-          title = stringResource(R2.string.last_phone_trace_outcome),
-          value = "Todo display reason text here",
-          verticalRenderOrientation = true
-        )
+      TracingReasonItem(
+        title =
+          if (displayForHomeTrace) stringResource(R2.string.last_home_trace_outcome)
+          else stringResource(R2.string.last_phone_trace_outcome),
+        value = lastAttempt?.reasons?.joinToString(separator = ",") { it } ?: "None",
+        verticalRenderOrientation = true
+      )
       TracingReasonItem(
         title = stringResource(R2.string.date_of_last_attempt),
-        value = "todo DD/MM/yyyy"
+        value = lastAttempt?.lastAttempt?.asDdMmYyyy() ?: "None"
       )
-      TracingReasonItem(title = stringResource(R2.string.number_of_attempts), value = "X")
+      TracingReasonItem(
+        title = stringResource(R2.string.number_of_attempts),
+        value = attempts.toString()
+      )
     }
   }
 }

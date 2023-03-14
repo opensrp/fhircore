@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.CurrentTracingAttempt
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -143,7 +144,15 @@ constructor(
         conditions = patient.activeConditions(),
         guardians = patient.guardians(),
         practitioners = patient.practitioners(),
-              currentAttempt = null
+        currentAttempt =
+          CurrentTracingAttempt(
+            lastAttempt = null,
+            outcome = "jeff",
+            numberOfAttempts = 2,
+            reasons = listOf(),
+          ),
+        lastAttempt = null,
+        numberOfAttempts = 0
       )
     }
   }

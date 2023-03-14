@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.tracing.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,6 @@ fun OutlineCard(modifier: Modifier = Modifier, content: (@Composable() () -> Uni
     shape = RoundedCornerShape(12.dp),
     border = BorderStroke(width = 2.dp, color = StatusTextColor),
     modifier = modifier.fillMaxWidth(),
-    content = content,
+    content = { Box(modifier = Modifier.padding(12.dp)) { content() } },
   )
 }
