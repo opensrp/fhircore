@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -54,6 +53,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -103,7 +103,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -184,7 +184,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesIgnoresBaseResourceWhenNull() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",

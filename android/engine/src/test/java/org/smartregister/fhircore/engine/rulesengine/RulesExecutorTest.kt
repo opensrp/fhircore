@@ -131,7 +131,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
@@ -167,7 +170,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
