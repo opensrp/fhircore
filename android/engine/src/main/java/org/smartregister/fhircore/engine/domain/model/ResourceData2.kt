@@ -33,21 +33,9 @@ import org.hl7.fhir.r4.model.ResourceType
  * resources but precompute the values needed by firing the configured rules.
  */
 @Stable
-data class ResourceData(
+data class ResourceData2(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
-  val computedValuesMap: MutableMap<String, Any>,
-  val listResourceDataMap: MutableMap<String, List<ResourceData>>,
-  val baseResource: Resource? = null
-)
-
-/**
- * @property resource A valid FHIR resource
- * @property relatedResources Nested list of [RelatedResourceData]
- */
-@Stable
-data class RelatedResourceData(
-  val resource: Resource,
-  val relatedResources: LinkedList<RelatedResourceData> = LinkedList(),
-  val resourceConfigId: String? = null
+  val computedValuesMap: State<Map<String, Any>>,
+  val listResourceDataMap: Map<String, List<ResourceData>>
 )

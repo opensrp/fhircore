@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -58,7 +59,8 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         AppTheme {
           ProfileScreen(
             navController = findNavController(),
-            profileUiState = profileViewModel.profileUiState.value,
+            profileUiState = profileViewModel.profileUiState,
+            resourceData = profileViewModel.resourceDataState,
             onEvent = profileViewModel::onEvent,
             snackStateFlow = profileViewModel.snackBarStateFlow
           )

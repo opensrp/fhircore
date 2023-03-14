@@ -62,7 +62,8 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
+  // TODO: THIS NEEDS TO CHANGE
+  val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
       Text(
@@ -184,7 +185,19 @@ private fun ListWithHorizontalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap()
+          computedValuesMap = mutableMapOf(),
+          listResourceDataMap =
+          mutableMapOf(
+              "listId" to
+                listOf(
+                  ResourceData(
+                    baseResourceId = "carePlan1",
+                    baseResourceType = ResourceType.CarePlan,
+                    computedValuesMap = mutableMapOf(),
+                    listResourceDataMap = mutableMapOf()
+                  )
+                )
+            )
         )
     )
   }
@@ -235,7 +248,19 @@ private fun ListWithVerticalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap()
+          computedValuesMap = mutableMapOf(),
+          listResourceDataMap =
+          mutableMapOf(
+              "listId" to
+                listOf(
+                  ResourceData(
+                    baseResourceId = "carePlan1",
+                    baseResourceType = ResourceType.CarePlan,
+                    computedValuesMap = mutableMapOf(),
+                    listResourceDataMap = mutableMapOf()
+                  )
+                )
+            )
         )
     )
   }

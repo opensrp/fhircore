@@ -134,7 +134,7 @@ constructor(
     baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
     fhirEngine: FhirEngine? = null
-  ): Map<String, Any> {
+  ): MutableMap<String, Any> {
     return withContext(dispatcherProvider.io()) {
       // Initialize new facts and fire rules in background
       facts =
@@ -269,7 +269,7 @@ constructor(
 
         timer.stop()
       }
-      facts.get(DATA) as Map<String, Any>
+      facts.get(DATA) as MutableMap<String, Any>
     }
   }
 

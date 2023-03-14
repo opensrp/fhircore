@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
@@ -45,7 +46,10 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData2
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData2
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
@@ -54,6 +58,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -76,6 +81,7 @@ constructor(
 ) : ViewModel() {
 
   val profileUiState = mutableStateOf(ProfileUiState())
+  val resourceDataState = MutableLiveData<ResourceData?>(null)
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
@@ -91,10 +97,13 @@ constructor(
     paramsList: Array<ActionParameter>?
   ) {
     if (resourceId.isNotEmpty()) {
-      val repoResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+
+      // Load the base resource and fire the rules
+      val repoResourceData =
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
+
       val resourceData =
         rulesExecutor
           .processResourceData(
@@ -106,6 +115,8 @@ constructor(
           )
           .copy(listResourceDataMap = listResourceDataMapState)
 
+      resourceDataState.postValue(resourceData)
+
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
@@ -113,18 +124,140 @@ constructor(
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false
         )
-      val timeToFireRules = measureTimeMillis {
-        profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData =
+
+      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+      val baseResourceConfig = resourceConfig.baseResource
+      val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+      val baseResourceType = baseResourceClass.newInstance().resourceType
+
+      val relatedResources = MutableLiveData<LinkedList<RepositoryResourceData>>()
+
+      val repositoryResourceData = RepositoryResourceData2(
+        configId = baseResourceConfig.id ?: baseResourceType.name,
+        resource = repoResourceData.resource,
+        relatedResources = relatedResources
+      )
+
+      registerRepository.loadOtherProfileData(repoResourceData.resource,
+        profileId, resourceId, fhirResourceConfig, paramsList, repositoryResourceData)
+
+      var nextPos = 0
+
+      repositoryResourceData.relatedResources.observeForever {
+        Timber.e("Received repository resource data $it with nextPos $nextPos")
+
+        if (it.size <= nextPos) {
+          return@observeForever
+        }
+
+        val repoDataList = LinkedList<RepositoryResourceData>().apply {
+          add(it[nextPos])
+        }
+
+        nextPos++
+
+        viewModelScope.launch(dispatcherProvider.io()) {
+          val resourceDataSingle = rulesExecutor.processResourceData(
+            repositoryResourceData.resource,
+            repoDataList,
+            ruleConfigs = profileConfigs.rules,
+            ruleConfigsKey = profileConfigs::class.java.canonicalName,
+            paramsMap
+          )
+
+          profileConfigs.views.retrieveListProperties().forEach {
+            val listResourceData = mutableListOf<ResourceData>()
+            listResourceDataMapState[it.id] = listResourceData
+            //val listResourceData =
             rulesExecutor.processListResourceData(
               listProperties = it,
-              relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+              listResourceData,
+              listResourceDataMapState,
+              relatedRepositoryResourceData = repoDataList,
               computedValuesMap =
-                resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+              resourceDataSingle.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
             )
-          listResourceDataMapState[it.id] = listResourceData
+            //listResourceDataMapState[it.id] = listResourceData
+          }
+
+          Timber.e("Finished loading a related resource item list $repoDataList")
+
+          resourceData.listResourceDataMap.putAll(resourceDataSingle.listResourceDataMap)
+
+          resourceDataState.postValue(resourceData)
         }
       }
+
+      /*val resourceData2 =
+        rulesExecutor
+          .processResourceData(
+            baseResource = repoResourceData2.resource,
+            relatedRepositoryResourceData = LinkedList(repoResourceData2.relatedResources),
+            ruleConfigs = profileConfigs.rules,ss
+            ruleConfigsKey = profileConfigs::class.java.canonicalName,
+            paramsMap
+          )
+          .copy(listResourceDataMap = listResourceDataMapState)*/
+
+      /*profileUiState.value =
+        ProfileUiState(
+          resourceData = resourceData2,
+          profileConfiguration = profileConfigs,
+          snackBarTheme = applicationConfiguration.snackBarTheme,
+          showDataLoadProgressIndicator = false
+        )*/
+
+
+
+      // Working before
+      /*val timeToFireRules = measureTimeMillis {
+        profileConfigs.views.retrieveListProperties().forEach {
+          val listResourceData = mutableListOf<ResourceData>()
+          listResourceDataMapState[it.id] = listResourceData
+          //val listResourceData =
+            rulesExecutor.processListResourceData(
+              listProperties = it,
+              listResourceData,
+              listResourceDataMapState,
+              relatedRepositoryResourceData = LinkedList(repoResourceData2.relatedResources),
+              computedValuesMap =
+                resourceData2.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+            )
+          //listResourceDataMapState[it.id] = listResourceData
+        }
+      }*/
+
+      Timber.e("About to invoke the profileUiState again")
+      //resourceDataState.postValue(resourceData2)
+      Timber.e("Computed values map ${resourceData.computedValuesMap}")
+      Timber.e("List resource data map ${resourceData.listResourceDataMap}")
+
+
+      // Update other computed values slowly
+      // Once done update the ProfileUIState
+      /*registerRepository.loadOtherProfileData(profileId, resourceId, fhirResourceConfig, resourceData.baseResource!!, resourceData)
+
+      Timber.e("Computed values map ${resourceData.computedValuesMap}")
+      Timber.e("List resource data map ${resourceData.listResourceDataMap}")
+      profileUiState.value = ProfileUiState(
+        resourceData = ResourceData(
+          baseResourceId = resourceData.baseResourceId,
+          baseResourceType = resourceData.baseResourceType,
+          computedValuesMap = resourceData.computedValuesMap,
+          listResourceDataMap = resourceData.listResourceDataMap,
+          baseResource = resourceData.baseResource
+        ),
+        profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap),
+        snackBarTheme = applicationConfiguration.snackBarTheme
+      )
+      resourceDataState.value = ResourceData(
+        baseResourceId = resourceData.baseResourceId,
+        baseResourceType = resourceData.baseResourceType,
+        computedValuesMap = resourceData.computedValuesMap,
+        listResourceDataMap = resourceData.listResourceDataMap,
+        baseResource = resourceData.baseResource
+      )
+      //profileUiState.value = ProfileUiState()*/
     }
   }
 

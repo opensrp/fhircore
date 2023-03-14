@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData2
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData2
 
 /** This class provides common functionalities used in the register */
 interface Repository {
@@ -58,4 +61,41 @@ interface Repository {
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray()
   ): RepositoryResourceData?
+
+
+  /**
+   * This function returns data used on the profile for the given [resourceId]. Profile
+   * configuration is identified by the [profileId] and contains the queries for filtering the
+   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
+   * configurations identified by the [profileId] are used.
+   */
+  suspend fun loadOtherProfileData(
+    baseResource: Resource,
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsList: Array<ActionParameter>? = emptyArray(),
+    relatedResourceData: RepositoryResourceData2
+  )
+
+  /**
+   * This function returns data used on the profile for the given [resourceId]. Profile
+   * configuration is identified by the [profileId] and contains the queries for filtering the
+   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
+   * configurations identified by the [profileId] are used.
+   */
+  /*suspend fun loadProfileData2(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsList: Array<ActionParameter>? = emptyArray()
+  ): RepositoryResourceData?
+
+  suspend fun loadOtherProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?,
+    baseResource: Resource,
+    resourceData2: ResourceData
+  )*/
 }

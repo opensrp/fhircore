@@ -33,7 +33,6 @@ import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -207,12 +207,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       } catch (ex: SQLException) {
         Timber.e(ex)
       }*/
-      runQuery<Task>("""
+      runQuery<Task>(
+        """
         DROP INDEX IF EXISTS index_DateTimeIndexEntity_index_from
       """.trimIndent(),
         emptyList()
       )
-      runQuery<Task>("""
+      runQuery<Task>(
+        """
         DROP INDEX IF EXISTS index_ResourceEntity_resourceId
       """.trimIndent(),
         emptyList()
@@ -220,15 +222,90 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
       //
 
-      createAndUpdateRelationalTable()
+      // createAndUpdateRelationalTable()
+
     }
+
+    /*appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
+      val timer2 = Timer(methodName = "Running 100 queries")
+      var threads = 10
+      val totalThreads = threads
+
+      for (i in 0..totalThreads) {
+        val curr = i
+        Timber.e("Launching thread $curr")
+        Thread {
+            runBlocking {
+                //appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
+                val timer = Timer(methodName = "Query $curr")
+                Timber.e("Starting query for thread $curr")
+                val db = SqliteDb(this@AppMainActivity)
+                val cursor = db.readableDatabase.rawQuery(
+                *//*val cursor =
+                    fhirEngine.getCursorAll(
+                        SearchQuery(*//*
+                            """
+              SELECT a.serializedResource
+              FROM ResourceEntity a
+              LEFT JOIN DateIndexEntity b
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = "_lastUpdated"
+              LEFT JOIN DateTimeIndexEntity c
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = "_lastUpdated"
+              WHERE a.resourceType = "Group"
+              AND a.resourceUuid IN (
+              SELECT resourceUuid FROM TokenIndexEntity
+              WHERE resourceType = "Group" AND index_name = "type" AND (index_value = "person" AND IFNULL(index_system,'') = "http://hl7.org/fhir/group-type")
+              )
+              AND a.resourceUuid IN (
+              SELECT resourceUuid FROM TokenIndexEntity
+              WHERE resourceType = "Group" AND index_name = "code" AND (index_value = "35359004" AND IFNULL(index_system,'') = "https://www.snomed.org")
+              )
+              ORDER BY b.index_from DESC, c.index_from DESC
+              LIMIT 25 OFFSET 0
+          """.trimIndent(),
+                            *//*emptyList()
+                        )
+                    )*//*
+                emptyArray()
+                )
+
+                if (cursor != null) {
+                    var counter = 0
+
+                    while (cursor.moveToNext()) {
+                        counter++
+                    }
+
+                    try {
+                        cursor.close()
+                    } catch (ex: Exception) {
+                        Timber.e(ex)
+                    }
+
+                    Timber.e("Thread #$curr has $counter records")
+                }
+
+                timer.stop()
+
+                threads--
+
+                if (threads <= 0) {
+                    timer2.stop()
+                }
+            }
+        }
+            .start()
+
+        // timer2.stop()
+      }
+    }*/ // TO REMOVE THIS
   }
 
   suspend fun <T : Resource> runQuery(query: String, args: List<Any>): List<T> {
-    val timer = Timer(methodName ="runQuery -> $query")
+    val timer = Timer(methodName = "runQuery -> $query")
     return try {
       val searchQuery = SearchQuery(query, args)
-        //Timber.e("Running Query $searchQuery")
+      // Timber.e("Running Query $searchQuery")
       val result = fhirEngine.search<T>(searchQuery)
       timer.stop()
       result
@@ -240,7 +317,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   suspend fun createAndUpdateRelationalTable() {
-      val timer = Timer(methodName = "createAndUpdateRelationalTable")
+    val timer = Timer(methodName = "createAndUpdateRelationalTable")
 
     runQuery<Task>(
       """
@@ -395,11 +472,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         UPDATE RegisterFamilies SET childCount = ?, taskCount = ?, pregnantWomenCount = ?, familyName = ?, householdNo = ?, householdLocation = ?
         WHERE resourceUuid = x'$groupUUID'
       """.trimIndent(),
-        listOf(childrenCount, taskCount, pregnantWomenCount, baseResource.name, baseResource.identifier[0].value, baseResource.characteristic[0].code.text)
+        listOf(
+          childrenCount,
+          taskCount,
+          pregnantWomenCount,
+          baseResource.name,
+          baseResource.identifier[0].value,
+          baseResource.characteristic[0].code.text
+        )
       )
     }
 
-      timer.stop()
+    timer.stop()
   }
 
   fun genMemberUuidsSelector(memberUuids: MutableList<String>): String {

@@ -139,7 +139,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf())
   )
 }
 
@@ -158,6 +158,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf())
   )
 }

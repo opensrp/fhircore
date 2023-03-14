@@ -115,7 +115,7 @@ fun PersonalDataViewPreview() {
 
   PersonalDataView(
     personalDataCardProperties = personalDataCardProperties,
-    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
     navController = rememberNavController()
   )
 }

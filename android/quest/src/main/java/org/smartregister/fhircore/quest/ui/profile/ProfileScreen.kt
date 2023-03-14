@@ -44,7 +44,9 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
@@ -71,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
+import timber.log.Timber
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -81,46 +85,54 @@ const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
-  profileUiState: ProfileUiState,
+  profileUiState: MutableState<ProfileUiState>,
+  resourceData: MutableLiveData<ResourceData?>,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
   onEvent: (ProfileEvent) -> Unit
 ) {
   val scaffoldState = rememberScaffoldState()
   val lazyListState = rememberLazyListState()
+  var showOverflowMenu by remember { mutableStateOf(false) }
+  val resourceData2 by resourceData.observeAsState()
+  /*val resourceData by remember {
+    mutableStateOf(profileUiState.value.value.resourceData!!.computedValuesMap)
+  }*/
 
   LaunchedEffect(Unit) {
-    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
+    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.value.resourceData, navController)
   }
+
+  Timber.e("Recomposing the profile screen")
 
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
-      if (profileUiState.profileConfiguration?.topAppBar == null) {
+      if (profileUiState.value.profileConfiguration?.topAppBar == null) {
         SimpleTopAppBar(
           modifier = modifier,
           navController = navController,
           elevation = 4,
-          profileUiState = profileUiState,
+          profileUiState = profileUiState.value,
           lazyListState = lazyListState,
           onEvent = onEvent
         )
       } else {
         CustomProfileTopAppBar(
           navController = navController,
-          profileUiState = profileUiState,
+          profileUiState = profileUiState.value,
           onEvent = onEvent,
           lazyListState = lazyListState
         )
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.profileConfiguration?.fabActions
+      val fabActions = profileUiState.value.profileConfiguration?.fabActions
 
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
-          resourceData = profileUiState.resourceData,
+          resourceData = profileUiState.value.resourceData,
           navController = navController,
           lazyListState = lazyListState
         )
@@ -130,14 +142,14 @@ fun ProfileScreen(
     snackbarHost = { snackBarHostState ->
       SnackBarMessage(
         snackBarHostState = snackBarHostState,
-        backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
-        actionColorHex = profileUiState.snackBarTheme.actionTextColor,
-        contentColorHex = profileUiState.snackBarTheme.messageTextColor
+        backgroundColorHex = profileUiState.value.snackBarTheme.backgroundColor,
+        actionColorHex = profileUiState.value.snackBarTheme.actionTextColor,
+        contentColorHex = profileUiState.value.snackBarTheme.messageTextColor
       )
     },
   ) { innerPadding ->
     Box(modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding)) {
-      if (profileUiState.showDataLoadProgressIndicator) {
+      if (profileUiState.value.showDataLoadProgressIndicator) {
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),
           strokeWidth = 1.8.dp,
@@ -145,11 +157,11 @@ fun ProfileScreen(
         )
       }
       LazyColumn(state = lazyListState) {
-        item(key = profileUiState.resourceData?.baseResourceId) {
+        item(key = profileUiState.value.resourceData?.baseResourceId) {
           ViewRenderer(
-            viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            viewProperties = profileUiState.value.profileConfiguration?.views ?: emptyList(),
+            resourceData = resourceData2
+                ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
             navController = navController
           )
         }
@@ -183,7 +195,7 @@ fun CustomProfileTopAppBar(
         ViewRenderer(
           viewProperties = topBarConfig.content,
           resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
+              ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
           navController = navController
         )
       }

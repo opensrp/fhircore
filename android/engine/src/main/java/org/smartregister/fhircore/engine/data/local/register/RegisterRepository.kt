@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import android.database.Cursor
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -51,9 +53,13 @@ import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData2
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData2
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.performance.Timer
@@ -124,7 +130,7 @@ constructor(
       val totalIcons = MutableList(childrenCount) {"CHILD"}
       totalIcons.addAll(MutableList(pregnantWomenCount) {"PREGNANT_WOMAN"})
 
-      val computedValuesMap = mapOf<String, Any>(
+      val computedValuesMap = mutableMapOf<String, Any>(
         "familyName" to cursor.getString("familyName"),
         "familyId" to cursor.getString("householdNo"),
         "familyVillage" to cursor.getString("householdLocation"),
@@ -136,7 +142,7 @@ constructor(
         cursor.getString("resourceId"),
         ResourceType.Group,
         computedValuesMap,
-        emptyMap()
+        mutableMapOf()
       )
 
       resourceData.add(singleResourceData)
@@ -233,6 +239,39 @@ constructor(
 
       repoData
     }
+  }
+
+  /**
+   * This function creates a map of resource config Id ( or resource type if the id is not
+   * configured) against [Resource] from a list of nested [RelatedResourceData].
+   *
+   * Example: A list of [RelatedResourceData] with Patient as its base resource and two nested
+   * [RelatedResourceData] of resource type Condition & CarePlan returns:
+   * ```
+   * {
+   * "Patient" -> [Patient],
+   * "Condition" -> [Condition],
+   * "CarePlan" -> [CarePlan]
+   * }
+   * ```
+   *
+   * NOTE: [RelatedResourceData] are represented as tree however they grouped by their resource
+   * config Id ( or resource type if the id is not configured) as key and value as list of
+   * [Resource] s in the map.
+   */
+  private fun LinkedList<RelatedResourceData>.createRelatedResourcesMap():
+    MutableMap<String, MutableList<Resource>> {
+    val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
+    while (this.isNotEmpty()) {
+      val relatedResourceData = this.removeFirst()
+      relatedResourcesMap
+        .getOrPut(
+          relatedResourceData.resourceConfigId ?: relatedResourceData.resource.resourceType.name
+        ) { mutableListOf() }
+        .add(relatedResourceData.resource)
+      relatedResourceData.relatedResources.forEach { this.addLast(it) }
+    }
+    return relatedResourcesMap
   }
 
   private suspend fun searchRelatedResources(
@@ -444,7 +483,7 @@ constructor(
 
     timer2.stop()
     val relatedResources = LinkedList<RepositoryResourceData>()
-
+/*
     relatedResourcesConfig.forEach { config: ResourceConfig ->
       val resources =
         withContext(dispatcherProvider.io()) {
@@ -456,7 +495,7 @@ constructor(
           )
         }
       relatedResources.addAll(resources)
-    }
+    }*/
 
     if (!secondaryResourceConfig.isNullOrEmpty()) {
       relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
@@ -470,6 +509,64 @@ constructor(
 
     timer.stop()
     return res
+  }
+
+  override suspend fun loadOtherProfileData(
+    baseResource: Resource,
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsList: Array<ActionParameter>?,
+    relatedResourceData: RepositoryResourceData2
+  ) {
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        ?.associate { it.key to it.value }
+        ?: emptyMap()
+    val profileConfiguration =
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        ConfigType.Profile,
+        profileId,
+        paramsMap
+      )
+    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val baseResourceConfig = resourceConfig.baseResource
+    val relatedResourcesConfig = resourceConfig.relatedResources
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+    val baseResourceType = baseResourceClass.newInstance().resourceType
+    val secondaryResourceConfig = profileConfiguration.secondaryResources
+
+    val timer = Timer(methodName = "loadOtherProfileData()", startString = "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig")
+
+    val relatedResources = LinkedList<RepositoryResourceData>()
+
+    relatedResourcesConfig.forEach { config: ResourceConfig ->
+      val resources =
+        withContext(dispatcherProvider.io()) {
+          searchRelatedResources(
+            resourceConfig = config,
+            baseResourceType = baseResourceType,
+            baseResource = baseResource,
+            fhirPathExpression = config.fhirPathExpression
+          )
+        }
+      relatedResources.addAll(resources)
+      relatedResourceData.relatedResources.postValue(relatedResources)
+    }
+
+    if (!secondaryResourceConfig.isNullOrEmpty()) {
+      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+    }
+/*
+    val res = RepositoryResourceData(
+      configId = baseResourceConfig.id ?: baseResourceType.name,
+      resource = baseResource,
+      relatedResources = relatedResources
+    )*/
+
+    timer.stop()
+    //return res
   }
 
   private suspend fun retrieveSecondaryResources(

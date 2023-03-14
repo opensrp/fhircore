@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.logicalId
 import java.util.LinkedList
 import javax.inject.Inject
@@ -53,7 +54,34 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,
-      computedValuesMap = computedValuesMap.toMutableMap().plus(params!!).toMap()
+      computedValuesMap = computedValuesMap.toMutableMap().plus(params!!).toMutableMap(),
+      mutableMapOf(),
+      baseResource = baseResource
+    )
+  }
+
+
+  suspend fun processResourceData2(
+    baseResource: Resource,
+    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
+    ruleConfigs: List<RuleConfig>,
+    ruleConfigsKey: String,
+    params: Map<String, String>?
+  ): ResourceData {
+    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
+    val computedValuesMap =
+      computeRules(
+        ruleConfigs = ruleConfigs,
+        ruleConfigsKey = ruleConfigsKey,
+        baseResource = baseResource,
+        relatedResourcesMap = relatedResourcesMap
+      )
+    return ResourceData(
+      baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
+      baseResourceType = baseResource.resourceType,
+      computedValuesMap = computedValuesMap.toMutableMap().plus(params!!).toMutableMap(),
+      mutableMapOf(),
+      baseResource = baseResource
     )
   }
 
@@ -63,6 +91,8 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
+    listResourceData: MutableList<ResourceData>,
+    listResourceDataMapState: SnapshotStateMap<String, List<ResourceData>>,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
@@ -70,8 +100,11 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     return listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
-          relatedResourcesMap = relatedResourcesMap,
+          listProperties.id,
+          listResourceData,
+          listResourceDataMapState,
           ruleConfigs = listProperties.registerCard.rules,
+          relatedResourcesMap = relatedResourcesMap,
           ruleConfigsKey = listProperties.registerCard::class.java.canonicalName,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
@@ -93,6 +126,9 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     )
 
   private suspend fun List<Resource>.mapToResourceData(
+    itemId: String,
+    listResourceData: MutableList<ResourceData>,
+    listResourceDataMapState: SnapshotStateMap<String, List<ResourceData>>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
     ruleConfigsKey: String,
@@ -122,11 +158,18 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         )
 
       // LIST view should reuse the previously computed values
-      ResourceData(
+      val res = ResourceData(
         baseResourceId = resource.logicalId.extractLogicalIdUuid(),
         baseResourceType = resource.resourceType,
-        computedValuesMap = computedValuesMap.plus(listComputedValuesMap)
+        computedValuesMap = computedValuesMap.plus(listComputedValuesMap).toMutableMap(),
+        mutableMapOf(),
+        baseResource = resource
       )
+
+      listResourceDataMapState[itemId] = listResourceData.plus(res)
+      listResourceData.add(res)
+
+      res
     }
 
   /**
