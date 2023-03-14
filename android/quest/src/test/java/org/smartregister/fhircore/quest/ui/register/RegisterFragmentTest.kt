@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import android.view.View
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
+import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -29,9 +30,11 @@ import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -40,15 +43,16 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
+  @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  val view = mockk<View>()
-  val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk(), mockk())
+  private val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk(), mockk())
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
 
   @OptIn(ExperimentalMaterialApi::class)
   @Before
   fun setUp() {
+    hiltRule.inject()
     registerFragment = mockk()
   }
 
@@ -99,5 +103,20 @@ class RegisterFragmentTest : RobolectricTest() {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     } just runs
     coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig) }
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  fun `test On Sync Progress emits progress percentage`() = runTest {
+    val progressSyncStatus: SyncJobStatus =
+      SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
+    val registerFragment = mockk<RegisterFragment>()
+
+    coEvery { registerFragment.onSync(progressSyncStatus) } answers { callOriginal() }
+    coEvery { registerFragment.emitPercentageProgress(any()) } just runs
+
+    registerFragment.onSync(progressSyncStatus)
+
+    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30) }
   }
 }
