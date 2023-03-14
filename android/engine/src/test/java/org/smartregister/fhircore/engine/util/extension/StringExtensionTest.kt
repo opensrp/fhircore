@@ -38,4 +38,23 @@ class StringExtensionTest {
     Assert.assertEquals(expected, beforeFormatExampleOne.removeExtraWhiteSpaces())
     Assert.assertEquals(expected, beforeFormatExampleTwo.removeExtraWhiteSpaces())
   }
+
+  @Test
+  fun stringInterpolateShouldReplaceStrings() {
+    val templateString = "{ \"saveFamilyButtonText\" : @{ family.button.save } }"
+    val lookupMap = mapOf<String, Any>("family.button.save" to "Save Family")
+
+    Assert.assertEquals(
+      "{ \"saveFamilyButtonText\" : Save Family }",
+      templateString.interpolate(lookupMap)
+    )
+  }
+
+  @Test
+  fun stringInterpolateShouldThrowIllegalArgumentExceptionIfPrefixNull() {
+    val templateString = "{ \"saveFamilyButtonText\" : @{ family.button.save }, @{ missing } }"
+    val lookupMap = mapOf<String, Any>("family.button.save" to "save")
+
+    Assert.assertEquals(templateString, templateString.interpolate(lookupMap))
+  }
 }
