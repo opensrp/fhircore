@@ -118,7 +118,9 @@ constructor(
   }
 
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration.clientRegisters
+    navigationConfiguration
+      .clientRegisters
+      .asSequence()
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
@@ -239,7 +241,7 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }.forEach { menuConfig ->
+    this.asSequence().filter { it.showCount }.forEach { menuConfig ->
       val countAction =
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
       if (countAction != null) {
