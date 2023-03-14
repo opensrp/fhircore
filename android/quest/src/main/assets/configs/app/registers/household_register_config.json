@@ -49,14 +49,40 @@
             "searchParameter": "subject"
           },
           {
+            "id": "overdueTasks",
             "resource": "Task",
             "searchParameter": "subject",
-            "resultAsCount": true
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "id": "overdueTaskQuery",
+                "filterType": "TOKEN",
+                "key": "status",
+                "valueType": "CODING",
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "failed"
+                }
+              }
+            ]
           },
           {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
+            "id": "dueTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "id": "dueTaskQuery",
+                "filterType": "TOKEN",
+                "key": "status",
+                "valueType": "CODING",
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "ready"
+                }
+              }
+            ]
           }
         ]
       }
@@ -94,10 +120,17 @@
         ]
       },
       {
-        "name": "taskCount",
+        "name": "dueTaskCount",
         "condition": "true",
         "actions": [
-          "data.put('taskCount', Task == null ? '' :  Task.get(0))"
+          "data.put('dueTaskCount', dueTasks)"
+        ]
+      },
+      {
+        "name": "overDueTaskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('overDueTaskCount', overdueTasks)"
         ]
       },
       {
@@ -105,7 +138,7 @@
         "condition": "true",
         "priority": 2,
         "actions": [
-          "data.put('serviceStatus', taskCount == '' ? 'UPCOMING' : 'DUE' )"
+          "data.put('serviceStatus', taskCount > 0 ? 'DUE' : 'UPCOMING' )"
         ]
       },
       {
