@@ -322,7 +322,6 @@ constructor(
         composition
           .retrieveCompositionSections()
           .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
-          .asSequence()
           .filter {
             it.key == ResourceType.Questionnaire.name ||
               it.key == ResourceType.StructureMap.name ||
