@@ -90,7 +90,7 @@ class ProfileViewModelTest : RobolectricTest() {
         computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns
+    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
       RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
