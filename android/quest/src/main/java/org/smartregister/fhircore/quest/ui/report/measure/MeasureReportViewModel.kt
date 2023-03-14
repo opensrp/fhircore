@@ -491,6 +491,7 @@ constructor(
             group to
               group
                 .stratifier
+                .asSequence()
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
                 .map { stratifier ->

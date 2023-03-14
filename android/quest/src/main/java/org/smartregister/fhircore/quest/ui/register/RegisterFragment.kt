@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -184,6 +185,10 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
+      is SyncJobStatus.InProgress ->
+        emitPercentageProgress(
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1
+        )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -266,5 +271,9 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
+  }
+  @VisibleForTesting
+  fun emitPercentageProgress(progress: Int) {
+    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress) }
   }
 }
