@@ -219,11 +219,11 @@ constructor(
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
               snackBarMessageConfig =
-              SnackBarMessageConfig(
-                message = event.managingEntityConfig?.managingEntityReassignedMessage
-                  ?: event.context.getString(R.string.reassigned_managing_entity),
-                actionLabel = event.context.getString(R.string.ok)
-              )
+                SnackBarMessageConfig(
+                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                      ?: event.context.getString(R.string.reassigned_managing_entity),
+                  actionLabel = event.context.getString(R.string.ok)
+                )
             )
           }
         }
@@ -234,7 +234,7 @@ constructor(
             NavigationArg.PROFILE_ID to event.profileId,
             NavigationArg.RESOURCE_ID to event.resourceId,
             NavigationArg.RESOURCE_CONFIG to event.resourceConfig,
-            NavigationArg.PARAMS to emptyArray<String>()
+            NavigationArg.PARAMS to emptyArray<ActionParameter>()
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
