@@ -17,7 +17,7 @@ If available add any other context or screenshots about the feature here.
 A check list of all things to verify once the implementation by the engineer is complete
 
 **Area path**
-A list of ordered steps in the app for useage of the feature to support anyone testing it e.g. Code reviewer, QA e.g.
+A list of ordered steps in the app on usage of the feature to support anyone testing it e.g. Code reviewer, QA e.g.
 1. Login to the app
 2. Open _Navigation bar_
 3. Click on _Children register_
