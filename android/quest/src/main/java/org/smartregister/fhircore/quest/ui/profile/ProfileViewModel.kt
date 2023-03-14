@@ -253,6 +253,7 @@ constructor(
               null
             }
           }
+          ?.asSequence()
           ?.filter { managingEntityResource ->
             fhirPathDataExtractor
               .extractValue(
@@ -261,6 +262,7 @@ constructor(
               )
               .toBoolean()
           }
+          ?.toList()
           ?.map {
             EligibleManagingEntity(
               groupId = event.resourceData.baseResourceId,

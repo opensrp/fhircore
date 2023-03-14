@@ -45,13 +45,16 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesExecutor: RulesExecutor
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -67,6 +70,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
@@ -118,6 +122,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndNoExpression() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
@@ -148,6 +153,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndExpression() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD

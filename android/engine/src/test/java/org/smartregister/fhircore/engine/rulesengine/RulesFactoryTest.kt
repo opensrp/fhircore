@@ -62,7 +62,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -70,6 +72,7 @@ class RulesFactoryTest : RobolectricTest() {
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -96,6 +99,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
@@ -138,6 +142,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFactsWhenMissingRelatedResourcesMap() {
     runTest {
       val baseResource = Faker.buildPatient()
@@ -175,6 +180,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun fireRulesIgnoresBaseResourceWhenNull() {
     runTest {
       val baseResource = Faker.buildPatient()
@@ -269,7 +275,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun shouldFormatDateWithExpectedFormat() {
-    val inputDate = Date("2021/10/10")
+    val inputDate = LocalDate.parse("2021-10-10").toDate()
 
     val expectedFormat = "dd-MM-yyyy"
     Assert.assertEquals("10-10-2021", rulesEngineService.formatDate(inputDate, expectedFormat))
