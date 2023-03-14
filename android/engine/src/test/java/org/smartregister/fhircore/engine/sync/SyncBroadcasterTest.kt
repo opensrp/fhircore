@@ -136,16 +136,20 @@ class SyncBroadcasterTest : RobolectricTest() {
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
+    syncParam
+      .keys
+      .asSequence()
+      .filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }
+      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
 
-    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
+    syncParam.keys.asSequence().filter { it.isIn(ResourceType.Patient) }.forEach {
       Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
-    syncParam.keys
+    syncParam
+      .keys
+      .asSequence()
       .filter {
         it.isIn(
           ResourceType.Encounter,
@@ -161,7 +165,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
       }
 
-    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
+    syncParam.keys.asSequence().filter { it.isIn(ResourceType.Questionnaire) }.forEach {
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }
