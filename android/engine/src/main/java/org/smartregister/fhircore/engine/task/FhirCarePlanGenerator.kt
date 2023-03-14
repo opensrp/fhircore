@@ -280,7 +280,6 @@ constructor(
       Period()
         .apply {
           start = offsetDate.value
-
           end =
             if (durationExpression.isNotBlank())
               evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
