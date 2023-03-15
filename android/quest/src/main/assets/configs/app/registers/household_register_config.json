@@ -123,14 +123,22 @@
         "name": "dueTaskCount",
         "condition": "true",
         "actions": [
-          "data.put('dueTaskCount', dueTasks)"
+          "data.put('dueTaskCount', service.computeTotalCount(dueTasks))"
         ]
       },
       {
         "name": "overDueTaskCount",
         "condition": "true",
         "actions": [
-          "data.put('overDueTaskCount', overdueTasks)"
+          "data.put('overDueTaskCount', service.computeTotalCount(overdueTasks))"
+        ]
+      },
+      {
+        "name": "totalTaskCount",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "var sum = data.get('dueTaskCount') + data.get('overDueTaskCount'); data.put('totalTaskCount', sum == 0 ? '' : sum)"
         ]
       },
       {
@@ -138,7 +146,7 @@
         "condition": "true",
         "priority": 2,
         "actions": [
-          "data.put('serviceStatus', taskCount > 0 ? 'DUE' : 'UPCOMING' )"
+          "data.put('serviceStatus', data.get('dueTaskCount') > 0 ? 'DUE' : data.get('overDueTaskCount') > 0 ? 'OVERDUE' : 'UPCOMING' )"
         ]
       },
       {
@@ -172,7 +180,7 @@
             "serviceMemberIcons": "@{serviceMemberIcons}",
             "serviceButton": {
               "visible": true,
-              "text": "@{taskCount}",
+              "text": "@{totalTaskCount}",
               "status": "@{serviceStatus}",
               "fontSize": 14.0,
               "smallSized": false,

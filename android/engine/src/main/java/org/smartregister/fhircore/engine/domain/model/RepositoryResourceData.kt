@@ -37,6 +37,18 @@ data class RepositoryResourceData(val id: String? = null, val queryResult: Query
       val resource: Resource,
       val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
     ) : QueryResult()
-    data class Count(val resourceType: ResourceType, val count: Long) : QueryResult()
+    data class Count(
+      val resourceType: ResourceType,
+      val relatedResourceCount: RelatedResourceCount
+    ) : QueryResult()
   }
 }
+
+/**
+ * This model represent a count result for [RepositoryResourceData]. The [parentResourceId] refers
+ * to the id of the parent resource that we are interested in counting it's related resources.
+ *
+ * Example: Count all Task resources for a Patient identified by 'abcxyz'. The response will be
+ * represented as RelatedResourceCount(relatedResourceId = "abcxyz", count = 0)
+ */
+data class RelatedResourceCount(val parentResourceId: String, val count: Long = 0L)

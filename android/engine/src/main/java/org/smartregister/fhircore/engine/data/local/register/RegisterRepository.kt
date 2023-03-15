@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
@@ -161,7 +162,8 @@ constructor(
             queryResult =
               RepositoryResourceData.QueryResult.Count(
                 resourceType = relatedResourceType,
-                count = count
+                relatedResourceCount =
+                  RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
               )
           )
         )

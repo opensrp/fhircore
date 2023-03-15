@@ -39,6 +39,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
@@ -140,7 +141,7 @@ constructor(
             val actualValue =
               it.value.map { queryResult ->
                 when (queryResult) {
-                  is RepositoryResourceData.QueryResult.Count -> queryResult.count
+                  is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
                   is RepositoryResourceData.QueryResult.Search -> queryResult.resource
                 }
               }
@@ -169,7 +170,14 @@ constructor(
                 .priority(ruleConfig.priority)
                 .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
-            ruleConfig.actions.forEach { customRule.then(it) }
+            for (action in ruleConfig.actions) {
+              try {
+                customRule.then(action)
+              } catch (jexlException: JexlException) {
+                Timber.e(jexlException)
+                continue // Skip action when an error occurs to avoid app force close
+              }
+            }
             customRule
           }
           .toSet()
@@ -399,6 +407,18 @@ constructor(
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
     }
+
+    fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
+      relatedResourceCounts?.sumOf { it.count } ?: 0
+
+    fun retrieveCount(
+      parentResourceId: String,
+      relatedResourceCounts: List<RelatedResourceCount>?
+    ): Long =
+      relatedResourceCounts
+        ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
+        ?.count
+        ?: 0
   }
 
   companion object {
