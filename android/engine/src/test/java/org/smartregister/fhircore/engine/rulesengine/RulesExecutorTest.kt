@@ -24,7 +24,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -91,7 +90,6 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          "",
           emptyMap()
         )
 
@@ -133,7 +131,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
@@ -169,7 +170,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
