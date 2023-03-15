@@ -272,8 +272,7 @@ constructor(
     // otherwise today means that tasks are generated on demand
     var offsetDate: BaseDateTimeType = DateType(if (count > 0) carePlan.period.start else Date())
 
-    var i = 1 // task index
-    do {
+    for (i in 0 until count){
       if (periodExpression.isNotBlank())
         evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
 
@@ -287,8 +286,7 @@ constructor(
         }
         .also { taskPeriods.add(it) }
 
-      i++
-    } while (count >= i)
+    }
 
     return taskPeriods
   }
