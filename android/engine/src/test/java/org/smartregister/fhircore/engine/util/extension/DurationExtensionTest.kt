@@ -22,7 +22,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class DurationExtensionKtTest : RobolectricTest() {
+class DurationExtensionTest : RobolectricTest() {
 
   @Test
   fun `parsing an ISO-8601 format string returns the correct duration`() {
