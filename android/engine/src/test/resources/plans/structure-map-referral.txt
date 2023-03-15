@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/132067" = 'ReferralTask'
+map "http://hl7.org/fhir/StructureMap/528a8603-2e43-4a2e-a33d-1ec2563ffd3e" = 'ReferralTask'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
