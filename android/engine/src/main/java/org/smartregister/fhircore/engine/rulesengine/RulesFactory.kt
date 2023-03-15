@@ -122,40 +122,39 @@ constructor(
    * [relatedResourcesMap] and the [baseResource].
    */
   @Suppress("UNCHECKED_CAST")
-  suspend fun fireRules(
+  fun fireRules(
     rules: Rules,
     baseResource: Resource? = null,
     relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
   ): Map<String, Any> {
-    return withContext(dispatcherProvider.io()) {
-      // Initialize new facts and fire rules in background
-      facts =
-        Facts().apply {
-          put(FHIR_PATH, fhirPathDataExtractor)
-          put(DATA, mutableMapOf<String, Any>())
-          put(SERVICE, rulesEngineService)
-          if (baseResource != null) {
-            put(baseResource.resourceType.name, baseResource)
-          }
-          relatedResourcesMap.forEach {
-            val actualValue =
-              it.value.map { queryResult ->
-                when (queryResult) {
-                  is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
-                  is RepositoryResourceData.QueryResult.Search -> queryResult.resource
-                }
-              }
-            put(it.key, actualValue)
-          }
+
+    // Initialize new facts and fire rules in background
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
         }
-      if (BuildConfig.DEBUG) {
-        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-      } else {
-        rulesEngine.fire(rules, facts)
+        relatedResourcesMap.forEach {
+          val actualValue =
+            it.value.map { queryResult ->
+              when (queryResult) {
+                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
+                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+              }
+            }
+          put(it.key, actualValue)
+        }
       }
-      facts.get(DATA) as Map<String, Any>
-    }
+
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
+
+    return facts.get(DATA) as Map<String, Any>
   }
 
   suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
