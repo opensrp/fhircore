@@ -183,22 +183,28 @@ fun LinkedList<RepositoryResourceData>.createQueryResultMap():
     val relatedResourceData = this.removeFirst()
     when (relatedResourceData.queryResult) {
       is RepositoryResourceData.QueryResult.Count ->
-        relatedResourcesMap
-          .getOrPut(relatedResourceData.id ?: relatedResourceData.queryResult.resourceType.name) {
-            mutableListOf()
-          }
-          .add(relatedResourceData.queryResult)
+        relatedResourcesMap.putQueryResult(
+          key = relatedResourceData.id ?: relatedResourceData.queryResult.resourceType.name,
+          queryResult = relatedResourceData.queryResult
+        )
       is RepositoryResourceData.QueryResult.Search -> {
-        relatedResourcesMap
-          .getOrPut(
-            relatedResourceData.id ?: relatedResourceData.queryResult.resource.resourceType.name
-          ) { mutableListOf() }
-          .add(relatedResourceData.queryResult)
+        relatedResourcesMap.putQueryResult(
+          key = relatedResourceData.id
+              ?: relatedResourceData.queryResult.resource.resourceType.name,
+          queryResult = relatedResourceData.queryResult
+        )
         this.addAll(relatedResourceData.queryResult.relatedResources)
       }
     }
   }
   return relatedResourcesMap
+}
+
+private fun MutableMap<String, MutableList<RepositoryResourceData.QueryResult>>.putQueryResult(
+  key: String,
+  queryResult: RepositoryResourceData.QueryResult,
+) {
+  this.getOrPut(key) { mutableListOf() }.add(queryResult)
 }
 
 /**
