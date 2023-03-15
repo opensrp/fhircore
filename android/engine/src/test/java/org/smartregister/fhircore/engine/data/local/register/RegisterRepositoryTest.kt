@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -99,11 +100,15 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     runBlocking {
       val listResourceData = registerRepository.loadRegisterData(1, "patientRegister")
-      val resourceData = listResourceData.first()
+      val queryResult = listResourceData.first().queryResult
 
+      Assert.assertTrue(queryResult is RepositoryResourceData.QueryResult.Search)
       Assert.assertEquals(1, listResourceData.size)
 
-      Assert.assertEquals(ResourceType.Patient, resourceData.resource.resourceType)
+      Assert.assertEquals(
+        ResourceType.Patient,
+        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+      )
     }
 
     verify { registerRepository.retrieveRegisterConfiguration("patientRegister", emptyMap()) }
@@ -143,11 +148,14 @@ class RegisterRepositoryTest : RobolectricTest() {
     runBlocking {
       configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
       val listResourceData = registerRepository.loadRegisterData(1, "householdRegister")
-      val resourceData = listResourceData.first()
+      val queryResult = listResourceData.first().queryResult
 
       Assert.assertEquals(1, listResourceData.size)
 
-      Assert.assertEquals(ResourceType.Group, resourceData.resource.resourceType)
+      Assert.assertEquals(
+        ResourceType.Group,
+        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+      )
     }
 
     verify { registerRepository.retrieveRegisterConfiguration("householdRegister", emptyMap()) }
@@ -170,7 +178,10 @@ class RegisterRepositoryTest : RobolectricTest() {
       val profileData =
         registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
       Assert.assertNotNull(profileData)
-      Assert.assertEquals(ResourceType.Patient, profileData.resource.resourceType)
+      Assert.assertEquals(
+        ResourceType.Patient,
+        (profileData.queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+      )
     }
   }
 
