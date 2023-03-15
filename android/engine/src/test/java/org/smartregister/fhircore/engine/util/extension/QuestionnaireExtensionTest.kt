@@ -121,11 +121,9 @@ class QuestionnaireExtensionTest {
   @Test
   fun testFindSubjectMatchingId() {
     val id = "1234"
-    val bundle = Bundle()
-    val bundleEntryComponent = Bundle.BundleEntryComponent()
     val patient = Faker.buildPatient(id)
-    bundleEntryComponent.resource = patient
-    bundle.entry = listOf(bundleEntryComponent)
+    val bundleEntryComponent = Bundle.BundleEntryComponent().apply { resource = patient }
+    val bundle = Bundle().apply { entry = listOf(bundleEntryComponent) }
     questionniareResponse.subject.reference = id
     Assert.assertEquals(patient, questionniareResponse.findSubject(bundle))
   }
@@ -133,11 +131,9 @@ class QuestionnaireExtensionTest {
   @Test
   fun testFindSubjectMismatchingId() {
     val id = "1234"
-    val bundle = Bundle()
-    val bundleEntryComponent = Bundle.BundleEntryComponent()
     val patient = Faker.buildPatient(id)
-    bundleEntryComponent.resource = patient
-    bundle.entry = listOf(bundleEntryComponent)
+    val bundleEntryComponent = Bundle.BundleEntryComponent().apply { resource = patient }
+    val bundle = Bundle().apply { entry = listOf(bundleEntryComponent) }
     questionniareResponse.subject.reference = "5678"
     Assert.assertEquals(null, questionniareResponse.findSubject(bundle))
   }
@@ -150,8 +146,8 @@ class QuestionnaireExtensionTest {
   @Test
   fun testFindMismatchingLinkId() {
     val id = "1234"
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.linkId = id
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = id }
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(null, questionniare.find("5678"))
   }
@@ -159,8 +155,8 @@ class QuestionnaireExtensionTest {
   @Test
   fun testFindMatchingLinkId() {
     val id = "1234"
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.linkId = id
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = id }
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(questionnaireItemComponent, questionniare.find(id))
   }
@@ -192,8 +188,8 @@ class QuestionnaireExtensionTest {
   @Test
   fun testQuestionnaireItemComponentFindWithFieldTypeDefinition() {
     val value = "value"
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.definition = value
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { definition = value }
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(questionnaireItemComponent),
@@ -204,8 +200,8 @@ class QuestionnaireExtensionTest {
   @Test
   fun testQuestionnaireItemComponentFindWithFieldTypeType() {
     val value = Questionnaire.QuestionnaireItemType.BOOLEAN
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.type = value
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { type = value }
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(questionnaireItemComponent),
@@ -216,10 +212,12 @@ class QuestionnaireExtensionTest {
   @Test
   fun testQuestionnaireItemComponentFindRecursive() {
     val id = "1234"
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    val innerQuestionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    innerQuestionnaireItemComponent.linkId = id
-    questionnaireItemComponent.item = listOf(innerQuestionnaireItemComponent)
+    val innerQuestionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = id }
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        item = listOf(innerQuestionnaireItemComponent)
+      }
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(innerQuestionnaireItemComponent),
@@ -229,11 +227,10 @@ class QuestionnaireExtensionTest {
 
   @Test
   fun testFindQuestionnaireItemComponentPrepopulateNoChange() {
-    val linkId = "linkId"
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.linkId = linkId
-    val listOfQuestionnaireItemComponents = listOf(questionnaireItemComponent)
-    listOfQuestionnaireItemComponents.prePopulateInitialValues("", emptyList())
+    val theLinkId = "linkId"
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
+    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       questionnaireItemComponent.initial
@@ -242,10 +239,10 @@ class QuestionnaireExtensionTest {
 
   @Test
   fun testFindQuestionnaireItemComponentPrepopulateSetsInitial() {
-    val linkId = "linkId"
-    val prePopulationParams = listOf(ActionParameter("key", linkId = linkId, value = "value"))
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    questionnaireItemComponent.linkId = linkId
+    val theLinkId = "linkId"
+    val prePopulationParams = listOf(ActionParameter("key", linkId = theLinkId, value = "value"))
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
     listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
     Assert.assertNotEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
@@ -255,12 +252,14 @@ class QuestionnaireExtensionTest {
 
   @Test
   fun testFindQuestionnaireItemComponentPrepopulateRecursToSetInitial() {
-    val linkId = "linkId"
-    val prePopulationParams = listOf(ActionParameter("key", linkId = linkId, value = "value"))
-    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    val innerQuestionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
-    innerQuestionnaireItemComponent.linkId = linkId
-    questionnaireItemComponent.item = listOf(innerQuestionnaireItemComponent)
+    val theLinkId = "linkId"
+    val prePopulationParams = listOf(ActionParameter("key", linkId = theLinkId, value = "value"))
+    val innerQuestionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        item = listOf(innerQuestionnaireItemComponent)
+      }
     listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
