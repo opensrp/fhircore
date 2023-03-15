@@ -34,7 +34,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Dosage
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
@@ -269,7 +269,7 @@ constructor(
     // offset date for current task period; careplan start if all tasks generated at once
     // otherwise today means that tasks are generated on demand
     var offsetDate: BaseDateTimeType =
-      DateType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
+      DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
 
     for (i in 1..count) {
       if (periodExpression.isNotBlank() && offsetDate.hasValue())

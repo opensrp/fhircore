@@ -30,10 +30,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
-import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
@@ -61,7 +59,6 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -86,7 +83,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   val fhirEngine: FhirEngine = mockk()
-  val now = DateTimeType("2022-03-14") // 3 months ahead patient birthdate in sample
 
   lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -114,14 +110,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         workManager = workManager
       )
 
-    mockkStatic(DateTimeType::class)
-    every { DateTimeType.now() } returns now
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
-  }
-
-  @After
-  fun cleanup() {
-    unmockkStatic(DateTimeType::class)
   }
 
   @Test
@@ -656,7 +645,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
     // anc registered late so skip the tasks which passed due date
-    val lmp = DateType(Date().asYyyyMmDd()).apply { add(Calendar.MONTH, -4) }
+    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
       .value = lmp
@@ -670,6 +659,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           )
       )!!
       .also { println(it.encodeResourceToString()) }
+      .also { resourcesSlot.forEach { println(it.encodeResourceToString()) } }
       .also { carePlan ->
         assertCarePlan(
           carePlan,
@@ -679,10 +669,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           lmp.value.plusMonths(9),
           5
         ) // 5 visits for each month of ANC
-
-        resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        // 5 visits and tasks
-        assertEquals(5, carePlan.activityFirstRep.outcomeReference.size)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
