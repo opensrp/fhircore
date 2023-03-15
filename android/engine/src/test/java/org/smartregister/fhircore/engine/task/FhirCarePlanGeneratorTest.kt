@@ -35,6 +35,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -655,10 +656,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
     // anc registered late so skip the tasks which passed due date
-    val lmp = Date().plusMonths(-4)
+    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-      .value = DateType(lmp)
+      .value = lmp
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -674,8 +675,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan,
           planDefinition,
           patient,
-          lmp,
-          lmp.plusMonths(9),
+          lmp.value,
+          lmp.value.plusMonths(9),
           5
         ) // 5 visits for each month of ANC
 
@@ -702,7 +703,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             // first visit is lmp plus 1 month and subsequent visit are every month after that until
             // delivery
             // skip tasks for past 3 months of late registration
-            val ancStart = lmp.plusMonths(3).clone() as Date
+            val ancStart = lmp.value.plusMonths(3).clone() as Date
             this.forEachIndexed { index, task ->
               assertEquals(
                 ancStart.plusMonths(index + 1).asYyyyMmDd(),
