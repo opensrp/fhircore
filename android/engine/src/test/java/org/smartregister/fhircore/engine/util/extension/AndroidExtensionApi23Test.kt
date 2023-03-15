@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Config(sdk = [Build.VERSION_CODES.N])
-class AndroidExtensionApi23Test : RobolectricTest() {
+@Config(sdk = [Build.VERSION_CODES.O])
+class AndroidExtensionApi26Test : RobolectricTest() {
 
   @Test
   fun `Context#setLocale() should change the default locale`() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,13 @@ class FhirPathDataExtractorTest : RobolectricTest() {
       }
     val expression = "Patient.name.given" // would evaluate to empty
     val result = fhirPathDataExtractor.extractValue(patientNoGivenName, expression)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun extractValueWithNullResourceShouldReturnEmptyString() {
+    val expression = "Patient.name.given" // would evaluate to empty
+    val result = fhirPathDataExtractor.extractValue(null, expression)
     Assert.assertTrue(result.isEmpty())
   }
 }

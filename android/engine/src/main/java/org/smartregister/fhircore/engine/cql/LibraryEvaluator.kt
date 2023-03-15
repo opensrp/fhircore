@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
+import ca.uhn.fhir.rest.api.IVersionSpecificBundleFactory
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
+import org.cqframework.cql.cql2elm.LibrarySourceProvider
 import org.cqframework.cql.cql2elm.ModelManager
 import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
@@ -36,6 +36,7 @@ import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Library as LibraryResource
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
@@ -43,12 +44,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
 import org.opencds.cqf.cql.engine.data.DataProvider
+import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverter
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
-import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 import org.opencds.cqf.cql.evaluator.CqlEvaluator
-import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
-import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibraryContentProvider
+import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibrarySourceProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
+import org.opencds.cqf.cql.evaluator.engine.CqlEngineOptions
 import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
 import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
@@ -68,28 +69,25 @@ class LibraryEvaluator @Inject constructor() {
   private val fhirContext = FhirContext.forR4Cached()
   private val parser = fhirContext.newJsonParser()
   private var adapterFactory = AdapterFactory()
-  val bundleFactory = fhirContext.newBundleFactory()
+  private val bundleFactory: IVersionSpecificBundleFactory = fhirContext.newBundleFactory()
   private var libraryVersionSelector = LibraryVersionSelector(adapterFactory)
-  private var contentProvider: LibraryContentProvider? = null
+  private var contentProvider: LibrarySourceProvider? = null
   private var terminologyProvider: BundleTerminologyProvider? = null
   private var bundleRetrieveProvider: BundleRetrieveProvider? = null
   private var cqlEvaluator: CqlEvaluator? = null
   private var libEvaluator: LibraryEvaluator? = null
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
-  val fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-  val cqlFhirParametersConverter =
+  private val fhirTypeConverter: FhirTypeConverter =
+    FhirTypeConverterFactory().create(fhirContext.version.version)
+  private val cqlFhirParametersConverter =
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   lateinit var fhirModelResolver: R4FhirModelResolverExt
   lateinit var modelManager: ModelManager
-  var initialized = false
 
   fun initialize() {
-    if (initialized) return
-
+    if (this::fhirModelResolver.isInitialized) return
     fhirModelResolver = R4FhirModelResolverExt()
     modelManager = ModelManager()
-
-    initialized = true
   }
 
   /**
@@ -118,7 +116,7 @@ class LibraryEvaluator @Inject constructor() {
       null
     )
     contentProvider =
-      BundleFhirLibraryContentProvider(
+      BundleFhirLibrarySourceProvider(
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
@@ -127,16 +125,20 @@ class LibraryEvaluator @Inject constructor() {
 
     terminologyProvider = BundleTerminologyProvider(fhirContext, valueSetData)
 
-    bundleRetrieveProvider = BundleRetrieveProvider(fhirContext, testData)
-    bundleRetrieveProvider!!.terminologyProvider = terminologyProvider
-    bundleRetrieveProvider!!.isExpandValueSets = true
+    bundleRetrieveProvider =
+      BundleRetrieveProvider(fhirContext, testData).apply {
+        this.terminologyProvider = terminologyProvider
+        isExpandValueSets = true
+      }
+
     cqlEvaluator =
       CqlEvaluator(
         object :
           TranslatingLibraryLoader(
             ModelManager(),
             listOf(contentProvider),
-            CqlTranslatorOptions.defaultOptions()
+            CqlTranslatorOptions.defaultOptions(),
+            null
           ) {
           // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
           // By default, the LibraryLoader checks to ensure that the same translator options are
@@ -153,11 +155,12 @@ class LibraryEvaluator @Inject constructor() {
           init {
             put(
               "http://hl7.org/fhir",
-              CompositeDataProvider(R4FhirModelResolver(), bundleRetrieveProvider)
+              CompositeDataProvider(fhirModelResolver, bundleRetrieveProvider)
             )
           }
         },
-        terminologyProvider
+        terminologyProvider,
+        CqlEngineOptions.defaultOptions().options
       )
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
@@ -188,7 +191,7 @@ class LibraryEvaluator @Inject constructor() {
         null,
         null
       )
-    return fhirContext.newJsonParser().encodeResourceToString(result)
+    return parser.encodeResourceToString(result)
   }
 
   /**
@@ -218,21 +221,18 @@ class LibraryEvaluator @Inject constructor() {
     libraryId: String,
     patient: Patient?,
     data: Bundle,
-    // TODO refactor class by modular and single responsibility principle
     repository: DefaultRepository,
     outputLog: Boolean = false
   ): List<String> {
     initialize()
 
-    val library = repository.fhirEngine.get<org.hl7.fhir.r4.model.Library>(libraryId)
+    val library = repository.fhirEngine.get<LibraryResource>(libraryId)
 
     val helpers =
       library.relatedArtifact
         .filter { it.hasResource() && it.resource.startsWith("Library/") }
         .mapNotNull {
-          repository.fhirEngine.get<org.hl7.fhir.r4.model.Library>(
-            it.resource.replace("Library/", "")
-          )
+          repository.fhirEngine.get<LibraryResource>(it.resource.replace("Library/", ""))
         }
 
     loadConfigs(
@@ -265,7 +265,7 @@ class LibraryEvaluator @Inject constructor() {
 
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
-          repository.create(it as Resource)
+          repository.create(true, it as Resource)
         }
 
         when {
@@ -279,12 +279,12 @@ class LibraryEvaluator @Inject constructor() {
     }
   }
 
-  fun getStringRepresentation(base: Base) =
+  fun getStringRepresentation(base: Base): String =
     if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   private fun loadConfigs(
-    library: org.hl7.fhir.r4.model.Library,
-    helpers: List<org.hl7.fhir.r4.model.Library>,
+    library: LibraryResource,
+    helpers: List<LibraryResource>,
     valueSet: Bundle,
     data: Bundle,
   ) {
@@ -303,7 +303,7 @@ class LibraryEvaluator @Inject constructor() {
     )
 
     val libraryProvider =
-      BundleFhirLibraryContentProvider(
+      BundleFhirLibrarySourceProvider(
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
@@ -326,33 +326,36 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        LibraryLoaderExt(modelManager, listOf(libraryProvider)),
+        TranslatingLibraryLoader(
+          modelManager,
+          listOf(libraryProvider),
+          CqlTranslatorOptions.defaultOptions(),
+          null
+        ),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
-        terminologyProvider
+        terminologyProvider,
+        CqlEngineOptions.defaultOptions().options
       )
 
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
 
   fun createBundle(resources: List<Resource>): Bundle {
-    val bundleFactory = fhirContext.newBundleFactory()
-    bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
-    bundleFactory.addResourcesToBundle(
-      resources,
-      BundleTypeEnum.COLLECTION,
-      "",
-      BundleInclusionRule.BASED_ON_INCLUDES,
-      null
-    )
+    val bundleFactory =
+      fhirContext.newBundleFactory().apply {
+        addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
+        addResourcesToBundle(
+          resources,
+          BundleTypeEnum.COLLECTION,
+          "",
+          BundleInclusionRule.BASED_ON_INCLUDES,
+          null
+        )
+      }
     return bundleFactory.resourceBundle as Bundle
   }
 
   companion object {
-
-    fun init() {
-      GlobalScope.launch { LibraryEvaluator().initialize() }
-    }
-
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
   }
 }

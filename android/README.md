@@ -4,36 +4,41 @@
 
 # FHIR Core
 
-<img align=center width=400 src="../docs/assets/fhircore.png">
+<center><img width=400 src="../docs/assets/fhircore.png"></center>
 
-## Build instructions
+## Getting Started
 
-### local.properties
+### Build setup
 
-If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `local.properties`:
+Begin by cloning this repository. Ensure you have JAVA 11 installed, and setup Android studio to use the Java 11 JDK for this project.
+
+Update `local.properties` file by providing the required Keycloak credentials to enable syncing of data to and from the HAPI FHIR server:
 
 ```
 OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
-OAUTH_CIENT_ID=fhir-core-client
-OAUTH_CLIENT_SECRET=xxxxxx
+OAUTH_CIENT_ID="provide client id"
+OAUTH_CLIENT_SECRET="provide client secret"
 OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
 
-### Keystore credentials
+### App release
 
-In order for the `assembleRelease` and/or `bundleRelease` Gradle task to work e.g. to generate a signed release version of you APK (or AAB), you need to generate a keystore.
+In order for the `assembleRelease` and/or `bundleRelease` Gradle tasks to work for instance when you need to generate a signed release version of the APK (or AAB), a keystore is required.
 
-To generate your own release keystore you can use the `keytool` utility (installed as part of the java runtime) by running the the command:
+Generate your own release keystore using the `keytool` utility (installed as part of the java runtime) by running the following command:
 
-`keytool -genkey -v -keystore fhircore.keystore.jks -alias <my_alias_name> -keyalg RSA -keysize 4096 -validity 1000`
+```sh 
+keytool -genkey -v -keystore fhircore.keystore.jks -alias <your_alias_name> -keyalg RSA -keysize 4096 -validity 1000
+```
 
-Place the Keystore file in your _user(home)_ directory i.e. `/Users/username/fhircore.keystore.jks` or `~/fhircore.keystore.jks`
+Place the Keystore file in your user(home) directory i.e. `/Users/username/fhircore.keystore.jks` for Windows or `~/fhircore.keystore.jks` for Unix based systems.
 
-You then need to create the following _System variables_ and set the corresponding values `KEYSTORE_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`
-**Note:** The values used in generating the keystore will be the values assigned to the system properties above. Also note, if your platform doesn't prompt you for a second password when generating the Keystore (e.g. of type PKCS12) then the KEYSTORE_PASSWORD and KEY_PASSWORD values will be the same.
+Next, create the following SYSTEM_VARIABLEs and set their values accordingly: `KEYSTORE_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD` 
 
-You can also choose to store the above credentials in a file named `keystore.properties`
+**Note:** Assign the generated keystore values to the SYSTEM_VARIABLEs listed above. Also note, if your platform doesn't prompt you for a second password when generating the Keystore (e.g. of type PKCS12) then both the KEYSTORE_PASSWORD and KEY_PASSWORD should have the same value.
+
+You can alternatively store the above credentials in a file named `keystore.properties`. Just be careful to include this file in `.gitignore` to prevent leaking secrets via git VCS.
 
 ```
 KEYSTORE_PASSWORD=xxxxxx
@@ -41,78 +46,54 @@ KEYSTORE_ALIAS=xxxxxx
 KEY_PASSWORD=xxxxxx
 ```
 
-**Note** When using this approach to store credentials please remember to add a `keystore.properties` entry to the `.gitignore` file to prevent versioning on git
+Refer to the following links for more details:
 
-- For more on the `keytool` utility see: [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
-- For more on signing your application see: [Signing your Android app](https://developer.android.com/studio/publish/app-signing)
+- [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
+- [Signing Android apps](https://developer.android.com/studio/publish/app-signing)
 
-## Application architecture
 
-FHIR Core is based on MVVM Android application architecture. It follows the recommended [Repository Pattern](https://developer.android.com/jetpack/guide) in the architecture. The diagram below shows the different layers of the application structure and how they interact with each other. At the core is Android FHIR SDK which provides Data Access API, Search API, Sync API, Smart Guidelines API and Data Capture API. Refer to [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) for more information.
+## About the repository
 
-<img align="center" width="800" height="600" src="../docs/assets/fhircore-app-architecture.png">
+### Application architecture
 
-## Project Structure
+FHIR Core is based on MVVM Android application architecture. It also follows the recommended [Repository Pattern](https://developer.android.com/jetpack/guide) on its data layer. The diagram below shows the different layers of the application structure and how they interact with each other. 
 
-The project currently consists of two application modules (`anc` and `eir`) and one shared Android library module (`engine`) . The `engine` module contains shared code for both `anc` and `eir` applications, including: code for authenticating users, shared UI code, application and view configuration contracts, domain models and shared utility functions. The `engine` module project structure and implementation details are discussed intensively on the module's `README.MD` file.
+At the core is Android FHIR SDK which provides Data Access API, Search API, Sync API, Smart Guidelines API and Data Capture API. Refer to [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) for more information.
 
-## Package structure
+<center><img width="800" height="600" src="../docs/assets/fhircore-app-architecture.png"></center>
 
-Both `anc` and `eir` Android application modules have their packages grouped based on features. `engine` module on the other hand uses a hybrid approach, combining both layered and feature based package structure.
+
+### Project Structure
+
+The project currently consists an application module (`quest`) and two Android library modules (`engine` and `geowidget`). The `geowidget` module contains implementation for intergrating Map views to FHIR Core. `engine` module contains shared code.
+
+
+### Package structure
+
+`quest` and `geowidget` modules packages are grouped based on features. `engine` module on the other hand uses a hybrid approach, combining both layered and feature based package structure.
 
 At a higher level every module is at least organized into three main packages, namely:
 
-- `data`
-- `ui`
-- `util`
-
-Conventionally, classes are further organized into more cohesive directories within the main packages mentioned above. This should allow for minimal updates in the code base when code is refactored by moving directories.
-
-### Root level package description
 
 #### `data`
 
-This package is used to hold classes/object or any implementations used to interact with local database via the `FhirEngine` implementation provided via the Android FHIR SDK. This package will mostly hold the `Repository` and `Model` classes for the application modules. The `data` package for `engine` module is further sub-divided into two sub-packages that is `local` and `remote`. `local` directory holds the implementation for accessing the `Sqlite` database. `remote` directory contains implementation for making `http` requests to HAPI FHIR server backend.
+This package is used to holds classes/objects implementations for accessing data view the Android FHIR SDK APIs. The `data` package for `engine` module is further sub-divided into two sub-packages that is `local` and `remote`. `local` directory holds the implementation for accessing the Sqlite database whereas`remote` directory contains implementation for making http requests to HAPI FHIR server backend.
 
 #### `ui`
 
-This package mostly contains Android `Activity`, `Fragment`, `ViewModel` `View` classes or any custom implementations that involve data presentation. The views should conventionally be grouped based on their purposed, e.g. is a family package that has both register and details packages for showing a list of all families and individual family details respectively.
+This package mostly contains Android `Activity`, `Fragment`, `ViewModel`, and `Composable` functions for rendering UI.
 
 #### `util`
 
-This package is used to hold any internally shared utility methods usually implemented as Kotlin extensions with a few exceptions where Kotlin `object` is used to implement singleton classes.
+This package is used to hold any code that shared internally typically implemented as Kotlin extensions. Other utilities use kotlin `object` to implement singletons.
 
-## Code sharing
 
-The `engine` module provides code that is shared across the supported applications. Every implementation in the `engine` module that is not common should be implemented as abstract base classes and overridden in the application modules. An example is the `BaseLoginActivity` (Most abstract classes in `engine` module conventionally starts with the word `Base`) that is extended in both application modules to provide specific configurations for login.
+Conventionally, classes are further organized into more cohesive directories within the main packages mentioned above. This should allow minimal updates when code is refactored by moving directories.
 
-Utility methods are conventionally implemented as Kotlin extensions. Others are implemented as singletons using Kotlin `object`
-
-## Configuration
-
-FHIR Core supports application configurations through contracts. These contracts MUST be implemented by Android `Application` and any user interface related classes like `Activity`, `Fragment` and Android `View` classes. This allows for passing application level configurations synced from the server or configurations that dictate how data is presented to the user, i.e. which parts of the screen to show or hide, which screens to show, which UI elements to disable etc.
-
-### Application configuration
-
-Application level configuration is provided through `ConfigurableApplication` contract. `ConfigurableApplication` exposes the following properties that need to be implemented.
-
-| Property                   | Description                                                                                                                                                       |
-| :------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `applicationConfiguration` | Used to set Application level configuration. Typically a Kotlin data class                                                                                        |
-| `authenticationService`    | A singleton instance of `AuthenticationService` used for handling user authorization and authentication using Android `AccountManager` API                        |
-| `fhirEngine`               | Provides an instance of `FhirEngine` from Android FHIR SDK                                                                                                        |
-| `secureSharedPreference`   | Sets a singleton of `SecureSharedPreference` used to access encrypted shared preference data                                                                      |
-| `resourceSyncParams`       | Provides resource sync parameters needed for syncing data to and from FHIR server                                                                                 |
-| `syncBroadcaster`          | Sets a singleton instance of `SyncBroadcaster` that is used to react to FHIR server sync states. Any view can register to this broadcaster to receive sync states |
-| `workerContextProvider`    | Loads `SimpleWorkerContext` required for StructureMap-based extraction                                                                                            |
-
-`ConfigurableApplication` also exposes a `configureApplication` method that accepts an instance of `ApplicationConfiguration` used to configure the application. This method should be called on the `onCreate` method of the `Application` class.
-
-### View configuration
-
-FHIR Core view configurations are provided through two contracts `ConfigurableComposableView` and `ConfigurableView`. `ConfigurableComposableView` is used to configure Android views created using Jetpack Compose. View configurations are used to show or hide views, change view content, change view background etc. Each of the two contracts exposes `configureViews` method that accepts view `Configuration` as an argument. This method should be called when the `Activity` or `Fragment` is created. It is also recommended to update the view configurations via a `ViewModel` so they can be observed whenever the configurations are changed.
 
 ## Resources
+
+Refer to the following links for more details:
 
 - [Code Documentation](https://fhircore.smartregister.org/) - Access FHIR Core code documentation
 - [Developer Guidelines](https://github.com/opensrp/fhircore/wiki) - Get started with FHIR Core

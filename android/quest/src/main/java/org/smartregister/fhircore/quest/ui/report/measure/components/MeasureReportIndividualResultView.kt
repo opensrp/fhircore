@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 
@@ -51,6 +50,7 @@ const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
 const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
 const val RESULT_VIEW_STALLED_ICON = "resultViewStalledIcon"
 const val RESULT_VIEW_INDICATOR_STATUS = "resultViewIndicatorStatus"
+const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 
 @Composable
 fun MeasureReportIndividualResultView(
@@ -118,7 +118,7 @@ fun MeasureReportIndividualResultView(
               color = SubtitleTextColor,
               text = indicatorDescription,
               fontSize = 14.sp,
-              modifier = modifier.wrapContentWidth()
+              modifier = modifier.wrapContentWidth().testTag(RESULT_VIEW_INDICATOR_DESCRIPTION)
             )
           }
         }
@@ -127,9 +127,8 @@ fun MeasureReportIndividualResultView(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportIndividualResultViewPreview() {
   MeasureReportIndividualResultView(
     patientViewData =

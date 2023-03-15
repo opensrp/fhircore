@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,9 +88,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     prefs.edit().remove(key).apply()
   }
 
-  /** This method resets/clears all existing values in the shared preferences synchronously */
+  /** This method resets/clears all existing values in the shared preferences asynchronously */
   fun resetSharedPrefs() {
-    prefs.edit()?.clear()?.commit()
+    prefs.edit()?.clear()?.apply()
   }
 
   companion object {

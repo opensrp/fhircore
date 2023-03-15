@@ -42,4 +42,3 @@ For starter resources on the Android FHIR SDK and this repo:
 1. Android FHIR SDK Intro Slide deck - [Link](https://docs.google.com/presentation/d/1oc6EBJAcXsBwyBgtnra61xoM7naBF0aj8WbfrUT7Y2A)
 1. FHIR Core Intro slide deck - [Link](https://docs.google.com/presentation/d/1eFsf9a5dcNqKXlfsEWyNZyoVooIbK3jq6694xarARr8)
 1. General FHIR Modelling for LMIC resource mapping- [Link](https://docs.google.com/drawings/d/1mRESJI_YywQG-YjhBy4zvVik28gBj2n_YscWKZZ_wOc)
-1. List of commonly used [acronyms](https://docs.google.com/document/d/13FG5QLCcNZEaQGX_9IYcIJc_UbbmllrwQwcp3TMG9Tk/edit?usp=sharing)

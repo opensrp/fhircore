@@ -25,8 +25,6 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="10dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/btn_edit_qr"/>
 
@@ -38,8 +36,6 @@
         android:layout_marginBottom="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginStart="15dp"
-        android:background="?attr/colorPrimary"
-        android:drawablePadding="5dp"
         android:fontFamily="sans-serif-medium"
         android:padding="10dp"
         android:text="@string/edit"
@@ -47,24 +43,6 @@
         android:textColor="@color/white"
         android:textSize="18sp"
         android:visibility="gone"
-        android:layout_gravity="bottom|start"
-        app:layout_constraintBottom_toTopOf="@id/btn_save_client_info" />
-
-    <Button
-        android:id="@+id/btn_save_client_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginStart="15dp"
-        android:background="?attr/colorPrimary"
-        android:drawablePadding="5dp"
-        android:fontFamily="sans-serif-medium"
-        android:padding="10dp"
-        android:text="@string/str_save"
-        android:textAllCaps="true"
-        android:textColor="@color/white"
-        android:textSize="18sp"
         android:layout_gravity="bottom|start"
         app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -76,7 +54,7 @@
         android:layout_marginBottom="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginStart="15dp"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_gravity="bottom|start"
         app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

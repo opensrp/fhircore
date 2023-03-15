@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -28,13 +29,16 @@ data class QuestionnaireConfig(
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = true,
   val setOrganizationDetails: Boolean = true,
+  val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
   val resourceType: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
-  val taskId: String? = null
+  val taskId: String? = null,
+  val saveDraft: Boolean = false,
+  val snackBarMessage: SnackBarMessageConfig? = null
 ) : java.io.Serializable
 
 @Serializable
@@ -55,6 +59,8 @@ data class GroupResourceConfig(
 
 fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
   this.copy(
+    id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
+    taskId = taskId?.interpolate(computedValuesMap),
     title = title?.interpolate(computedValuesMap),
     resourceIdentifier = resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
     groupResource =

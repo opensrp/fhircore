@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,12 @@ package org.smartregister.fhircore.quest.ui.report.measure.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -38,18 +35,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
@@ -67,17 +60,16 @@ fun MeasureReportResultScreen(
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
-  val measureReportRowData = measureReportViewModel.measureReportConfig.value
+  val measureReportRowData = measureReportViewModel.measureReportConfigList
 
   MeasureReportResultPage(
-    screenTitle = measureReportRowData?.title ?: "",
+    screenTitle = measureReportRowData.firstOrNull()?.module ?: "",
     navController = navController,
-    measureReportConfig = measureReportRowData,
-    endDate = uiState.endDate,
     startDate = uiState.startDate,
+    endDate = uiState.endDate,
+    patientViewData = uiState.patientViewData,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
-    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value,
-    patientViewData = uiState.patientViewData
+    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value
   )
 }
 
@@ -85,7 +77,6 @@ fun MeasureReportResultScreen(
 fun MeasureReportResultPage(
   screenTitle: String,
   navController: NavController,
-  measureReportConfig: MeasureReportConfig?,
   startDate: String,
   endDate: String,
   patientViewData: MeasureReportPatientViewData?,
@@ -106,28 +97,15 @@ fun MeasureReportResultPage(
         backgroundColor = MaterialTheme.colors.primary
       )
     }
-  ) {
+  ) { innerPadding ->
     Column(
       modifier =
-        modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxSize()
+        modifier
+          .padding(innerPadding)
+          .background(color = colorResource(id = R.color.backgroundGray))
+          .fillMaxSize()
     ) {
       Column(modifier = modifier.padding(16.dp)) {
-        Box(
-          modifier =
-            modifier
-              .clip(RoundedCornerShape(8.dp))
-              .background(color = colorResource(id = R.color.light_gray_background))
-              .padding(12.dp)
-              .wrapContentWidth(),
-          contentAlignment = Alignment.Center
-        ) {
-          if (measureReportConfig != null)
-            Text(
-              text = measureReportConfig.description,
-              textAlign = TextAlign.Start,
-              fontSize = 16.sp
-            )
-        }
         Spacer(modifier = modifier.height(16.dp))
 
         // Display date range e.g. 1 Apr, 2020 - 28 Apr, 2022
@@ -151,25 +129,21 @@ fun MeasureReportResultPage(
           )
         }
         if (measureReportPopulationResult != null) {
-          MeasureReportPopulationResultView(measureReportPopulationResult)
+          MeasureReportPopulationResultView(
+            measureReportPopulationResult.distinctBy { it.indicatorTitle }
+          )
         }
       }
     }
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForIndividualPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportConfig =
-      MeasureReportConfig(
-        title = "First ANC",
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
-      ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =
@@ -185,9 +159,8 @@ private fun MeasureReportResultScreenForIndividualPreview() {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 private fun MeasureReportResultScreenForPopulationPreview() {
   val testResultItem1 =
     MeasureReportIndividualResult(title = "10 - 15 years", percentage = "10", count = "1/10")
@@ -196,10 +169,6 @@ private fun MeasureReportResultScreenForPopulationPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportConfig =
-      MeasureReportConfig(
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
-      ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =

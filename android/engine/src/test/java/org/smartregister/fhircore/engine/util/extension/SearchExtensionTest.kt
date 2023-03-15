@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import com.google.android.fhir.search.Search
@@ -78,5 +79,24 @@ class SearchExtensionTest {
         DataQuery>()
     val search = spyk(Search(ResourceType.Patient))
     search.filterString(dataQuery)
+  }
+
+  @Test
+  fun testFilterForDateType() {
+    val dataQuery =
+      """{
+          "id": "childQueryByDate",
+          "filterType": "DATE",
+          "key": "birthdate",
+          "valueType": "DATE",
+          "valueDate": "2017-03-14",
+          "paramPrefix": "GREATERTHAN_OR_EQUALS"
+        }""".decodeJson<
+        DataQuery>()
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterDate(dataQuery)
+    val dateClientParamSlot = slot<DateClientParam>()
+    verify { search.filter(capture(dateClientParamSlot), any()) }
+    Assert.assertEquals(dataQuery.key, dateClientParamSlot.captured.paramName)
   }
 }

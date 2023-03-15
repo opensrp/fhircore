@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -47,7 +48,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
-              menuIconConfig = MenuIconConfig(),
+              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
               actions =
                 listOf(
                   ActionConfig(
@@ -58,8 +59,9 @@ class ExtendedFabTest {
                 )
             )
           ),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
-        resourceData = ResourceData(Patient())
+        lazyListState = rememberLazyListState()
       )
     }
   }
@@ -79,14 +81,7 @@ class ExtendedFabTest {
       .assertExists()
       .assertIsDisplayed()
   }
-  @Test
-  fun extendedFabButtonRendersRowTextCorrectly() {
-    composeRule
-      .onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeRule.onNodeWithText("FAB BUTTON").assertExists().assertIsDisplayed()
-  }
+
   @Test
   fun extendedFabButtonRendersRowIconCorrectly() {
     composeRule

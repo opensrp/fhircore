@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.task
 
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,11 +32,14 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -49,6 +55,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.After
@@ -59,12 +66,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -94,17 +102,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     hiltRule.inject()
 
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
+    val workManager = mockk<WorkManager>()
 
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
         transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
-        defaultRepository = defaultRepository
+        defaultRepository = defaultRepository,
+        workManager = workManager
       )
 
     mockkStatic(DateTimeType::class)
     every { DateTimeType.now() } returns now
+    every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
   }
 
   @After
@@ -113,6 +124,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForPatient() = runTest {
     val plandefinition =
       "plans/child-routine-visit/plandefinition.json"
@@ -130,7 +142,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -170,10 +185,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
-
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -196,6 +207,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForGroup() = runTest {
     val plandefinition =
       "plans/household-routine-visit/plandefinition.json"
@@ -213,7 +225,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -243,10 +258,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertNotNull(carePlan.period.start)
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
-
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -264,7 +275,81 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
+  fun testGenerateCarePlanForHouseHold() = runTest {
+    val plandefinition =
+      "plans/household-wash-check-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val group =
+      "plans/household-wash-check-routine-visit/sample/group.json"
+        .readFile()
+        .decodeResourceFromString<Group>()
+
+    val structureMapScript = "plans/household-wash-check-routine-visit/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
+        // The parser does not recognize the time unit i.e. months and prints as '',
+        // so use only months and that would have the unit replaced with 'months'
+        it.encodeResourceToString().replace("''", "'month'")
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Household Routine WASH Check Plan", carePlan.title)
+        Assert.assertEquals(
+          "This defines the schedule of service for WASH Check on households",
+          carePlan.description
+        )
+        Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertNotNull(carePlan.period.start)
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty() && list.size > 59 && list.size < 62) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+      }
+  }
+
+  @Test
   @Ignore("Passing local failing CI")
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -292,7 +377,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    // coEvery { defaultRepository.create(any(),any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("131900") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
@@ -331,8 +416,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(3, carePlan.activityFirstRep.outcomeReference.size)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -343,14 +429,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .map { it as Task }
           .also { Assert.assertEquals(4, it.size) } // 4 tasks generated, 3 followup 1 referral
           .also {
-            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.status == TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
             tasks.take(3).run {
               Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/131898" })
               Assert.assertTrue(
-                this.all { it.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd() }
+                this.all { task ->
+                  task.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd()
+                }
               )
               Assert.assertTrue(
                 this.all { it.basedOn.first().reference == careplan.asReference().reference }
@@ -389,6 +477,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForSickChildUnder2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -409,7 +498,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -422,13 +511,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertNull(it)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
-          Assert.assertTrue(it.status == Task.TaskStatus.READY)
+          Assert.assertTrue(it.status == TaskStatus.READY)
           Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
           Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
           Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
@@ -437,6 +527,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testCompleteCarePlanForSickChildFollowup() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -454,11 +545,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val createdTasksSlot = mutableListOf<Resource>()
+    val updatedTasksSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(createdTasksSlot)) } returns
+      emptyList()
+    coEvery { defaultRepository.addOrUpdate(any(), capture(updatedTasksSlot)) } just Runs
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns
       listOf(
         CarePlan().apply {
           instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
@@ -468,7 +564,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<Task>(any()) } returns
       Task().apply {
         id = "1111"
-        status = Task.TaskStatus.READY
+        status = TaskStatus.READY
       }
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
@@ -476,40 +572,30 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )!!
-      .also { println(it.encodeResourceToString()) }
-      .also {
-        val carePlan = it
+      .also { carePlan: CarePlan ->
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
-        val resourcesSlot = mutableListOf<Resource>()
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        createdTasksSlot.forEach { resource -> println(resource.encodeResourceToString()) }
 
-        resourcesSlot.forEach { println(it.encodeResourceToString()) }
-
-        resourcesSlot
-          .filter { it.resourceType == ResourceType.Task }
-          .map { it as Task }
+        createdTasksSlot
           .also { list -> Assert.assertTrue(list.size == 2) }
-          .also {
-            it.first().let {
-              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+          .filter { resource -> resource.resourceType == ResourceType.Task }
+          .map { resource -> resource as Task }
+          .also { tasks ->
+            tasks.first().let { task ->
+              Assert.assertTrue(task.status == TaskStatus.READY)
               Assert.assertTrue(
-                it.basedOn.first().reference == plandefinition.asReference().reference
+                task.basedOn.first().reference == plandefinition.asReference().reference
               )
-              Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
-              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
-            }
-          }
-          .also {
-            it.elementAt(1).let {
-              Assert.assertTrue(it.status == Task.TaskStatus.CANCELLED)
-              Assert.assertTrue(it.lastModified.asYyyyMmDd() == Date().asYyyyMmDd())
+              Assert.assertTrue(task.`for`.reference == patient.asReference().reference)
+              Assert.assertTrue(task.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
             }
           }
       }
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testUpdateCarePlanForSickChildReferral() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -533,10 +619,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString())
       }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
 
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns listOf()
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
@@ -544,9 +633,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
       )
       .also {
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot
@@ -555,7 +641,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { list -> Assert.assertTrue(list.size == 1) }
           .also {
             it.first().let {
-              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+              Assert.assertTrue(it.status == TaskStatus.READY)
               Assert.assertTrue(
                 it.basedOn.first().reference == plandefinition.asReference().reference
               )
@@ -567,6 +653,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForANCVisit() = runTest {
     val plandefinition =
       "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
@@ -580,7 +667,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     // start of plan is lmp date | set lmp date to 4 months , and 15th of month
-    val lmp = Date().plusMonths(-4).apply { date = 15 }
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.MONTH, -4)
+    calendar.set(Calendar.DAY_OF_MONTH, 15)
+    val lmp = calendar.time
 
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
@@ -596,7 +686,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
@@ -646,10 +739,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.activityFirstRep.outcomeReference.size
         ) // 6 visits as 4th month is passing (15th day) as per lmp
 
-        val resourcesSlot = mutableListOf<Resource>()
-
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
-
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         val careplan = resourcesSlot.first() as CarePlan
@@ -659,7 +748,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .map { it as Task }
           .also { Assert.assertEquals(7, it.size) } // 6 for visit, 1 for referral
           .also {
-            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.status == TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
@@ -721,4 +810,203 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `Generate CarePlan should generate child immunization schedule`() = runTest {
+    val plandefinition =
+      "plans/child-immunization-schedule/plan-definition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/child-immunization-schedule/patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+
+    val structureMapScript =
+      "plans/child-immunization-schedule/structure-map-child-immunization-schedule.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
+        println(it.encodeResourceToString())
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("97cf9bfb-90be-4661-8810-1c60be88f593") } returns
+      structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Child Immunization", carePlan.title)
+        Assert.assertEquals(
+          "This scheduled will be used to track the child's immunization.",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+
+        Assert.assertEquals(
+          patient.birthDate.makeItReadable(),
+          carePlan.period.start.makeItReadable()
+        )
+
+        Assert.assertEquals(
+          patient.birthDate.plusDays(1825).makeItReadable(),
+          carePlan.period.end.makeItReadable()
+        )
+
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .also { println(it.last().encodeResourceToString()) }
+          .also {
+            it.last().let { task ->
+              Assert.assertTrue(
+                task.reasonReference.reference ==
+                  "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+              )
+              Assert.assertTrue(task.description == "HPV(2) at 9.5 years Vaccine")
+              Assert.assertTrue(
+                task.code.text == "Administration of vaccine to produce active immunity (procedure)"
+              )
+              Assert.assertTrue(task.code.hasCoding())
+              Assert.assertTrue(task.code.coding.get(0).code == "33879002")
+              Assert.assertTrue(task.reasonCode.text == "Immunization at 9.5 years")
+              Assert.assertTrue(task.reasonCode.hasCoding())
+              Assert.assertTrue(
+                task.reasonCode.coding.get(0).code == "immunization_at_9_half_years"
+              )
+            }
+          }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+        Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
+        Assert.assertTrue(task1.description.isNotEmpty())
+        Assert.assertTrue(task1.description == "OPV at Birth Vaccine")
+      }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `Generate CarePlan should generate disease followup schedule`() = runTest {
+    val plandefinition =
+      "plans/disease-followup/plan-definition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/disease-followup/patient.json".readFile().decodeResourceFromString<Patient>()
+    val diseaseFollowUpQuestionnaireResponseString =
+      "plans/disease-followup/questionnaire-response.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization").also {
+        println(it.encodeResourceToString())
+      }
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+    coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
+      structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = diseaseFollowUpQuestionnaireResponseString
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+
+        Assert.assertEquals("Disease Follow Up", carePlan.title)
+        Assert.assertEquals(
+          "This is a follow up for patient's marked with the following diseases HIV, TB, Mental Health & CM-NTD",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .also { println(it.last().encodeResourceToString()) }
+          .all { task ->
+            task.status == TaskStatus.INPROGRESS &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+      }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `transitionTaskTo should update task status`() = runTest {
+    coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
+    coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
+
+    fhirCarePlanGenerator.transitionTaskTo("12345", TaskStatus.COMPLETED)
+
+    val task = slot<Task>()
+    coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
+
+    Assert.assertEquals(TaskStatus.COMPLETED, task.captured.status)
+  }
 }
+
+private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)

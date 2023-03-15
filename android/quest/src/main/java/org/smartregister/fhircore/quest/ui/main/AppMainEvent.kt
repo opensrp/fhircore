@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
 import androidx.navigation.NavController
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
@@ -31,7 +32,7 @@ sealed class AppMainEvent {
     val registersList: List<NavigationMenuConfig>?
   ) : AppMainEvent()
 
-  data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+  data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
 
   data class TriggerWorkflow(val navController: NavController, val navMenu: NavigationMenuConfig) :
     AppMainEvent()
@@ -43,12 +44,9 @@ sealed class AppMainEvent {
   data class OpenProfile(
     val navController: NavController,
     val profileId: String,
-    val resourceId: String
+    val resourceId: String,
+    val resourceConfig: FhirResourceConfig? = null
   ) : AppMainEvent()
 
-  object Logout : AppMainEvent()
-
-  object SyncData : AppMainEvent()
-
-  object RefreshAuthToken : AppMainEvent()
+  data class SyncData(val context: Context) : AppMainEvent()
 }

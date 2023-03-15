@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ sealed class ConfigType(
   object Sync : ConfigType("sync", true)
   object Navigation : ConfigType("navigation")
   object Register : ConfigType("register", multiConfig = true)
-  object MeasureReport : ConfigType("measureReport")
+  object MeasureReport : ConfigType("measureReport", multiConfig = true)
   object Profile : ConfigType("profile", multiConfig = true)
   object GeoWidget : ConfigType("geoWidget", multiConfig = true)
 }

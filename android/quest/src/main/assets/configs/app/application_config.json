@@ -2,16 +2,21 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "ECBIS",
+  "appTitle": "eCBIS (CHA & CHSS)",
+  "registerDate": "2020-10-27",
+  "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
   "languages": [
-    "en",
-    "sw",
-    "fr"
+    "en"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategy": ["CareTeam", "Location", "Organization", "Practitioner"],
+  "syncStrategy": [
+    "Location",
+    "Organization",
+    "CareTeam",
+    "Practitioner"
+  ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true
@@ -26,7 +31,10 @@
       "Observation",
       "Condition",
       "Questionnaire",
-      "QuestionnaireResponse"
+      "QuestionnaireResponse",
+      "RelatedPerson",
+      "List",
+      "Flag"
     ]
   }
 }

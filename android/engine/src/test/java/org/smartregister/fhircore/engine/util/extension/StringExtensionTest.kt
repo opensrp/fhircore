@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,5 +27,15 @@ class StringExtensionTest {
       "practitioner-details?keycloak-uuid=my-keycloak-id",
       "my-keycloak-id".practitionerEndpointUrl()
     )
+  }
+
+  @Test
+  fun shouldRemoveExtraSpaces() {
+    val beforeFormatExampleOne = "Aurang    zaib        umer   ,   M,           43y"
+    val beforeFormatExampleTwo = "  Aurang    zaib   umer   , M, 43y          "
+    val expected = "Aurang zaib umer, M, 43y"
+
+    Assert.assertEquals(expected, beforeFormatExampleOne.removeExtraWhiteSpaces())
+    Assert.assertEquals(expected, beforeFormatExampleTwo.removeExtraWhiteSpaces())
   }
 }

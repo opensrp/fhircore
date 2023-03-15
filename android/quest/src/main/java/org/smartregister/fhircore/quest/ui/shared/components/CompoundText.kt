@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,86 +17,196 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.flowlayout.FlowRow
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.ui.components.Separator
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.TextCase
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
+import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 @Composable
 fun CompoundText(
   modifier: Modifier = Modifier,
   compoundTextProperties: CompoundTextProperties,
-  computedValuesMap: Map<String, Any>
+  resourceData: ResourceData,
+  navController: NavController
 ) {
-  Row(
-    verticalAlignment = Alignment.CenterVertically,
+  FlowRow(
     modifier =
       modifier
-        .background(
-          compoundTextProperties.backgroundColor?.interpolate(computedValuesMap).parseColor()
-        )
+        .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
+        .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
         .padding(
           horizontal = compoundTextProperties.padding.dp,
           vertical = compoundTextProperties.padding.div(2).dp
-        ),
+        )
+        .background(
+          compoundTextProperties
+            .backgroundColor
+            ?.interpolate(resourceData.computedValuesMap)
+            .parseColor()
+        )
   ) {
-    if (compoundTextProperties.primaryText != null) {
-      Text(
-        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
-        color = compoundTextProperties.primaryTextColor.parseColor(),
-        modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .background(
-              compoundTextProperties.primaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
-            )
-            .padding(2.dp),
-        fontSize = compoundTextProperties.fontSize.sp,
+    val interpolatedPrimaryText =
+      compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSecondaryText =
+      compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSeparator =
+      compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
+
+    if (!interpolatedPrimaryText.isNullOrEmpty()) {
+      CompoundTextPart(
+        modifier = modifier,
+        viewAlignment = compoundTextProperties.alignment,
+        text = interpolatedPrimaryText,
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
+        textColor = compoundTextProperties.primaryTextColor,
+        backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
+        borderRadius = compoundTextProperties.borderRadius,
+        fontSize = compoundTextProperties.fontSize,
+        textFontWeight = compoundTextProperties.primaryTextFontWeight,
+        clickable = compoundTextProperties.clickable,
+        actions = compoundTextProperties.primaryTextActions,
+        resourceData = resourceData,
+        navController = navController
       )
     }
-    if (compoundTextProperties.secondaryText != null) {
-      // Separate the primary and secondary text
-      Separator(separator = compoundTextProperties.separator ?: "-")
-      Text(
-        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
-        color = compoundTextProperties.secondaryTextColor.parseColor(),
-        modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .background(
-              compoundTextProperties.secondaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
-            )
-            .padding(2.dp),
-        fontSize = compoundTextProperties.fontSize.sp,
+    // Separate the primary and secondary text
+    if (!interpolatedSeparator.isNullOrEmpty()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
+        Text(
+          text = interpolatedSeparator,
+          fontSize = compoundTextProperties.fontSize.sp,
+          color = DefaultColor,
+          textAlign = TextAlign.Center
+        )
+      }
+    }
+    if (!interpolatedSecondaryText.isNullOrEmpty()) {
+      CompoundTextPart(
+        modifier = modifier,
+        viewAlignment = compoundTextProperties.alignment,
+        text = interpolatedSecondaryText,
+        textCase = compoundTextProperties.textCase,
+        maxLines = compoundTextProperties.maxLines,
+        textColor = compoundTextProperties.secondaryTextColor,
+        backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
+        borderRadius = compoundTextProperties.borderRadius,
+        fontSize = compoundTextProperties.fontSize,
+        textFontWeight = compoundTextProperties.secondaryTextFontWeight,
+        clickable = compoundTextProperties.clickable,
+        actions = compoundTextProperties.secondaryTextActions,
+        navController = navController,
+        resourceData = resourceData,
       )
     }
   }
 }
 
-@Preview(showBackground = true)
+@Composable
+private fun CompoundTextPart(
+  modifier: Modifier,
+  viewAlignment: ViewAlignment,
+  text: String,
+  textCase: TextCase?,
+  maxLines: Int,
+  textColor: String?,
+  colorOpacity: Float = 1f,
+  backgroundColor: String?,
+  borderRadius: Int,
+  fontSize: Float,
+  textFontWeight: TextFontWeight,
+  clickable: String,
+  actions: List<ActionConfig>,
+  navController: NavController,
+  resourceData: ResourceData
+) {
+  Text(
+    text =
+      when (textCase) {
+        TextCase.UPPER_CASE -> text.uppercase()
+        TextCase.LOWER_CASE -> text.lowercase()
+        TextCase.CAMEL_CASE -> text.camelCase()
+        null -> text
+      }.removeExtraWhiteSpaces(),
+    color =
+      textColor
+        ?.interpolate(resourceData.computedValuesMap)
+        ?.parseColor()
+        ?.copy(alpha = colorOpacity)
+        ?: DefaultColor.copy(alpha = colorOpacity),
+    modifier =
+      modifier
+        .wrapContentWidth(Alignment.Start)
+        .conditional(
+          clickable.interpolate(resourceData.computedValuesMap).toBoolean(),
+          { clickable { actions.handleClickEvent(navController, resourceData) } }
+        )
+        .clip(RoundedCornerShape(borderRadius.dp))
+        .background(backgroundColor.parseColor())
+        .padding(4.dp),
+    fontSize = fontSize.sp,
+    fontWeight = textFontWeight.fontWeight,
+    textAlign =
+      when (viewAlignment) {
+        ViewAlignment.START -> TextAlign.Start
+        ViewAlignment.END -> TextAlign.End
+        ViewAlignment.CENTER -> TextAlign.Center
+        else -> TextAlign.Start
+      },
+    maxLines = maxLines,
+    overflow = TextOverflow.Ellipsis
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextNoSecondaryTextPreview() {
+  val navController = rememberNavController()
   Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
           primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
+          primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
+          textCase = TextCase.UPPER_CASE
         ),
-      computedValuesMap = emptyMap()
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = navController
     )
     CompoundText(
       compoundTextProperties =
@@ -104,34 +214,36 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
         ),
-      computedValuesMap = emptyMap()
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = navController
     )
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+  val navController = rememberNavController()
+  Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
-        CompoundTextProperties(
-          primaryText = "Full Name, Sex, Age",
-          primaryTextColor = "#000000",
-        ),
-      computedValuesMap = emptyMap()
+        CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = navController
     )
+    SpacerView(spacerProperties = SpacerProperties(viewType = ViewType.SPACER, width = 8f))
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
           primaryText = "Last visited",
           primaryTextColor = "#5A5A5A",
-          secondaryText = "G6PD status",
-          separator = "-",
+          secondaryText = "Yesterday",
           secondaryTextColor = "#FFFFFF",
+          separator = ".",
           secondaryTextBackgroundColor = "#FFA500"
         ),
-      computedValuesMap = emptyMap()
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = navController
     )
   }
 }

@@ -44,6 +44,11 @@
           {
             "resource": "Task",
             "searchParameter": "subject"
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ]
       },
@@ -64,16 +69,6 @@
         ]
       }
     ]
-  },
-  "managingEntity": {
-    "infoFhirPathExpression": "Patient.name.given",
-    "fhirPathResource": {
-      "resourceType": "Patient",
-      "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
-    },
-    "dialogTitle": "{{ assign.new.family.head }}",
-    "dialogWarningMessage": "{{ abort.operation.question }}",
-    "dialogContentMessage": "{{ select.new.family.head }}"
   },
   "fabActions": [
     {
@@ -178,14 +173,21 @@
         },
         {
           "viewType": "LIST",
-          "baseResource": "Patient",
+          "listResource": "Patient",
           "padding": 16,
           "relatedResources": [
             {
-              "resourceType": "CarePlan",
-              "fhirPathExpression": "CarePlan.subject.reference"
+              "id": "householdPatients",
+              "resourceType": "Patient",
+              "relatedResources": [
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                }
+              ]
             }
           ],
+          "padding": 16,
           "registerCard": {
             "rules": [
               {
@@ -254,7 +256,16 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "CHANGE_MANAGING_ENTITY"
+          "workflow": "CHANGE_MANAGING_ENTITY",
+          "managingEntity": {
+            "nameFhirPathExpression": "Patient.name.given",
+            "resourceType": "Patient",
+            "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
+            "dialogTitle": "{{ assign.household.head.title }}",
+            "dialogWarningMessage": "{{ assign.household.head.warning }}",
+            "dialogContentMessage": "{{ select.new.household.head }}",
+            "noMembersErrorMessage": "{{ no.members.error.message }}"
+          }
         }
       ]
     },

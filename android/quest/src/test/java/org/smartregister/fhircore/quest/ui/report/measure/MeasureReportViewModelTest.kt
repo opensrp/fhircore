@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -33,21 +34,37 @@ import io.mockk.verify
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -60,31 +77,33 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
-  var fhirEngine: FhirEngine = mockk()
-
-  var fhirOperator: FhirOperator = mockk()
-
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-
+  @Inject lateinit var registerRepository: RegisterRepository
+  @Inject lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  var fhirEngine: FhirEngine = mockk()
+  var fhirOperator: FhirOperator = mockk()
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-
   val measureReportRepository = mockk<MeasureReportRepository>()
-
   private lateinit var measureReportViewModel: MeasureReportViewModel
-
   private val navController: NavController = mockk(relaxUnitFun = true)
+  private val reportId = "supplyChainMeasureReport"
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
   @Before
   fun setUp() {
     hiltRule.inject()
 
     coEvery { measureReportRepository.retrievePatients(0) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          baseResourceId = Faker.buildPatient().id,
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+        )
+      )
 
     measureReportViewModel =
       spyk(
@@ -93,8 +112,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = mockk(),
-          measureReportRepository = measureReportRepository,
-          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
+          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
+          configurationRegistry = configurationRegistry,
+          registerRepository = registerRepository,
+          defaultRepository = defaultRepository,
+          rulesExecutor = rulesExecutor
         )
       )
   }
@@ -128,24 +150,25 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
-        measureReportConfig = measureReportConfig,
+        measureReportConfig = listOf(measureReportConfig),
         navController = navController
       )
     )
     val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfig.value
-    Assert.assertEquals(viewModelConfig?.id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig?.title, measureReportConfig.title)
+    val viewModelConfig = measureReportViewModel.measureReportConfigList
+    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
+    Assert.assertEquals(viewModelConfig.first().module, measureReportConfig.module)
 
     verify { navController.navigate(capture(routeSlot)) }
 
-    Assert.assertEquals("reportTypeSelector?screenTitle=Measure 1", routeSlot.captured)
+    Assert.assertEquals("reportTypeSelector?screenTitle=Module1", routeSlot.captured)
   }
 
   @Test
@@ -155,7 +178,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
-        url = "http://nourl.com"
+        url = "http://nourl.com",
+        module = "Module1"
       )
     val dateRange =
       Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
@@ -168,12 +192,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
         family = "Orion"
       )
 
-    measureReportViewModel.measureReportConfig.value = measureReportConfig
+    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController)
+      MeasureReportEvent.GenerateReport(context = application, navController = navController),
+      "2022-10-31".parseDate(SDF_YYYY_MM_DD)
     )
 
     verify { measureReportViewModel.evaluateMeasure(navController) }
@@ -239,24 +264,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventOnSearchTextChanged() {
-    measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged("Mandela"))
-    Assert.assertNotNull(measureReportViewModel.patientsData.value)
-  }
-
-  @Test
-  fun testFormatPopulationMeasureReport() {
-    val result = measureReportViewModel.formatPopulationMeasureReport(measureReport)
+  fun testFormatPopulationMeasureReport() = runTest {
+    measureReport.type = MeasureReportType.SUMMARY
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
 
     assertEquals(1, result.size)
-    assertEquals("3/4", result.first().count)
     assertEquals("report group 1", result.first().title)
-
-    val disaggregation = result.first().dataList
-    assertEquals(1, result.first().dataList.size)
-    assertEquals("1/3", disaggregation.first().count)
-    assertEquals("Stratum #1", disaggregation.first().title)
-    assertEquals("33", disaggregation.first().percentage)
+    assertEquals(0, result.first().dataList.size)
   }
 
   private val measureReport =
@@ -295,4 +309,110 @@ class MeasureReportViewModelTest : RobolectricTest() {
         }
       }
     }
+
+  @Test
+  fun testGetReportGenerationRange() {
+    val result = measureReportViewModel.getReportGenerationRange("supplyChainMeasureReport")
+    val currentMonth = Calendar.getInstance().time.formatDate(SDF_MMMM)
+    val currentYear = Calendar.getInstance().time.formatDate(SDF_YYYY)
+    assertEquals(currentYear, result.keys.first())
+    assertEquals(currentMonth, result[result.keys.first()]?.get(0)?.month)
+  }
+
+  @Test
+  fun testFormatMeasureReportsForPatient() = runTest {
+    measureReport.type = MeasureReportType.SUMMARY
+    measureReport.contained.clear()
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("ABC")
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("CDE")
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
+        value = StringType("EFG")
+      }
+    )
+
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
+
+    assertEquals(2, result.size)
+
+    assertEquals("", result.first().count)
+    assertEquals(0, result.first().dataList.size)
+    assertEquals("Test Code", result.first().indicatorTitle)
+    assertEquals(3, result.first().measureReportDenominator)
+
+    assertEquals("", result.last().count)
+    assertEquals(0, result.last().dataList.size)
+  }
+
+  @Test
+  fun testFormatMeasureReportsStock() = runTest {
+    measureReport.type = MeasureReportType.INDIVIDUAL
+    measureReport.contained.clear()
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 1")) }
+        value = CodeableConcept().apply { addCoding().code = "2" }
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 2")) }
+        value = CodeableConcept().apply { addCoding().code = "4" }
+      }
+    )
+    measureReport.contained.add(
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 3")) }
+        value = CodeableConcept().apply { addCoding().code = "6" }
+      }
+    )
+
+    measureReport.subject = Reference().apply { reference = "Group/1" }
+
+    coEvery { fhirEngine.get(ResourceType.Group, any()) } returns
+      Group().apply { name = "Commodity 1" }
+
+    val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
+
+    assertEquals(1, result.size)
+
+    assertEquals("", result.first().count)
+    assertEquals(3, result.first().dataList.size)
+    assertEquals("Commodity 1", result.first().indicatorTitle)
+    assertEquals(null, result.first().measureReportDenominator)
+
+    assertEquals("Test Code 1", result.first().dataList.elementAt(0).title)
+    assertEquals("2", result.first().dataList.elementAt(0).count)
+
+    assertEquals("Test Code 2", result.first().dataList.elementAt(1).title)
+    assertEquals("4", result.first().dataList.elementAt(1).count)
+
+    assertEquals("Test Code 3", result.first().dataList.elementAt(2).title)
+    assertEquals("6", result.first().dataList.elementAt(2).count)
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfReportIdNotFound() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      measureReportViewModel.reportMeasuresList("")
+    }
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      val pager = measureReportViewModel.reportMeasuresList(reportId)
+    }
+  }
 }

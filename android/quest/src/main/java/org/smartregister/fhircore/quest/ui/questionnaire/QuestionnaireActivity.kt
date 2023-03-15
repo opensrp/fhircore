@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -33,7 +35,10 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,11 +46,12 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.interpolate
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showCancelAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
@@ -57,6 +63,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
 /**
@@ -69,18 +76,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var parser: IParser
-
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-
-  protected lateinit var questionnaire: Questionnaire
-
-  private lateinit var computedValuesMap: Map<String, Any>
-
-  private lateinit var fragment: QuestQuestionnaireFragment
-
+  private lateinit var questionnaire: Questionnaire
+  private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
+  private lateinit var actionParams: List<ActionParameter>
+  private lateinit var prePopulationParams: List<ActionParameter>
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -92,32 +94,47 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    computedValuesMap =
-      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP) as Map<String, Any>?
-        ?: emptyMap()
+    questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
 
-    questionnaireConfig =
-      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig).interpolate(
-        computedValuesMap
-      )
+    actionParams =
+      intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
+        ?: emptyList()
 
-    questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
-
-    val loadProgress = showProgressAlert(this, R.string.loading)
-
-    lifecycleScope.launch(dispatcherProvider.io()) {
-      questionnaireViewModel.run {
-        questionnaire = loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type)!!
-        libraryEvaluator.initialize()
+    prePopulationParams =
+      actionParams.filter {
+        it.paramType == ActionParameterType.PREPOPULATE &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) renderFragment()
+    val questionnaireActivity = this@QuestionnaireActivity
+    questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
 
-      withContext(dispatcherProvider.main()) {
-        updateViews()
-        fragment.whenStarted { loadProgress.dismiss() }
-      }
+    val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
+
+    lifecycleScope.launch {
+      questionnaireViewModel.loadQuestionnaire(
+          questionnaireConfig.id,
+          questionnaireConfig.type,
+          prePopulationParams
+        )
+        .let { thisQuestionnaire ->
+          if (thisQuestionnaire == null) {
+            questionnaireActivity.showToast(
+              questionnaireActivity.getString(R.string.questionnaire_missing)
+            )
+            finish()
+          } else {
+            questionnaire = thisQuestionnaire
+            // Only add the fragment once, when the activity is first created.
+            if (savedInstanceState == null) renderFragment()
+
+            withContext(dispatcherProvider.main()) {
+              updateViews()
+              fragment.whenStarted { loadProgress.dismiss() }
+            }
+          }
+        }
     }
   }
 
@@ -127,15 +144,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setOnClickListener(this@QuestionnaireActivity)
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).apply {
-      setOnClickListener(this@QuestionnaireActivity)
+    findViewById<Button>(R.id.submit_questionnaire)?.apply {
+      layoutParams.width =
+        ViewGroup.LayoutParams
+          .MATCH_PARENT // Override by Styles xml does not seem to work for this layout param
+
       if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireConfig.type.isEditMode()) {
         // setting the save button text from Questionnaire Config
-        text =
-          questionnaireConfig.saveButtonText
-            ?: getString(R.string.questionnaire_alert_submit_button_title)
+        text = questionnaireConfig.saveButtonText ?: getString(R.string.str_save)
       }
     }
 
@@ -149,42 +167,61 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
-    fragment =
-      QuestQuestionnaireFragment().apply {
-        val questionnaireString = parser.encodeResourceToString(questionnaire)
-
-        // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
-        // pass questionnaire and questionnaire-response to fragment
-        // 1- editMode -> assert and pass response from intent
-        // 2- readonly -> assert and pass response from intent
-        // 3- default -> process, populate and pass response/data from intent if exists
-        arguments =
-          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-            .apply {
-              var questionnaireResponse =
-                intent
-                  .getStringExtra(QUESTIONNAIRE_RESPONSE)
-                  ?.decodeResourceFromString<QuestionnaireResponse>()
-                  ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
-
-              if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
-
-              if (questionnaireConfig.resourceIdentifier != null) {
-                setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(
-                    questionnaire,
-                    intent,
-                    questionnaireConfig
-                  )
-                this.putString(
-                  QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                  questionnaireResponse.encodeResourceToString()
-                )
-              }
-            }
-      }
+    // Pass questionnaire and questionnaire-response to fragment
+    val questionnaireString = parser.encodeResourceToString(questionnaire)
+    val fragmentBuilder = QuestionnaireFragment.builder().setQuestionnaire(questionnaireString)
+    decodeQuestionnaireResponse(intent, questionnaireConfig)?.let {
+      fragmentBuilder.setQuestionnaireResponse(it)
+    }
+    fragment = fragmentBuilder.build()
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+    supportFragmentManager.setFragmentResultListener(
+      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
+      this
+    ) { _, _ ->
+      if (this.getQuestionnaireConfig().type.isReadOnly() ||
+          this.getQuestionnaireObject().experimental
+      ) { // Experimental questionnaires should not be submitted
+        this.finish()
+      } else {
+        this.handleQuestionnaireSubmit()
+      }
+    }
+  }
+
+  @VisibleForTesting
+  internal suspend fun decodeQuestionnaireResponse(
+    intent: Intent,
+    questionnaireConfig: QuestionnaireConfig
+  ): String? {
+    var questionnaireResponse =
+      intent
+        .getStringExtra(QUESTIONNAIRE_RESPONSE)
+        ?.decodeResourceFromString<QuestionnaireResponse>()
+        ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+
+    if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
+
+    if (questionnaireConfig.resourceIdentifier != null) {
+      setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
+    }
+
+    if (questionnaireResponse == null && intentHasPopulationResources(intent)) {
+      questionnaireResponse =
+        questionnaireViewModel.generateQuestionnaireResponse(
+          questionnaire = questionnaire,
+          intent = intent,
+          questionnaireConfig = questionnaireConfig
+        )
+    }
+
+    return questionnaireResponse?.encodeResourceToString()
+  }
+
+  @VisibleForTesting
+  internal fun intentHasPopulationResources(intent: Intent): Boolean {
+    val resourceList = intent.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
+    return resourceList != null && resourceList.size > 0
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
@@ -196,13 +233,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onClick(view: View) {
-    if (view.id == R.id.btn_save_client_info) {
-      if (questionnaireConfig.type.isReadOnly()) {
-        finish()
-      } else {
-        showFormSubmissionConfirmAlert()
-      }
-    } else if (view.id == R.id.btn_edit_qr) {
+    if (view.id == R.id.btn_edit_qr) {
       questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
@@ -210,7 +241,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
             questionnaireConfig.id,
-            questionnaireConfig.type
+            questionnaireConfig.type,
+            prePopulationParams
           )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
@@ -224,34 +256,47 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  open fun showFormSubmissionConfirmAlert() {
-    if (questionnaire.experimental)
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_test_only_message,
-        title = R.string.questionnaire_alert_test_only_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
-      )
-    else
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_submit_message,
-        title = R.string.questionnaire_alert_submit_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_submit_button_title
-      )
-  }
-
   fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    return questionnaireFragment.getQuestionnaireResponse()
+    return questionnaireFragment.getQuestionnaireResponse().apply {
+      // TODO this is required until require condition in [QuestionnaireResponseValidator] is fixed
+      this@QuestionnaireActivity.questionnaire.let { it.url = "${it.resourceType}/${it.logicalId}" }
+
+      if (this.logicalId.isEmpty()) {
+        this.id = UUID.randomUUID().toString()
+        this.authored = Date()
+      }
+
+      this@QuestionnaireActivity.questionnaire
+        .useContext
+        .asSequence()
+        .filter { it.hasValueCodeableConcept() }
+        .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
+
+      this.questionnaire =
+        this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
+      // important to set response subject so that structure map can handle subject for all entities
+      questionnaireViewModel.handleQuestionnaireResponseSubject(
+        questionnaireConfig.resourceIdentifier,
+        this@QuestionnaireActivity.questionnaire,
+        this
+      )
+    }
   }
 
   fun dismissSaveProcessing() {
     if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
       saveProcessingAlertDialog.dismiss()
+  }
+
+  open fun handleSaveDraftQuestionnaire() {
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
+    val questionnaireResponse = getQuestionnaireResponse()
+    if (questionnaireViewModel.partialQuestionnaireResponseHasValues(questionnaireResponse)) {
+      handlePartialQuestionnaireResponse(questionnaireResponse)
+    }
+    finish()
   }
 
   open fun handleQuestionnaireSubmit() {
@@ -307,8 +352,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     setResult(
       Activity.RESULT_OK,
       Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
-        putExtra(QUESTIONNAIRE_TASK_ID, questionnaireConfig.taskId)
+        putExtra(QUESTIONNAIRE_RESPONSE, parcelResponse)
+        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
       }
     )
     finish()
@@ -329,6 +374,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       dismissSaveProcessing()
       confirmationDialog(questionnaireConfig = questionnaireConfig)
     } else {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       questionnaireViewModel.extractAndSaveResources(
         context = this,
         questionnaire = questionnaire,
@@ -336,6 +382,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaireConfig = questionnaireConfig
       )
     }
+  }
+
+  open fun handlePartialQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    dismissSaveProcessing()
+    questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
   private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
@@ -384,29 +435,50 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onBackPressed() {
     if (questionnaireConfig.type.isReadOnly()) {
       finish()
+    } else if (questionnaireConfig.saveDraft) {
+      showCancelQuestionnaireAlertDialog()
     } else {
-      showConfirmAlert(
-        this,
-        getDismissDialogMessage(),
-        R.string.questionnaire_alert_back_pressed_title,
-        { finish() },
-        R.string.questionnaire_alert_back_pressed_button_title
-      )
+      showConfirmAlertDialog()
     }
   }
 
+  private fun showConfirmAlertDialog() {
+    showConfirmAlert(
+      this,
+      getDismissDialogMessage(),
+      R.string.questionnaire_alert_back_pressed_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title,
+    )
+  }
+
+  private fun showCancelQuestionnaireAlertDialog() {
+    showCancelAlert(
+      this,
+      R.string.questionnaire_in_progress_alert_back_pressed_message,
+      R.string.questionnaire_alert_back_pressed_title,
+      { handleSaveDraftQuestionnaire() },
+      R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title
+    )
+  }
+
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
+
+  fun getQuestionnaireObject() = questionnaire
+  fun getQuestionnaireConfig() = questionnaireConfig
 
   companion object {
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
-    const val QUESTIONNAIRE_TASK_ID = "questionnaire-task-id"
     const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
-    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
+    const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
+    const val STRING_INTERPOLATION_PREFIX = "@{"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -416,11 +488,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      computedValuesMap: Map<String, Any>?
+      actionParams: List<ActionParameter> = emptyList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
       )
         .apply {
           questionnaireResponse?.let {

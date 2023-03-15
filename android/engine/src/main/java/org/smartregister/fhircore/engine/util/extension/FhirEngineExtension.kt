@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
-import android.content.res.AssetManager
-import ca.uhn.fhir.context.FhirContext
+import android.database.SQLException
 import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Identifier
@@ -33,9 +31,7 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.hl7.fhir.r4.model.Task
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -52,42 +48,11 @@ suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Compos
     }
     .firstOrNull()
 
-suspend fun FhirEngine.loadCqlLibraryBundle(
-  context: Context,
-  sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperator,
-  resourcesBundlePath: String
-) =
-  try {
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    val savedResources =
-      sharedPreferencesHelper.read(SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name, "")
-
-    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-      val bundle = jsonParser.parseResource(it) as Bundle
-      bundle.entry.forEach { entry ->
-        if (entry.resource.resourceType == ResourceType.Library) {
-          fhirOperator.loadLib(entry.resource as Library)
-        } else {
-          if (!savedResources!!.contains(resourcesBundlePath)) {
-            create(entry.resource)
-            sharedPreferencesHelper.write(
-              SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name,
-              savedResources.plus(",").plus(resourcesBundlePath)
-            )
-          }
-        }
-      }
-    }
-  } catch (exception: Exception) {
-    Timber.e(exception)
-  }
-
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
-    if (!UrlUtil.isValid(path)) get<Library>(IdType(path).idPart)
-    else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+    runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
+      ?: search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
 
   library?.let {
     fhirOperator.loadLib(it)
@@ -111,14 +76,28 @@ suspend fun FhirEngine.loadLibraryAtPath(
 suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
   try {
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
-    val measure =
+    val measure: Measure? =
       if (UrlUtil.isValid(measurePath))
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }.first()
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }.firstOrNull()
       else get(measurePath)
 
-    measure.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-
-    measure.library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
+    measure?.apply {
+      relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+      library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
+    }
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+suspend fun FhirEngine.addDateTimeIndex() {
+  try {
+    val addDateTimeIndexEntityIndexFromIndexQuery =
+      SearchQuery(
+        "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+        emptyList()
+      )
+    search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+  } catch (ex: SQLException) {
+    Timber.e(ex)
+  }
+}

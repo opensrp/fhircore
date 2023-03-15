@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -44,18 +42,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
@@ -66,11 +65,11 @@ fun MemberProfileBottomSheetView(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   buttonProperties: List<ButtonProperties>,
-  resourceData: ResourceData,
+  ResourceData: ResourceData,
   navController: NavController,
   onViewProfile: () -> Unit
 ) {
-  Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+  Column {
 
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
@@ -107,9 +106,9 @@ fun MemberProfileBottomSheetView(
       Spacer(modifier = modifier.height(8.dp))
       buttonProperties.forEach {
         ActionableButton(
-          buttonProperties = it,
-          resourceData = resourceData,
-          navController = navController
+          buttonProperties = it.copy(buttonType = ButtonType.BIG),
+          resourceData = ResourceData,
+          navController = navController,
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -130,7 +129,7 @@ fun MemberProfileBottomSheetView(
   }
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewPreview() {
   MemberProfileBottomSheetView(
@@ -140,11 +139,11 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    resourceData = ResourceData(Patient())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
   )
 }
 
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewWithFormDataPreview() {
   MemberProfileBottomSheetView(
@@ -159,6 +158,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    resourceData = ResourceData(Patient())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
   )
 }

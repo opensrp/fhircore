@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -38,9 +37,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -68,13 +65,12 @@ constructor(
   open val configService: ConfigService
 ) {
 
-  val appConfig: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
-  }
-
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
+
+  suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
+    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
 
   suspend fun loadResource(reference: Reference) =
     withContext(dispatcherProvider.io()) {
@@ -119,13 +115,13 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun create(vararg resource: Resource): List<String> {
-    val mandatoryTags =
-      appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        it.addTags(mandatoryTags)
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+        }
       }
 
       fhirEngine.create(*resource)
@@ -133,10 +129,12 @@ constructor(
   }
 
   suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.delete(resource.resourceType, resource.logicalId)
+    }
   }
 
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -144,7 +142,7 @@ constructor(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(resource)
+        create(addMandatoryTags, resource)
       }
     }
   }
@@ -181,15 +179,17 @@ constructor(
         this.gender = patient.gender
         this.relationshipFirstRep.codingFirstRep.system =
           "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.relationshipFirstRep.codingFirstRep.code = "99990006"
+        this.relationshipFirstRep.codingFirstRep.display = "Family Head"
         this.patient = patient.asReference()
         this.id = UUID.randomUUID().toString()
       }
 
-    create(relatedPerson)
+    create(true, relatedPerson)
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.first().family
+        name = relatedPerson.name.firstOrNull()?.family
       }
     fhirEngine.update(group)
   }
@@ -216,7 +216,7 @@ constructor(
             member.map { thisMember ->
               loadResource<Patient>(thisMember.entity.extractId())?.let { patient ->
                 patient.active = false
-                addOrUpdate(patient)
+                addOrUpdate(resource = patient)
               }
             }
           }
@@ -224,7 +224,7 @@ constructor(
         member.clear()
         active = false
       }
-      addOrUpdate(group)
+      addOrUpdate(resource = group)
     }
   }
 
@@ -253,11 +253,6 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group.member.run {
-            remove(
-              this.find { it.entity.reference == "${resource.resourceType}/${resource.logicalId}" }
-            )
-          }
           group
             .managingEntity
             ?.let { reference ->
@@ -276,10 +271,10 @@ constructor(
             }
 
           // Update this group resource
-          addOrUpdate(group)
+          addOrUpdate(resource = group)
         }
       }
-      addOrUpdate(resource)
+      addOrUpdate(resource = resource)
     }
   }
 

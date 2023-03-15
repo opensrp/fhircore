@@ -187,6 +187,8 @@
     {
       "title": "Remove this person",
       "titleColor": "#FF0000",
+      "backgroundColor": "dangerColor",
+      "confirmAction": true,
       "visible": "true",
       "showSeparator": "true",
       "questionnaire": {

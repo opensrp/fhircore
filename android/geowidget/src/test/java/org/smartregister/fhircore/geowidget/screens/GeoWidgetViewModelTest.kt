@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -125,7 +126,7 @@ class GeoWidgetViewModelTest {
     val location = locationJson.decodeResourceFromString<Location>()
     val group = groupJson.decodeResourceFromString<Group>()
 
-    coEvery { fhirEngine.search<Group>(any()) } returns listOf(group)
+    coEvery { fhirEngine.search<Group>(any<Search>()) } returns listOf(group)
     coEvery { fhirEngine.get(ResourceType.Location, any()) } returns location
 
     val familiesWithLocations = runBlocking { geoWidgetViewModel.getFamilies() }
@@ -139,10 +140,11 @@ class GeoWidgetViewModelTest {
     val locationJson =
       """{"resourceType":"Location","id":"136702","meta":{"versionId":"3","lastUpdated":"2022-07-28T18:21:39.739+00:00","source":"#18c074df71ca7366"},"status":"active","name":"Kenyatta Hospital Visitors Parking","description":"Parking Lobby","telecom":[{"system":"phone","value":"020 2726300"},{"system":"phone","value":"(+254)0709854000"},{"system":"phone","value":"(+254)0730643000"},{"system":"email","value":"knhadmin@knh.or.ke"}],"address":{"line":["P.O. Box 20723"],"city":"Nairobi","postalCode":"00202","country":"Kenya"},"physicalType":{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/location-physical-type","code":"area","display":"Area"}]},"position":{"longitude":36.80826008319855,"latitude":-1.301070677485388},"managingOrganization":{"reference":"Organization/400"},"partOf":{"reference":"Location/136710"}}"""
     val location = locationJson.decodeResourceFromString<Location>()
+    coEvery { defaultRepository.create(true, location) } returns listOf("")
 
     val locationLiveData = geoWidgetViewModel.saveLocation(location)
 
-    coVerify { defaultRepository.create(location) }
+    coVerify { defaultRepository.create(true, location) }
     Assert.assertTrue(locationLiveData.value!!)
   }
 }

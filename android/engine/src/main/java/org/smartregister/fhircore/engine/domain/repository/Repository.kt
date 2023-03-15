@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -26,18 +28,31 @@ interface Repository {
    * data query extracted from the retrieved configuration is used to filter the register data (FHIR
    * resources wrapped in [ResourceData]
    */
-  suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
+  suspend fun loadRegisterData(
+    currentPage: Int,
+    registerId: String,
+    paramsMap: Map<String, String>? = emptyMap()
+  ): List<RepositoryResourceData>
 
   /**
    * This function uses the provided [registerId] to retrieve the register configuration from the
    * registry, then proceeds to count the data based on the configured query parameters
    */
-  suspend fun countRegisterData(registerId: String): Long
+  suspend fun countRegisterData(
+    registerId: String,
+    paramsMap: Map<String, String>? = emptyMap()
+  ): Long
 
   /**
    * This function returns data used on the profile for the given [resourceId]. Profile
    * configuration is identified by the [profileId] and contains the queries for filtering the
-   * profile data.
+   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
+   * configurations identified by the [profileId] are used.
    */
-  suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData?
+  suspend fun loadProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
+    paramsMap: Map<String, String>? = emptyMap()
+  ): RepositoryResourceData?
 }

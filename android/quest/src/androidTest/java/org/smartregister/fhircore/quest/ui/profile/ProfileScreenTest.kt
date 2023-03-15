@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -27,14 +28,17 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.quest.Faker
 import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.waitUntilExists
@@ -51,10 +55,16 @@ class ProfileScreenTest {
   @Before
   fun setUp() {
     hiltRule.inject()
+    val snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>().asSharedFlow()
     runBlocking {
       val profileUiState =
         ProfileUiState(
-          resourceData = ResourceData(Patient()),
+          resourceData =
+            ResourceData(
+              baseResourceId = "patientId",
+              baseResourceType = ResourceType.Patient,
+              computedValuesMap = emptyMap()
+            ),
           profileConfiguration =
             configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")
         )
@@ -62,7 +72,8 @@ class ProfileScreenTest {
         ProfileScreen(
           navController = rememberNavController(),
           profileUiState = profileUiState,
-          onEvent = spyk({})
+          onEvent = spyk({}),
+          snackStateFlow = snackBarStateFlow
         )
       }
     }
@@ -71,12 +82,10 @@ class ProfileScreenTest {
   @Test
   fun testFloatingActionButtonIsDisplayed() {
     // We wait for the text be drawn before we do the assertion
-    composeTestRule.waitUntilExists(hasText("ADD MEMBER"))
     composeTestRule.waitUntilExists(hasTestTag(FAB_BUTTON_TEST_TAG))
     composeTestRule
-      .onNodeWithText("ADD MEMBER", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
+      .onAllNodesWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
+      .assertCountEquals(3)
   }
 
   @Test
@@ -98,19 +107,11 @@ class ProfileScreenTest {
     composeTestRule.waitUntilExists(hasTestTag(DROPDOWN_MENU_TEST_TAG))
     composeTestRule.onNodeWithTag(DROPDOWN_MENU_TEST_TAG).performClick()
     composeTestRule
-      .onNodeWithText("Household details", useUnmergedTree = true)
+      .onNodeWithText("Family details", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
-      .onNodeWithText("Change household head", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithText("Family activity", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithText("View medical history", useUnmergedTree = true)
+      .onNodeWithText("Change family head", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule

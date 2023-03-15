@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
@@ -36,25 +32,30 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.util.extensions.clickable
+import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
@@ -64,85 +65,180 @@ fun ActionableButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  navController: NavController,
+  navController: NavController
 ) {
-  val computedValuesMap = remember { resourceData.computedValuesMap }
-  val status = remember { buttonProperties.status.interpolate(resourceData.computedValuesMap) }
-
-  OutlinedButton(
-    onClick = {
-      buttonProperties.actions.handleClickEvent(
-        navController = navController,
-        resourceData = resourceData
-      )
-    },
-    colors =
-      ButtonDefaults.buttonColors(
-        backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
-        contentColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
-      ),
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(top = 0.dp, start = 12.dp, end = 12.dp)
-        .wrapContentHeight()
-        .testTag(ACTIONABLE_BUTTON_TEST_TAG)
-  ) {
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxWidth()
+  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
+    val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+    val buttonEnabled =
+      buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+    val clickable = buttonProperties.clickable(resourceData)
+    OutlinedButton(
+      onClick = {
+        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
+          buttonProperties.actions.handleClickEvent(
+            navController = navController,
+            resourceData = resourceData
+          )
+        }
+      },
+      colors =
+        ButtonDefaults.buttonColors(
+          backgroundColor =
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
+          contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledContentColor = DefaultColor,
+        ),
+      modifier =
+        modifier
+          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
+          .padding(horizontal = 12.dp, vertical = 4.dp)
+          .wrapContentHeight()
+          .testTag(ACTIONABLE_BUTTON_TEST_TAG),
+      enabled = buttonEnabled,
+      border =
+        BorderStroke(
+          width = 0.5.dp,
+          color = buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f)
+        ),
+      elevation = null
     ) {
-      Spacer(modifier = modifier.weight(0.5f).fillMaxHeight())
+      // Each component here uses a new modifier to avoid inheriting the properties of the parent
       Icon(
-        modifier = modifier.size(16.dp),
         imageVector =
-          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
+          if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
         tint =
-          when (status) {
-            ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
-            else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
-          }
+          if (buttonEnabled)
+            when (status) {
+              ServiceStatus.COMPLETED -> SuccessColor
+              else -> statusColor
+            }
+          else DefaultColor,
+        modifier = Modifier.size(16.dp)
       )
-      Spacer(modifier = modifier.width(6.dp))
       Text(
-        text = buttonProperties.text.toString(),
+        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
         fontWeight = FontWeight.Medium,
         color =
-          if (status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
-          else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+          if (buttonEnabled)
+            when (status) {
+              ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
+              else -> statusColor
+            }
+          else DefaultColor.copy(0.9f),
+        textAlign = TextAlign.Start,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        modifier =
+          Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+            .conditional(status == ServiceStatus.COMPLETED, { weight(1f) }),
+        fontSize = buttonProperties.fontSize.sp
       )
-      Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
-      if (status == ServiceStatus.COMPLETED.name) {
+      if (status == ServiceStatus.COMPLETED) {
         Icon(
           imageVector = Icons.Filled.ArrowDropDown,
           contentDescription = null,
-          tint = DefaultColor.copy(alpha = 0.9f)
+          tint = DefaultColor,
+          modifier = Modifier.size(18.dp),
         )
       }
     }
   }
 }
 
+/**
+ * This function determines the status color to display depending on the value of the service status
+ *
+ * @property computedValuesMap Contains data extracted from the resources to be used on the UI
+ */
 @Composable
-fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
-  // Status color is determined from the service status
-  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
+fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
+  val interpolated = this.status.interpolate(computedValuesMap)
+  val status =
+    if (ServiceStatus.values().map { it.name }.contains(interpolated))
+      ServiceStatus.valueOf(interpolated)
+    else ServiceStatus.UPCOMING
+
+  return when (status) {
     ServiceStatus.DUE -> InfoColor
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
     ServiceStatus.COMPLETED -> DefaultColor
+    ServiceStatus.IN_PROGRESS -> WarningColor
   }
 }
 
 @Composable
-@Preview(showBackground = true)
+fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
+  val interpolated = this.status.interpolate(computedValuesMap)
+  return if (ServiceStatus.values().map { it.name }.contains(interpolated))
+    ServiceStatus.valueOf(interpolated)
+  else ServiceStatus.UPCOMING
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
 fun ActionableButtonPreview() {
-  Column(modifier = Modifier.height(50.dp)) {
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.IN_PROGRESS.name,
+        text = "ANC Visit",
+        buttonType = ButtonType.TINY
+      ),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    navController = rememberNavController()
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun DisabledActionableButtonPreview() {
+  Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
-      buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      resourceData = ResourceData(Patient()),
+      buttonProperties =
+        ButtonProperties(
+          visible = "true",
+          status = ServiceStatus.COMPLETED.name,
+          text = "Issuing of teenage pads and household due on 23-01-2023",
+          enabled = "true",
+          buttonType = ButtonType.BIG
+        ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun SmallActionableButtonPreview() {
+  Row(modifier = Modifier.fillMaxWidth()) {
+    ActionableButton(
+      modifier = Modifier.weight(1.0f),
+      buttonProperties =
+        ButtonProperties(
+          status = "DUE",
+          text = "Due Task",
+          fillMaxWidth = true,
+          buttonType = ButtonType.TINY
+        ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+    ActionableButton(
+      modifier = Modifier.weight(1.0f),
+      buttonProperties =
+        ButtonProperties(
+          status = "COMPLETED",
+          text = "Completed Task",
+          fillMaxWidth = true,
+          buttonType = ButtonType.TINY
+        ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
     )
   }

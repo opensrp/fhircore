@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,37 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
-import android.util.Log
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.fragment.NavHostFragment
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.work.Configuration
-import androidx.work.impl.utils.SynchronousExecutor
-import androidx.work.testing.WorkManagerTestInitHelper
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.verify
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.shadows.ShadowToast
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -50,20 +58,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
+  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+
   lateinit var appMainActivity: AppMainActivity
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    // Initialize WorkManager for instrumentation tests.
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val config =
-      Configuration.Builder()
-        .setMinimumLoggingLevel(Log.DEBUG)
-        .setExecutor(SynchronousExecutor())
-        .build()
-    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
   }
@@ -81,15 +82,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateStarted() {
-    appMainActivity.onSync(State.Started)
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains("Syncing", ignoreCase = true))
-  }
-
-  @Test
   fun testOnSyncWithSyncStateInProgress() {
-    appMainActivity.onSync(State.InProgress(resourceType = null))
+    appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
     Assert.assertTrue(
       appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
         "Sync in progress",
@@ -105,7 +99,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19"
     )
-    appMainActivity.onSync(State.Glitch(exceptions = emptyList()))
+    appMainActivity.onSync(SyncJobStatus.Glitch(exceptions = emptyList()))
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertTrue(
       viewModel.appMainUiState.value.lastSyncTime.contains(
@@ -122,12 +116,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19"
     )
-    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast()
-        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
-    )
+    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertEquals(
       viewModel.appMainUiState.value.lastSyncTime,
@@ -138,27 +128,92 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast()
-        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
-    )
+    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
     Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
   }
 
   @Test
   fun testOnSyncWithSyncStateFinished() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = State.Finished(result = Result.Success())
+    val stateFinished = SyncJobStatus.Finished()
     appMainActivity.onSync(stateFinished)
-    Assert.assertNotNull(ShadowToast.getLatestToast())
-    Assert.assertTrue(
-      ShadowToast.getTextOfLatestToast().contains("Sync complete", ignoreCase = true)
-    )
+
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.result.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
       viewModel.retrieveLastSyncTimestamp()
     )
+  }
+
+  @Test
+  fun testOnSubmitQuestionnaireShouldUpdateLiveData() {
+    appMainActivity.onSubmitQuestionnaire(
+      ActivityResult(
+        -1,
+        Intent().apply {
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+            }
+          )
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+          )
+        }
+      )
+    )
+
+    val questionnaireSubmission =
+      appMainActivity.appMainViewModel.questionnaireSubmissionLiveData.value
+    Assert.assertNotNull(questionnaireSubmission)
+    Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
+    Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
+    Assert.assertEquals(
+      QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
+      questionnaireSubmission?.questionnaireResponse?.status
+    )
+  }
+
+  @Test
+  fun testRunSyncWhenDeviceIsOnline() {
+
+    mockkStatic(Context::isDeviceOnline)
+
+    every { appMainActivity.isDeviceOnline() } returns true
+
+    val syncBroadcaster =
+      mockk<SyncBroadcaster> {
+        every { runSync(any()) } returns Unit
+        every { schedulePeriodicSync(any()) } returns Unit
+      }
+
+    ReflectionHelpers.callInstanceMethod<Unit>(
+      appMainActivity,
+      "runSync",
+      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
+    )
+
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
+  }
+
+  @Test
+  fun testDoNotRunSyncWhenDeviceIsOffline() {
+
+    mockkStatic(Context::isDeviceOnline)
+
+    every { appMainActivity.isDeviceOnline() } returns false
+
+    val syncBroadcaster = mockk<SyncBroadcaster>()
+
+    ReflectionHelpers.callInstanceMethod<Unit>(
+      appMainActivity,
+      "runSync",
+      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
+    )
+
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
   }
 }
