@@ -253,11 +253,11 @@ constructor(
 
   private fun extractTaskPeriodsFromTiming(timing: Timing, carePlan: CarePlan): List<Period> {
     val taskPeriods = mutableListOf<Period>()
-    // TODO handle properties used by older plandefintions. If any plan definition is using
-    //  countMax, frequency, durationUnit of hour, consider as non compliant and assume
-    //  all handling would be done into structure map. Once all plan definitions are using
-    //  recommended approach and using plan definitions properly change line below to use
-    //  timing.repeat.count only
+    // TODO handle properties used by older PlanDefintions. If any PlanDefinition is using
+    // countMax, frequency, durationUnit of hour, consider as non compliant and assume
+    // all handling would be done with a structure map. Once all PlanDefinitions are using
+    // recommended approach and using plan definitions properly change line below to use
+    // timing.repeat.count only
     val isLegacyPlanDefinition =
       (timing.repeat.hasFrequency() ||
         timing.repeat.hasCountMax() ||
