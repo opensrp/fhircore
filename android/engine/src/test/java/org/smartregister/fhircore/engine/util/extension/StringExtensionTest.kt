@@ -51,7 +51,7 @@ class StringExtensionTest {
   }
 
   @Test
-  fun stringInterpolateShouldThrowIllegalArgumentExceptionIfPrefixNull() {
+  fun stringInterpolateShouldCatchIllegalStateExceptionAndReturnSelf() {
     val templateString = "{ \"saveFamilyButtonText\" : @{ family.button.save },\"deleteFamilyButtonText\" : @{ family.button.delete } }"
     val lookupMap = mapOf<String, Any>("family.button.save" to "@{family.button.save}", "family.button.delete" to "delete")
 
