@@ -656,7 +656,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
     // anc registered late so skip the tasks which passed due date
-    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
+    val lmp = DateType(Date().asYyyyMmDd()).apply { add(Calendar.MONTH, -4) }
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
       .value = lmp
