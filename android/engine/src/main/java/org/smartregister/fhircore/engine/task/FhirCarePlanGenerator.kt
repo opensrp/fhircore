@@ -98,7 +98,7 @@ constructor(
         }
         .firstOrNull()
         ?: CarePlan().apply {
-          // TODO delete this section once all existing old plan-definitions are using new
+          // TODO delete this section once all PlanDefinitions are using new
           // recommended approach
           this.title = planDefinition.title
           this.description = planDefinition.description
