@@ -39,10 +39,12 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
-  this.linkId
-    .replace("_", " ")
-    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
-    .plus(": ")
+  if (this.linkId != null) {
+    this.linkId
+      .replace("_", " ")
+      .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+      .plus(": ")
+  } else ""
 
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
