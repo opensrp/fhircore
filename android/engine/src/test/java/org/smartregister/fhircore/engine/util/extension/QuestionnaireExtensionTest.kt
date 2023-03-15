@@ -16,15 +16,24 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.TimeType
+import org.hl7.fhir.r4.model.UriType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.DataType
 
 class QuestionnaireExtensionTest {
   private lateinit var questionniare: Questionnaire
@@ -48,6 +57,13 @@ class QuestionnaireExtensionTest {
   @Test
   fun testAsLabelCapitalizeReplaceUnderscoresWithSpacesAndAddColonSpace() {
     questionniareResponseItemComponent.linkId = "a_b_c"
+    val label = questionniareResponseItemComponent.asLabel()
+    Assert.assertEquals("A b c: ", label)
+  }
+
+  @Test
+  fun testAsLabelReplaceUnderscoresWithSpacesAndAddColonSpace() {
+    questionniareResponseItemComponent.linkId = "A_b_c"
     val label = questionniareResponseItemComponent.asLabel()
     Assert.assertEquals("A b c: ", label)
   }
@@ -88,6 +104,7 @@ class QuestionnaireExtensionTest {
     questionniare.extension.add(extension)
     Assert.assertEquals(arrayListOf(""), questionniare.cqfLibraryIds())
   }
+
   @Test
   fun testCqfLibraryIdsIncludesCqfLibraryRemovesLibraryPrefix() {
     val value = StringType("Library/word")
@@ -146,5 +163,156 @@ class QuestionnaireExtensionTest {
     questionnaireItemComponent.linkId = id
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(questionnaireItemComponent, questionniare.find(id))
+  }
+
+  @Test
+  fun testFindQuestionnaireResponseItemComponentWhenItem() {
+    val id = "1234"
+    questionniareResponseItemComponent.item =
+      listOf(QuestionnaireResponse.QuestionnaireResponseItemComponent())
+    Assert.assertEquals(null, listOf(questionniareResponseItemComponent).find(id, null))
+  }
+
+  @Test
+  fun testQuestionnaireFindWithFieldTypeDefinition() {
+    Assert.assertEquals(
+      emptyList<Questionnaire.QuestionnaireItemComponent>(),
+      questionniare.find(FieldType.DEFINITION, "")
+    )
+  }
+
+  @Test
+  fun testQuestionnaireFindWithFieldTypeType() {
+    Assert.assertEquals(
+      emptyList<Questionnaire.QuestionnaireItemComponent>(),
+      questionniare.find(FieldType.TYPE, "")
+    )
+  }
+
+  @Test
+  fun testQuestionnaireItemComponentFindWithFieldTypeDefinition() {
+    val value = "value"
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    questionnaireItemComponent.definition = value
+    questionniare.item = listOf(questionnaireItemComponent)
+    Assert.assertEquals(
+      listOf(questionnaireItemComponent),
+      questionniare.find(FieldType.DEFINITION, value)
+    )
+  }
+
+  @Test
+  fun testQuestionnaireItemComponentFindWithFieldTypeType() {
+    val value = Questionnaire.QuestionnaireItemType.BOOLEAN
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    questionnaireItemComponent.type = value
+    questionniare.item = listOf(questionnaireItemComponent)
+    Assert.assertEquals(
+      listOf(questionnaireItemComponent),
+      questionniare.find(FieldType.TYPE, value.toString())
+    )
+  }
+
+  @Test
+  fun testQuestionnaireItemComponentFindRecursive() {
+    val id = "1234"
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    val innerQuestionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    innerQuestionnaireItemComponent.linkId = id
+    questionnaireItemComponent.item = listOf(innerQuestionnaireItemComponent)
+    questionniare.item = listOf(questionnaireItemComponent)
+    Assert.assertEquals(
+      listOf(innerQuestionnaireItemComponent),
+      questionniare.find(FieldType.LINK_ID, id)
+    )
+  }
+
+  @Test
+  fun testFindQuestionnaireItemComponentPrepopulateNoChange() {
+    val linkId = "linkId"
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    questionnaireItemComponent.linkId = linkId
+    val listOfQuestionnaireItemComponents = listOf(questionnaireItemComponent)
+    listOfQuestionnaireItemComponents.prePopulateInitialValues("", emptyList())
+    Assert.assertEquals(
+      emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
+      questionnaireItemComponent.initial
+    )
+  }
+
+  @Test
+  fun testFindQuestionnaireItemComponentPrepopulateSetsInitial() {
+    val linkId = "linkId"
+    val prePopulationParams = listOf(ActionParameter("key", linkId = linkId, value = "value"))
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    questionnaireItemComponent.linkId = linkId
+    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
+    Assert.assertNotEquals(
+      emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
+      questionnaireItemComponent.initial
+    )
+  }
+
+  @Test
+  fun testFindQuestionnaireItemComponentPrepopulateRecursToSetInitial() {
+    val linkId = "linkId"
+    val prePopulationParams = listOf(ActionParameter("key", linkId = linkId, value = "value"))
+    val questionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    val innerQuestionnaireItemComponent = Questionnaire.QuestionnaireItemComponent()
+    innerQuestionnaireItemComponent.linkId = linkId
+    questionnaireItemComponent.item = listOf(innerQuestionnaireItemComponent)
+    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
+    Assert.assertEquals(
+      emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
+      questionnaireItemComponent.initial
+    )
+    Assert.assertNotEquals(
+      emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
+      innerQuestionnaireItemComponent.initial
+    )
+  }
+
+  @Test
+  fun testCastToTypeReturnsCorrectTypes() {
+    val booleanType = "true".castToType(DataType.BOOLEAN)
+    Assert.assertEquals(BooleanType().fhirType(), booleanType?.fhirType())
+    Assert.assertEquals("true", booleanType.valueToString())
+
+    val decimalType = "6.4".castToType(DataType.DECIMAL)
+    Assert.assertEquals(DecimalType().fhirType(), decimalType?.fhirType())
+    Assert.assertEquals("6.4", decimalType.valueToString())
+
+    val integerType = "4".castToType(DataType.INTEGER)
+    Assert.assertEquals(IntegerType().fhirType(), integerType?.fhirType())
+    Assert.assertEquals("4", integerType.valueToString())
+
+    val dateType = "2020-02-02".castToType(DataType.DATE)
+    Assert.assertEquals(DateType().fhirType(), dateType?.fhirType())
+    Assert.assertEquals("02-Feb-2020", dateType.valueToString())
+
+    val dateTimeType = "2020-02-02T13:00:32".castToType(DataType.DATETIME)
+    Assert.assertEquals(DateTimeType().fhirType(), dateTimeType?.fhirType())
+    Assert.assertEquals("02-Feb-2020", dateTimeType.valueToString())
+
+    val timeType = "T13:00:32".castToType(DataType.TIME)
+    Assert.assertEquals(TimeType().fhirType(), timeType?.fhirType())
+    Assert.assertEquals("T13:00:32", timeType.valueToString())
+
+    val stringType = "str".castToType(DataType.STRING)
+    Assert.assertEquals(StringType().fhirType(), stringType?.fhirType())
+    Assert.assertEquals("str", stringType.valueToString())
+
+    val uriType = "https://str.org".castToType(DataType.URI)
+    Assert.assertEquals(UriType().fhirType(), uriType?.fhirType())
+    Assert.assertEquals("https://str.org", uriType.valueToString())
+
+    // test invalid JSON
+    val codingType = "invalid".castToType(DataType.CODING)
+    Assert.assertEquals(null, codingType)
+
+    val quantityType = "invalid".castToType(DataType.QUANTITY)
+    Assert.assertEquals(null, quantityType)
+
+    // TODO: test valid JSON
   }
 }

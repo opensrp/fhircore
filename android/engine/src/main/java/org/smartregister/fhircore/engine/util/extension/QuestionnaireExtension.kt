@@ -151,7 +151,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
       }
       ?.let { actionParam ->
         item.initial =
-          arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+          arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {
               value = actionParam.dataType?.let { actionParam.value.castToType(it) }
             }
