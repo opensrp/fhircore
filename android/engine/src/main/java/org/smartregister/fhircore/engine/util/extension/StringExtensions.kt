@@ -52,7 +52,7 @@ fun String.interpolate(
       prefix,
       suffix
     )
-  } catch (e: IllegalArgumentException) {
+  } catch (e: IllegalStateException) {
     Timber.e(e)
     this
   }

@@ -53,7 +53,7 @@ class StringExtensionTest {
   @Test
   fun stringInterpolateShouldThrowIllegalArgumentExceptionIfPrefixNull() {
     val templateString = "{ \"saveFamilyButtonText\" : @{ family.button.save }, @{ missing } }"
-    val lookupMap = mapOf<String, Any>("family.button.save" to "save")
+    val lookupMap = mapOf<String, Any>("family.button.save" to "@{family.button.save}")
 
     Assert.assertEquals(templateString, templateString.interpolate(lookupMap))
   }
