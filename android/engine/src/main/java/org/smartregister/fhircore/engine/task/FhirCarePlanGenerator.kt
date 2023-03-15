@@ -90,7 +90,7 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle()
   ): CarePlan? {
-    // Only one CarePlan per plan , update or init a new one if not exists
+    // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
         .search<CarePlan> {
