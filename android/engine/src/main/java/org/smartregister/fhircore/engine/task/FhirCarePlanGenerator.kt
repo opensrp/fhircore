@@ -260,30 +260,30 @@ constructor(
     //  timing.repeat.count only
     val isLegacyPlanDefinition =
       (timing.repeat.hasFrequency() ||
-          timing.repeat.hasCountMax() ||
-          timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true
-      )
+        timing.repeat.hasCountMax() ||
+        timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true)
+    val count = if (isLegacyPlanDefinition || !timing.repeat.hasCount()) 1 else timing.repeat.count
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
     // offset date for current task period; careplan start if all tasks generated at once
     // otherwise today means that tasks are generated on demand
-    var offsetDate: BaseDateTimeType = DateType(if (count > 0) carePlan.period.start else Date())
+    var offsetDate: BaseDateTimeType =
+      DateType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
 
-    for (i in 0 until count){
-      if (periodExpression.isNotBlank())
+    for (i in 1..count) {
+      if (periodExpression.isNotBlank() && offsetDate.hasValue())
         evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
 
       Period()
         .apply {
           start = offsetDate.value
           end =
-            if (durationExpression.isNotBlank())
+            if (durationExpression.isNotBlank() && offsetDate.hasValue())
               evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
             else carePlan.period.end
         }
         .also { taskPeriods.add(it) }
-
     }
 
     return taskPeriods
