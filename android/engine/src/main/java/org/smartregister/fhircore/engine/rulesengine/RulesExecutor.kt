@@ -194,7 +194,7 @@ fun LinkedList<RepositoryResourceData>.createQueryResultMap():
             relatedResourceData.id ?: relatedResourceData.queryResult.resource.resourceType.name
           ) { mutableListOf() }
           .add(relatedResourceData.queryResult)
-        relatedResourceData.queryResult.relatedResources.forEach { this.addLast(it) }
+        this.addAll(relatedResourceData.queryResult.relatedResources)
       }
     }
   }
