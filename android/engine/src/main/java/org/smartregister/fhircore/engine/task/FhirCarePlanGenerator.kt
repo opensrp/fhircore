@@ -258,13 +258,11 @@ constructor(
     //  all handling would be done into structure map. Once all plan definitions are using
     //  recommended approach and using plan definitions properly change line below to use
     //  timing.repeat.count only
-    val count =
-      if (timing.repeat.hasFrequency() ||
+    val isLegacyPlanDefinition =
+      (timing.repeat.hasFrequency() ||
           timing.repeat.hasCountMax() ||
           timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true
       )
-        0
-      else timing.repeat.count
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
