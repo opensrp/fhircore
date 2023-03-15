@@ -266,7 +266,7 @@ constructor(
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
-    // offset date for current task period; careplan start if all tasks generated at once
+    // Offset date for current task period; CarePlan start if all tasks generated at once
     // otherwise today means that tasks are generated on demand
     var offsetDate: BaseDateTimeType =
       DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
