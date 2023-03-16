@@ -29,18 +29,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import org.smartregister.fhircore.engine.domain.model.TracingHistory
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
@@ -76,31 +83,44 @@ fun TracingHistoryScreenContainer(
   viewModel: TracingHistoryViewModel,
 ) {
   val context = LocalContext.current
+  val histories by viewModel.tracingHistoryViewData.collectAsState(listOf())
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
     modifier = modifier.fillMaxSize().padding(horizontal = 12.dp)
   ) {
     item { Spacer(modifier = Modifier.height(8.dp)) }
-    items(listOf(1, 2, 3, 4)) {
-      OutlineCard(
-        modifier =
-          Modifier.clickable(
-            onClick = {
-              viewModel.onEvent(
-                TracingHistoryEvent.OpenOutComesScreen(
-                  context = context,
-                  navController = navController
-                )
-              )
-            }
+    items(histories) { history ->
+      TracingHistoryCard(
+        history = history,
+        onClick = {
+          viewModel.onEvent(
+            TracingHistoryEvent.OpenOutComesScreen(context = context, navController = navController)
           )
-      ) {
-        Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
-          Row(modifier = Modifier.fillMaxWidth()) { Text(text = "Start Date:") }
-          Row(modifier = Modifier.fillMaxWidth()) { Text(text = "End Date:") }
-          Text(text = "Active", modifier = Modifier.fillMaxWidth())
         }
+      )
+    }
+  }
+}
+
+@Composable
+fun TracingHistoryCard(history: TracingHistory, onClick: () -> Unit) {
+  OutlineCard(modifier = Modifier.clickable(onClick = onClick)) {
+    Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
+      Row(modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Start Date: ${history.startDate.asDdMmYyyy()}")
       }
+      Row(modifier = Modifier.fillMaxWidth()) {
+        Text(text = "End Date: ${history.endDate?.asDdMmYyyy() ?: ""}")
+      }
+      Text(
+        text = if (history.isActive) "Active" else "Completed",
+        style =
+          MaterialTheme.typography.subtitle1.copy(
+            color = if (history.isActive) SuccessColor else MaterialTheme.colors.onSurface,
+            fontWeight = FontWeight.Bold
+          ),
+        modifier = Modifier.fillMaxWidth()
+      )
     }
   }
 }

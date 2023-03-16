@@ -19,10 +19,10 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 
 data class TracingHistory(
+  val historyId: String,
   val startDate: Date,
-  val endDate: Date,
-  val status: Boolean,
-  val outcomes: List<TracingOutcome>,
+  val endDate: Date?,
+  val isActive: Boolean,
   val numberOfAttempts: Int
 )
 
