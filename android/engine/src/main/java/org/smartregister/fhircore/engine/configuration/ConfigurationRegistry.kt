@@ -83,17 +83,15 @@ constructor(
     configId: String? = null,
     paramsMap: Map<String, String>? = emptyMap()
   ): T {
+    require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    return if (configType.parseAsResource)
-      getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap).decodeResourceFromString()
-    else
-      localizationHelper
-        .parseTemplate(
-          bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-          locale = Locale.getDefault(),
-          template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
-        )
-        .decodeJson(jsonInstance = json)
+    return localizationHelper
+      .parseTemplate(
+        bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+        locale = Locale.getDefault(),
+        template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
+      )
+      .decodeJson(jsonInstance = json)
   }
 
   /**

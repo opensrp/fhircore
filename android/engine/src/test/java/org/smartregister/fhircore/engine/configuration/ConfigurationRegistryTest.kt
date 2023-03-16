@@ -23,6 +23,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -68,5 +70,46 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertNotNull(resource)
     Assert.assertEquals("Bwana.", resource?.getString("name.title"))
     Assert.assertEquals("Kijana", resource?.getString("gender.male"))
+  }
+
+  @Test
+  fun testRetrieveConfigurationParseTemplate() {
+    val appId = "idOfApp"
+    configRegistry.configsJsonMap[ConfigType.Application.name] = "{\"appId\": \"${appId}\"}"
+    val appConfig =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    Assert.assertEquals(appId, appConfig.appId)
+  }
+
+  @Test
+  fun testRetrieveConfigurationParseTemplateMultiConfig() {
+    val appId = "idOfApp"
+    val id = "register"
+    configRegistry.configsJsonMap[ConfigType.Register.name] =
+      "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+    val registerConfig =
+      configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register)
+    Assert.assertEquals(appId, registerConfig.appId)
+    Assert.assertEquals(id, registerConfig.id)
+  }
+
+  @Test
+  fun testRetrieveConfigurationParseTemplateMultiConfigConfigId() {
+    val appId = "idOfApp"
+    val id = "register"
+    val configId = "idOfConfig"
+    configRegistry.configsJsonMap[configId] =
+      "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+    val registerConfig =
+      configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, configId)
+    Assert.assertEquals(appId, registerConfig.appId)
+    Assert.assertEquals(id, registerConfig.id)
+  }
+
+  @Test
+  fun testRetrieveConfigurationParseResource() {
+    Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
+    }
   }
 }
