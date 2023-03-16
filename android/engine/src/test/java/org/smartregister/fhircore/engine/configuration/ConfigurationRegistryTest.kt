@@ -23,6 +23,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -35,6 +36,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    configRegistry = Faker.buildTestConfigurationRegistry()
     Assert.assertNotNull(configRegistry)
   }
 
