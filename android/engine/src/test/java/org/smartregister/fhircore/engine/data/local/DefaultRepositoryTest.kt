@@ -419,6 +419,23 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun removeGroupMemberShouldCatchResourceNotFoundException() = runTest {
+    val memberId = "testMemberId"
+    val patientMemberRep =
+      Patient().apply {
+        id = memberId
+        active = true
+      }
+    val defaultRepositorySpy = spyk(defaultRepository)
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
+    coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) }
+      .throws(ResourceNotFoundException("type", "id"))
+
+    defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
+    Assert.assertTrue(patientMemberRep.active)
+  }
+
+  @Test
   fun testDeleteWithResourceId() = runTest {
     val fhirEngine: FhirEngine = mockk(relaxUnitFun = true)
     val defaultRepository =
@@ -455,6 +472,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val relatedPersonId = "1234"
     val relatedPerson = RelatedPerson().setId(relatedPersonId)
+    @Suppress("UNCHECKED_CAST")
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(relatedPerson) as List<RelatedPerson>
     coEvery { defaultRepository.delete(any()) } just runs
@@ -492,8 +510,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
     coEvery { fhirEngine.get(ResourceType.Patient, memberId) } returns patient
 
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
-      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 

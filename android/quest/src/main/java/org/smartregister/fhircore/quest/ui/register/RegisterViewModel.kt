@@ -72,6 +72,7 @@ constructor(
   private val _totalRecordsCount = mutableStateOf(0L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -101,21 +102,15 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(
-            registerRepository,
-            rulesExecutor,
-            ruleConfigs,
-            ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
-          )
-          .apply {
-            setPatientPagingSourceState(
-              RegisterPagingSourceState(
-                registerId = registerId,
-                loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value
-              )
+        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+          setPatientPagingSourceState(
+            RegisterPagingSourceState(
+              registerId = registerId,
+              loadAll = loadAll,
+              currentPage = if (loadAll) 0 else currentPage.value
             )
-          }
+          )
+        }
       }
     )
   }
@@ -206,7 +201,8 @@ constructor(
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
-                .toInt()
+                .toInt(),
+            progressPercentage = _percentageProgress
           )
       }
     }
@@ -214,5 +210,8 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+  suspend fun emitPercentageProgressState(progress: Int) {
+    _percentageProgress.emit(progress)
   }
 }

@@ -271,7 +271,13 @@ fun LoginPage(
               Icon(imageVector = image, "", tint = Color.DarkGray)
             }
           },
-          keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+          keyboardActions =
+            KeyboardActions(
+              onDone = {
+                focusManager.clearFocus()
+                onLoginButtonClicked()
+              }
+            )
         )
         Text(
           fontSize = 14.sp,

@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.annotation
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.ui.tooling.preview.Preview
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Resource
 
-@Preview @ExcludeFromJacocoGeneratedReport annotation class PreviewExcludeGenerated
+fun Parameters.addResourceParameter(name: String, resource: Resource) =
+  this.addParameter(
+    Parameters.ParametersParameterComponent().apply {
+      this.name = name
+      this.resource = resource
+    }
+  )
