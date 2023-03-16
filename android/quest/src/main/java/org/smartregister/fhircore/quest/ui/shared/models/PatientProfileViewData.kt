@@ -24,8 +24,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.Guardian
-import org.smartregister.fhircore.engine.domain.model.CurrentTracingAttempt
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.util.extension.extractedTracingCategoryIsPhone
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -100,8 +100,8 @@ sealed class ProfileViewData(
     val attempts: Int = 0,
     val dueDate: String = "",
     val identifierKey: String = "",
-    val currentAttempt: CurrentTracingAttempt? = null,
-    val lastAttempt: CurrentTracingAttempt? = null,
+    val currentAttempt: TracingAttempt? = null,
+    val lastAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",

@@ -64,9 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.CurrentTracingAttempt
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
@@ -204,10 +203,7 @@ fun TracingProfilePageView(
         // Tracing Reason
         if (profileViewData.currentAttempt != null) {
           TracingReasonCard(
-            tracingTasks = profileViewData.tracingTasks,
-            attempts = profileViewData.attempts,
-            currentAttempt = profileViewData.currentAttempt,
-            lastAttempt = profileViewData.lastAttempt,
+            currentAttempt = profileViewData.currentAttempt!!,
             displayForHomeTrace = true
           )
         }
@@ -315,10 +311,7 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun TracingReasonCard(
-  tracingTasks: List<Task>,
-  attempts: Int,
-  currentAttempt: CurrentTracingAttempt,
-  lastAttempt: CurrentTracingAttempt?,
+  currentAttempt: TracingAttempt,
   modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
 ) {
@@ -329,24 +322,24 @@ private fun TracingReasonCard(
       TracingReasonItem(
         title = stringResource(R2.string.reason_for_trace),
         value =
-          tracingTasks.joinToString(separator = ",") {
-            it.reasonCode?.codingFirstRep?.display ?: ""
-          }
+          if (currentAttempt.reasons.isNotEmpty())
+            currentAttempt.reasons.joinToString(separator = ",") { it }
+          else "None"
       )
       TracingReasonItem(
         title =
           if (displayForHomeTrace) stringResource(R2.string.last_home_trace_outcome)
           else stringResource(R2.string.last_phone_trace_outcome),
-        value = lastAttempt?.reasons?.joinToString(separator = ",") { it } ?: "None",
+        value = currentAttempt.outcome,
         verticalRenderOrientation = true
       )
       TracingReasonItem(
         title = stringResource(R2.string.date_of_last_attempt),
-        value = lastAttempt?.lastAttempt?.asDdMmYyyy() ?: "None"
+        value = currentAttempt.lastAttempt?.asDdMmYyyy() ?: "None"
       )
       TracingReasonItem(
         title = stringResource(R2.string.number_of_attempts),
-        value = attempts.toString()
+        value = (currentAttempt.numberOfAttempts).toString()
       )
     }
   }

@@ -35,7 +35,7 @@ data class TracingOutcome(
   val dateOfAppointment: Date?,
 )
 
-data class CurrentTracingAttempt(
+data class TracingAttempt(
   val lastAttempt: Date?,
   val numberOfAttempts: Int,
   val outcome: String,
