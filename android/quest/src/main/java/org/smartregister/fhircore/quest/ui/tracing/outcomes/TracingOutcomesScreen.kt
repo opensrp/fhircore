@@ -34,13 +34,16 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import java.util.Date
+import org.smartregister.fhircore.engine.domain.model.TracingOutcome
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
@@ -52,7 +55,7 @@ fun TracingOutcomesScreen(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(stringResource(id = R.string.tracing_history)) },
+        title = { Text(stringResource(id = R.string.tracing_outcomes)) },
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)
@@ -76,28 +79,32 @@ fun TracingOutcomesScreenContainer(
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
+  val outcomes by viewModel.tracingOutcomesViewData.collectAsState(listOf())
+
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
     modifier = modifier.fillMaxSize().padding(horizontal = 12.dp)
   ) {
     item { Spacer(modifier = Modifier.height(8.dp)) }
-    items(listOf(1, 2, 3, 4)) {
-      OutlineCard(
-        modifier =
-          Modifier.clickable {
-            viewModel.onEvent(
-              TracingOutcomesEvent.OpenHistoryDetailsScreen(
-                context = context,
-                navController = navController
-              )
-            )
-          }
-      ) {
-        Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
-          Text(text = "Start Date:", Modifier.fillMaxWidth().padding(bottom = 8.dp))
-          Text(text = Date().toString(), modifier = Modifier.fillMaxWidth())
-        }
+    items(outcomes) { outcome ->
+      TracingOutcomeCard(outcome = outcome) {
+        viewModel.onEvent(
+          TracingOutcomesEvent.OpenHistoryDetailsScreen(
+            context = context,
+            navController = navController
+          )
+        )
       }
+    }
+  }
+}
+
+@Composable
+private fun TracingOutcomeCard(outcome: TracingOutcome, onClick: () -> Unit) {
+  OutlineCard(modifier = Modifier.clickable { onClick() }) {
+    Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
+      Text(text = outcome.title, Modifier.fillMaxWidth().padding(bottom = 8.dp))
+      Text(text = outcome.date?.asDdMmYyyy() ?: "PENDING", modifier = Modifier.fillMaxWidth())
     }
   }
 }

@@ -20,6 +20,9 @@ import android.content.Context
 import androidx.navigation.NavHostController
 
 sealed class TracingHistoryEvent {
-  data class OpenOutComesScreen(val navController: NavHostController, val context: Context) :
-    TracingHistoryEvent()
+  data class OpenOutComesScreen(
+    val navController: NavHostController,
+    val context: Context,
+    val historyId: String
+  ) : TracingHistoryEvent()
 }

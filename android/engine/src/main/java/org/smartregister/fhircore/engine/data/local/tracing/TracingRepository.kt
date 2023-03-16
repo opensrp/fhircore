@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.tracing
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
@@ -31,6 +32,7 @@ import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.TracingHistory
+import org.smartregister.fhircore.engine.domain.model.TracingOutcome
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
@@ -52,6 +54,43 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         endDate = data.endDate,
         numberOfAttempts = data.numberOfAttempts,
         isActive = data.isActive
+      )
+    }
+  }
+
+  suspend fun getTracingOutcomes(historyId: String): List<TracingOutcome> {
+    val list = fhirEngine.get<ListResource>(historyId)
+    val encounters = mutableListOf<Encounter>()
+
+    var task: Task? = null
+
+    list.entry.forEach { entry ->
+      val ref = entry.item
+      val el = ref.reference.split("/")
+      val resource = fhirEngine.get(ResourceType.fromCode(el[0]), el[1])
+
+      if (resource is Task && task == null) {
+        task = resource
+      } else if (resource is Encounter) {
+        encounters.add(resource)
+      }
+    }
+    encounters.sortBy { it.period.start }
+    var phoneTracingCounter = 1
+    var homeTracingCounter = 1
+    return encounters.map { encounter ->
+      val code = task?.meta?.tagFirstRep?.code
+      val title: String
+      if (code == "phone-tracing") {
+        title = "Phone Tracing Outcome $phoneTracingCounter"
+        phoneTracingCounter++
+      } else {
+        title = "Home Tracing Outcome $homeTracingCounter"
+        homeTracingCounter++
+      }
+      TracingOutcome(
+        title = title,
+        date = encounter.period.start,
       )
     }
   }

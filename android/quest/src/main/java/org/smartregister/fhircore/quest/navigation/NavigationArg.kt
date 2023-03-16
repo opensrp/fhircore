@@ -28,6 +28,7 @@ object NavigationArg {
   const val SCREEN_TITLE = "screenTitle"
   const val PATIENT_ID = "patientId"
   const val ON_ART = "onART"
+  const val TRACING_ID = "tracingId"
 
   fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
     mutableListOf(

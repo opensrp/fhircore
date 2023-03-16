@@ -29,6 +29,12 @@ sealed class TracingProfileEvent {
   data class OpenTaskForm(val context: Context, val taskFormId: String, val taskId: String) :
     TracingProfileEvent()
 
+  data class OpenTracingOutcomeScreen(
+    val navController: NavHostController,
+    val context: Context,
+    val historyId: String
+  ) : TracingProfileEvent()
+
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,

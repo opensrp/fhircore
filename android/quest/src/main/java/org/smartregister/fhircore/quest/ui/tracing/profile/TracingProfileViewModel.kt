@@ -167,6 +167,14 @@ constructor(
           populationResources = profile.populationResources
         )
       }
+      is TracingProfileEvent.OpenTracingOutcomeScreen -> {
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.PATIENT_ID, patientId),
+            Pair(NavigationArg.TRACING_ID, event.historyId)
+          )
+        event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
+      }
     }
   }
 

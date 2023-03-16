@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -175,7 +177,16 @@ fun TracingProfilePage(
       }
     }
   ) { innerPadding ->
-    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData)
+    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData) {
+      var historyId = it.historyId
+      if (historyId != null) {
+        tracingProfileViewModel.onEvent(
+          TracingProfileEvent.OpenTracingOutcomeScreen(navController, context, historyId)
+        )
+      } else {
+        Toast.makeText(context, "No Tracing outcomes recorded", Toast.LENGTH_SHORT).show()
+      }
+    }
   }
 }
 
@@ -183,7 +194,8 @@ fun TracingProfilePage(
 fun TracingProfilePageView(
   modifier: Modifier = Modifier,
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
-  profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData()
+  profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData(),
+  onCurrentAttemptClicked: (TracingAttempt) -> Unit
 ) {
   Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
     Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
@@ -203,8 +215,9 @@ fun TracingProfilePageView(
         // Tracing Reason
         if (profileViewData.currentAttempt != null) {
           TracingReasonCard(
-            currentAttempt = profileViewData.currentAttempt!!,
-            displayForHomeTrace = true
+            currentAttempt = profileViewData.currentAttempt,
+            displayForHomeTrace = true,
+            onClick = onCurrentAttemptClicked
           )
         }
         Spacer(modifier = modifier.height(20.dp))
@@ -221,7 +234,7 @@ fun TracingProfilePageView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun TracingScreenPreview() {
-  TracingProfilePageView(modifier = Modifier)
+  TracingProfilePageView(modifier = Modifier) {}
 }
 
 @Composable
@@ -314,9 +327,10 @@ private fun TracingReasonCard(
   currentAttempt: TracingAttempt,
   modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
+  onClick: (TracingAttempt) -> Unit
 ) {
   OutlineCard(
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth().clickable { onClick(currentAttempt) },
   ) {
     Column(modifier = modifier.padding(horizontal = 4.dp)) {
       TracingReasonItem(
@@ -348,8 +362,8 @@ private fun TracingReasonCard(
 @Composable
 private fun TracingContactAddress(
   patientProfileViewData: ProfileViewData.TracingProfileData,
+  modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
-  modifier: Modifier = Modifier
 ) {
   Card(
     elevation = 3.dp,

@@ -42,9 +42,11 @@ constructor(
   val repository: TracingRepository,
 ) : ViewModel() {
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
+
   private val _tracingHistoryViewDataFlow = MutableStateFlow<List<TracingHistory>>(listOf())
   val tracingHistoryViewData: StateFlow<List<TracingHistory>>
     get() = _tracingHistoryViewDataFlow.asStateFlow()
+
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
@@ -66,7 +68,11 @@ constructor(
   fun onEvent(event: TracingHistoryEvent) {
     when (event) {
       is TracingHistoryEvent.OpenOutComesScreen -> {
-        val urlParams = NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, patientId))
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.PATIENT_ID, patientId),
+            Pair(NavigationArg.TRACING_ID, event.historyId)
+          )
         event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
       }
     }

@@ -94,7 +94,11 @@ fun TracingHistoryScreenContainer(
         history = history,
         onClick = {
           viewModel.onEvent(
-            TracingHistoryEvent.OpenOutComesScreen(context = context, navController = navController)
+            TracingHistoryEvent.OpenOutComesScreen(
+              context = context,
+              navController = navController,
+              historyId = history.historyId
+            )
           )
         }
       )

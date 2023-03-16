@@ -256,8 +256,17 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.TracingOutcomes ->
           composable(
             route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.TRACING_ID)}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ID) {
+                    type = NavType.StringType
+                    nullable = false
+                  }
+                )
+              )
           ) { TracingOutcomesScreen(navController = navController) }
         MainNavigationScreen.TracingHistoryDetails ->
           composable(

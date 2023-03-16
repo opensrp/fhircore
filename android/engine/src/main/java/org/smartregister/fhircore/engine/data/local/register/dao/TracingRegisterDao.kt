@@ -143,6 +143,7 @@ constructor(
           toTracingAttempt(first)
         } else {
           TracingAttempt(
+            historyId = null,
             lastAttempt = null,
             numberOfAttempts = 0,
             outcome = "",
@@ -230,6 +231,7 @@ constructor(
       lastAttempt = lastAttempt?.period?.start,
       outcome = outcome,
       reasons = reasons,
+      historyId = list.logicalId
     )
   }
 
