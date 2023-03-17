@@ -32,6 +32,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -203,6 +204,39 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(composition)
     coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
+
+    runTest {
+      configRegistry.fhirEngine.create(composition)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesBundle() {
+    val appId = "theAppId"
+    val patient = Faker.buildPatient()
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            Composition.SectionComponent().apply {
+              focus.reference = ResourceType.Questionnaire.name
+            }
+          )
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+            listOf(composition)
+    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle().apply {
+      entry = listOf(Bundle.BundleEntryComponent().apply {
+        resource = patient
+      })
+    }
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
+    coEvery { fhirEngine.update(any()) } returns Unit
 
     runTest {
       configRegistry.fhirEngine.create(composition)
