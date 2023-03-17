@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -56,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -78,7 +78,6 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   @Inject lateinit var rulesExecutor: RulesExecutor
-  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -114,7 +113,6 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        parser = parser,
         rulesExecutor = rulesExecutor
       )
   }
@@ -155,7 +153,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
         params =
           listOf(
             ActionParameter(

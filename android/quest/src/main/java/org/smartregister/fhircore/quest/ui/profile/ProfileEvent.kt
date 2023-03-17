@@ -30,7 +30,6 @@ sealed class ProfileEvent {
     val navController: NavController,
     val resourceData: ResourceData?,
     val overflowMenuItemConfig: OverflowMenuItemConfig?,
-    val managingEntity: ManagingEntityConfig? = null
   ) : ProfileEvent()
 
   data class OnChangeManagingEntity(
