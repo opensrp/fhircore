@@ -59,11 +59,8 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
 @HiltViewModel
