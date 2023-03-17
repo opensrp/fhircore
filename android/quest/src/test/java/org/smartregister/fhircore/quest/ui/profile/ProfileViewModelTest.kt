@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -73,7 +72,6 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   @Inject lateinit var rulesExecutor: RulesExecutor
-  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -108,7 +106,6 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        parser = parser,
         rulesExecutor = rulesExecutor
       )
   }

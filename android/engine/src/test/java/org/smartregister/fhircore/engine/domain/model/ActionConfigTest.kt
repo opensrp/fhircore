@@ -20,6 +20,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -72,7 +73,7 @@ class ActionConfigTest : RobolectricTest() {
   }
 
   @Test
-  fun testDisplayStringIsIntepollatedCorrectly() {
+  fun testDisplayStringIsInterpolatedCorrectly() {
     val computedValuesMap = mapOf<String, Any>("testDisplay" to "This is a test Display")
     val actionConfig =
       ActionConfig(
@@ -85,5 +86,38 @@ class ActionConfigTest : RobolectricTest() {
     val result = actionConfig.display(computedValuesMap)
 
     Assert.assertEquals("This is a test Display", result)
+  }
+
+  fun testManagingEntityStringIsInterpolatedCorrectly() {
+    val computedValuesMap =
+      mapOf<String, Any>(
+        "dialogTitle" to "Change household head",
+        "dialogWarningMessage" to "Are you sure",
+        "dialogContentMessage" to "Changing head",
+        "noMembersErrorMessage" to "No members found",
+        "managingEntityReassignedMessage" to "Head reassigned successfully",
+      )
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display",
+        managingEntity =
+          ManagingEntityConfig(
+            dialogTitle = "@{dialogTitle}",
+            dialogWarningMessage = "@{dialogWarningMessage}",
+            dialogContentMessage = "@{dialogContentMessage}",
+            noMembersErrorMessage = "@{noMembersErrorMessage}",
+            managingEntityReassignedMessage = "@{managingEntityReassignedMessage}",
+          )
+      )
+
+    val result = actionConfig.interpolateManagingEntity(computedValuesMap)
+    Assert.assertEquals("Change household head", result?.dialogTitle)
+    Assert.assertEquals("Are you sure", result?.dialogWarningMessage)
+    Assert.assertEquals("Changing head", result?.dialogContentMessage)
+    Assert.assertEquals("No members found", result?.noMembersErrorMessage)
+    Assert.assertEquals("Head reassigned successfully", result?.managingEntityReassignedMessage)
   }
 }
