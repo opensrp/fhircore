@@ -363,8 +363,11 @@ constructor(
     }
   }
 
+  /**
+   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed resource, or create it if not found.
+   */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
-    return withContext(dispatcherProvider.io()) {
+    withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
         fhirEngine.get(resource.resourceType, resource.logicalId).run {
@@ -376,20 +379,15 @@ constructor(
     }
   }
 
-  suspend fun create(vararg resource: Resource): List<String> {
-    return withContext(dispatcherProvider.io()) {
-      resource.onEach { it.generateMissingId() }
-      fhirEngine.create(*resource)
-    }
-  }
-
   /**
-   * Application configurations are represented with only [ResourceType.Binary] and
-   * [ResourceType.Parameters]
+   * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all have IDs or generate if they don't, then pass them to create.
+   *
+   * @param resources vararg of resources
    */
-  fun Composition.SectionComponent.isApplicationConfig(): Boolean {
-    this.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.first().let { resourceType ->
-      return resourceType in arrayOf(ResourceType.Parameters.name, ResourceType.Binary.name)
+  suspend fun create(vararg resources: Resource): List<String> {
+    return withContext(dispatcherProvider.io()) {
+      resources.onEach { it.generateMissingId() }
+      fhirEngine.create(*resources)
     }
   }
 

@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.configuration
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Composition
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -36,7 +38,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configRegistry = Faker.buildTestConfigurationRegistry()
     Assert.assertNotNull(configRegistry)
   }
 
@@ -112,6 +113,33 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveConfigurationParseResource() {
     Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
+    }
+  }
+
+  @Test
+  fun testAddOrUpdate() {
+    // when does not exist
+    val patient = Faker.buildPatient()
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    // when exists
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+  }
+
+  @Test
+  fun testCreate() {
+    val patient = Faker.buildPatient()
+    runTest {
+      val result = configRegistry.create(patient)
+      Assert.assertEquals(listOf(patient.id), result)
     }
   }
 }
