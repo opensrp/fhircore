@@ -16,46 +16,67 @@
 
 package org.smartregister.fhircore.engine.configuration
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
+import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import java.net.UnknownHostException
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var configRegistry: ConfigurationRegistry
+  var fhirEngine: FhirEngine = mockk()
+  lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
+    val fhirResourceService = mockk<FhirResourceService>()
+    fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
+    val context: Context = ApplicationProvider.getApplicationContext()
+    val sharedPreferencesHelper =
+      SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
+    configRegistry =
+      ConfigurationRegistry(
+        fhirEngine,
+        fhirResourceDataSource,
+        sharedPreferencesHelper,
+        coroutineRule.testDispatcherProvider,
+        AppConfigService(context),
+        Faker.json
+      )
     Assert.assertNotNull(configRegistry)
-  }
-
-  @After
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun tearDown() {
-    runBlocking {
-      withContext(configRegistry.dispatcherProvider.io()) {
-        configRegistry.fhirEngine.clearDatabase()
-      }
-    }
   }
 
   @Test
@@ -145,6 +166,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesAppIdExists() {
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
@@ -156,17 +178,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesHasComposition() {
     val appId = "theAppId"
     val composition = Composition().apply { identifier = Identifier().apply { value = appId } }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    runTest {
-      configRegistry.fhirEngine.create(composition)
-      configRegistry.fetchNonWorkflowConfigResources()
-    }
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesSectionsExist() {
+  fun testFetchNonWorkflowConfigResourcesEmptyBundle() {
     val appId = "theAppId"
     val composition =
       Composition().apply {
@@ -179,12 +199,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
 
-    Assert.assertThrows(UnknownHostException::class.java) {
-      runTest {
-        configRegistry.fhirEngine.create(composition)
-        configRegistry.fetchNonWorkflowConfigResources()
-      }
+    runTest {
+      configRegistry.fhirEngine.create(composition)
+      configRegistry.fetchNonWorkflowConfigResources()
     }
   }
 
@@ -193,6 +215,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testAddOrUpdate() {
     // when does not exist
     val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
+    coEvery { fhirEngine.update(any()) } returns Unit
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
@@ -212,6 +236,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
+    coEvery { fhirEngine.create(patient) } returns listOf(patient.id)
 
     runTest {
       val result = configRegistry.create(patient)
