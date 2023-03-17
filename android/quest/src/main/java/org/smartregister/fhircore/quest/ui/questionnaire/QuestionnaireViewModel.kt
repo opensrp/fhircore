@@ -407,8 +407,9 @@ constructor(
   }
 
   /**
-   * Add or update the [questionnaireResponse] resource with the passed content, and if an [actionParamUpdatableId] is set also
-   * update the resource it refers to by extracting its logicalIdUuid.
+   * Add or update the [questionnaireResponse] resource with the passed content, and if an
+   * [actionParamUpdatableId] is set also update the resource it refers to by extracting its
+   * logicalIdUuid.
    *
    * @param questionnaire the [Questionnaire] this response is related to
    * @param questionnaireResponse the questionnaireResponse resource to save
@@ -425,16 +426,13 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
     if (actionParamUpdatableId != null) {
-      val resource = actionParamUpdatableId.value.let {
-        defaultRepository.loadResource(
-          it.extractLogicalIdUuid(),
-          it
-            .substringBefore("/")
-            .resourceClassType()
-            .newInstance()
-            .resourceType
-        )
-      }
+      val resource =
+        actionParamUpdatableId!!.value.let {
+          defaultRepository.loadResource(
+            it.extractLogicalIdUuid(),
+            it.substringBefore("/").resourceClassType().newInstance().resourceType
+          )
+        }
       defaultRepository.addOrUpdate(resource = resource)
     }
   }
