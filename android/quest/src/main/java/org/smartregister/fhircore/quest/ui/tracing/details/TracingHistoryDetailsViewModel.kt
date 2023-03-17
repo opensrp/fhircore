@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.tracing.outcomes
+package org.smartregister.fhircore.quest.ui.tracing.details
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -27,14 +27,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
-import org.smartregister.fhircore.engine.domain.model.TracingOutcome
+import org.smartregister.fhircore.engine.domain.model.TracingOutcomeDetails
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 
 @HiltViewModel
-class TracingOutcomesViewModel
+class TracingHistoryDetailsViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
@@ -42,11 +41,12 @@ constructor(
   val repository: TracingRepository,
 ) : ViewModel() {
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
-  val tracingId = savedStateHandle.get<String>(NavigationArg.TRACING_ID) ?: ""
+  val historyId = savedStateHandle.get<String>(NavigationArg.TRACING_ID) ?: ""
+  val encounterId = savedStateHandle.get<String>(NavigationArg.TRACING_ENCOUNTER_ID) ?: ""
 
-  private val _tracingOutcomesViewDataFlow = MutableStateFlow<List<TracingOutcome>>(listOf())
-  val tracingOutcomesViewData: StateFlow<List<TracingOutcome>>
-    get() = _tracingOutcomesViewDataFlow.asStateFlow()
+  private val _tracingHistoryDetailsViewDataFlow = MutableStateFlow<TracingOutcomeDetails?>(null)
+  val tracingHistoryDetailsViewData: StateFlow<TracingOutcomeDetails?>
+    get() = _tracingHistoryDetailsViewDataFlow.asStateFlow()
 
   init {
     syncBroadcaster.registerSyncListener(
@@ -66,26 +66,16 @@ constructor(
     fetchTracingData()
   }
 
-  fun onEvent(event: TracingOutcomesEvent) {
-    when (event) {
-      is TracingOutcomesEvent.OpenHistoryDetailsScreen -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
-            Pair(NavigationArg.PATIENT_ID, patientId),
-            Pair(NavigationArg.TRACING_ID, event.historyId),
-            Pair(NavigationArg.TRACING_ENCOUNTER_ID, event.encounterId),
-            Pair(NavigationArg.SCREEN_TITLE, event.title)
-          )
-        event.navController.navigate(
-          route = MainNavigationScreen.TracingHistoryDetails.route + urlParams
-        )
-      }
-    }
-  }
-
   private fun fetchTracingData() {
     viewModelScope.launch {
-      _tracingOutcomesViewDataFlow.emit(repository.getTracingOutcomes(tracingId))
+      try {
+        _tracingHistoryDetailsViewDataFlow.emit(
+                repository.getHistoryDetails(historyId = historyId, encounterId = encounterId)
+        )
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+
     }
   }
 }

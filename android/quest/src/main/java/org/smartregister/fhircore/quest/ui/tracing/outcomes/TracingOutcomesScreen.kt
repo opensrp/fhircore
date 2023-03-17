@@ -91,7 +91,10 @@ fun TracingOutcomesScreenContainer(
         viewModel.onEvent(
           TracingOutcomesEvent.OpenHistoryDetailsScreen(
             context = context,
-            navController = navController
+            navController = navController,
+            historyId = it.historyId,
+            encounterId = it.encounterId,
+            title = it.title
           )
         )
       }
@@ -100,8 +103,8 @@ fun TracingOutcomesScreenContainer(
 }
 
 @Composable
-private fun TracingOutcomeCard(outcome: TracingOutcome, onClick: () -> Unit) {
-  OutlineCard(modifier = Modifier.clickable { onClick() }) {
+private fun TracingOutcomeCard(outcome: TracingOutcome, onClick: (TracingOutcome) -> Unit) {
+  OutlineCard(modifier = Modifier.clickable { onClick(outcome) }) {
     Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
       Text(text = outcome.title, Modifier.fillMaxWidth().padding(bottom = 8.dp))
       Text(text = outcome.date?.asDdMmYyyy() ?: "PENDING", modifier = Modifier.fillMaxWidth())

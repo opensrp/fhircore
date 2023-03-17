@@ -271,9 +271,21 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.TracingHistoryDetails ->
           composable(
             route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { TracingHistoryDetailsScreen(navController = navController) }
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.TRACING_ID, NavigationArg.TRACING_ENCOUNTER_ID, NavigationArg.SCREEN_TITLE)}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ENCOUNTER_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.SCREEN_TITLE) { type = NavType.StringType }
+                )
+              )
+          ) { stackEntry ->
+            val screenTitle: String =
+              stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
+            TracingHistoryDetailsScreen(screenTitle, navController = navController)
+          }
       }
     }
   }

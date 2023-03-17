@@ -27,8 +27,19 @@ data class TracingHistory(
 )
 
 data class TracingOutcome(
+  val historyId: String,
+  val encounterId: String,
   val title: String,
   val date: Date?,
+)
+
+data class TracingOutcomeDetails(
+  val title: String,
+  val date: Date,
+  val dateOfAppointment: Date?,
+  val reasons: List<String>,
+  val outcome: String,
+  val conducted: Boolean,
 )
 
 data class TracingAttempt(

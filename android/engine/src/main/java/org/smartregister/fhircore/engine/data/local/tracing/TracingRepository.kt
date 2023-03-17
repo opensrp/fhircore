@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.TracingHistory
 import org.smartregister.fhircore.engine.domain.model.TracingOutcome
+import org.smartregister.fhircore.engine.domain.model.TracingOutcomeDetails
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
@@ -46,7 +47,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
       }
 
     return list.map {
-      val data = getListData(it)
+      val data = getTracingHistoryFromList(it)
 
       TracingHistory(
         historyId = data.historyId,
@@ -89,18 +90,114 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         homeTracingCounter++
       }
       TracingOutcome(
+        historyId = historyId,
+        encounterId = encounter.logicalId,
         title = title,
         date = encounter.period.start,
       )
     }
   }
 
-  private suspend fun getListData(list: ListResource): TracingListData {
+  suspend fun getHistoryDetails(historyId: String, encounterId: String): TracingOutcomeDetails {
+    val list = fhirEngine.get<ListResource>(historyId)
+    val encounter = fhirEngine.get<Encounter>(encounterId)
+    val reasons: MutableList<String> = mutableListOf()
+    var outcome = ""
+    var appointmentDate: Date? = null
+    var conducted = true
+
+    list.entry.forEach { entry ->
+      try {
+        val ref = entry.item
+        val el = ref.reference.split("/")
+        if (el[0] == ResourceType.Task.toString()) {
+          val resource = fhirEngine.get(ResourceType.fromCode(el[0]), el[1])
+
+          if (resource is Task) {
+            resource.reasonCode?.codingFirstRep?.display?.let { reasons.add(it) }
+          }
+        }
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+
+    val outcomeObs =
+      fhirEngine.search<Observation> {
+        filter(Observation.ENCOUNTER, { value = encounter.referenceValue() })
+        filter(
+          Observation.CODE,
+          {
+            value =
+              of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-conducted", "")))
+          },
+          {
+            value =
+              of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-unconducted", "")))
+          },
+          operation = Operation.OR
+        )
+      }
+    outcomeObs.firstOrNull()?.let {
+      conducted = it.code.codingFirstRep.code == "tracing-outcome-conducted"
+       if(it.hasValueCodeableConcept()) {
+        outcome = it.valueCodeableConcept.text
+       }
+    }
+
+    val dateObs =
+      fhirEngine.search<Observation> {
+        filter(Observation.ENCOUNTER, { value = encounter.referenceValue() })
+        filter(
+          Observation.CODE,
+          {
+            value =
+              of(
+                CodeableConcept(
+                  Coding(
+                    "https://d-tree.org",
+                    "phone-tracing-outcome-date-of-agreed-appointment",
+                    ""
+                  )
+                )
+              )
+          },
+          {
+            value =
+              of(
+                CodeableConcept(
+                  Coding(
+                    "https://d-tree.org",
+                    "home-tracing-outcome-date-of-agreed-appointment",
+                    ""
+                  )
+                )
+              )
+          },
+          operation = Operation.OR
+        )
+      }
+    dateObs.firstOrNull()?.let {
+      if (it.hasValueDateTimeType()) {
+        appointmentDate = it.valueDateTimeType.value
+      }
+    }
+    return TracingOutcomeDetails(
+      title = "",
+      date = encounter.period.start,
+      dateOfAppointment = appointmentDate,
+      reasons = reasons,
+      outcome = outcome,
+      conducted = conducted,
+    )
+  }
+
+  private suspend fun getTracingHistoryFromList(list: ListResource): TracingHistory {
     val tasks = mutableListOf<Task>()
     val encounters = mutableListOf<Encounter>()
     var lastAttempt: Encounter? = null
     val reasons = mutableListOf<String>()
-    var outcome = ""
+
     list.entry.forEach { entry ->
       try {
         val ref = entry.item
@@ -126,46 +223,13 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
       }
     }
 
-    if (lastAttempt != null) {
-      val obs =
-        fhirEngine.search<Observation> {
-          filter(Observation.ENCOUNTER, { value = lastAttempt?.referenceValue() })
-          filter(
-            Observation.CODE,
-            {
-              value =
-                of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-conducted", "")))
-            },
-            {
-              value =
-                of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-unconducted", "")))
-            },
-            operation = Operation.OR
-          )
-        }
-      obs.firstOrNull()?.let { outcome = it.code.text ?: "" }
-    }
-    return TracingListData(
+    return TracingHistory(
       historyId = list.logicalId,
       startDate = list.date,
       endDate =
         if (list.status != ListResource.ListStatus.CURRENT) lastAttempt?.period?.start else null,
       numberOfAttempts = encounters.size,
-      lastAttempt = lastAttempt?.period?.start,
-      outcome = outcome,
-      reasons = reasons,
       isActive = list.status == ListResource.ListStatus.CURRENT,
     )
   }
 }
-
-private data class TracingListData(
-  val historyId: String,
-  val startDate: Date,
-  val endDate: Date?,
-  val lastAttempt: Date?,
-  val numberOfAttempts: Int,
-  val outcome: String,
-  val reasons: List<String>,
-  val isActive: Boolean,
-)
