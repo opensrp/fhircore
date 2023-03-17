@@ -90,9 +90,9 @@ constructor(
     paramsList: Array<ActionParameter>? = emptyArray()
   ) {
     if (resourceId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val repoResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsMap)
+        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
       val resourceData =
