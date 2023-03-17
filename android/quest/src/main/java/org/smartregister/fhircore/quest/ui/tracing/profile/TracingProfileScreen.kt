@@ -178,7 +178,7 @@ fun TracingProfilePage(
     }
   ) { innerPadding ->
     TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData) {
-      var historyId = it.historyId
+      val historyId = it.historyId
       if (historyId != null) {
         tracingProfileViewModel.onEvent(
           TracingProfileEvent.OpenTracingOutcomeScreen(navController, context, historyId)
