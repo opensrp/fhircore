@@ -551,6 +551,19 @@
       ]
     },
     {
+      "title": "View past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "householdpastencountersProfile"
+        }
+      ]
+    },
+    {
       "title": "Remove family",
       "titleColor": "#FF0000",
       "visible": "true",

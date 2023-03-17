@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity

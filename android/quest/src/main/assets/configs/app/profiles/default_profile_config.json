@@ -3783,6 +3783,32 @@
       ]
     },
     {
+      "title": "Past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "individualpastencountersProfile"
+        }
+      ]
+    },
+    {
+      "title": "Upcoming encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "individualupcomingencountersProfile"
+        }
+      ]
+    },
+    {
       "title": "Remove this person",
       "titleColor": "#FF0000",
       "visible": "@{patientActive}",

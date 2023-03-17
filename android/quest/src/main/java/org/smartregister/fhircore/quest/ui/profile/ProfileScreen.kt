@@ -166,26 +166,28 @@ fun CustomProfileTopAppBar(
   onEvent: (ProfileEvent) -> Unit,
   lazyListState: LazyListState
 ) {
-  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
+  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar}
 
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     SimpleTopAppBar(
       modifier = modifier,
       navController = navController,
       elevation = 0,
-      titleTextProperties = topBarConfig.title,
+      titleTextProperties = topBarConfig?.title,
       profileUiState = profileUiState,
       onEvent = onEvent,
       lazyListState = lazyListState
     )
     AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
       Column(modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        ViewRenderer(
-          viewProperties = topBarConfig.content,
-          resourceData = profileUiState.resourceData
+        if (topBarConfig != null) {
+          ViewRenderer(
+            viewProperties = topBarConfig.content,
+            resourceData = profileUiState.resourceData
               ?: ResourceData("", ResourceType.Patient, emptyMap()),
-          navController = navController
-        )
+            navController = navController
+            )
+        }
       }
     }
   }
@@ -208,7 +210,7 @@ private fun SimpleTopAppBar(
         AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
           CompoundText(
             compoundTextProperties = titleTextProperties,
-            resourceData = profileUiState.resourceData!!,
+            resourceData = profileUiState.resourceData,
             navController = navController
           )
         }
