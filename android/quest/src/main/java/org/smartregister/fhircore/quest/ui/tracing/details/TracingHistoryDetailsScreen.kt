@@ -84,7 +84,7 @@ fun HistoryDetailsCard(details: TracingOutcomeDetails) {
         title = "Reason for tracing:",
         value = details.reasons.joinToString(separator = ",")
       )
-      InfoBoxItem(title = "Spoke to patient:", value = if(details.conducted) "Yes" else "No")
+      InfoBoxItem(title = "Spoke to patient:", value = if (details.conducted) "Yes" else "No")
       InfoBoxItem(title = "Tracing Outcome:", value = details.outcome)
       InfoBoxItem(
         title = "Date of Clinic Appointment:",

@@ -70,12 +70,11 @@ constructor(
     viewModelScope.launch {
       try {
         _tracingHistoryDetailsViewDataFlow.emit(
-                repository.getHistoryDetails(historyId = historyId, encounterId = encounterId)
+          repository.getHistoryDetails(historyId = historyId, encounterId = encounterId)
         )
       } catch (e: Exception) {
         e.printStackTrace()
       }
-
     }
   }
 }
