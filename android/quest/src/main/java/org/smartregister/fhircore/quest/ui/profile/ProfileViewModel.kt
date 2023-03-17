@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -58,8 +57,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -201,16 +198,6 @@ constructor(
             )
           }
         }
-      }
-      is ProfileEvent.OpenProfile -> {
-        val args =
-          bundleOf(
-            NavigationArg.PROFILE_ID to event.profileId,
-            NavigationArg.RESOURCE_ID to event.resourceId,
-            NavigationArg.RESOURCE_CONFIG to event.resourceConfig,
-            NavigationArg.PARAMS to emptyArray<ActionParameter>()
-          )
-        event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
     }
   }

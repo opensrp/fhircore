@@ -59,6 +59,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -164,28 +165,26 @@ fun CustomProfileTopAppBar(
   onEvent: (ProfileEvent) -> Unit,
   lazyListState: LazyListState
 ) {
-  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar }
+  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     SimpleTopAppBar(
       modifier = modifier,
       navController = navController,
       elevation = 0,
-      titleTextProperties = topBarConfig?.title,
+      titleTextProperties = topBarConfig.title,
       profileUiState = profileUiState,
       onEvent = onEvent,
       lazyListState = lazyListState
     )
     AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
       Column(modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        if (topBarConfig != null) {
-          ViewRenderer(
-            viewProperties = topBarConfig.content,
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
-            navController = navController
-          )
-        }
+        ViewRenderer(
+          viewProperties = topBarConfig.content,
+          resourceData = profileUiState.resourceData
+              ?: ResourceData("", ResourceType.Patient, emptyMap()),
+          navController = navController
+        )
       }
     }
   }

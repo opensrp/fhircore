@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -36,12 +35,5 @@ sealed class ProfileEvent {
     val context: Context,
     val eligibleManagingEntity: EligibleManagingEntity,
     val managingEntityConfig: ManagingEntityConfig?
-  ) : ProfileEvent()
-
-  data class OpenProfile(
-    val navController: NavController,
-    val profileId: String,
-    val resourceId: String,
-    val resourceConfig: FhirResourceConfig? = null
   ) : ProfileEvent()
 }
