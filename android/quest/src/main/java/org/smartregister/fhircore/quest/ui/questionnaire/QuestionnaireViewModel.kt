@@ -425,16 +425,16 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
     if (actionParamUpdatableId != null) {
-      val resource =
+      val resource = actionParamUpdatableId.value.let {
         defaultRepository.loadResource(
-          actionParamUpdatableId!!.value.extractLogicalIdUuid(),
-          actionParamUpdatableId!!
-            .value
+          it.extractLogicalIdUuid(),
+          it
             .substringBefore("/")
             .resourceClassType()
             .newInstance()
             .resourceType
         )
+      }
       defaultRepository.addOrUpdate(resource = resource)
     }
   }
