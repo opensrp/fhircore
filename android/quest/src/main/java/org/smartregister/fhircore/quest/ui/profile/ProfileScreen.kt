@@ -57,7 +57,6 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
@@ -251,17 +250,19 @@ private fun ProfileTopAppBarMenuAction(
   ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White) }
 
   DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
-    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-      if (!it.visible
+    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach { overflowMenuItemConfig ->
+      if (!overflowMenuItemConfig
+          .visible
           .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
           .toBoolean()
       )
         return@forEach
       val enabled =
-        it.enabled
+        overflowMenuItemConfig
+          .enabled
           .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
           .toBoolean()
-      if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
+      if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
       DropdownMenuItem(
         enabled = enabled,
         onClick = {
@@ -270,14 +271,7 @@ private fun ProfileTopAppBarMenuAction(
             ProfileEvent.OverflowMenuClick(
               navController = navController,
               resourceData = profileUiState.resourceData,
-              overflowMenuItemConfig = it,
-              managingEntity =
-                it.actions
-                  .find { actionConfig ->
-                    actionConfig.managingEntity != null &&
-                      actionConfig.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY
-                  }
-                  ?.managingEntity
+              overflowMenuItemConfig = overflowMenuItemConfig
             )
           )
         },
@@ -287,10 +281,16 @@ private fun ProfileTopAppBarMenuAction(
             .fillMaxWidth()
             .background(
               color =
-                if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
+                if (overflowMenuItemConfig.confirmAction)
+                  overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
                 else Color.Transparent
             )
-      ) { Text(text = it.title, color = if (enabled) it.titleColor.parseColor() else DefaultColor) }
+      ) {
+        Text(
+          text = overflowMenuItemConfig.title,
+          color = if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
+        )
+      }
     }
   }
 }

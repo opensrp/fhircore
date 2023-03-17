@@ -30,12 +30,18 @@ sealed class ProfileEvent {
     val navController: NavController,
     val resourceData: ResourceData?,
     val overflowMenuItemConfig: OverflowMenuItemConfig?,
-    val managingEntity: ManagingEntityConfig? = null
   ) : ProfileEvent()
 
   data class OnChangeManagingEntity(
     val context: Context,
     val eligibleManagingEntity: EligibleManagingEntity,
     val managingEntityConfig: ManagingEntityConfig?
+  ) : ProfileEvent()
+
+  data class OpenProfile(
+    val navController: NavController,
+    val profileId: String,
+    val resourceId: String,
+    val resourceConfig: FhirResourceConfig? = null
   ) : ProfileEvent()
 }

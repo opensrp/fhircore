@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -40,6 +39,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,13 +53,18 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -73,11 +78,11 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   @Inject lateinit var rulesExecutor: RulesExecutor
-  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
   private lateinit var expectedBaseResource: Patient
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
   fun setUp() {
@@ -91,7 +96,9 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any()) } returns
-      RepositoryResourceData(resource = Faker.buildPatient())
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
+      )
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -106,7 +113,6 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        parser = parser,
         rulesExecutor = rulesExecutor
       )
   }
@@ -147,7 +153,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
         params =
           listOf(
             ActionParameter(
@@ -382,5 +388,31 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     )
     coVerify { registerRepository.changeManagingEntity(any(), any()) }
+  }
+
+  @Test
+  fun testOnEventOpenProfileOpensAProfile() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.CarePlan.name))
+    profileViewModel.onEvent(
+      ProfileEvent.OpenProfile(
+        navController = navController,
+        profileId = "profileId",
+        resourceId = "resourceId",
+        resourceConfig = resourceConfig
+      )
+    )
+
+    val intSlot = slot<Int>()
+    val bundleSlot = slot<Bundle>()
+    verify { navController.navigate(capture(intSlot), capture(bundleSlot)) }
+
+    Assert.assertEquals(MainNavigationScreen.Profile.route, intSlot.captured)
+    Assert.assertEquals(4, bundleSlot.captured.size())
+    Assert.assertEquals("profileId", bundleSlot.captured.getString(NavigationArg.PROFILE_ID))
+    Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
+    Assert.assertEquals(
+      resourceConfig,
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+    )
   }
 }

@@ -123,7 +123,6 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
-          "count": 8,
           "duration": 1,
           "durationUnit": "mo",
           "period": 1,
@@ -159,7 +158,6 @@
   ],
   "name": "ANC Follow Up Plan",
   "title": "ANC Follow Up Plan",
-  "status": "active",
   "description": "This defines the schedule of care for pregnant women",
   "action": [
     {
@@ -199,7 +197,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
           }
         }
       ],
@@ -213,7 +211,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "%resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
           }
         }
       ],
