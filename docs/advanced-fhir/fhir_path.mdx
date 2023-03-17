@@ -111,7 +111,7 @@ To evaluate variable expressions defined at Questionnaire level, we have to pass
 #### API to evaluate variable expressions defined at Questionnaire item level
 To evaluate variable expressions defined at Questionnaire item level, we have to pass a variable expression, questionnaire, QuestionnaireResponse, questionnaireItemParentMap,QuestionnaireItem and an optional varaiblesMap
 
-```
+```kotlin
 internal fun evaluateQuestionnaireItemVariableExpression(
     expression: Expression,
     questionnaire: Questionnaire,
@@ -135,8 +135,8 @@ Besides using [initial](http://hl7.org/fhir/R4/questionnaire-definitions.html#Qu
 
 Both of the approaches are mutually exclusive and only one of these can be specified.
 
-```
- "item": [
+```json
+{ "item": [
           {
             "extension": [
               {
@@ -152,6 +152,7 @@ Both of the approaches are mutually exclusive and only one of these can be speci
             "type": "date",
           }
         ]
+	}
 ```
 
 ## EnableWhen Expression
@@ -169,19 +170,20 @@ Besides using [enableWhen](http://hl7.org/fhir/R4/questionnaire-definitions.html
 
 Both of the approaches are mutually exclusive and only one of these can specified.
 
-```{
-      	"extension" : [
-        {
-          "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-          "valueExpression" : {
-            "language" : "text/fhirpath",
-            "expression" : "%resource.repeat(item).where(linkId='gender').answer.value.code ='female' and %resource.repeat(item).where(linkId='age').answer.value > 49"
-          }
-        }
-      ],
-	"linkId" : "3.1",
-	"text" : "Is women or non reproductive age",
-	"type" : "boolean"
+```json 
+{
+   "extension":[
+      {
+         "url":"http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+         "valueExpression":{
+            "language":"text/fhirpath",
+            "expression":"%resource.repeat(item).where(linkId='gender').answer.value.code ='female' and %resource.repeat(item).where(linkId='age').answer.value > 49"
+         }
+      }
+   ],
+   "linkId":"3.1",
+   "text":"Is women or non reproductive age",
+   "type":"boolean"
 }
 
 ```
@@ -199,8 +201,8 @@ Both of the approaches are mutually exclusive and only one of these can specifie
   - an expression of based on launch context or information queried from external sources i.e. `%patient.active`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html). 
   - an expression based on `variable` extension. i.e. `%weight + 20`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
 
-```
-"item": [
+``` json
+{"item": [
     {
       "linkId": "birthdate",
       "text": "Birth Date",
@@ -228,6 +230,7 @@ Both of the approaches are mutually exclusive and only one of these can specifie
       }]
     }
   ]
+  }
 ```
 
 ## Answer Expression
@@ -252,8 +255,8 @@ All three mechanisms are mutually exclusive and only one can appear on same ques
 
 Use of other [Value Constraint](https://build.fhir.org/ig/HL7/sdc/behavior.html#value-constraint) elements is redundant and confusing, hence, when using any of these to restrict answers do not make use of any of the other Value Constraint extensions.
 
-```
-"item": [
+```json
+{"item": [
   {
     "extension": [
       {
@@ -294,5 +297,6 @@ Use of other [Value Constraint](https://build.fhir.org/ig/HL7/sdc/behavior.html#
     "text": "Preferred practitioner",
     "type": "reference"
   }
-]     
+]
+}
 ```
