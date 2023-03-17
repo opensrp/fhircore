@@ -407,8 +407,11 @@ constructor(
   }
 
   /**
-   * update questionnaireResponse update Associated Resource by extracting logicalUuid from
-   * actionParamUpdatableId
+   * Add or update the [questionnaireResponse] resource with the passed content, and if an [actionParamUpdatableId] is set also
+   * update the resource it refers to by extracting its logicalIdUuid.
+   *
+   * @param questionnaire the [Questionnaire] this response is related to
+   * @param questionnaireResponse the questionnaireResponse resource to save
    */
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
