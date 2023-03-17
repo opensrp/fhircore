@@ -59,7 +59,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -165,7 +164,7 @@ fun CustomProfileTopAppBar(
   onEvent: (ProfileEvent) -> Unit,
   lazyListState: LazyListState
 ) {
-  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar}
+  val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar }
 
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     SimpleTopAppBar(
@@ -183,9 +182,9 @@ fun CustomProfileTopAppBar(
           ViewRenderer(
             viewProperties = topBarConfig.content,
             resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
+                ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController
-            )
+          )
         }
       }
     }

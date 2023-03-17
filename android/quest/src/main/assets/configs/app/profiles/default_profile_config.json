@@ -125,6 +125,13 @@
       ]
     },
     {
+      "name": "childCardVisible",
+      "condition": "true",
+      "actions": [
+        "data.put('childCardVisible', data.get('patientAge') == 'true' && data.get('patientAge')<=5)"
+      ]
+    },
+    {
       "name": "patientGender",
       "condition": "true",
       "actions": [
@@ -2819,6 +2826,19 @@
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
             ]
           }
+        }
+      ]
+    },
+    {
+      "title": "Child health card",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{childCardVisible}",
+      "enabled": "@{childCardVisible}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "childhealthcardProfile"
         }
       ]
     },
