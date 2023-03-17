@@ -83,6 +83,11 @@
                 }
               }
             ]
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
         ]
       }
@@ -93,11 +98,19 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId"
+      "familyId",
+      "practitionerId"
     ]
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "familyLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
       {
         "name": "familyName",
         "condition": "true",
@@ -110,6 +123,13 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
         ]
       },
       {
@@ -191,8 +211,9 @@
                   "id": "householdProfile",
                   "params": [
                     {
-                      "key": "familyId",
-                      "value": "@{familyId}"
+                      "paramType": "PARAMDATA",
+                      "key": "familyLogicalId",
+                      "value": "@{familyLogicalId}"
                     }
                   ]
                 }
@@ -205,8 +226,9 @@
                 "id": "householdProfile",
                 "params": [
                   {
-                    "key": "familyId",
-                    "value": "@{familyId}"
+                    "paramType": "PARAMDATA",
+                    "key": "familyLogicalId",
+                    "value": "@{familyLogicalId}"
                   }
                 ]
               }
