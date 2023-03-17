@@ -268,7 +268,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         this.authored = Date()
       }
 
-      this@QuestionnaireActivity.questionnaire.useContext
+      this@QuestionnaireActivity.questionnaire
+        .useContext
+        .asSequence()
         .filter { it.hasValueCodeableConcept() }
         .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
 

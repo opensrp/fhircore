@@ -55,7 +55,8 @@ data class ResourceConfig(
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
-  val sortConfigs: List<SortConfig> = emptyList()
+  val sortConfigs: List<SortConfig> = emptyList(),
+  val resultAsCount: Boolean = false
 ) : Parcelable
 
 @Serializable

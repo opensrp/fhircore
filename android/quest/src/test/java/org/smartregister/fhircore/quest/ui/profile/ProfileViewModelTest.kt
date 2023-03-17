@@ -91,8 +91,9 @@ class ProfileViewModelTest : RobolectricTest() {
       )
     registerRepository = mockk()
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData(resource = Faker.buildPatient())
-
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
+      )
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
