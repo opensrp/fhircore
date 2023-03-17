@@ -46,6 +46,7 @@ import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
@@ -89,6 +90,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
@@ -103,33 +105,19 @@ import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
   @Inject lateinit var jsonParser: IParser
-
   @Inject lateinit var configService: ConfigService
-
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private val fhirEngine: FhirEngine = mockk()
-
   private val context: Application = ApplicationProvider.getApplicationContext()
-
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
-
   private lateinit var defaultRepo: DefaultRepository
-
   private val libraryEvaluator: LibraryEvaluator = mockk()
-
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @Before
@@ -621,6 +609,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testLoadPatientShouldReturnPatientResource() {
     val patient =
       Patient().apply {
@@ -647,6 +636,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testLoadRelatedPersonShouldReturnOnlyOneItemList() {
     val relatedPerson =
       RelatedPerson().apply {
@@ -681,6 +671,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGetPopulationResourcesShouldReturnListOfResources() {
 
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
@@ -711,8 +702,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testSaveQuestionnaireResponseShouldCallAddOrUpdateWhenResourceIdIsNotBlank() {
-
     val questionnaire = Questionnaire().apply { id = "qId" }
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(resource = any()) } returns Unit
@@ -725,8 +716,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testSaveQuestionnaireResponseWithExperimentalQuestionnaireShouldNotSave() {
-
     val questionnaire = Questionnaire().apply { experimental = true }
     val questionnaireResponse = QuestionnaireResponse()
 
@@ -735,6 +726,34 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testSaveQuestionnaireResponseWithActionParameterIdShouldAddOrUpdate() {
+    val theId = "the Id"
+    val uuid = "the uuid"
+    val relatedResourceId = "Group/$uuid"
+    val questionnaire = Questionnaire().apply { id = theId }
+    val questionnaireResponse = QuestionnaireResponse()
+    val resource = Group().apply { id = uuid }
+
+    coEvery { fhirEngine.loadResource<Questionnaire>(theId) } returns questionnaire
+    coEvery { defaultRepo.loadResource(uuid, ResourceType.Group) } returns resource
+
+    runBlocking {
+      questionnaireViewModel.loadQuestionnaire(
+        theId,
+        QuestionnaireType.DEFAULT,
+        listOf(
+          ActionParameter("key", ActionParameterType.UPDATE_DATE_ON_EDIT, value = relatedResourceId)
+        )
+      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
+
+    coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+    coVerify { defaultRepo.addOrUpdate(resource = resource) }
   }
 
   @Test
