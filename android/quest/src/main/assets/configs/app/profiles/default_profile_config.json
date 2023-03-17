@@ -2190,7 +2190,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "UPDATEABLEIDS"
+                "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
           }
@@ -2218,7 +2218,7 @@
             {
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}",
-              "paramType": "UPDATEABLEIDS"
+              "paramType": "UPDATE_DATE_ON_EDIT"
             },
             {
               "paramType": "PREPOPULATE",
@@ -2601,7 +2601,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "UPDATEABLEIDS"
+                "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
           }
@@ -2628,7 +2628,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "UPDATEABLEIDS"
+                "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
           }
@@ -2654,7 +2654,7 @@
           },
           "params": [
             {
-              "paramType": "UPDATEABLEIDS",
+              "paramType": "UPDATE_DATE_ON_EDIT",
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}"
             },
@@ -2726,7 +2726,7 @@
             {
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}",
-              "paramType": "UPDATEABLEIDS"
+              "paramType": "UPDATE_DATE_ON_EDIT"
             },
             {
               "paramType": "PREPOPULATE",
@@ -2856,7 +2856,7 @@
             ],
             "params": [
               {
-                "paramType": "UPDATEABLEIDS",
+                "paramType": "UPDATE_DATE_ON_EDIT",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
@@ -2882,7 +2882,7 @@
             "saveButtonText": "Update registration",
             "params": [
               {
-                "paramType": "UPDATEABLEIDS",
+                "paramType": "UPDATE_DATE_ON_EDIT",
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }

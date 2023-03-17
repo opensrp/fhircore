@@ -495,7 +495,7 @@
                     "id": "defaultProfile",
                     "params": [
                       {
-                        "paramType": "UPDATEABLEIDS",
+                        "paramType": "UPDATE_DATE_ON_EDIT",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
                       }
@@ -530,7 +530,7 @@
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
-                "paramType": "UPDATEABLEIDS"
+                "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
           }
@@ -571,7 +571,7 @@
             {
               "key": "familyId",
               "value": "@{familyLogicalId}",
-              "paramType": "UPDATEABLEIDS"
+              "paramType": "UPDATE_DATE_ON_EDIT"
             },
             {
               "key": "familyName",
