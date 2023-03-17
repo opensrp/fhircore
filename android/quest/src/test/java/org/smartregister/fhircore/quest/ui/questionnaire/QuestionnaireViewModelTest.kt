@@ -43,6 +43,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
@@ -51,6 +52,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Age
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -64,6 +66,8 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -1226,6 +1230,89 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Patient@ this.id = "123456"
       this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
     }
+
+  @Test
+  fun testPartialQuestionnaireResponseHasValues() {
+    // empty QuestionnaireResponse
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(QuestionnaireResponse())
+    )
+
+    // empty item
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply { item = mutableListOf(QuestionnaireResponseItemComponent()) }
+      )
+    )
+
+    // with answer
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer = mutableListOf(QuestionnaireResponseItemAnswerComponent())
+              }
+            )
+        }
+      )
+    )
+
+    // with answer and value that is empty
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(QuestionnaireResponseItemAnswerComponent().apply { value = Age() })
+              }
+            )
+        }
+      )
+    )
+
+    // with answer and value that is not empty
+    Assert.assertTrue(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Age().apply { value = BigDecimal.ONE }
+                    }
+                  )
+              }
+            )
+        }
+      )
+    )
+
+    // second answer has non empty value
+    Assert.assertTrue(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(
+                    QuestionnaireResponseItemAnswerComponent(),
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Age().apply { value = BigDecimal.ONE }
+                    }
+                  )
+              }
+            )
+        }
+      )
+    )
+  }
 
   @Test
   fun testSavePartialQuestionnaireResponseCallsSaveResponse() {
