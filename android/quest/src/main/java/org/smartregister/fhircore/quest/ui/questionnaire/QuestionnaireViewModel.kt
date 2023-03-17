@@ -404,6 +404,10 @@ constructor(
       }
   }
 
+  /**
+   * update questionnaireResponse update Associated Resource by extracting logicalUuid from
+   * actionParamUpdatableId
+   */
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
@@ -414,8 +418,7 @@ constructor(
       )
       return
     }
-    defaultRepository.addOrUpdate(resource = questionnaireResponse) // update resource
-    // update the group/Or any other resource which is associated with this resource
+    defaultRepository.addOrUpdate(resource = questionnaireResponse)
     if (actionParamUpdatableId != null) {
       val resource =
         defaultRepository.loadResource(
