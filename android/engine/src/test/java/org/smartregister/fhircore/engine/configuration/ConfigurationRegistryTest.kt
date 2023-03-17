@@ -20,7 +20,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.Composition
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -29,6 +28,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
@@ -114,6 +114,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
     }
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesNoAppId() {
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesAppIdExists() {
+    val appId = "theAppId"
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
   }
 
   @Test

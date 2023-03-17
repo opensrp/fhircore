@@ -364,7 +364,8 @@ constructor(
   }
 
   /**
-   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed resource, or create it if not found.
+   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
+   * resource, or create it if not found.
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     withContext(dispatcherProvider.io()) {
@@ -380,7 +381,8 @@ constructor(
   }
 
   /**
-   * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all have IDs or generate if they don't, then pass them to create.
+   * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
+   * have IDs or generate if they don't, then pass them to create.
    *
    * @param resources vararg of resources
    */
