@@ -103,7 +103,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     prePopulationParams =
       actionParams.filter {
         (it.paramType == ActionParameterType.PREPOPULATE ||
-          it.paramType == ActionParameterType.UPDATEABLEIDS) &&
+          it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
           !it.value.isNullOrEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }

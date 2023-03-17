@@ -125,7 +125,9 @@ constructor(
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
         actionParamUpdatableId =
-          prePopulationParams.firstOrNull { it.paramType == ActionParameterType.UPDATEABLEIDS }
+          prePopulationParams.firstOrNull {
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT
+          }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 

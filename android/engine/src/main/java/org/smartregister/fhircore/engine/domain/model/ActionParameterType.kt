@@ -23,5 +23,5 @@ enum class ActionParameterType {
   /** Represents parameters that are used to pre-populate Questionnaire items with initial values */
   @JsonNames("pre_populate", "PrePopulate") PREPOPULATE,
   @JsonNames("param_data", "ParamData") PARAMDATA,
-  @JsonNames("updateable_ids", "Updateable_Ids") UPDATEABLEIDS
+  @JsonNames("update_date_on_edit", "UpdateDateOnEdit") UPDATE_DATE_ON_EDIT
 }

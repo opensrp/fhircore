@@ -45,7 +45,7 @@ fun convertActionParameterArrayToMap(array: Array<ActionParameter>?): Map<String
   if (array != null) {
     for (param in array) {
       if (param.paramType in
-          listOf(ActionParameterType.PARAMDATA, ActionParameterType.UPDATEABLEIDS)
+          listOf(ActionParameterType.PARAMDATA, ActionParameterType.UPDATE_DATE_ON_EDIT)
       ) {
         paramsMap[param.key] = param.value
       }
