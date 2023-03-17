@@ -36,6 +36,8 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
@@ -51,15 +53,25 @@ object Faker {
     useAlternativeNames = true
   }
 
-  fun buildTestConfigurationRegistry(): ConfigurationRegistry {
+  fun buildTestConfigurationRegistry(
+    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
+    dispatcherProvider: DispatcherProvider = mockk()
+  ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    return buildTestConfigurationRegistry(fhirResourceService, fhirResourceDataSource)
+    return buildTestConfigurationRegistry(
+      fhirResourceService,
+      fhirResourceDataSource,
+      sharedPreferencesHelper,
+      dispatcherProvider
+    )
   }
 
   fun buildTestConfigurationRegistry(
     fhirResourceService: FhirResourceService,
-    fhirResourceDataSource: FhirResourceDataSource
+    fhirResourceDataSource: FhirResourceDataSource,
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    dispatcherProvider: DispatcherProvider
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
@@ -68,8 +80,8 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
-          dispatcherProvider = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json
         )

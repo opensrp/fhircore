@@ -18,8 +18,15 @@ package org.smartregister.fhircore.engine.configuration
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ResourceType
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -39,6 +46,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     Assert.assertNotNull(configRegistry)
+  }
+
+  @After
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun tearDown() {
+    runBlocking {
+      withContext(configRegistry.dispatcherProvider.io()) {
+        configRegistry.fhirEngine.clearDatabase()
+      }
+    }
   }
 
   @Test
@@ -85,6 +102,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveConfigurationParseTemplateMultiConfig() {
     val appId = "idOfApp"
     val id = "register"
@@ -97,6 +115,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveConfigurationParseTemplateMultiConfigConfigId() {
     val appId = "idOfApp"
     val id = "register"
@@ -110,6 +129,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveConfigurationParseResource() {
     Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
@@ -117,21 +137,63 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesNoAppId() {
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesAppIdExists() {
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesHasComposition() {
+    val appId = "theAppId"
+    val composition = Composition().apply { identifier = Identifier().apply { value = appId } }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    runTest {
+      configRegistry.fhirEngine.create(composition)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesSectionsExist() {
+    val appId = "theAppId"
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            Composition.SectionComponent().apply {
+              focus.reference = ResourceType.Questionnaire.name
+            }
+          )
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    Assert.assertThrows(UnknownHostException::class.java) {
+      runTest {
+        configRegistry.fhirEngine.create(composition)
+        configRegistry.fetchNonWorkflowConfigResources()
+      }
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testAddOrUpdate() {
     // when does not exist
     val patient = Faker.buildPatient()
+
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
       configRegistry.addOrUpdate(patient)
@@ -147,8 +209,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
+
     runTest {
       val result = configRegistry.create(patient)
       Assert.assertEquals(listOf(patient.id), result)

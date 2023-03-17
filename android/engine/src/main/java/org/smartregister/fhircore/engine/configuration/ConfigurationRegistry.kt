@@ -321,12 +321,15 @@ constructor(
           .retrieveCompositionSections()
           .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
           .filter {
-            it.key == ResourceType.Questionnaire.name ||
-              it.key == ResourceType.StructureMap.name ||
-              it.key == ResourceType.List.name ||
-              it.key == ResourceType.PlanDefinition.name ||
-              it.key == ResourceType.Library.name ||
-              it.key == ResourceType.Measure.name
+            it.key in
+              listOf(
+                ResourceType.Questionnaire.name,
+                ResourceType.StructureMap.name,
+                ResourceType.List.name,
+                ResourceType.PlanDefinition.name,
+                ResourceType.Library.name,
+                ResourceType.Measure.name
+              )
           }
           .forEach { resourceGroup ->
             val resourceIds =
