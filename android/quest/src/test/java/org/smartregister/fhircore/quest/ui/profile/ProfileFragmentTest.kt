@@ -94,7 +94,7 @@ class ProfileFragmentTest : RobolectricTest() {
       TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
 
     // Simulate the returned value of loadProfile
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns
+    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
       RepositoryResourceData(
         queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
       )
