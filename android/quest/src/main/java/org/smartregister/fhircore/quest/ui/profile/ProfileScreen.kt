@@ -207,7 +207,7 @@ private fun SimpleTopAppBar(
         AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
           CompoundText(
             compoundTextProperties = titleTextProperties,
-            resourceData = profileUiState.resourceData!!,
+            resourceData = profileUiState.resourceData,
             navController = navController
           )
         }
