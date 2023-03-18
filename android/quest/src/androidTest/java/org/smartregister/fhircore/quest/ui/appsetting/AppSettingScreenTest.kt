@@ -21,12 +21,11 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 
-class AppSettingScreenKtTest {
+class AppSettingScreenTest {
 
   @get:Rule val composeRule = createComposeRule()
   private val appId = "appId"
@@ -38,8 +37,8 @@ class AppSettingScreenKtTest {
       val onAppIdChanged: (String) -> Unit = {}
     }
 
-  @Before
-  fun setUp() {
+  @Test
+  fun testAppSettingScreenLayout() {
     composeRule.setContent {
       AppSettingScreen(
         appId = appId,
@@ -48,10 +47,7 @@ class AppSettingScreenKtTest {
         error = ""
       )
     }
-  }
 
-  @Test
-  fun testAppSettingScreenLayout() {
     composeRule.onNodeWithText(context.getString(R.string.fhir_core_app)).assertExists()
     composeRule.onNodeWithText(context.getString(R.string.application_id)).assertExists()
     composeRule.onNodeWithText(context.getString(R.string.load_configurations)).assertExists()
@@ -59,8 +55,32 @@ class AppSettingScreenKtTest {
 
   @Test
   fun testLoadConfigurationButtonListenerAction() {
+    composeRule.setContent {
+      AppSettingScreen(
+        appId = appId,
+        onAppIdChanged = listenersSpy.onAppIdChanged,
+        fetchConfiguration = listenersSpy.onLoadConfigurations,
+        error = ""
+      )
+    }
+
     composeRule
       .onNodeWithText(context.getString(R.string.load_configurations))
       .assertHasClickAction()
+  }
+
+  @Test
+  fun testErrorString() {
+    val error = "theError"
+    composeRule.setContent {
+      AppSettingScreen(
+        appId = appId,
+        onAppIdChanged = listenersSpy.onAppIdChanged,
+        fetchConfiguration = listenersSpy.onLoadConfigurations,
+        error = error
+      )
+    }
+
+    composeRule.onNodeWithText(error).assertExists()
   }
 }

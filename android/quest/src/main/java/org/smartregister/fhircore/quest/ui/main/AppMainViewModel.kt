@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -90,7 +91,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()

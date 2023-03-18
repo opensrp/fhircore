@@ -14,24 +14,27 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.engine.ui.theme
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
 
-internal class CircularPercentageIndicatorKtTest {
-
-  private val textPercentage = "25"
-
+internal class ThemesTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun testCircularPercentageIndicatorWithText() {
-    composeRule.setContent { CircularPercentageIndicator(percentage = textPercentage) }
-    composeRule.onNodeWithTag(CIRCULAR_PERCENTAGE_INDICATOR).assertExists()
-    composeRule.onNodeWithTag(CIRCULAR_CANVAS_CIRCLE_TAG).assertExists()
-    composeRule.onNodeWithTag(CIRCULAR_PERCENTAGE_TEXT_TAG).assertExists()
+  fun testThemes() {
+    composeRule.setContent { AppTheme { CircularPercentageIndicator(percentage = "0") } }
+    composeRule.onRoot().assertIsDisplayed()
+  }
+
+  @Test
+  fun testThemesDarkTheme() {
+    composeRule.setContent { AppTheme(true) { CircularPercentageIndicator(percentage = "0") } }
+    composeRule.onRoot().assertIsDisplayed()
   }
 }

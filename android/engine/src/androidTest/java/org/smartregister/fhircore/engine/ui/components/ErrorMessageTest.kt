@@ -20,25 +20,25 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-internal class CircularProgressBarKtTest {
-
-  private val textSyncing = "Syncing"
+class ErrorMessageTest {
 
   @get:Rule val composeRule = createComposeRule()
 
-  @Test
-  fun testCircularProgressBarWithText() {
-    composeRule.setContent { CircularProgressBar(text = textSyncing) }
-    composeRule.onNodeWithText(textSyncing).assertExists()
-    composeRule.onNodeWithTag(PROGRESS_MSG_TAG).assertIsDisplayed()
+  private val errorMessage = "An error occurred"
+
+  @Before
+  fun setUp() {
+    composeRule.setContent { ErrorMessage(message = errorMessage, onClickRetry = {}) }
   }
 
   @Test
-  fun testCircularProgressBarWithNoText() {
-    composeRule.setContent { CircularProgressBar(text = null) }
-    composeRule.onNodeWithTag(PROGRESS_MSG_TAG).assertDoesNotExist()
+  fun testErrorMessageComponentIsDrawn() {
+    composeRule.onNodeWithTag(ERROR_MESSAGE_TAG).assertIsDisplayed()
+    composeRule.onNodeWithTag(TRY_BUTTON_TAG).assertIsDisplayed()
+    composeRule.onNodeWithText("Try again").assertIsDisplayed()
   }
 }

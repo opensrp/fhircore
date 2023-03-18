@@ -176,7 +176,11 @@ class RegisterRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
     runBlocking {
       val profileData =
-        registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
+        registerRepository.loadProfileData(
+          profileId = "patientProfile",
+          resourceId = "12345",
+          paramsList = emptyArray()
+        )
       Assert.assertNotNull(profileData)
       Assert.assertEquals(
         ResourceType.Patient,
@@ -231,7 +235,7 @@ class RegisterRepositoryTest : RobolectricTest() {
         registerRepository.loadProfileData(
           profileId = "patientProfileSecondary",
           resourceId = "12345",
-          paramsMap = emptyMap()
+          paramsList = emptyArray()
         )
       Assert.assertNotNull(profileData)
     }
