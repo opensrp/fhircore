@@ -33,15 +33,10 @@ import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var gson: Gson
 
   @Before

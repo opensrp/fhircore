@@ -16,29 +16,22 @@
 
 package org.smartregister.fhircore.engine.ui.components
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class ErrorMessageKtTest {
+internal class CircularPercentageIndicatorTest {
+
+  private val textPercentage = "25"
 
   @get:Rule val composeRule = createComposeRule()
 
-  private val errorMessage = "An error occurred"
-
-  @Before
-  fun setUp() {
-    composeRule.setContent { ErrorMessage(message = errorMessage, onClickRetry = {}) }
-  }
-
   @Test
-  fun testErrorMessageComponentIsDrawn() {
-    composeRule.onNodeWithTag(ERROR_MESSAGE_TAG).assertIsDisplayed()
-    composeRule.onNodeWithTag(TRY_BUTTON_TAG).assertIsDisplayed()
-    composeRule.onNodeWithText("Try again").assertIsDisplayed()
+  fun testCircularPercentageIndicatorWithText() {
+    composeRule.setContent { CircularPercentageIndicator(percentage = textPercentage) }
+    composeRule.onNodeWithTag(CIRCULAR_PERCENTAGE_INDICATOR).assertExists()
+    composeRule.onNodeWithTag(CIRCULAR_CANVAS_CIRCLE_TAG).assertExists()
+    composeRule.onNodeWithTag(CIRCULAR_PERCENTAGE_TEXT_TAG).assertExists()
   }
 }
