@@ -26,7 +26,6 @@ import org.junit.Rule
 import org.junit.Test
 
 internal class PinTest {
-
   @get:Rule val composeRule = createComposeRule()
 
   @Test
