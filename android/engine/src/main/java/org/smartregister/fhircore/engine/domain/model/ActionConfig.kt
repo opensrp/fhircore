@@ -49,13 +49,25 @@ data class ActionConfig(
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
 
+  fun interpolateManagingEntity(computedValuesMap: Map<String, Any>) =
+    with(managingEntity) {
+      managingEntity?.copy(
+        dialogTitle = this?.dialogTitle?.interpolate(computedValuesMap),
+        dialogWarningMessage = this?.dialogWarningMessage?.interpolate(computedValuesMap),
+        dialogContentMessage = this?.dialogContentMessage?.interpolate(computedValuesMap),
+        noMembersErrorMessage = this?.noMembersErrorMessage?.interpolate(computedValuesMap) ?: "",
+        managingEntityReassignedMessage =
+          this?.managingEntityReassignedMessage?.interpolate(computedValuesMap) ?: ""
+      )
+    }
+
   companion object {
     const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
   }
 }
 
-@Serializable
 @Parcelize
+@Serializable
 data class ActionParameter(
   val key: String,
   val paramType: ActionParameterType? = null,
