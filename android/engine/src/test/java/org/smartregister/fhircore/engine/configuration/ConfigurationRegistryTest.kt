@@ -25,13 +25,18 @@ import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -56,7 +61,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
   @Inject lateinit var configRegistry: ConfigurationRegistry
   var fhirEngine: FhirEngine = mockk()
-  lateinit var fhirResourceDataSource: FhirResourceDataSource
+  lateinit var context: Context
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,7 +70,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     hiltRule.inject()
     val fhirResourceService = mockk<FhirResourceService>()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    val context: Context = ApplicationProvider.getApplicationContext()
+    context = ApplicationProvider.getApplicationContext()
     val sharedPreferencesHelper =
       SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
     configRegistry =
@@ -161,6 +167,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesNoAppId() {
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    coVerify(inverse = true) { fhirEngine.search<Composition>(any<Search>()) }
   }
 
   @Test
@@ -171,6 +179,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    coVerify(inverse = true) { fhirEngine.create(any()) }
   }
 
   @Test
@@ -182,6 +192,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    coVerify(inverse = true) { fhirEngine.create(any()) }
   }
 
   @Test
@@ -208,6 +220,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configRegistry.fhirEngine.create(composition)
       configRegistry.fetchNonWorkflowConfigResources()
     }
+
+    coVerify(inverse = true) { fhirEngine.get(any(), any()) }
+    coVerify(inverse = true) { fhirEngine.update(any()) }
   }
 
   @Test
@@ -219,11 +234,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Composition().apply {
         identifier = Identifier().apply { value = appId }
         section =
-          listOf(
-            Composition.SectionComponent().apply {
-              focus.reference = ResourceType.Questionnaire.name
-            }
-          )
+          listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
@@ -238,8 +249,54 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configRegistry.fhirEngine.create(composition)
       configRegistry.fetchNonWorkflowConfigResources()
     }
+
+    coVerify { fhirEngine.get(patient.resourceType, patient.logicalId) }
   }
 
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesBundleListResource() {
+    val appId = "theAppId"
+    val focusReference = ResourceType.Questionnaire.name
+    val resourceKey = "resourceKey"
+    val resourceId = "resourceId"
+    val listResource =
+      ListResource().apply {
+        entry =
+          listOf(
+            ListResource.ListEntryComponent().apply {
+              item = Reference().apply { reference = "$resourceKey/$resourceId" }
+            }
+          )
+      }
+    val bundle =
+      Bundle().apply {
+        entry = listOf(Bundle.BundleEntryComponent().apply { resource = listResource })
+      }
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = listOf(SectionComponent().apply { focus.reference = focusReference })
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
+      bundle
+    coEvery { fhirEngine.update(any()) } returns Unit
+    coEvery { fhirEngine.get(ResourceType.List, "") } returns listResource
+    coEvery { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") } returns bundle
+
+    runTest {
+      configRegistry.fhirEngine.create(composition)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
+
+    coVerify { fhirEngine.get(ResourceType.List, "") }
+    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") }
+  }
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testAddOrUpdate() {
@@ -272,5 +329,126 @@ class ConfigurationRegistryTest : RobolectricTest() {
       val result = configRegistry.create(patient)
       Assert.assertEquals(listOf(patient.id), result)
     }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsAppIdNotFound() {
+    val appId = "the app id"
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsAppIdFound() {
+    val appId = "the app id"
+    val composition = Composition().apply { section = listOf() }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsSectionComponent() {
+    val appId = "the app id"
+    val composition = Composition().apply { section = listOf(SectionComponent()) }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsSectionComponentWithSection() {
+    val appId = "the app id"
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              id = "outer"
+              section = listOf(SectionComponent().apply { id = "inner" })
+              focus =
+                Reference().apply {
+                  identifier = Identifier().apply { id = "identifierId" }
+                  reference = "referenceId"
+                }
+            }
+          )
+      }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsAppConfig() {
+    val appId = "the app id"
+    val referenceId = "refernceId"
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              id = "outer"
+              section = listOf(SectionComponent().apply { id = "inner" })
+              focus =
+                Reference().apply {
+                  identifier =
+                    Identifier().apply {
+                      id = "theFocusId"
+                      value = "value"
+                    }
+                  reference = "Binary/$referenceId"
+                }
+            }
+          )
+      }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.get(ResourceType.Binary, referenceId) } returns
+      Binary().apply { content = ByteArray(0) }
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    Assert.assertFalse(configRegistry.configsJsonMap.isNullOrEmpty())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurationsNoLoadFromAssetsIconConfig() {
+    val appId = "the app id"
+    val referenceId = "refernceId"
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              id = "outer"
+              section = listOf(SectionComponent().apply { id = "inner" })
+              focus =
+                Reference().apply {
+                  identifier =
+                    Identifier().apply {
+                      id = "theFocusId"
+                      value = "${ConfigurationRegistry.ICON_PREFIX}more"
+                    }
+                  reference = "Binary/$referenceId"
+                }
+            }
+          )
+      }
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    coVerify(inverse = true) { fhirEngine.get(ResourceType.Binary, referenceId) }
+    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
   }
 }
