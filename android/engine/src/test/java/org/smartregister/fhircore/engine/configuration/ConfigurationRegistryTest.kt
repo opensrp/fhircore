@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.gson.GsonBuilder
@@ -317,6 +318,24 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configRegistry.addOrUpdate(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testAddOrUpdateCatchesResourceNotFound() {
+    val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
+      ResourceNotFoundException("", "")
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    coVerify(inverse = true) { fhirEngine.update(any()) }
+    coVerify { fhirEngine.create(patient) }
   }
 
   @Test
