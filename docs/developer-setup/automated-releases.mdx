@@ -28,6 +28,32 @@ Once a final code release is created, attach a generic flavor APK release e.g. `
 
 Flavors define custom names, icons, and default local properties (such as server versions). We use flavors when a particular project or use-cases requires this customization, such as a branded icon and name. When creating flavors do NOT include version numbers. The version of the flavor is defined by the code version.
 
+To add a flavor, add an entry to the `productFlavors` map in [`android/quest/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/quest/build.gradle). For example, to add a flavor called `new-flavor` add the map:
+
+```
+new-flavor  {
+    dimension "apps"
+    applicationIdSuffix ".new-flavor"
+    versionNameSuffix "new-flavor"
+}
+```
+
+You can add the follow resources:
+
+Description|Location
+---|---
+App icon|`android/quest/src/new-flavor/res/drawable/ic_app_logo.png`
+App name|`android/quest/src/new-flavor/res/values/strings.xml`
+
+Where the app icon is an image of the appropriate size and the app name is an XML file with the following content:
+
+```
+<resources>
+    <string name="app_name" translatable="false">New Flavor App Name</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.new-flavor</string>
+</resources>
+```
+
 ## Release automation with tags
 
 As part of integrating Continuous Delivery(CD) into the development lifecycle, CI is set up to generate an APK.
