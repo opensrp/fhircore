@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
@@ -37,11 +37,8 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-
   private val reportRepository = mockk<MeasureReportRepository>()
-
   private lateinit var reportPatientsPagingSource: MeasureReportPatientsPagingSource
 
   @Before
@@ -54,7 +51,13 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
   @Test
   fun loadShouldReturnResults() {
     coEvery { reportRepository.retrievePatients(0) } returns
-      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+      listOf(
+        ResourceData(
+          baseResourceId = "resourceId",
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+        )
+      )
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null

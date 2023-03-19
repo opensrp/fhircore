@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.MessageFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import java.util.regex.Pattern
 import org.apache.commons.text.CaseUtils
 import org.apache.commons.text.StringSubstitutor
+import timber.log.Timber
 
 /**
  * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
@@ -40,15 +43,19 @@ fun String.interpolate(
   prefix: String = "@{",
   suffix: String = "}"
 ): String =
-  StringSubstitutor.replace(
-    this.replace(Pattern.quote(prefix).plus(".*?").plus(Pattern.quote(suffix)).toRegex()) {
-      it.value.replace("\\s+".toRegex(), "")
-    },
-    lookupMap,
-    prefix,
-    suffix
-  )
-
+  try {
+    StringSubstitutor.replace(
+      this.replace(Pattern.quote(prefix).plus(".*?").plus(Pattern.quote(suffix)).toRegex()) {
+        it.value.replace("\\s+".toRegex(), "")
+      },
+      lookupMap,
+      prefix,
+      suffix
+    )
+  } catch (e: IllegalStateException) {
+    Timber.e(e)
+    this
+  }
 /**
  * Wrapper method around the Java text formatter
  *
@@ -91,3 +98,17 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  * be a keycloak-uuid.
  */
 fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+
+/** Remove double white spaces from text and also remove space before comma */
+fun String.removeExtraWhiteSpaces(): String =
+  this.replace("\\s+".toRegex(), " ").replace(" ,", ",").trim()
+
+/** Return an abbreviation for the provided string */
+fun String?.abbreviate() = this?.firstOrNull() ?: ""
+
+fun String.parseDate(pattern: String): Date? =
+  SimpleDateFormat(pattern, Locale.ENGLISH).tryParse(this)
+
+/** Compare characters of identical strings */
+fun String.compare(anotherString: String): Boolean =
+  this.toSortedSet().containsAll(anotherString.toSortedSet())

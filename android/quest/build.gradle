@@ -4,7 +4,6 @@ plugins {
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
     id 'de.mannodermaus.android-junit5'
-    id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
@@ -36,7 +35,6 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
-        buildConfigField("String[]", "SYNC_STRATEGIES", '{"Location"}')
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
@@ -89,6 +87,7 @@ android {
         exclude("META-INF/*.kotlin_module")
         exclude("META-INF/AL2.0")
         exclude("META-INF/LGPL2.1")
+        exclude("META-INF/INDEX.LIST")
     }
 
     compileOptions {
@@ -112,7 +111,6 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
         animationsDisabled true
 
         unitTests {
@@ -133,7 +131,6 @@ android {
             applicationIdSuffix ".quest"
             versionNameSuffix "-quest"
             getIsDefault().set(true)
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         ecbis {
@@ -141,40 +138,55 @@ android {
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
             versionCode 4
-            versionName "0.1.5-rc1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
+            versionName "0.1.9-rc4"
         }
 
         g6pd {
             dimension "apps"
             applicationIdSuffix ".g6pd"
             versionNameSuffix "-g6pd"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         mwcore {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         afyayangu {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
             versionNameSuffix "-afyayangu"
-            versionCode 1
-            versionName "0.0.1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         map {
             dimension "apps"
             applicationIdSuffix ".map"
             versionNameSuffix "-map"
-            versionCode 1
-            versionName "0.0.1"
-            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
+        }
+
+        echis {
+            dimension "apps"
+            applicationIdSuffix ".echis"
+            versionNameSuffix "-echis"
+        }
+
+        bunda {
+            dimension "apps"
+            applicationIdSuffix ".bunda"
+            versionNameSuffix "-bunda"
+        }
+
+        wdf {
+            dimension "apps"
+            applicationIdSuffix ".wdf"
+            versionNameSuffix "-wdf"
+        }
+
+        zeir {
+            dimension "apps"
+            applicationIdSuffix ".zeir"
+            versionNameSuffix "-zeir"
         }
     }
     sourceSets {
@@ -189,6 +201,52 @@ android {
             }
         }
     }
+
+    splits {
+
+        abi {
+
+            enable false
+
+            reset()
+
+            // A list of ABIs for Gradle to create APKs for.
+            include "armeabi-v7a","x86","arm64-v8a","x86_64"
+
+            universalApk false
+        }
+    }
+}
+
+ext.abiCodes = ['armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a': 3, mips: 4, 'x86': 5, 'x86_64': 6]
+
+// For each APK output variant, override versionCode with a combination of
+// ext.abiCodes * 10000 + variant.versionCode. In this example, variant.versionCode
+// is equal to defaultConfig.versionCode. If you configure product flavors that
+// define their own versionCode, variant.versionCode uses that value instead.
+android.applicationVariants.all { variant ->
+
+    variant.outputs.each { output ->
+
+        // Stores the value of ext.abiCodes that is associated with the ABI for this variant.
+        def baseAbiVersionCode =
+                // Determines the ABI for this variant and returns the mapped value.
+                project.ext.abiCodes.get(output.getFilter(com.android.build.OutputFile.ABI))
+
+        // Because abiCodes.get() returns null for ABIs that are not mapped by ext.abiCodes,
+        // the following code doesn't override the version code for universal APKs.
+        // However, because you want universal APKs to have the lowest version code,
+        // this outcome is desirable.
+        if (baseAbiVersionCode != null) {
+
+            // Assigns the new version code to versionCodeOverride, which changes the
+            // version code for only the output APK, not for the variant itself. Skipping
+            // this step causes Gradle to use the value of variant.versionCode for the APK.
+            output.versionCodeOverride =
+                    baseAbi
+            VersionCode * 10000 + variant.versionCode
+        }
+    }
 }
 
 // Test Logging
@@ -200,6 +258,7 @@ tasks.withType(Test) {
 
 configurations {
     all*.exclude group: 'xpp3'
+    all*.exclude group: 'commons-logging'
 }
 
 dependencies {
@@ -208,21 +267,23 @@ dependencies {
     implementation(project(":geowidget")) {
         transitive = true
     }
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.6.5-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.measure:2.1.0'){
+    implementation ('org.opencds.cqf.cql:evaluator.measure:2.4.0'){
         exclude group: 'xpp3'
     }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
+    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     implementation 'androidx.work:work-testing:2.7.1'
@@ -239,11 +300,12 @@ dependencies {
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
     testImplementation deps.kotlin.test
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
@@ -251,15 +313,15 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    androidTestUtil 'androidx.test:orchestrator:1.4.2-alpha04'
+    androidTestUtil 'androidx.test:orchestrator:1.4.2'
 
     androidTestImplementation deps.mockk_android
+    androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
 
-//    debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
+   // debugImplementation because LeakCanary should only run in debug builds.
+   // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
-    testImplementation 'info.cqframework:cql-to-elm:1.5.6'
+    testImplementation 'info.cqframework:cql-to-elm:2.4.0'
 }

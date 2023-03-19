@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,30 +39,20 @@ class MeasureReportRowTest {
       id = "101",
       title = "2+ ANC Contacts",
       description = "Pregnant women with at least two ANC Contacts",
+      module = "Module 1- ANC Contacts",
     )
 
   @Before
   fun setup() {
     composeTestRule.setContent {
-      MeasureReportRow(measureReportConfig = measureReportConfig, onRowClick = mockListener)
+      MeasureReportRow(title = measureReportConfig.module, onRowClick = mockListener)
     }
   }
 
   @Test
   fun testMeasureRowRendersTitleCorrectly() {
     composeTestRule.onNodeWithTag(MEASURE_ROW_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText(measureReportConfig.title).assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testMeasureRowRendersDescriptionCorrectly() {
-    composeTestRule
-      .onNodeWithTag(MEASURE_ROW_DESCRIPTION_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-    composeTestRule
-      .onNodeWithText(measureReportConfig.description)
-      .assertExists()
-      .assertIsDisplayed()
+    composeTestRule.onNodeWithText(measureReportConfig.module).assertExists().assertIsDisplayed()
   }
 
   @Test

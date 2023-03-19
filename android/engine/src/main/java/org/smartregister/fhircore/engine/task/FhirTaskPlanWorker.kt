@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,39 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.hasStarted
-import org.smartregister.fhircore.engine.util.extension.isLastTask
+import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
-class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters) :
-  CoroutineWorker(appContext, workerParams) {
+@HiltWorker
+class FhirTaskPlanWorker
+@AssistedInject
+constructor(
+  @Assisted val appContext: Context,
+  @Assisted workerParams: WorkerParameters,
+  val fhirEngine: FhirEngine
+) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
     Timber.i("Starting task scheduler")
 
-    val fhirEngine = FhirEngineProvider.getInstance(appContext)
-
     // TODO also filter by date range for better performance
+    // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
+    // due to indexing outdated resources
     fhirEngine
       .search<Task> {
         filter(
@@ -51,6 +60,14 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
           { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
+      }
+      .asSequence()
+      .filter {
+        it.status == Task.TaskStatus.REQUESTED ||
+          it.status == Task.TaskStatus.READY ||
+          it.status == Task.TaskStatus.ACCEPTED ||
+          it.status == Task.TaskStatus.INPROGRESS ||
+          it.status == Task.TaskStatus.RECEIVED
       }
       .forEach { task ->
         if (task.hasPastEnd()) {
@@ -68,7 +85,7 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
                 fhirEngine.update(carePlan)
               }
             }
-        } else if (task.hasStarted() && task.status == Task.TaskStatus.REQUESTED) {
+        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           task.status = Task.TaskStatus.READY
           fhirEngine.update(task)
         }
@@ -78,7 +95,10 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
     return Result.success()
   }
 
+  private fun CarePlan.isLastTask(task: Task) =
+    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
+
   companion object {
-    const val WORK_ID = "PlanWorker"
+    const val WORK_ID = "FhirTaskPlanWorker"
   }
 }

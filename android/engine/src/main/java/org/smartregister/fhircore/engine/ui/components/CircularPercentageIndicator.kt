@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.ProgressBarBlueColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val CIRCULAR_PERCENTAGE_INDICATOR = "CIRCULAR_PERCENTAGE_INDICATOR"
 const val CIRCULAR_CANVAS_CIRCLE_TAG = "CIRCULAR_CANVAS_CIRCLE_TAG"
@@ -93,9 +92,8 @@ fun CircularPercentageIndicator(
   }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun CircularPercentageIndicatorPreview() {
   CircularPercentageIndicator(percentage = "10")
 }

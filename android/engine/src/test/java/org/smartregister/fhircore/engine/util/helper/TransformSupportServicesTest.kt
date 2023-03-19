@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.hl7.fhir.r4.model.TimeType
@@ -116,6 +117,14 @@ class TransformSupportServicesTest : RobolectricTest() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Group_Characteristic") is
         Group.GroupCharacteristicComponent
+    )
+  }
+
+  @Test
+  fun `createType() should return ObservationComponentComponent when given Observation_Component`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Observation_Component") is
+        Observation.ObservationComponentComponent
     )
   }
 

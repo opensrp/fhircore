@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Parcelable
+import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -48,10 +49,20 @@ data class FhirResourceConfig(
 @Serializable
 @Parcelize
 data class ResourceConfig(
-  val name: String? = null,
+  val id: String? = null,
   val resource: String,
   val searchParameter: String? = null,
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
-  val relatedResources: List<ResourceConfig> = emptyList()
+  val relatedResources: List<ResourceConfig> = emptyList(),
+  val sortConfigs: List<SortConfig> = emptyList(),
+  val resultAsCount: Boolean = false
+) : Parcelable
+
+@Serializable
+@Parcelize
+data class SortConfig(
+  val paramName: String,
+  val dataType: DataType,
+  val order: Order = Order.ASCENDING
 ) : Parcelable

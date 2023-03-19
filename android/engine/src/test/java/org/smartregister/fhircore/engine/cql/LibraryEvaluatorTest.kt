@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
       valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
       testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
       result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
-      evaluator = LibraryEvaluator()
+      evaluator = LibraryEvaluator().apply { initialize() }
     } catch (e: IOException) {
       Timber.e(e, e.message)
     }
@@ -142,7 +142,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   }
 
   @Test
-  fun createBundleTestForG6pd() {
+  fun createBundleTest() {
     val result = evaluator!!.createBundle(listOf(Patient(), Observation(), Condition()))
 
     Assert.assertEquals(ResourceType.Patient, result.entry[0].resource.resourceType)
@@ -151,7 +151,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   }
 
   @Test
-  fun runCqlLibraryTestForG6pd() {
+  fun runCqlLibraryForG6pdTest() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
     val cqlElm = FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library-elm.json")
@@ -204,14 +204,68 @@ class LibraryEvaluatorTest : RobolectricTest() {
       )
     }
 
-    System.out.println(result)
-
     Assert.assertTrue(result.contains("AgeRange -> BooleanType[true]"))
     Assert.assertTrue(result.contains("Female -> BooleanType[true]"))
     Assert.assertTrue(result.contains("is Pregnant -> BooleanType[true]"))
     Assert.assertTrue(result.contains("Abnormal Haemoglobin -> BooleanType[false]"))
   }
 
+  @Test
+  fun runCqlLibraryWithoutOutputLogTest() {
+    val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+    val parser = fhirContext.newJsonParser()!!
+    val cqlElm = FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library-elm.json")
+
+    val cqlLibrary =
+      parser.parseResource(
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
+      ) as
+        Library
+    val fhirHelpersLibrary =
+      parser.parseResource(
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
+      ) as
+        Library
+
+    val dataBundle =
+      parser.parseResource(
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
+      ) as
+        Bundle
+
+    val patient =
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
+        Patient
+
+    val fhirEngine = mockk<FhirEngine>()
+    val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    val defaultRepository =
+      DefaultRepository(
+        fhirEngine,
+        DefaultDispatcherProvider(),
+        sharedPreferencesHelper,
+        configurationRegistry,
+        configService
+      )
+
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
+
+    var result = runBlocking {
+      evaluator!!.runCqlLibrary(
+        cqlLibrary.logicalId,
+        patient,
+        dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
+        defaultRepository,
+        false
+      )
+    }
+
+    Assert.assertEquals(0, result.size)
+  }
   @Test
   fun processCqlPatientBundleTest() {
     val results = evaluator!!.processCqlPatientBundle(testData)

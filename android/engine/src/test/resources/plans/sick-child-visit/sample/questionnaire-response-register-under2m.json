@@ -10,7 +10,7 @@
       }
     ]
   },
-  "questionnaire": "Questionnaire/131880",
+  "questionnaire": "Questionnaire/1bdf21ef-d31a-446e-aaa6-cec516eceab1",
   "subject": {
     "reference": "Patient/1205c449-44cd-495f-80a0-abbde38f135c"
   },
@@ -43,7 +43,7 @@
       ]
     },
     {
-      "linkId": "4d87ea34-04a8-42bd-8c5c-e1c4b90d69fb",
+      "linkId": "f3836465-adca-4cc8-8710-c392ee85f739",
       "answer": [
         {
           "valueCoding": {

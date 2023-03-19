@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -130,6 +130,16 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun loadResourceShouldGetResourceWithResourceTypeAndLogicalId() = runTest {
+    val sampleResource = Patient().apply { id = "123345677" }
+    coEvery { fhirEngine.get(any(), sampleResource.logicalId) } answers { sampleResource }
+
+    val result = defaultRepository.loadResource(sampleResource.logicalId, ResourceType.Patient)
+    Assert.assertEquals(sampleResource, result)
+    coVerify(exactly = 1) { fhirEngine.get(sampleResource.resourceType, sampleResource.logicalId) }
+  }
+
+  @Test
   fun searchResourceForGivenReferenceShouldSearchCarePlanThatIsRelatedToAPatientUsingId() {
     val samplePatientId = "12345"
 
@@ -216,7 +226,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     // Call the function under test
-    runBlocking { defaultRepository.addOrUpdate(patient) }
+    runBlocking { defaultRepository.addOrUpdate(resource = patient) }
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
@@ -236,7 +246,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       mockk<ResourceNotFoundException>()
     coEvery { fhirEngine.create(any()) } returns listOf()
-    runBlocking { defaultRepository.addOrUpdate(Patient()) }
+    runBlocking { defaultRepository.addOrUpdate(resource = Patient()) }
     coVerify(exactly = 1) { fhirEngine.create(any()) }
   }
 
@@ -274,7 +284,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
 
-    runBlocking { defaultRepository.addOrUpdate(resource) }
+    runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
     verify { resource.generateMissingId() }
 
@@ -374,9 +384,10 @@ class DefaultRepositoryTest : RobolectricTest() {
           configService = mockk()
         )
       )
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(managingEntityRelatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
+      listOf(managingEntityRelatedPerson)
     coEvery { defaultRepositorySpy.delete(any()) } just runs
-    coEvery { defaultRepositorySpy.addOrUpdate(any()) } just runs
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     val group =
       Group().apply {
         id = "testGroupId"
@@ -399,12 +410,29 @@ class DefaultRepositoryTest : RobolectricTest() {
         active = true
       }
     val defaultRepositorySpy = spyk(defaultRepository)
-    coEvery { defaultRepositorySpy.addOrUpdate(any()) } just runs
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) } returns patientMemberRep
 
     defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
     Assert.assertFalse(patientMemberRep.active)
-    coVerify { defaultRepositorySpy.addOrUpdate(patientMemberRep) }
+    coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
+  }
+
+  @Test
+  fun removeGroupMemberShouldCatchResourceNotFoundException() = runTest {
+    val memberId = "testMemberId"
+    val patientMemberRep =
+      Patient().apply {
+        id = memberId
+        active = true
+      }
+    val defaultRepositorySpy = spyk(defaultRepository)
+    coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
+    coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) }
+      .throws(ResourceNotFoundException("type", "id"))
+
+    defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
+    Assert.assertTrue(patientMemberRep.active)
   }
 
   @Test
@@ -444,16 +472,17 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val relatedPersonId = "1234"
     val relatedPerson = RelatedPerson().setId(relatedPersonId)
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+    @Suppress("UNCHECKED_CAST")
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(relatedPerson) as List<RelatedPerson>
     coEvery { defaultRepository.delete(any()) } just runs
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
     runBlocking { defaultRepository.removeGroup(groupId, true) }
 
     coVerify { defaultRepository.delete(relatedPerson) }
-    coVerify { defaultRepository.addOrUpdate(patient) }
-    coVerify { defaultRepository.addOrUpdate(group) }
+    coVerify { defaultRepository.addOrUpdate(resource = patient) }
+    coVerify { defaultRepository.addOrUpdate(resource = group) }
   }
 
   @Test
@@ -481,10 +510,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
     coEvery { fhirEngine.get(ResourceType.Patient, memberId) } returns patient
 
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
-      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
     coEvery { defaultRepository.delete(any()) } just runs
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
     runBlocking {
       defaultRepository.removeGroupMember(
@@ -495,6 +523,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { defaultRepository.delete(relatedPerson) }
-    coVerify { defaultRepository.addOrUpdate(group) }
+    coVerify { defaultRepository.addOrUpdate(resource = group) }
   }
 }

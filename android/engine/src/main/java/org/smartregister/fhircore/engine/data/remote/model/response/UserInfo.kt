@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,5 +28,6 @@ data class UserInfo(
   @SerialName("given_name") var givenName: String? = null,
   @SerialName("name") var name: String? = null,
   @SerialName("preferred_username") var preferredUsername: String? = null,
-  @SerialName("sub") var keycloakUuid: String? = null
+  @SerialName("sub") var keycloakUuid: String? = null,
+  @SerialName("fhir_core_app_id") var appId: String? = null
 )

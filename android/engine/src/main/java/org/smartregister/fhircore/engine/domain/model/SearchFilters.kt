@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Parcelable
 import androidx.compose.runtime.Stable
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import com.google.android.fhir.search.Operation
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
@@ -35,7 +36,8 @@ data class DataQuery(
   val valueCoding: Code? = null,
   val valueString: String? = null,
   val valueDate: String? = null,
-  val paramPrefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+  val paramPrefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS,
+  val operation: Operation = Operation.OR
 ) : Parcelable
 
 @Stable

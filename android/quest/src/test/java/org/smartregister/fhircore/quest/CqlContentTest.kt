@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,7 +258,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { configService.provideMandatorySyncTags(any()) } returns listOf()
+    coEvery { configService.provideResourceTags(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 
 @Serializable
 data class ProfileConfiguration(
@@ -31,9 +32,11 @@ data class ProfileConfiguration(
   override var configType: String = ConfigType.Profile.name,
   val id: String,
   val fhirResource: FhirResourceConfig,
+  val secondaryResources: List<FhirResourceConfig>? = null,
   val managingEntity: ManagingEntityConfig? = null,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
+  val topAppBar: TopBarConfig? = null,
   val views: List<ViewProperties> = emptyList(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList()

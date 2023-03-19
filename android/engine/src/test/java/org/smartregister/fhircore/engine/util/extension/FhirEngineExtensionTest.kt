@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,64 +16,57 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.workflow.FhirOperator
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.SearchQuery
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import java.sql.SQLException
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class FhirEngineExtensionTest : RobolectricTest() {
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private val fhirEngine: FhirEngine = mockk()
-
-  private val fhirOperator: FhirOperator = mockk()
-
-  private val sharedPreferenceHelper: SharedPreferencesHelper = mockk()
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
-    coEvery { fhirEngine.search<Composition>(any()) } returns
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
       listOf(Composition().apply { id = "123" })
 
     val result = fhirEngine.searchCompositionByIdentifier("appId")
 
-    coVerify { fhirEngine.search<Composition>(any()) }
+    coVerify { fhirEngine.search<Composition>(any<Search>()) }
 
     Assert.assertEquals("123", result!!.logicalId)
   }
 
   @Test
-  fun loadCqlLibraryBundle() {
-    val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
+  fun testAddDateTimeIndexThrowsExceptionGivenInvalidSearchQuery() {
+    coEvery { fhirEngine.search<Task>(any<SearchQuery>()) } throws SQLException()
 
-    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
-    every { sharedPreferenceHelper.read(prefsDataKey, any<String>()) } returns ""
-    every { sharedPreferenceHelper.write(prefsDataKey, any<String>()) } returns Unit
-    coEvery { fhirOperator.loadLib(any()) } returns Unit
-    coEvery { fhirEngine.create(any()) } returns listOf()
+    runBlocking { assertThrows<SQLException> { fhirEngine.addDateTimeIndex() } }
+  }
 
-    runBlocking {
-      fhirEngine.loadCqlLibraryBundle(
-        application,
-        sharedPreferenceHelper,
-        fhirOperator,
-        measureResourceBundleUrl
-      )
-    }
+  @Test
+  fun testAddDateTimeIndexUsesCorrectSql() {
+    coEvery { fhirEngine.search<Task>(any<SearchQuery>()) } returns listOf()
 
-    Assert.assertNotNull(sharedPreferenceHelper.read(prefsDataKey, ""))
+    runBlocking { fhirEngine.addDateTimeIndex() }
+    val searchQuerySlot = slot<SearchQuery>()
+    coVerify { fhirEngine.search<Task>(capture(searchQuerySlot)) }
+
+    Assert.assertEquals(
+      "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+      searchQuerySlot.captured.query
+    )
   }
 }

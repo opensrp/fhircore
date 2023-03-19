@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 
@@ -47,9 +46,8 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
   )
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun SearchHeaderPreview() {
   RegisterHeader(resultCount = 2)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,21 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.google.android.fhir.FhirEngine
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import java.util.LinkedList
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 
-class MeasureReportRepository
-@Inject
-constructor(
-  val fhirEngine: FhirEngine,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry,
-  val registerRepository: RegisterRepository
+class MeasureReportRepository(
+  private val measureReportConfiguration: MeasureReportConfiguration,
+  private val registerConfiguration: RegisterConfiguration,
+  private val registerRepository: RegisterRepository,
+  private val rulesExecutor: RulesExecutor
 ) : PagingSource<Int, MeasureReportConfig>() {
-
-  private val measureReportConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(
-      ConfigType.MeasureReport
-    )
-  }
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
     return state.anchorPosition
@@ -57,8 +48,17 @@ constructor(
 
   suspend fun retrievePatients(currentPage: Int): List<ResourceData> {
     return registerRepository.loadRegisterData(
-      currentPage = currentPage,
-      registerId = measureReportConfiguration.registerId
-    )
+        currentPage = currentPage,
+        registerId = measureReportConfiguration.registerId
+      )
+      .map {
+        val queryResult = it.queryResult as RepositoryResourceData.QueryResult.Search
+        rulesExecutor.processResourceData(
+          baseResource = queryResult.resource,
+          relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+          ruleConfigs = registerConfiguration.registerCard.rules,
+          emptyMap()
+        )
+      }
   }
 }
