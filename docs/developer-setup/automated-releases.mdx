@@ -8,7 +8,7 @@ OpenSRP FHIR Core releases occur at most once every 2 weeks, i.e. at the conclus
 
 This allows changes to occur on the code release branch while unrelated code continues being merged into main.
 
-# Code Releases
+## Code Releases
 
 We conduct code releases with the following steps:
 
@@ -20,9 +20,13 @@ We conduct code releases with the following steps:
 1. Repeat step (2.) until QA passes, e.g. with more pre-releases and tags, `opensrp-0.2.0-rc3`, ...
 1. Final code release: when the release meets requirements, a final code release, `opensrp-0.2.0` is created, with a tag `v0.2.0`.
 
-# APK Releases
+## APK Releases
 
-Once a final code release is created, attach a generic flavor APK release e.g. `opensrp-0.2.0.apk` to the release. In addition, attach APK releases for any specific flavors requested, e.g. `opensrp-0.2.0-bunda.apk`, `opensrp-0.2.0-ecbis.apk`, `opensrp-0.2.0-wdf.apk`
+Once a final code release is created, attach a generic flavor APK release e.g. `opensrp-0.2.0.apk` to the release. In addition, attach APK releases for any specific flavors requested, e.g. `opensrp-0.2.0-bunda.apk`, `opensrp-0.2.0-ecbis.apk`, `opensrp-0.2.0-wdf.apk`.
+
+## Flavors
+
+Flavors define custom names, icons, and default local properties (such as server versions). We use flavors when a particular project or use-cases requires this customization, such as a branded icon and name. When creating flavors do NOT include version numbers. The version of the flavor is defined by the code version.
 
 ## Release automation with tags
 
