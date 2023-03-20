@@ -177,7 +177,15 @@ fun TracingProfilePage(
       }
     }
   ) { innerPadding ->
-    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData) {
+    TracingProfilePageView(
+      innerPadding = innerPadding,
+      profileViewData = profileViewData,
+      onCall = {
+        tracingProfileViewModel.onEvent(
+          TracingProfileEvent.CallGuardian(navController, context, it)
+        )
+      }
+    ) {
       val historyId = it.historyId
       if (historyId != null) {
         tracingProfileViewModel.onEvent(
@@ -195,6 +203,7 @@ fun TracingProfilePageView(
   modifier: Modifier = Modifier,
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
   profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData(),
+  onCall: (RelatedPerson) -> Unit,
   onCurrentAttemptClicked: (TracingAttempt) -> Unit
 ) {
   Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
@@ -224,7 +233,10 @@ fun TracingProfilePageView(
         // Tracing Patient address/contact
         TracingContactAddress(profileViewData, displayForHomeTrace = false)
         Spacer(modifier = modifier.height(20.dp))
-        TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
+        TracingGuardianAddress(
+          guardiansRelatedPersonResource = profileViewData.guardiansRelatedPersonResource,
+          onCall = onCall
+        )
       }
     }
   }
@@ -234,7 +246,7 @@ fun TracingProfilePageView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun TracingScreenPreview() {
-  TracingProfilePageView(modifier = Modifier) {}
+  TracingProfilePageView(modifier = Modifier, onCall = {}) {}
 }
 
 @Composable
@@ -409,9 +421,10 @@ private fun TracingContactAddress(
 @Composable
 private fun TracingGuardianAddress(
   guardiansRelatedPersonResource: List<RelatedPerson>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onCall: (RelatedPerson) -> Unit
 ) {
-  if (guardiansRelatedPersonResource.isNotEmpty()) {
+  guardiansRelatedPersonResource.slice(0..1).mapIndexed { i, guardian ->
     Card(
       elevation = 3.dp,
       modifier = modifier.fillMaxWidth(),
@@ -421,55 +434,26 @@ private fun TracingGuardianAddress(
       Column(modifier = modifier.padding(horizontal = 4.dp)) {
         TracingReasonItem(
           title = stringResource(R2.string.guardian_relation),
-          value =
-            "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
+          value = guardian.relationshipFirstRep.codingFirstRep.display
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_number_1),
-          value = "" // guardiansRelatedPersonResource[0].telecomFirstRep.value
+          title = stringResource(R2.string.guardian_phone_number, i),
+          value = guardian.telecomFirstRep.value
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_owner_1),
-          value = "Guardian 1"
+          title = stringResource(R2.string.guardian_phone_owner, i),
+          value = "Guardian $i"
         )
         Text(
           text = "CALL",
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier =
+            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
+              onCall(guardian)
+            }
         )
-      }
-    }
-    if (guardiansRelatedPersonResource.size > 1) {
-      Card(
-        elevation = 3.dp,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(width = 2.dp, color = StatusTextColor)
-      ) {
-        Column(modifier = modifier.padding(horizontal = 4.dp)) {
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_number_2),
-            value =
-              "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
-          )
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_number_2),
-            value = "" // guardiansRelatedPersonResource[1].telecomFirstRep.value
-          )
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_owner_2),
-            value = "Guardian 2"
-          )
-          Text(
-            text = "CALL",
-            textAlign = TextAlign.End,
-            fontSize = 14.sp,
-            color = SuccessColor,
-            modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
-          )
-        }
       }
     }
   }

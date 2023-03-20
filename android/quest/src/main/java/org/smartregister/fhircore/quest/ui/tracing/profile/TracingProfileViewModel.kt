@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -174,6 +176,14 @@ constructor(
             Pair(NavigationArg.TRACING_ID, event.historyId)
           )
         event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
+      }
+      is TracingProfileEvent.CallGuardian -> {
+        val phoneNumber = event.guardian.telecomFirstRep
+        if (phoneNumber.hasValue()) {
+          event.context.startActivity(
+            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${phoneNumber.value}") }
+          )
+        }
       }
     }
   }
