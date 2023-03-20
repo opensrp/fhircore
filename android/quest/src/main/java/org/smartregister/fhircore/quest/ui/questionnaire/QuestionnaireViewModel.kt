@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -68,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -109,6 +111,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+  private var actionParamUpdatableId: ActionParameter? = null
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -121,6 +124,10 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
+        actionParamUpdatableId =
+          prePopulationParams.firstOrNull {
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT
+          }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 
@@ -399,6 +406,14 @@ constructor(
       }
   }
 
+  /**
+   * Add or update the [questionnaireResponse] resource with the passed content, and if an
+   * [actionParamUpdatableId] is set also update the resource it refers to by extracting its
+   * logicalIdUuid.
+   *
+   * @param questionnaire the [Questionnaire] this response is related to
+   * @param questionnaireResponse the questionnaireResponse resource to save
+   */
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
@@ -409,8 +424,17 @@ constructor(
       )
       return
     }
-
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
+    if (actionParamUpdatableId != null) {
+      val resource =
+        actionParamUpdatableId!!.value.let {
+          defaultRepository.loadResource(
+            it.extractLogicalIdUuid(),
+            it.substringBefore("/").resourceClassType().newInstance().resourceType
+          )
+        }
+      defaultRepository.addOrUpdate(resource = resource)
+    }
   }
 
   suspend fun performExtraction(

@@ -24,8 +24,8 @@ android {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
-        versionCode 4
-        versionName "0.0.4"
+        versionCode 1
+        versionName "0.2.0"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -137,8 +137,6 @@ android {
             dimension "apps"
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
-            versionCode 4
-            versionName "0.1.9-rc4"
         }
 
         g6pd {

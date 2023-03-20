@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Before
