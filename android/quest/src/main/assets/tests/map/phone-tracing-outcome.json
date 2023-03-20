@@ -1816,7 +1816,7 @@
                           "dependent": [
                             {
                               "name": "AddHomeTracingTask",
-                              "variable": ["src", "bundle"]
+                              "variable": ["src", "bundle", "encList"]
                             }
                           ]
                         }
@@ -2895,9 +2895,23 @@
       "typeMode": "none",
       "input": [
         { "name": "src", "type": "QuestionnaireResponse", "mode": "source" },
-        { "name": "bundle", "type": "Bundle", "mode": "target" }
+        { "name": "bundle", "type": "Bundle", "mode": "target" },
+        { "name": "encList", "type": "List", "mode": "target" }
       ],
       "rule": [
+        {
+          "name": "r_disable_enc_list",
+          "source": [{ "context": "src" }],
+          "target": [
+            {
+              "context": "encList",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [{ "valueString": "current" }]
+            }
+          ]
+        },
         {
           "name": "get_bundle_with_extras",
           "source": [
@@ -3922,14 +3936,28 @@
                   "source": [{ "context": "src" }],
                   "target": [
                     {
-                      "context": "obs",
+                      "variable": "startDate",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "dateTime" }]
+                    },
+                    {
+                      "context": "startDate",
                       "contextType": "variable",
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
                         { "valueId": "itemAnswer" },
-                        { "valueString": "$this.answer.value.toString()" }
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
+                        }
                       ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "startDate" }]
                     }
                   ]
                 },

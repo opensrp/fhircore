@@ -1276,7 +1276,7 @@
                       "transform": "cc",
                       "parameter": [
                         { "valueString": "https://d-tree.org" },
-                        { "valueString": "phone-tracing-outcome-able-to-speak" }
+                        { "valueString": "home-tracing-outcome-able-to-speak" }
                       ]
                     },
                     {
@@ -2711,7 +2711,7 @@
                       "parameter": [
                         { "valueId": "linkPath" },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -2904,7 +2904,7 @@
                       "parameter": [
                         { "valueId": "linkPath" },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -3096,7 +3096,7 @@
                       "parameter": [
                         { "valueId": "linkPath" },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -3752,7 +3752,7 @@
                       "parameter": [
                         { "valueId": "linkPath" },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -3832,14 +3832,28 @@
                   "source": [{ "context": "src" }],
                   "target": [
                     {
-                      "context": "obs",
+                      "variable": "startDate",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "dateTime" }]
+                    },
+                    {
+                      "context": "startDate",
                       "contextType": "variable",
                       "element": "value",
                       "transform": "evaluate",
                       "parameter": [
                         { "valueId": "itemAnswer" },
-                        { "valueString": "$this.answer.value.toString()" }
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
+                        }
                       ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [{ "valueId": "startDate" }]
                     }
                   ]
                 },
