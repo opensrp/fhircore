@@ -36,16 +36,21 @@ import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.domain.model.TracingHistory
 import org.smartregister.fhircore.engine.domain.model.TracingOutcome
 import org.smartregister.fhircore.engine.domain.model.TracingOutcomeDetails
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
-  suspend fun getTracingHistory(patientId: String): List<TracingHistory> {
+  suspend fun getTracingHistory(
+    currentPage: Int,
+    loadAll: Boolean,
+    patientId: String
+  ): List<TracingHistory> {
     val list =
       fhirEngine.search<ListResource> {
         filter(ListResource.SUBJECT, { value = "Patient/$patientId" })
         sort(ListResource.DATE, Order.ASCENDING)
-        count = 1
-        from = 0
+        count = PaginationConstant.DEFAULT_PAGE_SIZE
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
     return list.map {
