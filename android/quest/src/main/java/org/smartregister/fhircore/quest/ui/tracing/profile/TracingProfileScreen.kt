@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -42,6 +40,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -226,13 +225,17 @@ fun TracingProfilePageView(
         if (profileViewData.currentAttempt != null) {
           TracingReasonCard(
             currentAttempt = profileViewData.currentAttempt,
-            displayForHomeTrace = true,
+            displayForHomeTrace = profileViewData.isHomeTracing,
             onClick = onCurrentAttemptClicked
           )
         }
         Spacer(modifier = modifier.height(20.dp))
         // Tracing Patient address/contact
-        TracingContactAddress(profileViewData, displayForHomeTrace = false, onCall = onCall)
+        TracingContactAddress(
+          profileViewData,
+          displayForHomeTrace = profileViewData.isHomeTracing,
+          onCall = onCall
+        )
         Spacer(modifier = modifier.height(20.dp))
         TracingGuardianAddress(
           guardiansRelatedPersonResource = profileViewData.guardiansRelatedPersonResource,
@@ -313,11 +316,8 @@ private fun TracingReasonItem(
 
 @Composable
 private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
-  Card(
-    elevation = 3.dp,
+  OutlineCard(
     modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
-    border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
     Row(
       modifier = modifier.padding(6.dp, 8.dp).fillMaxWidth(),
@@ -357,7 +357,7 @@ private fun TracingReasonCard(
         title =
           if (displayForHomeTrace) stringResource(R2.string.last_home_trace_outcome)
           else stringResource(R2.string.last_phone_trace_outcome),
-        value = currentAttempt.outcome,
+        value = currentAttempt.outcome.ifBlank { "None" },
         verticalRenderOrientation = true
       )
       TracingReasonItem(
@@ -379,11 +379,8 @@ private fun TracingContactAddress(
   displayForHomeTrace: Boolean = false,
   onCall: (String) -> Unit,
 ) {
-  Card(
-    elevation = 3.dp,
+  OutlineCard(
     modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
-    border = BorderStroke(width = 2.dp, color = StatusTextColor)
   ) {
     Column(modifier = modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
       if (displayForHomeTrace) {
@@ -408,16 +405,7 @@ private fun TracingContactAddress(
           title = stringResource(R2.string.patient_phone_owner, 1),
           value = stringResource(R2.string.patient)
         )
-        Text(
-          text = stringResource(R2.string.call),
-          textAlign = TextAlign.End,
-          fontSize = 14.sp,
-          color = SuccessColor,
-          modifier =
-            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
-              onCall(patientProfileViewData.phoneContacts.firstOrNull() ?: "")
-            }
-        )
+        CallRow { onCall(patientProfileViewData.phoneContacts.firstOrNull() ?: "") }
       }
     }
   }
@@ -430,11 +418,8 @@ private fun TracingGuardianAddress(
   onCall: (String) -> Unit
 ) {
   guardiansRelatedPersonResource.safeSubList(0..1).mapIndexed { i, guardian ->
-    Card(
-      elevation = 3.dp,
+    OutlineCard(
       modifier = modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(12.dp),
-      border = BorderStroke(width = 2.dp, color = StatusTextColor)
     ) {
       Column(modifier = modifier.padding(horizontal = 4.dp)) {
         TracingReasonItem(
@@ -442,24 +427,31 @@ private fun TracingGuardianAddress(
           value = guardian.relationshipFirstRep.codingFirstRep.display
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_number, i),
+          title = stringResource(R2.string.guardian_phone_number, i + 1),
           value = guardian.telecomFirstRep.value
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_owner, i),
-          value = "Guardian $i"
+          title = stringResource(R2.string.guardian_phone_owner, i + 1),
+          value = "Guardian ${i + 1}"
         )
-        Text(
-          text = stringResource(R2.string.call),
-          textAlign = TextAlign.End,
-          fontSize = 14.sp,
-          color = SuccessColor,
-          modifier =
-            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
-              onCall(guardian.telecomFirstRep.value)
-            }
-        )
+        CallRow { onCall(guardian.telecomFirstRep.value) }
       }
+    }
+  }
+}
+
+@Composable
+private fun CallRow(
+  onClick: () -> Unit,
+) {
+  Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+    TextButton(onClick = onClick) {
+      Text(
+        text = stringResource(R2.string.call),
+        textAlign = TextAlign.End,
+        fontSize = 14.sp,
+        color = SuccessColor,
+      )
     }
   }
 }

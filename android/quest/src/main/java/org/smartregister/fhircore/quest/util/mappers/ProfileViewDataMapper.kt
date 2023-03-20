@@ -185,6 +185,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dueDate = "",
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = false,
+          phoneContacts = inputModel.phoneContacts,
           addressDistrict = inputModel.addressDistrict,
           addressTracingCatchment = inputModel.addressTracingCatchment,
           addressPhysicalLocator = inputModel.addressPhysicalLocator,
