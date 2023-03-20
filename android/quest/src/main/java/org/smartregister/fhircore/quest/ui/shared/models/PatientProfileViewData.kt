@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.util.extension.extractedTracingCategoryIsPhone
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -90,13 +91,14 @@ sealed class ProfileViewData(
     val isHomeTracing: Boolean = false,
     val sex: String = "",
     val age: String = "",
-    val attempts: Int = 0,
     val dueDate: String = "",
     val identifierKey: String = "",
+    val currentAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
     val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
     val tracingTasks: List<Task> = emptyList(),
     val carePlans: List<CarePlan> = emptyList(),
     val guardians: List<Guardian> = emptyList(),

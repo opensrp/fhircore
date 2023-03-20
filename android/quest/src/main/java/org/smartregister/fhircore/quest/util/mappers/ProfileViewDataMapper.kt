@@ -181,7 +181,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
           isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
-          attempts = 0,
+          currentAttempt = inputModel.currentAttempt,
           dueDate = "",
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = false,

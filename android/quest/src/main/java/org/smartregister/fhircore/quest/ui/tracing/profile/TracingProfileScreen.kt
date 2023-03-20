@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,43 +66,48 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.ui.tracing.components.InfoBoxItem
+import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 
 @Composable
 fun TracingProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: TracingProfileViewModel = hiltViewModel()
+  viewModel: TracingProfileViewModel = hiltViewModel()
 ) {
 
   TracingProfilePage(
+    navController,
     modifier = modifier,
-    patientProfileViewModel = patientProfileViewModel,
+    tracingProfileViewModel = viewModel,
     onBackPress = { navController.popBackStack() }
   )
 }
 
 @Composable
 fun TracingProfilePage(
+  navController: NavHostController,
   modifier: Modifier = Modifier,
   onBackPress: () -> Unit,
-  patientProfileViewModel: TracingProfileViewModel,
+  tracingProfileViewModel: TracingProfileViewModel,
 ) {
 
   val context = LocalContext.current
-  val profileViewDataState = patientProfileViewModel.patientProfileViewData.collectAsState()
+  val profileViewDataState = tracingProfileViewModel.patientProfileViewData.collectAsState()
   val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val viewState = patientProfileViewModel.patientTracingProfileUiState.value
+  val viewState = tracingProfileViewModel.patientTracingProfileUiState.value
 
   Scaffold(
     topBar = {
@@ -125,8 +132,12 @@ fun TracingProfilePage(
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  patientProfileViewModel.onEvent(
-                    TracingProfileEvent.OverflowMenuClick(context, it.id)
+                  tracingProfileViewModel.onEvent(
+                    TracingProfileEvent.OverflowMenuClick(
+                      navController = navController,
+                      context,
+                      it.id
+                    )
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -153,7 +164,7 @@ fun TracingProfilePage(
               LoginFieldBackgroundColor
             ),
           onClick = {
-            patientProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
+            tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
           },
           modifier = modifier.fillMaxWidth()
         ) {
@@ -166,7 +177,24 @@ fun TracingProfilePage(
       }
     }
   ) { innerPadding ->
-    TracingProfilePageView(innerPadding = innerPadding, profileViewData = profileViewData)
+    TracingProfilePageView(
+      innerPadding = innerPadding,
+      profileViewData = profileViewData,
+      onCall = {
+        tracingProfileViewModel.onEvent(
+          TracingProfileEvent.CallPhoneNumber(navController, context, it)
+        )
+      }
+    ) {
+      val historyId = it.historyId
+      if (historyId != null) {
+        tracingProfileViewModel.onEvent(
+          TracingProfileEvent.OpenTracingOutcomeScreen(navController, context, historyId)
+        )
+      } else {
+        Toast.makeText(context, "No Tracing outcomes recorded", Toast.LENGTH_SHORT).show()
+      }
+    }
   }
 }
 
@@ -174,7 +202,9 @@ fun TracingProfilePage(
 fun TracingProfilePageView(
   modifier: Modifier = Modifier,
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
-  profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData()
+  profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData(),
+  onCall: (String) -> Unit,
+  onCurrentAttemptClicked: (TracingAttempt) -> Unit
 ) {
   Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
     Box(modifier = Modifier.padding(5.dp).weight(2.0f)) {
@@ -192,14 +222,21 @@ fun TracingProfilePageView(
         // TracingVisitDue(profileViewData.tracingTask.executionPeriod.end.asDdMmYyyy())
         Spacer(modifier = modifier.height(20.dp))
         // Tracing Reason
-        repeat(profileViewData.tracingTasks.size) {
-          TracingReasonBox(profileViewData.tracingTasks[it], displayForHomeTrace = true)
-          Spacer(modifier = modifier.height(20.dp))
+        if (profileViewData.currentAttempt != null) {
+          TracingReasonCard(
+            currentAttempt = profileViewData.currentAttempt,
+            displayForHomeTrace = true,
+            onClick = onCurrentAttemptClicked
+          )
         }
-        // Tracing Patient address/contact
-        TracingContactAddress(profileViewData, displayForHomeTrace = false)
         Spacer(modifier = modifier.height(20.dp))
-        TracingGuardianAddress(profileViewData.guardiansRelatedPersonResource)
+        // Tracing Patient address/contact
+        TracingContactAddress(profileViewData, displayForHomeTrace = false, onCall = onCall)
+        Spacer(modifier = modifier.height(20.dp))
+        TracingGuardianAddress(
+          guardiansRelatedPersonResource = profileViewData.guardiansRelatedPersonResource,
+          onCall = onCall
+        )
       }
     }
   }
@@ -209,7 +246,7 @@ fun TracingProfilePageView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun TracingScreenPreview() {
-  TracingProfilePageView(modifier = Modifier)
+  TracingProfilePageView(modifier = Modifier, onCall = {}) {}
 }
 
 @Composable
@@ -223,7 +260,7 @@ fun PatientInfo(
       InfoBoxItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
       InfoBoxItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
       if (patientProfileViewData.identifier != null) {
-        var idKeyValue: String
+        val idKeyValue: String
         if (patientProfileViewData.showIdentifierInProfile) {
           idKeyValue =
             stringResource(
@@ -247,19 +284,11 @@ fun PatientInfo(
 }
 
 @Composable
-private fun InfoBoxItem(title: String, value: String, modifier: Modifier = Modifier) {
-  Row(modifier = modifier.padding(4.dp)) {
-    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor, fontSize = 18.sp)
-    Text(text = value, fontSize = 18.sp)
-  }
-}
-
-@Composable
 private fun TracingReasonItem(
   title: String,
   value: String,
+  modifier: Modifier = Modifier,
   verticalRenderOrientation: Boolean = false,
-  modifier: Modifier = Modifier
 ) {
   if (verticalRenderOrientation) {
     Column(modifier = modifier.padding(4.dp)) {
@@ -306,39 +335,38 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TracingReasonBox(
-  tracingTask: Task,
+private fun TracingReasonCard(
+  currentAttempt: TracingAttempt,
+  modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
-  modifier: Modifier = Modifier
+  onClick: (TracingAttempt) -> Unit
 ) {
-  Card(
-    elevation = 3.dp,
-    modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
-    border = BorderStroke(width = 2.dp, color = StatusTextColor)
+  OutlineCard(
+    modifier = modifier.fillMaxWidth().clickable { onClick(currentAttempt) },
   ) {
     Column(modifier = modifier.padding(horizontal = 4.dp)) {
       TracingReasonItem(
         title = stringResource(R2.string.reason_for_trace),
-        value = tracingTask.reasonCode?.codingFirstRep?.display ?: ""
+        value =
+          if (currentAttempt.reasons.isNotEmpty())
+            currentAttempt.reasons.joinToString(separator = ",") { it }
+          else "None"
       )
-      if (displayForHomeTrace)
-        TracingReasonItem(
-          title = stringResource(R2.string.last_home_trace_outcome),
-          value = "Todo display reason text here",
-          verticalRenderOrientation = true
-        )
-      else
-        TracingReasonItem(
-          title = stringResource(R2.string.last_phone_trace_outcome),
-          value = "Todo display reason text here",
-          verticalRenderOrientation = true
-        )
+      TracingReasonItem(
+        title =
+          if (displayForHomeTrace) stringResource(R2.string.last_home_trace_outcome)
+          else stringResource(R2.string.last_phone_trace_outcome),
+        value = currentAttempt.outcome,
+        verticalRenderOrientation = true
+      )
       TracingReasonItem(
         title = stringResource(R2.string.date_of_last_attempt),
-        value = "todo DD/MM/yyyy"
+        value = currentAttempt.lastAttempt?.asDdMmYyyy() ?: "None"
       )
-      TracingReasonItem(title = stringResource(R2.string.number_of_attempts), value = "X")
+      TracingReasonItem(
+        title = stringResource(R2.string.number_of_attempts),
+        value = (currentAttempt.numberOfAttempts).toString()
+      )
     }
   }
 }
@@ -346,8 +374,9 @@ private fun TracingReasonBox(
 @Composable
 private fun TracingContactAddress(
   patientProfileViewData: ProfileViewData.TracingProfileData,
+  modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
-  modifier: Modifier = Modifier
+  onCall: (String) -> Unit,
 ) {
   Card(
     elevation = 3.dp,
@@ -371,19 +400,22 @@ private fun TracingContactAddress(
         )
       } else {
         TracingReasonItem(
-          title = stringResource(R2.string.patient_phone_number_1),
-          value = "" // patientProfileViewData.phoneContacts[0] ?: ""
+          title = stringResource(R2.string.patient_phone_number, 1),
+          value = patientProfileViewData.phoneContacts.firstOrNull() ?: ""
         )
         TracingReasonItem(
-          title = stringResource(R2.string.patient_phone_owner_1),
-          value = "Patient"
+          title = stringResource(R2.string.patient_phone_owner, 1),
+          value = stringResource(R2.string.patient)
         )
         Text(
-          text = "CALL",
+          text = stringResource(R2.string.call),
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier =
+            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
+              onCall(patientProfileViewData.phoneContacts.firstOrNull() ?: "")
+            }
         )
       }
     }
@@ -393,9 +425,10 @@ private fun TracingContactAddress(
 @Composable
 private fun TracingGuardianAddress(
   guardiansRelatedPersonResource: List<RelatedPerson>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onCall: (String) -> Unit
 ) {
-  if (guardiansRelatedPersonResource.isNotEmpty()) {
+  guardiansRelatedPersonResource.slice(0..1).mapIndexed { i, guardian ->
     Card(
       elevation = 3.dp,
       modifier = modifier.fillMaxWidth(),
@@ -405,55 +438,26 @@ private fun TracingGuardianAddress(
       Column(modifier = modifier.padding(horizontal = 4.dp)) {
         TracingReasonItem(
           title = stringResource(R2.string.guardian_relation),
-          value =
-            "" // guardiansRelatedPersonResource[0].relationshipFirstRep.codingFirstRep.display
+          value = guardian.relationshipFirstRep.codingFirstRep.display
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_number_1),
-          value = "" // guardiansRelatedPersonResource[0].telecomFirstRep.value
+          title = stringResource(R2.string.guardian_phone_number, i),
+          value = guardian.telecomFirstRep.value
         )
         TracingReasonItem(
-          title = stringResource(R2.string.guardian_phone_owner_1),
-          value = "Guardian 1"
+          title = stringResource(R2.string.guardian_phone_owner, i),
+          value = "Guardian $i"
         )
         Text(
-          text = "CALL",
+          text = stringResource(R2.string.call),
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier =
+            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
+              onCall(guardian.telecomFirstRep.value)
+            }
         )
-      }
-    }
-    if (guardiansRelatedPersonResource.size > 1) {
-      Card(
-        elevation = 3.dp,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(width = 2.dp, color = StatusTextColor)
-      ) {
-        Column(modifier = modifier.padding(horizontal = 4.dp)) {
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_number_2),
-            value =
-              "" // guardiansRelatedPersonResource[1].relationshipFirstRep.codingFirstRep.display
-          )
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_number_2),
-            value = "" // guardiansRelatedPersonResource[1].telecomFirstRep.value
-          )
-          TracingReasonItem(
-            title = stringResource(R2.string.guardian_phone_owner_2),
-            value = "Guardian 2"
-          )
-          Text(
-            text = "CALL",
-            textAlign = TextAlign.End,
-            fontSize = 14.sp,
-            color = SuccessColor,
-            modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
-          )
-        }
       }
     }
   }
