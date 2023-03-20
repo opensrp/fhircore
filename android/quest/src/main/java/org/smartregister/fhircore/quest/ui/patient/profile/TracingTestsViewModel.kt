@@ -26,9 +26,6 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.delete
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Operation
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +37,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -284,6 +280,54 @@ constructor(
                             fhirEngine.update(guardian)
                             oneAdded = true
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    fun addTelecomToPatient() {
+        viewModelScope.launch {
+            val patient: Patient? = fhirEngine.loadResource<Patient>(patientId)
+            if (patient != null && patient.telecom.isEmpty()) {
+                patient.telecom.add(ContactPoint().apply {
+                    value = "0812345678"
+                    system = ContactPoint.ContactPointSystem.PHONE
+                })
+                fhirEngine.update(patient)
+            }
+        }
+    }
+
+    fun addRelatedPerson() {
+        viewModelScope.launch {
+            fhirEngine.loadResource<Patient>(patientId)?.let {patient->
+                if (patient.link.isEmpty()) {
+                    val guardian = RelatedPerson().apply {
+                        gender = Enumerations.AdministrativeGender.MALE
+                        name = mutableListOf(HumanName().apply {
+                            family = "jeff"
+                            given = listOf(StringType("jeffer"))
+                        })
+                        birthDate = Date()
+                        relationship?.add(
+                                CodeableConcept().apply {
+                                    text = "Mother"
+                                    coding.add(
+                                            Coding("", "Mother", "Mother")
+                                    )
+                                }
+                        )
+                    }
+                    val ids = fhirEngine.create(guardian).firstOrNull()
+                    if (ids != null) {
+                        patient.link.add(
+                                Patient.PatientLinkComponent().apply {
+                                    other = Reference().apply { this.reference = "${guardian.fhirType()}/$ids"  }
+                                    type = Patient.LinkType.REFER
+                                }
+                        )
+                        fhirEngine.update(patient)
                     }
                 }
             }

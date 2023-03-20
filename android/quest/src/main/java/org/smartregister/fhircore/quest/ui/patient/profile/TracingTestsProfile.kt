@@ -96,9 +96,20 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
                     onClick = { viewModel.addPregnancy() },
             ) { Text(text = "Make Pregnant") }
           }
-          Button(
-                  onClick = { viewModel.addTelecomToGuardian() },
-          ) { Text(text = "Add Telecom to guardian") }
+          Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Button(
+                    onClick = { viewModel.addRelatedPerson() },
+            ) { Text(text = "Add Related") }
+            Button(
+                    onClick = { viewModel.addTelecomToPatient() },
+            ) { Text(text = "Add Telecom to patient") }
+            Button(
+                    onClick = { viewModel.addTelecomToGuardian() },
+            ) { Text(text = "Add Telecom to guardian") }
+          }
         }
       }
     ) { paddingValues ->
