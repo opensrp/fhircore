@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import android.content.Context
 import androidx.navigation.NavHostController
-import org.hl7.fhir.r4.model.RelatedPerson
 
 sealed class TracingProfileEvent {
 
@@ -42,9 +41,9 @@ sealed class TracingProfileEvent {
     val menuId: Int
   ) : TracingProfileEvent()
 
-  data class CallGuardian(
+  data class CallPhoneNumber(
     val navController: NavHostController,
     val context: Context,
-    val guardian: RelatedPerson,
+    val phoneNumber: String,
   ) : TracingProfileEvent()
 }

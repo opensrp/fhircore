@@ -104,6 +104,7 @@ sealed class ProfileViewData(
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
     val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
     val tracingTasks: List<Task> = emptyList(),
     val carePlans: List<CarePlan> = emptyList(),
     val guardians: List<Guardian> = emptyList(),

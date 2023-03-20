@@ -177,11 +177,10 @@ constructor(
           )
         event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
       }
-      is TracingProfileEvent.CallGuardian -> {
-        val phoneNumber = event.guardian.telecomFirstRep
-        if (phoneNumber.hasValue()) {
+      is TracingProfileEvent.CallPhoneNumber -> {
+        if (event.phoneNumber.isNotBlank()) {
           event.context.startActivity(
-            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${phoneNumber.value}") }
+            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${event.phoneNumber}") }
           )
         }
       }

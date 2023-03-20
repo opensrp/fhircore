@@ -182,7 +182,7 @@ fun TracingProfilePage(
       profileViewData = profileViewData,
       onCall = {
         tracingProfileViewModel.onEvent(
-          TracingProfileEvent.CallGuardian(navController, context, it)
+          TracingProfileEvent.CallPhoneNumber(navController, context, it)
         )
       }
     ) {
@@ -203,7 +203,7 @@ fun TracingProfilePageView(
   modifier: Modifier = Modifier,
   innerPadding: PaddingValues = PaddingValues(all = 0.dp),
   profileViewData: ProfileViewData.TracingProfileData = ProfileViewData.TracingProfileData(),
-  onCall: (RelatedPerson) -> Unit,
+  onCall: (String) -> Unit,
   onCurrentAttemptClicked: (TracingAttempt) -> Unit
 ) {
   Column(modifier = modifier.fillMaxHeight().fillMaxWidth().padding(innerPadding)) {
@@ -231,7 +231,7 @@ fun TracingProfilePageView(
         }
         Spacer(modifier = modifier.height(20.dp))
         // Tracing Patient address/contact
-        TracingContactAddress(profileViewData, displayForHomeTrace = false)
+        TracingContactAddress(profileViewData, displayForHomeTrace = false, onCall = onCall)
         Spacer(modifier = modifier.height(20.dp))
         TracingGuardianAddress(
           guardiansRelatedPersonResource = profileViewData.guardiansRelatedPersonResource,
@@ -376,6 +376,7 @@ private fun TracingContactAddress(
   patientProfileViewData: ProfileViewData.TracingProfileData,
   modifier: Modifier = Modifier,
   displayForHomeTrace: Boolean = false,
+  onCall: (String) -> Unit,
 ) {
   Card(
     elevation = 3.dp,
@@ -399,19 +400,22 @@ private fun TracingContactAddress(
         )
       } else {
         TracingReasonItem(
-          title = stringResource(R2.string.patient_phone_number_1),
-          value = "" // patientProfileViewData.phoneContacts[0] ?: ""
+          title = stringResource(R2.string.patient_phone_number, 1),
+          value = patientProfileViewData.phoneContacts.firstOrNull() ?: ""
         )
         TracingReasonItem(
-          title = stringResource(R2.string.patient_phone_owner_1),
-          value = "Patient"
+          title = stringResource(R2.string.patient_phone_owner, 1),
+          value = stringResource(R2.string.patient)
         )
         Text(
-          text = "CALL",
+          text = stringResource(R2.string.call),
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
-          modifier = modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp)
+          modifier =
+            modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
+              onCall(patientProfileViewData.phoneContacts.firstOrNull() ?: "")
+            }
         )
       }
     }
@@ -422,7 +426,7 @@ private fun TracingContactAddress(
 private fun TracingGuardianAddress(
   guardiansRelatedPersonResource: List<RelatedPerson>,
   modifier: Modifier = Modifier,
-  onCall: (RelatedPerson) -> Unit
+  onCall: (String) -> Unit
 ) {
   guardiansRelatedPersonResource.slice(0..1).mapIndexed { i, guardian ->
     Card(
@@ -445,13 +449,13 @@ private fun TracingGuardianAddress(
           value = "Guardian $i"
         )
         Text(
-          text = "CALL",
+          text = stringResource(R2.string.call),
           textAlign = TextAlign.End,
           fontSize = 14.sp,
           color = SuccessColor,
           modifier =
             modifier.fillMaxWidth().padding(end = 16.dp, bottom = 8.dp).clickable {
-              onCall(guardian)
+              onCall(guardian.telecomFirstRep.value)
             }
         )
       }
