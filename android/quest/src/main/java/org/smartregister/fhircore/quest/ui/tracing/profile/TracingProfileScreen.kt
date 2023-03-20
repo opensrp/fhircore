@@ -260,7 +260,7 @@ fun PatientInfo(
       InfoBoxItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
       InfoBoxItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
       if (patientProfileViewData.identifier != null) {
-        var idKeyValue: String
+        val idKeyValue: String
         if (patientProfileViewData.showIdentifierInProfile) {
           idKeyValue =
             stringResource(
@@ -287,8 +287,8 @@ fun PatientInfo(
 private fun TracingReasonItem(
   title: String,
   value: String,
+  modifier: Modifier = Modifier,
   verticalRenderOrientation: Boolean = false,
-  modifier: Modifier = Modifier
 ) {
   if (verticalRenderOrientation) {
     Column(modifier = modifier.padding(4.dp)) {
