@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
+import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.tracing.components.InfoBoxItem
@@ -428,7 +429,7 @@ private fun TracingGuardianAddress(
   modifier: Modifier = Modifier,
   onCall: (String) -> Unit
 ) {
-  guardiansRelatedPersonResource.slice(0..1).mapIndexed { i, guardian ->
+  guardiansRelatedPersonResource.safeSubList(0..1).mapIndexed { i, guardian ->
     Card(
       elevation = 3.dp,
       modifier = modifier.fillMaxWidth(),

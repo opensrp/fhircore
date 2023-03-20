@@ -111,7 +111,7 @@ sealed class ProfileViewData(
     val practitioners: List<Practitioner> = emptyList(),
     val conditions: List<Condition> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name) {
-    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
+    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>().filter { it.telecomFirstRep.hasValue() }
     val populationResources: ArrayList<Resource> by lazy {
       val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
