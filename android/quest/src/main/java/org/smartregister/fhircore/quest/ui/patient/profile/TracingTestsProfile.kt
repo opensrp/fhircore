@@ -96,6 +96,9 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
                     onClick = { viewModel.addPregnancy() },
             ) { Text(text = "Make Pregnant") }
           }
+          Button(
+                  onClick = { viewModel.addTelecomToGuardian() },
+          ) { Text(text = "Add Telecom to guardian") }
         }
       }
     ) { paddingValues ->

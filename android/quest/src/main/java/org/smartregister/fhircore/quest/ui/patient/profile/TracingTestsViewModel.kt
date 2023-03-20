@@ -26,6 +26,9 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.delete
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +40,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -44,6 +48,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
@@ -253,7 +258,39 @@ constructor(
     }
   }
 
-  companion object {
+    fun addTelecomToGuardian() {
+        viewModelScope.launch {
+            val patient: Patient? = fhirEngine.loadResource<Patient>(patientId)
+            var oneAdded = false
+            for (link in patient?.link ?: listOf()) {
+                if (oneAdded) {
+                    break
+                }
+                if ((link.other.referenceElement.resourceType == ResourceType.RelatedPerson.name).or(
+                                link.type == Patient.LinkType.REFER &&
+                                        link.other.referenceElement.resourceType == ResourceType.Patient.name
+                        )) {
+                    val reference = link.other
+                    val guardian = IdType(reference.reference).let { ref ->
+                        fhirEngine.get(ResourceType.fromCode(ref.resourceType), ref.idPart)
+                    }
+
+                    if (guardian is RelatedPerson) {
+                        if (guardian.telecom.isEmpty()) {
+                            guardian.telecom.add(ContactPoint().apply {
+                                value = "0812345678"
+                                system = ContactPoint.ContactPointSystem.PHONE
+                            })
+                            fhirEngine.update(guardian)
+                            oneAdded = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
     val testItems: List<TestItem> =
       listOf(
         TestItem.QuestItem(
