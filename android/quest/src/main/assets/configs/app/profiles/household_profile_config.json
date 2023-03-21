@@ -124,6 +124,13 @@
               "dataType": "INTEGER",
               "key": "opensrpId",
               "value": "@{humanReadableId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "ed77104e-c279-4030-ab20-8cd99ca99832",
+              "dataType": "STRING",
+              "key": "familyHeadId",
+              "value": "@{familyHeadId}"
             }
           ]
         }
@@ -365,6 +372,13 @@
                 "condition": "true",
                 "actions": [
                   "data.put('getFamilyHeadStatus', fhirPath.extractValue(service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0), 'relationship.coding.display'))"
+                ]
+              },
+              {
+                "name": "familyHeadId",
+                "condition": "true",
+                "actions": [
+                  "data.put('familyHeadId', fhirPath.extractValue(service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0), 'relationship.id))"
                 ]
               },
               {

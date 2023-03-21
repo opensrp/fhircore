@@ -39,6 +39,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -164,34 +166,47 @@ constructor(
             .firstOrNull()
         }
     }
+  //todo : refactor this method after testing
+  suspend fun changeManagingEntity(
+    newManagingEntityId: String,
+    groupId: String,
+    managingEntityConfig: ManagingEntityConfig?
+  ) {
 
-  suspend fun changeManagingEntity(newManagingEntityId: String, groupId: String) {
-
-    val patient = fhirEngine.get<Patient>(newManagingEntityId)
-
-    val relatedPerson =
-      RelatedPerson().apply {
-        this.active = true
-        this.name = patient.name
-        this.birthDate = patient.birthDate
-        this.telecom = patient.telecom
-        this.address = patient.address
-        this.gender = patient.gender
-        this.relationshipFirstRep.codingFirstRep.system =
-          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
-        this.relationshipFirstRep.codingFirstRep.code = "99990006"
-        this.relationshipFirstRep.codingFirstRep.display = "Family Head"
-        this.patient = patient.asReference()
-        this.id = UUID.randomUUID().toString()
+    val group = fhirEngine.get<Group>(groupId)
+    if (group.managingEntity.id != null) {
+      val relatedPerson = fhirEngine.get<RelatedPerson>(group.managingEntity.id)
+      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
+      changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
+      fhirEngine.update(group)
+    } else {
+      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
+      val relatedPerson = RelatedPerson()
+      changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
+      create(true, relatedPerson)
+      fhirEngine.update(group)
       }
+    }
 
-    create(true, relatedPerson)
-    val group =
-      fhirEngine.get<Group>(groupId).apply {
-        managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.firstOrNull()?.family
-      }
-    fhirEngine.update(group)
+  }
+
+  private fun changeFamilyHead(
+    existingPerson: RelatedPerson,
+    newPatient: Patient,
+    relationshipCode: Code?) {
+    existingPerson.apply {
+    active = true
+    name = newPatient.name
+    birthDate = newPatient.birthDate
+    telecom = newPatient.telecom
+    address = newPatient.address
+    gender = newPatient.gender
+    patient = newPatient.asReference()
+    relationshipFirstRep.codingFirstRep.system = relationshipCode?.system
+    relationshipFirstRep.codingFirstRep.code = relationshipCode?.code
+    relationshipFirstRep.codingFirstRep.display = relationshipCode?.display
+    id = UUID.randomUUID().toString()
+    }
   }
 
   suspend fun removeGroup(groupId: String, isDeactivateMembers: Boolean?) {

@@ -42,11 +42,7 @@ import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.domain.model.*
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -207,10 +203,17 @@ constructor(
         }
       }
       is ProfileEvent.OnChangeManagingEntity -> {
+        val relationshipCode = Code().apply {
+          system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+          code = "99990006"
+          display = "Family Head"
+        }
+        event.managingEntityConfig?.relationshipCode = relationshipCode
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(
             event.eligibleManagingEntity.logicalId,
-            event.eligibleManagingEntity.groupId
+            event.eligibleManagingEntity.groupId,
+            event.managingEntityConfig
           )
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
