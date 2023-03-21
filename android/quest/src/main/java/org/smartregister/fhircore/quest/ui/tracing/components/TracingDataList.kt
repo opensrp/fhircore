@@ -43,6 +43,7 @@ import androidx.paging.compose.items
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.flow.StateFlow
+import org.smartregister.fhircore.engine.ui.components.EmptyState
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.quest.ui.patient.register.components.BoxedCircularProgressBar
 import org.smartregister.fhircore.quest.util.GeneralListViewModel
@@ -101,6 +102,9 @@ fun <T : Any> TracingDataList(
       ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         items(pagingItems) { history -> if (history != null) content(history) }
+        if (pagingItems.itemCount <= 0) {
+          item { EmptyState(message = "No items available") }
+        }
         pagingItems.apply {
           when {
             loadState.refresh is LoadState.Loading ->
