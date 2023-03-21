@@ -102,10 +102,10 @@ fun <T : Any> TracingDataList(
       ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         items(pagingItems) { history -> if (history != null) content(history) }
-        if (pagingItems.itemCount <= 0) {
-          item { EmptyState(message = "No items available") }
-        }
         pagingItems.apply {
+          if (itemCount <= 0 && loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached) {
+            item { EmptyState(message = "No items available") }
+          }
           when {
             loadState.refresh is LoadState.Loading ->
               item { BoxedCircularProgressBar(progressMessage = "Refreshing") }

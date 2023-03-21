@@ -18,18 +18,15 @@ package org.smartregister.fhircore.quest.ui.tracing.history
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.domain.model.TracingHistory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.quest.data.tracing.TracingHistoryPagingSource
+import org.smartregister.fhircore.quest.data.generic.createPager
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.GeneralListViewModel
@@ -40,7 +37,7 @@ class TracingHistoryViewModel
 constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
-  val fhirEngine: FhirEngine,
+  val repository: TracingRepository,
 ) : GeneralListViewModel<TracingHistory>(syncBroadcaster) {
   val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
 
@@ -58,10 +55,14 @@ constructor(
   }
   override fun paginateRegisterDataFlow(page: Int): Flow<PagingData<TracingHistory>> {
     paginateData.value =
-      Pager(
-          config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
-          pagingSourceFactory = {
-            TracingHistoryPagingSource(TracingRepository(fhirEngine), patientId)
+      createPager(
+          pageSize = DEFAULT_PAGE_SIZE,
+          block = { currentPage ->
+            repository.getTracingHistory(
+              currentPage = currentPage,
+              loadAll = false,
+              patientId = patientId
+            )
           }
         )
         .flow
