@@ -315,7 +315,7 @@ private fun TracingReasonItem(
 }
 
 @Composable
-private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
+private fun TracingVisitDue(dueDate: String?, modifier: Modifier = Modifier) {
   OutlineCard(
     modifier = modifier.fillMaxWidth(),
   ) {
@@ -329,7 +329,7 @@ private fun TracingVisitDue(dueDate: String, modifier: Modifier = Modifier) {
         color = StatusTextColor,
         fontSize = 18.sp
       )
-      Text(text = dueDate, fontSize = 18.sp)
+      Text(text = dueDate ?: "N/A", fontSize = 18.sp)
       Icon(imageVector = Icons.Filled.Sync, "", tint = StatusTextColor)
     }
   }

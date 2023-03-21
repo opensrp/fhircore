@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -182,7 +183,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           age = inputModel.age,
           isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
           currentAttempt = inputModel.currentAttempt,
-          dueDate = "",
+          dueDate = inputModel.dueDate?.asDdMmYyyy(),
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = false,
           phoneContacts = inputModel.phoneContacts,

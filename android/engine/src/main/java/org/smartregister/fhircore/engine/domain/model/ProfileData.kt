@@ -108,6 +108,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     override val logicalId: String,
     override val name: String,
     val birthdate: Date,
+    val dueDate: Date?,
     val address: String,
     val chwAssigned: Reference,
     val healthStatus: HealthStatus,

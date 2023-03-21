@@ -97,7 +97,7 @@ sealed class ProfileViewData(
     val isHomeTracing: Boolean = false,
     val sex: String = "",
     val age: String = "",
-    val dueDate: String = "",
+    val dueDate: String? = null,
     val identifierKey: String = "",
     val currentAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,
