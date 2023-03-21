@@ -43,6 +43,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
@@ -187,7 +188,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(
-          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
+          syncJobStatus.syncOperation == SyncOperation.UPLOAD
         )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
@@ -273,7 +275,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     }
   }
   @VisibleForTesting
-  fun emitPercentageProgress(progress: Int) {
-    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress) }
+  fun emitPercentageProgress(progress: Int, isUploadSync: Boolean) {
+    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress, isUploadSync) }
   }
 }

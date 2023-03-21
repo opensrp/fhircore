@@ -92,7 +92,9 @@ fun LoaderDialog(
                     modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )
 
-                if (dialogMessage == stringResource(id = R.string.syncing)) {
+                if (dialogMessage == stringResource(id = R.string.syncing_up) ||
+                    dialogMessage == stringResource(id = R.string.syncing_down)
+                ) {
                   Text(
                     fontSize = 15.sp,
                     color = Color.White,
