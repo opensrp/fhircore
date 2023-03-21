@@ -66,9 +66,9 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
     }
   }
 
-  suspend fun getTracingOutcomes(historyId: String): List<TracingOutcome> {
+  suspend fun getTracingOutcomes(currentPage: Int, historyId: String): List<TracingOutcome> {
     val list = fhirEngine.get<ListResource>(historyId)
-    val encounters = mutableListOf<Encounter>()
+    var encounters = mutableListOf<Encounter>()
 
     var task: Task? = null
 
@@ -83,7 +83,17 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         encounters.add(resource)
       }
     }
-    encounters.sortBy { it.period.start }
+
+    encounters =
+      encounters.run {
+        val pageSize = PaginationConstant.DEFAULT_PAGE_SIZE
+        sortBy { it.period.start }
+        val fromIndex: Int = ((currentPage + 1) - 1) * pageSize
+        if (size <= fromIndex) {
+          mutableListOf()
+        } else subList(fromIndex, (fromIndex + pageSize).coerceAtMost(this.size))
+      }
+
     var phoneTracingCounter = 1
     var homeTracingCounter = 1
     return encounters.map { encounter ->
