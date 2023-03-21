@@ -41,15 +41,12 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -130,14 +127,14 @@ constructor(
               val questionnaireConfig = actionConfig.questionnaire?.interpolate(computedValuesMap)
 
               if (questionnaireConfig == null) {
-                emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_log_questionnaire_config_is_not_found)))
-                Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_log_questionnaire_config_is_not_found))
+                emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_config_is_not_found)))
+                Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
                 return
               }
 
               if (context !is QuestionnaireHandler) {
-                emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_log_navigation_controller_context_is_not_questionnaire_handler)))
-                Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_log_navigation_controller_context_is_not_questionnaire_handler))
+                emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_navigation_controller_context_is_not_questionnaire_handler)))
+                Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_msg_navigation_controller_context_is_not_questionnaire_handler))
                 return
               }
 
@@ -154,8 +151,8 @@ constructor(
                 questionnaire = loadQuestionnaire(questionnaireConfig.id)
 
                 if (questionnaire == null) {
-                  emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_log_questionnaire_is_not_found_in_database)))
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_log_questionnaire_is_not_found_in_database))
+                  emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)))
+                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
                   return@launch
                 }
 
@@ -178,7 +175,7 @@ constructor(
                 if (questionnaireResponse != null) {
                   val isQuestionnaireResponseValid = isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
                   if (!isQuestionnaireResponseValid) {
-                    emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_log_questionnaire_response_is_broken)))
+                    emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_response_is_broken)))
                     return@launch
                   }
                   intentBundle.apply {
