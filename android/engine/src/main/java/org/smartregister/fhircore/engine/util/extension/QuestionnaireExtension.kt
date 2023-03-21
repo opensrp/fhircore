@@ -134,6 +134,9 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
   }
 }
 
+private const val ITEM_INITIAL_EXPRESSION_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+
 /** Pre-Populate Questionnaire items with initial values */
 // TODO: handle interpolation for null values on rules engine and not where the values are used
 fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
@@ -141,6 +144,8 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
+    if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
+      item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
     prePopulationParams
       .firstOrNull {
         it.linkId == item.linkId &&
