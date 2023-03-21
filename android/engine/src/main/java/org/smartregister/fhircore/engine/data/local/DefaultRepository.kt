@@ -188,8 +188,6 @@ constructor(
       }
     }
 
-  }
-
   private fun changeFamilyHead(
     existingPerson: RelatedPerson,
     newPatient: Patient,
