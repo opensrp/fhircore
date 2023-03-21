@@ -77,6 +77,7 @@ class ProfileViewModelTest : RobolectricTest() {
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
   private lateinit var expectedBaseResource: Patient
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
   fun setUp() {
