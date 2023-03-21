@@ -60,8 +60,6 @@ constructor(
 
   fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
 
-    throw java.lang.RuntimeException("WE are cRushing on you")
-
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
     coroutineScope.launch {

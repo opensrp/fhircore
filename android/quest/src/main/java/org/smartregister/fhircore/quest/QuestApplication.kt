@@ -16,12 +16,10 @@
 
 package org.smartregister.fhircore.quest
 
-import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.database.CursorWindow
-import android.os.Bundle
-import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
@@ -31,16 +29,12 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
-import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication :
-  Application(),
-  DataCaptureConfig.Provider,
-  Configuration.Provider,
-  Application.ActivityLifecycleCallbacks {
+class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
 
   @Inject lateinit var workerFactory: HiltWorkerFactory
 
@@ -50,21 +44,15 @@ class QuestApplication :
 
   private var configuration: DataCaptureConfig? = null
 
-  var currentActivity: Activity? = null
-
-  var lastCreated: Activity? = null
-
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
 
-    if (BuildConfig.DEBUG) {
+    if (BuildConfig.DEBUG.not()) {
       Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
     }
-
-    registerActivityLifecycleCallbacks(this)
 
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
     try {
@@ -99,55 +87,24 @@ class QuestApplication :
   private val globalExceptionHandler =
     Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
 
+  /**
+   * This method captures all uncaught exceptions in the app and redirects to the Launch Page in the
+   * case that the exception was thrown on the main thread This will therefore prevent any app
+   * crashes so we need some more handling for reporting the errors once we have a crash manager
+   * installed
+   *
+   * TO DO add crash reporting when a crash reporting tool is selected e.g. Fabric Crashlytics or
+   * Sentry
+   */
   private fun handleUncaughtException(e: Throwable) {
     showToast(this.getString(R.string.error_occurred))
     Timber.e(e)
 
-    currentActivity?.finish()
-    val mainHandler = Handler(applicationContext.mainLooper)
-
-    mainHandler.post {
-      val intent = Intent(applicationContext, PinLoginActivity::class.java)
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      val intent = Intent(applicationContext, AppSettingActivity::class.java)
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       startActivity(intent)
     }
-  }
-
-  override fun registerActivityLifecycleCallbacks(callback: ActivityLifecycleCallbacks?) {
-    super.registerActivityLifecycleCallbacks(callback)
-  }
-
-  override fun onActivityPaused(p0: Activity) {
-    Log.d(TAG, "onActivityPaused at ${p0.localClassName}")
-    currentActivity = p0
-  }
-
-  override fun onActivityStarted(p0: Activity) {
-    Log.d(TAG, "onActivityStarted at ${p0.localClassName}")
-  }
-
-  override fun onActivityDestroyed(p0: Activity) {
-    Log.d(TAG, "onActivityDestroyed at ${p0.localClassName}")
-  }
-
-  override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {
-    Log.d(TAG, "onActivitySaveInstanceState at ${p0.localClassName}")
-  }
-
-  override fun onActivityStopped(p0: Activity) {
-    Log.d(TAG, "onActivityStopped at ${p0.localClassName}")
-  }
-
-  override fun onActivityCreated(p0: Activity, p1: Bundle?) {
-    Log.d(TAG, "onActivityCreated at ${p0.localClassName}")
-    lastCreated = p0
-  }
-
-  override fun onActivityResumed(p0: Activity) {
-    Log.d(TAG, "onActivityResumed at ${p0.localClassName}")
-  }
-
-  companion object {
-    private const val TAG = "LifecycleCallbacks"
   }
 }

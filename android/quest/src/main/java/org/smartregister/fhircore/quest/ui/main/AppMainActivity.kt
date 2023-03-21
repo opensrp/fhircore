@@ -63,7 +63,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
-  val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
   lateinit var navHostFragment: NavHostFragment
 
