@@ -1,7 +1,6 @@
 # Publishing FHIR SDK Library Artifacts
 
 ### Local Publishing
-
 At the moment, we have the following FHIR SDK artifacts that need to be released so that they can be included as dependencies on reliant applications e.g. FHIR Core
 
 - Android FHIR Common Library
@@ -15,7 +14,7 @@ Sometimes one wants to test the changes on the repo e.g. on the `master` branch 
 We can use the _Android FHIR Structured Data Capture(SDC) Library_ as an example:
 
 First,  one needs to edit the _Releases_ file `buildSrc/src/main/kotlin/Releases.kt` and add a unique(to your local machine) artifact identifier for the SDC library version.
-For instance, if on the master branch under the `object DataCapture : LibraryArtifact` the version reads `0.1.0-beta02`, you might want to change that to `0.1.0-beta02-dev`. Then later for new changes use `0.1.0-beta02-dev2` and so on.
+For instance, if on the `master` branch under the `object DataCapture : LibraryArtifact` the version reads `0.1.0-beta02`, you might want to change that to `0.1.0-beta02-dev`. Then later for new changes use `0.1.0-beta02-dev2` and so on.
 
 This approach allows for multiple variations of local artifacts with your development changes and also helps avoid clashes with any remote artifact versions with a similar identifier.
 
@@ -49,11 +48,11 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
 
   1. On OpenSRP's Github fork of the Android FHIR SDK (Assuming there are new changes) click on _Sync fork_
   2. _Check out_ to `master` branch locally and _pull_ the latest changes
-  3. _Checkout_ to `main-release` branch and _merge_ in master changes
+  3. _Checkout_ to `master-release` branch and _merge_ in `master` changes
   4. _Update the versions_ of the various modules you want to publish in the `buildSrc/src/main/kotlin/Releases.kt` file
   5. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
-  6. Now that the main-release branch has all the latest updates, _Check out_ to a new branch on your local e.g. `opensrp-release1`
-  7. Merge in any other the previous unmerged PR branches mentioned in the previous commit message and have not been merged to master yet
+  6. Now that the `master-release` branch has all the latest updates, _Check out_ to a new branch on your local e.g. `opensrp-release1`
+  7. Merge in any other the previous unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet
   8. _Publish_ the specific modules that you wanted. 
   9. After a successful publish to Maven you can _Delete_ your release branch.
 
@@ -70,7 +69,7 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   ```
 See [sample commit here](https://github.com/google/android-fhir/commit/10e46a0eac5f41b68b5bb1caa87069b83d36c6b1)
 
- **Note:** The above helps the next person doing a release to include exactly all the code updates that had been merged in previeously. If by the time we are publishing again the branch has already been merged into master branch then there'd be no need to add the message again. Also a glance at the header shows which specific modules were affected. Other than confirming the module changes that were incorporated after merging in master, check out which modules the unmerged PRs updated.
+ **Note:** The above helps the next person doing a release to include exactly all the code updates that had been merged in previeously. If by the time we are publishing again the branch has already been merged into `master` branch then there'd be no need to add the message again. Also a glance at the header shows which specific modules were affected. Other than confirming the module changes that were incorporated after merging in `master`, check out which modules the unmerged PRs updated. The commit message is additive hence always use the previous commit message as a template for the new commit message (to either reduct or add the current required unmerged PRs).
 
  ####  Versioning
  When versioning we extend from the current versions of the SDK library by adding `-preview-SNAPSHOT` suffix. Subsequently in future updates we increment that version e.g. `-preview2-SNAPSHOT`
