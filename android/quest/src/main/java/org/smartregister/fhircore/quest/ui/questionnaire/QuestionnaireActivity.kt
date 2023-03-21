@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +37,7 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import java.util.UUID
@@ -165,7 +167,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun renderFragment() {
+  private fun renderFragment() {
     fragment =
       QuestQuestionnaireFragment().apply {
         val questionnaireString = parser.encodeResourceToString(questionnaire)
@@ -183,12 +185,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   @VisibleForTesting
-  internal suspend fun attachQuestionnaireResponse(
+  internal fun attachQuestionnaireResponse(
     bundle: Bundle,
     intent: Intent,
     questionnaireConfig: QuestionnaireConfig
   ) {
-    var questionnaireResponse =
+    val questionnaireResponse =
       intent
         .getStringExtra(QUESTIONNAIRE_RESPONSE)
         ?.decodeResourceFromString<QuestionnaireResponse>()
@@ -200,28 +202,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
     }
 
-    if (questionnaireResponse == null && intentHasPopulationResources(intent)) {
-      questionnaireResponse =
-        questionnaireViewModel.generateQuestionnaireResponse(
-          questionnaire = questionnaire,
-          intent = intent,
-          questionnaireConfig = questionnaireConfig
-        )
-    }
-
     if (questionnaireResponse != null) {
       bundle.putString(
         QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
         questionnaireResponse.encodeResourceToString()
       )
     }
-  }
-
-  @VisibleForTesting
-  internal fun intentHasPopulationResources(intent: Intent): Boolean {
-    val resourceList =
-      intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
-    return resourceList != null && resourceList.size > 0
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
