@@ -103,7 +103,10 @@ fun <T : Any> TracingDataList(
         item { Spacer(modifier = Modifier.height(8.dp)) }
         items(pagingItems) { history -> if (history != null) content(history) }
         pagingItems.apply {
-          if (itemCount <= 0 && loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached) {
+          if (itemCount <= 0 &&
+              loadState.source.refresh is LoadState.NotLoading &&
+              loadState.append.endOfPaginationReached
+          ) {
             item { EmptyState(message = "No items available") }
           }
           when {

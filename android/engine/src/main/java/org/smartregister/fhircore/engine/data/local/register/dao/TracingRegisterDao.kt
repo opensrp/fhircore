@@ -129,6 +129,10 @@ constructor(
       val tasks = validTasks(patient)
 
       val attempt = tracingRepository.getTracingAttempt(patient)
+      var dueData = getDueDate(it)
+      if (dueData == null) {
+        tasks.minOfOrNull { task -> task.authoredOn }?.let { date -> dueData = date }
+      }
 
       ProfileData.TracingProfileData(
         logicalId = patient.logicalId,
@@ -136,7 +140,7 @@ constructor(
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
-        dueDate = getDueDate(it),
+        dueDate = dueData,
         address = patient.extractAddress(),
         addressDistrict = patient.extractAddressDistrict(),
         addressTracingCatchment = patient.extractAddressState(),
@@ -159,7 +163,7 @@ constructor(
     }
   }
 
-  suspend fun getDueDate(patient: Patient): Date? {
+  private suspend fun getDueDate(patient: Patient): Date? {
     val appointments =
       fhirEngine.search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
