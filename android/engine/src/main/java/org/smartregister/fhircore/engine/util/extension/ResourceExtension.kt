@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
+import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.LinkedList
