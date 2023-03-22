@@ -46,15 +46,16 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
@@ -63,6 +64,8 @@ import org.smartregister.fhircore.quest.ui.StandardRegisterEvent
 import org.smartregister.fhircore.quest.ui.StandardRegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.transformAppointmentUiReasonToCode
+import org.smartregister.fhircore.quest.util.mappers.transformPatientCategoryToHealthStatus
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -104,35 +107,58 @@ constructor(
   val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
+  private val _filtersMutableStateFlow: MutableStateFlow<AppointmentFilterState> =
+    MutableStateFlow(AppointmentFilterState.default())
+  val filtersStateFlow: StateFlow<AppointmentFilterState> = _filtersMutableStateFlow.asStateFlow()
+
   override var registerViewConfiguration: RegisterViewConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
 
   init {
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
-    val refreshCounterFlow = _refreshCounter
+    val registerFilterFlow =
+      _filtersMutableStateFlow.map {
+        val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
+        val reason = transformAppointmentUiReasonToCode(it.reason.selected)
+        AppointmentRegisterFilter(
+          dateOfAppointment = it.date.value,
+          myPatients = it.patients.selected == PatientAssignment.MY_PATIENTS,
+          patientCategory = categories,
+          reasonCode = reason
+        )
+      }
+    val refreshCounterFlow = refreshCounter
+
     viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
+      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounterFlow) { s, p, f, _ ->
+        Triple(s, p, f)
+      }
         .mapLatest {
           val pagingFlow =
             if (it.first.isNotBlank()) {
               filterRegisterDataFlow(text = it.first)
             } else {
-              paginateRegisterDataFlow(page = it.second)
+              paginateRegisterDataFlow(page = it.second, filters = it.third)
             }
 
           return@mapLatest pagingFlow.onEach { _isRefreshing.emit(false) }
         }
         .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
+
     viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
+      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounterFlow) { s, p, f, _ ->
+        Triple(s, p, f)
+      }
         .filter { it.first.isBlank() }
-        .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
+        .mapLatest {
+          registerRepository.countRegisterFiltered(appFeatureName, healthModule, filters = it.third)
+        }
         .collect { _totalRecordsCount.postValue(it) }
     }
 
-    viewModelScope.launch { paginateRegisterDataForSearch() }
+    viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
 
     val syncStateListener =
       object : OnSyncListener {
@@ -151,8 +177,8 @@ constructor(
     _refreshCounter.value += 1
   }
 
-  private fun paginateRegisterDataFlow(page: Int) =
-    getPager(appFeatureName, loadAll = false, page = page).flow
+  private fun paginateRegisterDataFlow(filters: AppointmentRegisterFilter, page: Int) =
+    getPager(appFeatureName, loadAll = false, page = page, registerFilters = filters).flow
 
   private fun filterRegisterDataFlow(text: String) =
     paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
@@ -162,15 +188,16 @@ constructor(
       }
     }
 
-  private fun paginateRegisterDataForSearch() {
+  private fun paginateRegisterDataForSearch(filters: AppointmentRegisterFilter) {
     paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, true).flow.cachedIn(viewModelScope)
+      getPager(appFeatureName, true, registerFilters = filters).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
     appFeatureName: String?,
     loadAll: Boolean = false,
-    page: Int = 0
+    page: Int = 0,
+    registerFilters: AppointmentRegisterFilter
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
@@ -186,7 +213,8 @@ constructor(
               appFeatureName = appFeatureName,
               healthModule = healthModule,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else page
+              currentPage = if (loadAll) 0 else page,
+              filters = registerFilters
             )
           )
         }
@@ -210,6 +238,10 @@ constructor(
       is StandardRegisterEvent.MoveToPreviousPage -> {
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
       }
+      is StandardRegisterEvent.ApplyFilter<*> -> {
+        val newFilterState = event.filterState as AppointmentFilterState
+        _filtersMutableStateFlow.update { newFilterState }
+      }
       is StandardRegisterEvent.OpenProfile -> {
         // No-op
       }
@@ -224,53 +256,24 @@ constructor(
     }
 }
 
-enum class PatientsFilter {
-  ALL_PATIENTS,
-  MY_PATIENTS;
-
-  override fun toString(): String =
-    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
+data class AppointmentFilterState(
+  val date: AppointmentDate,
+  val patients: AppointmentFilter<PatientAssignment>,
+  val patientCategory: AppointmentFilter<PatientCategory>,
+  val reason: AppointmentFilter<Reason>
+) {
+  companion object {
+    fun default() =
+      AppointmentFilterState(
+        date = AppointmentDate(Date()),
+        patients =
+          AppointmentFilter(PatientAssignment.ALL_PATIENTS, PatientAssignment.values().asList()),
+        patientCategory =
+          AppointmentFilter(
+            PatientCategory.ALL_PATIENT_CATEGORIES,
+            PatientCategory.values().asList()
+          ),
+        reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList())
+      )
+  }
 }
-
-enum class PatientCategory {
-  ALL_PATIENT_CATEGORIES,
-  ART_CLIENT,
-  EXPOSED_INFANT,
-  CHILD_CONTACT,
-  PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY,
-  SEXUAL_CONTACT;
-
-  override fun toString(): String =
-    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
-}
-
-enum class AppointmentReason(val patientCategory: Array<PatientCategory>) {
-  ALL_REASONS(PatientCategory.values()),
-  CERVICAL_CANCER_SCREENING(arrayOf(PatientCategory.ART_CLIENT)),
-  DBS_POSITIVE(arrayOf(PatientCategory.EXPOSED_INFANT)),
-  HIV_TEST(
-    arrayOf(
-      PatientCategory.CHILD_CONTACT,
-      PatientCategory.SEXUAL_CONTACT,
-      PatientCategory.PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY
-    )
-  ),
-  INDEX_CASE_TESTING(arrayOf(PatientCategory.ART_CLIENT)),
-  MILESTONE_HIV_TEST(arrayOf(PatientCategory.EXPOSED_INFANT)),
-  LINKAGE(arrayOf(PatientCategory.ART_CLIENT)),
-  REFILL(arrayOf(PatientCategory.ART_CLIENT)),
-  ROUTINE_VISIT(arrayOf(PatientCategory.EXPOSED_INFANT)),
-  VIRAL_LOAD_COLLECTION(arrayOf(PatientCategory.ART_CLIENT)),
-  WELCOME_SERVICE(arrayOf(PatientCategory.ART_CLIENT)),
-  WELCOME_SERVICE_FOLLOW_UP(arrayOf(PatientCategory.ART_CLIENT));
-
-  override fun toString(): String =
-    super.toString().split("_").joinToString { it.capitalizeFirstLetter() }
-}
-
-data class AppointmentsFilterObject(
-  val date: Date,
-  val patients: PatientsFilter,
-  val patientCategory: PatientCategory,
-  val reason: AppointmentReason
-)

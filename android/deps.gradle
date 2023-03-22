@@ -53,6 +53,7 @@ versions.mockk = '1.12.3'
 versions.dokka = '1.5.0'
 versions.androidx_test = '2.1.0'
 versions.accompanist_swiperefresh = '0.26.4-beta'
+versions.compose = '1.3.3'
 ext.versions = versions
 
 def deps = [:]

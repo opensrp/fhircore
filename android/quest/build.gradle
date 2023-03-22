@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.android'
 }
 
 apply from: '../jacoco.gradle'
@@ -173,7 +174,6 @@ dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
     implementation 'androidx.ui:ui-foundation:0.1.0-dev14'
-    implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
     implementation deps.accompanist.swiperefresh
 
@@ -202,10 +202,13 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
+    def composeVersion = versions.compose
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
-    testImplementation 'info.cqframework:cql-to-elm:1.5.0'
+    testImplementation 'info.cqframework:cql-to-elm:1.5.6'
 }
 
 kapt {

@@ -23,8 +23,11 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.count
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -42,11 +45,16 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.RegisterFilter
+import org.smartregister.fhircore.engine.data.local.TracingAgeFilterEnum
+import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
 import org.smartregister.fhircore.engine.util.extension.extractAddressState
@@ -64,12 +72,20 @@ constructor(
   open val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : RegisterDao {
   protected abstract val tracingCoding: Coding
 
   private val alternateTracingCoding = lazy {
     tracingCoding.copy().apply { system = "http://snomed.info/sct" }
+  }
+
+  private val currentPractitioner by lazy {
+    sharedPreferencesHelper.read<Practitioner>(
+      key = LOGGED_IN_PRACTITIONER,
+      decodeFhirResource = true
+    )
   }
 
   private fun Search.validTasksFilters() {
@@ -94,6 +110,88 @@ constructor(
     )
   }
 
+  private suspend fun searchRegister(
+    filters: RegisterFilter,
+    loadAll: Boolean,
+    page: Int = -1
+  ): List<Patient> {
+    filters as TracingRegisterFilter
+    return fhirEngine
+      .search<Patient> {
+        if (!loadAll) count = PaginationConstant.DEFAULT_PAGE_SIZE
+
+        if (page >= 0) from = page * PaginationConstant.DEFAULT_PAGE_SIZE
+
+        has<Task>(Task.SUBJECT) { validTasksFilters() }
+
+        filters.patientCategory?.let {
+          val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+            it.flatMap { healthStatus ->
+              val coding: Coding =
+                Coding().apply {
+                  system = "https://d-tree.org"
+                  code = healthStatus.name.lowercase().replace("_", "-")
+                }
+              val alternativeCoding: Coding =
+                Coding().apply {
+                  system = "https://d-tree.org"
+                  code = healthStatus.name.lowercase()
+                }
+
+              return@flatMap listOf<Coding>(coding, alternativeCoding).map<
+                Coding, TokenParamFilterCriterion.() -> Unit> { c -> { value = of(c) } }
+            }
+
+          filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
+        }
+
+        if (filters.isAssignedToMe) {
+          filter(Patient.GENERAL_PRACTITIONER, { value = currentPractitioner!!.referenceValue() })
+        }
+      }
+      .filter {
+        val tasks =
+          if (filters.reasonCode != null)
+            validTasks(it).filter { t ->
+              t.reasonCode.coding.any { c -> c.code == filters.reasonCode }
+            }
+          else validTasks(it)
+        tasks.any()
+      }
+      .filter {
+        if (filters.age != null) {
+          val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+          when (filters.age) {
+            TracingAgeFilterEnum.ZERO_TO_2 -> {
+              val date = Date.from(today.minusYears(2L).toInstant())
+              it.birthDate.after(date)
+            }
+            TracingAgeFilterEnum.ZERO_TO_18 -> {
+              val date = Date.from(today.minusYears(18L).toInstant())
+              it.birthDate.after(date)
+            }
+            TracingAgeFilterEnum.`18_PLUS` -> {
+              val date = Date.from(today.minusYears(18L).toInstant())
+              it.birthDate.time <= date.time
+            }
+          }
+        } else true
+      }
+  }
+
+  override suspend fun loadRegisterFiltered(
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?,
+    filters: RegisterFilter
+  ): List<RegisterData> {
+    return searchRegister(filters, loadAll, page = currentPage)
+      .map { it.toTracingRegisterData() }
+      .filter { it.reasons.any() }
+    // TODO("fix sorting across all")
+    //      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+  }
+
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
@@ -109,10 +207,9 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return tracingPatients
-      .map { it.toTracingRegisterData() }
-      .filter { it.reasons.any() }
-      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+    return tracingPatients.map { it.toTracingRegisterData() }.filter { it.reasons.any() }
+    // TODO("fix sorting across all")
+    //      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
@@ -188,6 +285,13 @@ constructor(
         )
       }
       .map { defaultRepository.loadResource(it.other) }
+
+  override suspend fun countRegisterFiltered(
+    appFeatureName: String?,
+    filters: RegisterFilter
+  ): Long {
+    return searchRegister(filters, loadAll = true).count().toLong()
+  }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     val patients = fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }

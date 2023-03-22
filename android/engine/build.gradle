@@ -6,6 +6,7 @@ plugins {
     id 'de.mannodermaus.android-junit5'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.android'
 }
 
 apply from: '../jacoco.gradle'
@@ -154,14 +155,14 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
-    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
-    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
+    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.0'
+    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
 
     // P2P dependency
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
 
     //Configure Jetpack Compose
-    def composeVersion = "1.3.3"
+    def composeVersion = versions.compose
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:1.3.1")
@@ -169,9 +170,10 @@ dependencies {
     api("androidx.compose.material:material-icons-core:1.3.1")
     api("androidx.compose.material:material-icons-extended:1.3.1")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
+    api 'androidx.lifecycle:lifecycle-runtime-compose:2.6.0'
     api("androidx.navigation:navigation-compose:2.5.3")
     api ("androidx.hilt:hilt-navigation-compose:1.0.0")
-    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0")
     api("androidx.paging:paging-compose:1.0.0-alpha18")
     api("androidx.activity:activity-compose:1.6.1")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2'
@@ -250,8 +252,8 @@ dependencies {
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20210307'
 
-    debugApi("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testApi("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }
 
 kapt {
