@@ -39,17 +39,18 @@ Below is a detailed description of notable properties of PlanDefinition and its 
     - `expression`: The FHIRPath expression that runs on context resources. 
       - `$this` : Patient or Group on which PlanDefinition is applied
       - `%resource.entry` : The Bundle which was generated as a result of extraction of QuestionnaireResponse. QuestionnaireResponse which resulted into this CarePlan generation is also available into this Bundle 
-      - `example`: `$this` is Patient and `%resource.entry.first().resource` is Patient and `(today() - 60 'months') <= $this.birthDate`
+      - example: `$this` is Patient and `%resource.entry.first().resource` is Patient and `(today() - 60 'months') <= $this.birthDate`
      
   - `definitionCanonical`: The ActivityDefinition `id` in `contained` resources into this PlanDefinition prefixed by `#`
     - `example` : #careplan-init-activity
     - `transform`: The StructureMap to run on this action definition to do the resource generation. If this is not provided only `dynamicValue` component of ActivityDefinition is used to modify the resources
       - The values available in to be used StructureMap are
-        - definition: Current ActivityDefinition
-        - depends-on: The context resource QuestionnaireResponse which resulted this PlanDefintion
-        - subject : The Patient or Group for which this Plan is running
-        - period: The evaluated `executionPeriod` for ActivityDefinition
-        - version: The index of Task evaluated by ActivityDefinition `timing` or 1 by default
+        - `definition`: Current ActivityDefinition
+        - `depends-on`: The context resource QuestionnaireResponse which resulted this PlanDefintion
+        - `subject` : The Patient or Group for which this Plan is running
+        - `period`: The evaluated `executionPeriod` for ActivityDefinition
+        - `version`: The index of Task evaluated by ActivityDefinition `timing` or 1 by default
+    
       - Below is an example of a StructureMap to extract Refferal Tasks
       
       ````map
@@ -111,12 +112,12 @@ Below is a detailed description of notable properties of PlanDefinition and its 
 - `resourceType`: ActivityDefinition
 - `id`: the unique id of resource into contained resource of this PlanDefinition.
 - `title`: title or summary of this definition
-- `status`: `active`
+- `status`: active
 - `description`: Detailed summary of what activity does
-- `kind`: `CarePlan` | `Task` supported for now
-- `dynamicValue`: [] an array of FHIRPath expression which defines the value for each property of resource of given kind
+- `kind`: CarePlan|Task supported for now
+- `dynamicValue`: [ ] an array of FHIRPath expression which defines the value for each property of resource of given kind
   - `path`: the name of property to set the value
-    - example: title | status | subject.reference | period.start etc for CarePlan
+    - example: `title` | `status` | `subject.reference` | `period.start` etc. for CarePlan
   - `expression`: The expression for retrieveing the value from context resources i.e. the QuestionnaireResponse, Patient, and other generated resources by QuestionnaireResponse extraction
     - `language`: text/FHIRPath supported for now
     - `expression`: The FHIRPath expression that runs on context resources.
@@ -124,22 +125,23 @@ Below is a detailed description of notable properties of PlanDefinition and its 
       - `$this` : Patient or Group on which Plan is running
       - `%resource.entry` : The Bundle which was generated as a result of extraction of QuestionnaireResponse. QuestionnaireResponse which resulted into this CarePlan generation is also available into this Bundle
       - example: 
-        - %rootResource.id.replaceMatches('/_history/.*', '')
-        - $this.generalPractitioner.first()
-        - %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='lmp').answer.value
-- `cod`e : CodeableConcept for standard code for this activity. 
-- productCodeableConcept: The CodeableConcept for product for which current activity is running. For Medication or Immunization this is helpful to run ActivityDefinition for specific type of Drug
+        - `%rootResource.id.replaceMatches('/_history/.*', '')`
+        - `$this.generalPractitioner.first()`
+        - `%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='lmp').answer.value`
+- `code` : CodeableConcept for standard code for this activity. 
+- `productCodeableConcept`: The CodeableConcept for product for which current activity is running. For Medication or Immunization this is helpful to run ActivityDefinition for specific type of Drug
 - `dosage`: The dosages applicable for this `product`. This defines the `timing` for each dose of given product.
-  - timing: The timing for given dose
-  - sequence : The sequence of dose 
+  - `timing`: The timing for given dose
+  - `sequence` : The sequence of dose 
 - `timing`: If dosage is define this can not be use. This is an alternate way of defining timing for Task. The timing can define a complete schedule
   - `repeat`: The repeat schedule
-    - `count: Number of Tasks to be generated. If count is defined the `executionPeriod` timing reference is Careplan.period.start. Otherwise if missing the reference of this timing is today
+    - `count`: Number of Tasks to be generated. If count is defined the `executionPeriod` timing reference is Careplan.period.start. Otherwise if missing the reference of this timing is today
     duration: The duration of Task to be active for with reference to `executionPeriod.start`
     durationUnit: Duration time unit. mo | d | wk | y etc
     period: The `executionPeriod.start` reference based of current task index. If count is defined the `executionPeriod` timing reference is Careplan.period.start. Otherwise if missing the reference of this timing is today
-    periodUnit: Period time unit. mo | d | wk | y etc
-  example: 
+    periodUnit: Period time unit. mo | d | wk | y etc: 
+    
+    Sample code snippets
     - ANC PlanDefinition generating all Tasks at once
       ```json
         {
