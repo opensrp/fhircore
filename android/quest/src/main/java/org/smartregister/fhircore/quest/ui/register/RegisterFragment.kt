@@ -43,6 +43,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
@@ -68,11 +69,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+  private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
-  val registerViewModel by viewModels<RegisterViewModel>()
+  private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -187,7 +188,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(
-          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
+          syncJobStatus.syncOperation == SyncOperation.UPLOAD
         )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
@@ -273,7 +275,9 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     }
   }
   @VisibleForTesting
-  fun emitPercentageProgress(progress: Int) {
-    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress) }
+  fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
+    lifecycleScope.launch {
+      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
+    }
   }
 }
