@@ -5,7 +5,7 @@ A [PlanDefinition](https://hl7.org/fhir/R4/plandefinition.html) is a pre-defined
 
 It can be used to define an end to end activities that will be used to generate both a CarePlan and related Tasks for a Patient or Group. The CarePlan can include one or more activities to carry on across the lifecycle of Patient care. The PlanDefinition is usually associated to address a specific workflow e.g. ANC, PNC, Child Vaccination, Household Visits, etc. 
 
-A PlanDefinition is a pre-defined set of actions, often conditional and based on certain decision points (triggers and conditions). Each action defines an activity to be performed often in terms of an [ActivityDefinition](http://hl7.org/fhir/activitydefinition.html) (via definition and/or transform).
+The pre-defined set of actions, are often conditional and based on certain decision points (triggers and conditions). Each action defines an activity to be performed often in terms of an [ActivityDefinition](http://hl7.org/fhir/activitydefinition.html) (via definition and/or transform).
 
 
 For defining whether the specific action should be taken, the `condition` element can be used to provide an expression that evaluates to true or false to indicate the applicability of the action to the specific context.
