@@ -19,13 +19,15 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Date
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -36,12 +38,12 @@ import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.hl7.fhir.utilities.json.JSONUtil.has
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -63,8 +65,9 @@ abstract class TracingRegisterDao
 constructor(
   open val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
+  private val tracingRepository: TracingRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DefaultDispatcherProvider,
 ) : RegisterDao {
   protected abstract val tracingCoding: Coding
 
@@ -124,12 +127,20 @@ constructor(
           )
           .patientTypeFilterTagViaMetaCodingSystem
       val tasks = validTasks(patient)
+
+      val attempt = tracingRepository.getTracingAttempt(patient)
+      var dueData = getDueDate(it)
+      if (dueData == null) {
+        tasks.minOfOrNull { task -> task.authoredOn }?.let { date -> dueData = date }
+      }
+
       ProfileData.TracingProfileData(
         logicalId = patient.logicalId,
         birthdate = patient.birthDate,
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
+        dueDate = dueData,
         address = patient.extractAddress(),
         addressDistrict = patient.extractAddressDistrict(),
         addressTracingCatchment = patient.extractAddressState(),
@@ -142,9 +153,27 @@ constructor(
         services = patient.activeCarePlans(),
         conditions = patient.activeConditions(),
         guardians = patient.guardians(),
-        practitioners = patient.practitioners()
+        practitioners = patient.practitioners(),
+        currentAttempt =
+          attempt.copy(
+            reasons =
+              validTasks(patient).mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
+          ),
       )
     }
+  }
+
+  private suspend fun getDueDate(patient: Patient): Date? {
+    val appointments =
+      fhirEngine.search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+        filter(Appointment.ACTOR, { value = patient.referenceValue() })
+        sort(Appointment.DATE, Order.ASCENDING)
+        count = 1
+        from = 0
+      }
+    val appointment = appointments.firstOrNull()
+    return appointment?.start
   }
 
   suspend fun Patient.activeCarePlans() =

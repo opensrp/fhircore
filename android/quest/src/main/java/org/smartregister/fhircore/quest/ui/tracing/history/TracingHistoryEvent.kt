@@ -14,36 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.tracing.profile
+package org.smartregister.fhircore.quest.ui.tracing.history
 
 import android.content.Context
 import androidx.navigation.NavHostController
 
-sealed class TracingProfileEvent {
-
-  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
-    TracingProfileEvent()
-
-  data class LoadOutComesForm(val context: Context) : TracingProfileEvent()
-
-  data class OpenTaskForm(val context: Context, val taskFormId: String, val taskId: String) :
-    TracingProfileEvent()
-
-  data class OpenTracingOutcomeScreen(
+sealed class TracingHistoryEvent {
+  data class OpenOutComesScreen(
     val navController: NavHostController,
     val context: Context,
     val historyId: String
-  ) : TracingProfileEvent()
-
-  data class OverflowMenuClick(
-    val navController: NavHostController,
-    val context: Context,
-    val menuId: Int
-  ) : TracingProfileEvent()
-
-  data class CallPhoneNumber(
-    val navController: NavHostController,
-    val context: Context,
-    val phoneNumber: String,
-  ) : TracingProfileEvent()
+  ) : TracingHistoryEvent()
 }

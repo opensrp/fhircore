@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
 import org.smartregister.fhircore.engine.util.extension.extractedTracingCategoryIsPhone
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -96,20 +97,22 @@ sealed class ProfileViewData(
     val isHomeTracing: Boolean = false,
     val sex: String = "",
     val age: String = "",
-    val attempts: Int = 0,
-    val dueDate: String = "",
+    val dueDate: String? = null,
     val identifierKey: String = "",
+    val currentAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
     val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
     val tracingTasks: List<Task> = emptyList(),
     val carePlans: List<CarePlan> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
     val practitioners: List<Practitioner> = emptyList(),
     val conditions: List<Condition> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name) {
-    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
+    val guardiansRelatedPersonResource =
+      guardians.filterIsInstance<RelatedPerson>().filter { it.telecomFirstRep.hasValue() }
     val populationResources: ArrayList<Resource> by lazy {
       val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
