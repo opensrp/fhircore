@@ -94,7 +94,7 @@ sealed class ProfileViewData(
   data class TracingProfileData(
     override val logicalId: String = "",
     override val name: String = "",
-    val isHomeTracing: Boolean = false,
+    val isHomeTracing: Boolean? = null,
     val sex: String = "",
     val age: String = "",
     val dueDate: String? = null,

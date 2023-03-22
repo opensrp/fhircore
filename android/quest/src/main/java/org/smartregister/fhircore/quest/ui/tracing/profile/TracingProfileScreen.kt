@@ -225,17 +225,18 @@ fun TracingProfilePageView(
         if (profileViewData.currentAttempt != null) {
           TracingReasonCard(
             currentAttempt = profileViewData.currentAttempt,
-            displayForHomeTrace = profileViewData.isHomeTracing,
+            displayForHomeTrace = profileViewData.isHomeTracing!!,
             onClick = onCurrentAttemptClicked
           )
         }
         Spacer(modifier = modifier.height(20.dp))
         // Tracing Patient address/contact
-        TracingContactAddress(
-          profileViewData,
-          displayForHomeTrace = profileViewData.isHomeTracing,
-          onCall = onCall
-        )
+        if (profileViewData.isHomeTracing != null)
+          TracingContactAddress(
+            profileViewData,
+            displayForHomeTrace = profileViewData.isHomeTracing,
+            onCall = onCall
+          )
         Spacer(modifier = modifier.height(20.dp))
         TracingGuardianAddress(
           guardiansRelatedPersonResource = profileViewData.guardiansRelatedPersonResource,
@@ -376,7 +377,7 @@ private fun TracingReasonCard(
 private fun TracingContactAddress(
   patientProfileViewData: ProfileViewData.TracingProfileData,
   modifier: Modifier = Modifier,
-  displayForHomeTrace: Boolean = false,
+  displayForHomeTrace: Boolean,
   onCall: (String) -> Unit,
 ) {
   OutlineCard(
