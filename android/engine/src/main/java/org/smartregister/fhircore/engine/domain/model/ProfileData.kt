@@ -110,6 +110,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val birthdate: Date,
     val dueDate: Date?,
     val address: String,
+    val identifier: String?,
     val chwAssigned: Reference,
     val healthStatus: HealthStatus,
     val currentAttempt: TracingAttempt?,

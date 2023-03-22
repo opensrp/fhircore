@@ -44,8 +44,8 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -108,6 +108,7 @@ fun TracingProfilePage(
   val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = tracingProfileViewModel.patientTracingProfileUiState.value
+  val syncing by remember { tracingProfileViewModel.isSyncing }
 
   Scaffold(
     topBar = {
@@ -117,6 +118,13 @@ fun TracingProfilePage(
           IconButton(onClick = { onBackPress() }) { Icon(Icons.Filled.ArrowBack, null) }
         },
         actions = {
+          IconButton(onClick = { tracingProfileViewModel.reSync() }, enabled = !syncing) {
+            Icon(
+              imageVector = Icons.Outlined.Refresh,
+              contentDescription = null,
+              tint = Color.White
+            )
+          }
           IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,
@@ -260,7 +268,7 @@ fun PatientInfo(
   modifier: Modifier = Modifier,
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
       InfoBoxItem(title = stringResource(R2.string.name), value = patientProfileViewData.name)
       InfoBoxItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
       InfoBoxItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
@@ -331,7 +339,6 @@ private fun TracingVisitDue(dueDate: String?, modifier: Modifier = Modifier) {
         fontSize = 18.sp
       )
       Text(text = dueDate ?: "N/A", fontSize = 18.sp)
-      Icon(imageVector = Icons.Filled.Sync, "", tint = StatusTextColor)
     }
   }
 }

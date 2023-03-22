@@ -98,6 +98,7 @@ sealed class ProfileViewData(
     val sex: String = "",
     val age: String = "",
     val dueDate: String? = null,
+    override val identifier: String? = null,
     val identifierKey: String = "",
     val currentAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,

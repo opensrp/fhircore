@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -56,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAddressText
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -74,6 +74,9 @@ constructor(
   private val alternateTracingCoding = lazy {
     tracingCoding.copy().apply { system = "http://snomed.info/sct" }
   }
+  fun hivPatientIdentifier(patient: Patient): String =
+    // would either be an ART or HCC number
+    patient.extractOfficialIdentifier() ?: HivRegisterDao.ResourceValue.BLANK
 
   private fun Search.validTasksFilters() {
     filter(
@@ -135,6 +138,7 @@ constructor(
       }
 
       ProfileData.TracingProfileData(
+        identifier = hivPatientIdentifier(patient),
         logicalId = patient.logicalId,
         birthdate = patient.birthDate,
         name = patient.extractName(),
@@ -241,21 +245,13 @@ constructor(
 
   private suspend fun Patient.toTracingRegisterData(): RegisterData.TracingRegisterData {
     val tasks = validTasks(this)
+    val attempt =
+      tracingRepository
+        .getTracingAttempt(this)
+        .copy(
+          reasons = validTasks(this).mapNotNull { task -> task.reasonCode?.codingFirstRep?.code }
+        )
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
-    val taskAttempts =
-      tasks
-        .flatMap {
-          fhirEngine.search<QuestionnaireResponse> {
-            filter(
-              QuestionnaireResponse.SUBJECT,
-              { value = this@toTracingRegisterData.referenceValue() }
-            )
-            filter(QuestionnaireResponse.QUESTIONNAIRE, { value = it.reasonReference.reference })
-            filter(QuestionnaireResponse.AUTHORED, { value = of(DateTimeType(oldestTaskDate)) })
-          }
-        }
-        .distinct()
-
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,
       name = this.extractName(),
@@ -269,15 +265,10 @@ constructor(
         ),
       isPregnant = defaultRepository.isPatientPregnant(this),
       isBreastfeeding = defaultRepository.isPatientBreastfeeding(this),
-      attempts = taskAttempts.size,
-      lastAttemptDate = taskAttempts.maxOfOrNull { it.authored },
+      attempts = attempt.numberOfAttempts,
+      lastAttemptDate = attempt.lastAttempt,
       firstAdded = oldestTaskDate,
-      reasons =
-        tasks.flatMap { task ->
-          task.reasonCode.coding.map { it.display ?: it.code }.ifEmpty {
-            listOf(task.reasonCode.text)
-          }
-        }
+      reasons = attempt.reasons
     )
   }
 }
