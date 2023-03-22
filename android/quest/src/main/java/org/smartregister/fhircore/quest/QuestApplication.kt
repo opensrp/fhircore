@@ -93,7 +93,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
    * crashes so we need some more handling for reporting the errors once we have a crash manager
    * installed
    *
-   * TO DO add crash reporting when a crash reporting tool is selected e.g. Fabric Crashlytics or
+   * TODO add crash reporting when a crash reporting tool is selected e.g. Fabric Crashlytics or
    * Sentry
    */
   private fun handleUncaughtException(e: Throwable) {
