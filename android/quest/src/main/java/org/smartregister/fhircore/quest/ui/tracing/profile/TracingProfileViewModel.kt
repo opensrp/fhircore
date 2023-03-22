@@ -61,7 +61,7 @@ class TracingProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
+  private val syncBroadcaster: SyncBroadcaster,
   private val overflowMenuFactory: OverflowMenuFactory,
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
@@ -95,15 +95,23 @@ constructor(
   val showTracingOutcomes: LiveData<Boolean>
     get() = _showTracingOutcomes
 
+  val isSyncing = mutableStateOf(false)
+
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
             is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+              isSyncing.value = false
               fetchTracingData()
             }
-            else -> {}
+            is SyncJobStatus.Started -> {
+              isSyncing.value = true
+            }
+            else -> {
+              isSyncing.value = false
+            }
           }
         }
       },
@@ -187,6 +195,10 @@ constructor(
         }
       }
     }
+  }
+
+  fun reSync() {
+    syncBroadcaster.runSync()
   }
 
   companion object {
