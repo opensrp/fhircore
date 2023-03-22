@@ -59,7 +59,6 @@ constructor(
 ) {
 
   fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
-
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
     coroutineScope.launch {
