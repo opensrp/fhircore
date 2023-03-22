@@ -22,6 +22,7 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
@@ -30,7 +31,7 @@ class LoaderViewTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun testLoaderDialogView() {
+  fun testLoaderDialogViewSyncingDown() {
     composeRule.setContent { LoaderDialog() }
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertExists()
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertIsDisplayed()
@@ -40,7 +41,22 @@ class LoaderViewTest {
     composeRule
       .onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_down)
+      )
+  }
+
+  @Test
+  fun testLoaderDialogViewSyncingUp() {
+    composeRule.setContent { LoaderDialog(isSyncUploadFlow = flowOf(true)) }
+    composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertExists()
+    composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertIsDisplayed()
+
+    composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG).assertExists()
+    composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
+      .assertTextEquals(
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_up)
       )
   }
 }

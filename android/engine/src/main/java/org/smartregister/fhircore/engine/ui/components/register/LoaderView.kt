@@ -89,12 +89,14 @@ fun LoaderDialog(
                   fontSize = 16.sp,
                   color = Color.White,
                   text =
-                    stringResource(
-                      id =
-                        if (isSyncUploadFlow.collectAsState(initial = false).value)
-                          R.string.syncing_up
-                        else R.string.syncing_down
-                    ),
+                    if (dialogMessage == stringResource(id = R.string.syncing))
+                      stringResource(
+                        id =
+                          if (isSyncUploadFlow.collectAsState(initial = false).value)
+                            R.string.syncing_up
+                          else R.string.syncing_down
+                      )
+                    else dialogMessage,
                   modifier =
                     modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )
