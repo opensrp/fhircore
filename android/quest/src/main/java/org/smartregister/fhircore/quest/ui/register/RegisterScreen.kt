@@ -111,7 +111,8 @@ fun RegisterScreen(
       if (registerUiState.isFirstTimeSync)
         LoaderDialog(
           modifier = modifier,
-          percentageProgressFlow = registerUiState.progressPercentage
+          percentageProgressFlow = registerUiState.progressPercentage,
+          isSyncUploadFlow = registerUiState.isSyncUpload
         )
       if (registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
