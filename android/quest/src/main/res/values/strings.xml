@@ -121,14 +121,14 @@
     <string name="patient_district">Patient District</string>
     <string name="patient_tracing_catchment">Patient Tracing Catchment</string>
     <string name="patient_physcal_locator">Patient Physical Locator</string>
-    <string name="patient_phone_number_1">Patient Phone Number 1</string>
-    <string name="patient_phone_owner_1">Patient Phone Owner 1</string>
+    <string name="patient_phone_number">Patient Phone Number %1$s</string>
+    <string name="patient_phone_owner">Patient Phone Owner %1$s</string>
 
     <string name="guardian_relation">Guardian Relationship</string>
-    <string name="guardian_phone_number_1">Guardian Phone Number 1</string>
-    <string name="guardian_phone_owner_1">Guardian Phone Owner 1</string>
-    <string name="guardian_phone_number_2">Guardian Phone Number 2</string>
-    <string name="guardian_phone_owner_2">Guardian Phone Owner 2</string>
+    <string name="guardian_phone_number">Guardian Phone Number %1$s</string>
+    <string name="guardian_phone_owner">Guardian Phone Owner %1$s</string>
+    <string name="tracing_history_details">Tracing History Details</string>
+    <string name="call">CALL</string>
 
     <string name="filters">Filters</string>
     <string name="apply">Apply</string>

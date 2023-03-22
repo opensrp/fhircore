@@ -183,7 +183,8 @@ fun PatientProfileScreen(
                   horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                   Text(
-                    text = stringResource(R.string.appointment_date).uppercase(Locale.getDefault())
+                    text =
+                      stringResource(R.string.next_appointment_date).uppercase(Locale.getDefault())
                   )
                   if (appointmentDate != null) Text(text = appointmentDate.asDdMmmYyyy())
                 }
