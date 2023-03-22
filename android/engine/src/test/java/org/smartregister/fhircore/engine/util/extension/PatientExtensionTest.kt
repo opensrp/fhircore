@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import org.hl7.fhir.r4.model.Enumerations
@@ -32,10 +34,9 @@ class PatientExtensionTest : RobolectricTest() {
 
   private val context = InstrumentationRegistry.getInstrumentation().context
 
-  private fun getDateFromDaysAgo(daysAgo: Int): Date {
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.DAY_OF_YEAR, -daysAgo)
-    return calendar.time
+  private fun getDateFromDaysAgo(daysAgo: Long): Date {
+    val localDate = LocalDate.now().minusDays(daysAgo)
+    return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
   }
 
   @Test
@@ -54,8 +55,8 @@ class PatientExtensionTest : RobolectricTest() {
     val expectedAge4 = "1m"
     Assert.assertEquals(expectedAge4, calculateAge(getDateFromDaysAgo(32), context))
 
-    val expectedAge5 =
-      "1m 3w" // Test is flaky and period dependent - it(+ Code) should be refactored
+    // TODO Test is flaky and period dependent - it(+ Code) should be refactored
+    val expectedAge5 = "1m 3w"
     Assert.assertEquals(expectedAge5, calculateAge(getDateFromDaysAgo(49), context))
 
     val expectedAge6 = "1w"
