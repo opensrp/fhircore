@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.RegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -68,6 +69,38 @@ constructor(
       )
         ?: emptyList()
     }
+
+  override suspend fun loadRegisterFiltered(
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    filters: RegisterFilter
+  ): List<RegisterData> {
+    return withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterFiltered(
+        currentPage,
+        loadAll,
+        appFeatureName,
+        filters
+      )
+        ?: emptyList()
+    }
+  }
+
+  override suspend fun countRegisterFiltered(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    filters: RegisterFilter
+  ): Long {
+    return withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterFiltered(
+        appFeatureName,
+        filters
+      )
+        ?: 0
+    }
+  }
 
   override suspend fun countRegisterData(
     appFeatureName: String?,

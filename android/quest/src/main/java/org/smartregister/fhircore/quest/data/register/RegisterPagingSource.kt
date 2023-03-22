@@ -49,23 +49,32 @@ class RegisterPagingSource(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
-      val data =
+      val registerData =
         if (_patientPagingSourceState.searchFilter != null) {
-            registerRepository.searchByName(
-              currentPage = currentPage,
-              appFeatureName = _patientPagingSourceState.appFeatureName,
-              healthModule = _patientPagingSourceState.healthModule,
-              nameQuery = _patientPagingSourceState.searchFilter!!
-            )
-          } else {
-            registerRepository.loadRegisterData(
-              currentPage = currentPage,
-              appFeatureName = _patientPagingSourceState.appFeatureName,
-              healthModule = _patientPagingSourceState.healthModule,
-              loadAll = _patientPagingSourceState.loadAll
-            )
-          }
-          .map { registerViewDataMapper.transformInputToOutputModel(it) }
+          registerRepository.searchByName(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            nameQuery = _patientPagingSourceState.searchFilter!!
+          )
+        } else if (_patientPagingSourceState.requiresFilter) {
+          registerRepository.loadRegisterFiltered(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            filters = _patientPagingSourceState.filters!!
+          )
+        } else {
+          registerRepository.loadRegisterData(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            loadAll = _patientPagingSourceState.loadAll
+          )
+        }
+
+      val registerViewData =
+        registerData.map { registerViewDataMapper.transformInputToOutputModel(it) }
       val prevKey =
         when {
           _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
@@ -73,11 +82,12 @@ class RegisterPagingSource(
         }
       val nextKey =
         when {
-          _patientPagingSourceState.loadAll -> if (data.isNotEmpty()) currentPage + 1 else null
+          _patientPagingSourceState.loadAll ->
+            if (registerViewData.isNotEmpty()) currentPage + 1 else null
           else -> null
         }
 
-      LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
+      LoadResult.Page(data = registerViewData, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }
