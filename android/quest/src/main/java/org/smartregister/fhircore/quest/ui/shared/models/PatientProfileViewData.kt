@@ -88,10 +88,10 @@ sealed class ProfileViewData(
   data class TracingProfileData(
     override val logicalId: String = "",
     override val name: String = "",
-    val isHomeTracing: Boolean = false,
+    val isHomeTracing: Boolean? = null,
     val sex: String = "",
     val age: String = "",
-    val dueDate: String = "",
+    val dueDate: String? = null,
     val identifierKey: String = "",
     val currentAttempt: TracingAttempt? = null,
     val showIdentifierInProfile: Boolean = false,
@@ -105,7 +105,8 @@ sealed class ProfileViewData(
     val practitioners: List<Practitioner> = emptyList(),
     val conditions: List<Condition> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name) {
-    val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>().filter { it.telecomFirstRep.hasValue() }
+    val guardiansRelatedPersonResource =
+      guardians.filterIsInstance<RelatedPerson>().filter { it.telecomFirstRep.hasValue() }
     val populationResources: ArrayList<Resource> by lazy {
       val resources = conditions + guardiansRelatedPersonResource
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }

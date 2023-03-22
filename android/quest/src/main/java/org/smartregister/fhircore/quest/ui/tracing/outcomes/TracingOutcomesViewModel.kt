@@ -17,21 +17,19 @@
 package org.smartregister.fhircore.quest.ui.tracing.outcomes
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.sync.SyncJobStatus
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.domain.model.TracingOutcome
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.quest.data.generic.createPager
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.util.GeneralListViewModel
 
 @HiltViewModel
 class TracingOutcomesViewModel
@@ -40,31 +38,9 @@ constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
   val repository: TracingRepository,
-) : ViewModel() {
-  val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
-  val tracingId = savedStateHandle.get<String>(NavigationArg.TRACING_ID) ?: ""
-
-  private val _tracingOutcomesViewDataFlow = MutableStateFlow<List<TracingOutcome>>(listOf())
-  val tracingOutcomesViewData: StateFlow<List<TracingOutcome>>
-    get() = _tracingOutcomesViewDataFlow.asStateFlow()
-
-  init {
-    syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
-              fetchTracingData()
-            }
-            else -> {}
-          }
-        }
-      },
-      viewModelScope
-    )
-
-    fetchTracingData()
-  }
+) : GeneralListViewModel<TracingOutcome>(syncBroadcaster) {
+  private val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
+  private val tracingId = savedStateHandle.get<String>(NavigationArg.TRACING_ID) ?: ""
 
   fun onEvent(event: TracingOutcomesEvent) {
     when (event) {
@@ -83,9 +59,18 @@ constructor(
     }
   }
 
-  private fun fetchTracingData() {
-    viewModelScope.launch {
-      _tracingOutcomesViewDataFlow.emit(repository.getTracingOutcomes(tracingId))
-    }
+  override fun paginateRegisterDataFlow(page: Int): Flow<PagingData<TracingOutcome>> {
+    paginateData.value =
+      createPager(
+          pageSize = DEFAULT_PAGE_SIZE,
+          block = { currentPage -> repository.getTracingOutcomes(currentPage, tracingId) }
+        )
+        .flow
+        .cachedIn(viewModelScope)
+    return paginateData.value
+  }
+
+  companion object {
+    private const val DEFAULT_PAGE_SIZE = 20
   }
 }

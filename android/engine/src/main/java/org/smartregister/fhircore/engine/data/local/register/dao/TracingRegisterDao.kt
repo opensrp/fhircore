@@ -22,10 +22,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Date
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -127,6 +129,10 @@ constructor(
       val tasks = validTasks(patient)
 
       val attempt = tracingRepository.getTracingAttempt(patient)
+      var dueData = getDueDate(it)
+      if (dueData == null) {
+        tasks.minOfOrNull { task -> task.authoredOn }?.let { date -> dueData = date }
+      }
 
       ProfileData.TracingProfileData(
         logicalId = patient.logicalId,
@@ -134,6 +140,7 @@ constructor(
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
+        dueDate = dueData,
         address = patient.extractAddress(),
         addressDistrict = patient.extractAddressDistrict(),
         addressTracingCatchment = patient.extractAddressState(),
@@ -154,6 +161,19 @@ constructor(
           ),
       )
     }
+  }
+
+  private suspend fun getDueDate(patient: Patient): Date? {
+    val appointments =
+      fhirEngine.search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+        filter(Appointment.ACTOR, { value = patient.referenceValue() })
+        sort(Appointment.DATE, Order.ASCENDING)
+        count = 1
+        from = 0
+      }
+    val appointment = appointments.firstOrNull()
+    return appointment?.start
   }
 
   suspend fun Patient.activeCarePlans() =

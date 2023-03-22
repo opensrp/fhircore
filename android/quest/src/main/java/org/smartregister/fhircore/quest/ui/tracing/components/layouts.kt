@@ -33,7 +33,12 @@ import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 @Composable
 fun InfoBoxItem(title: String, value: String, modifier: Modifier = Modifier) {
   Row(modifier = modifier.padding(4.dp)) {
-    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor, fontSize = 18.sp)
+    Text(
+      text = title,
+      modifier.padding(bottom = 4.dp, end = 8.dp),
+      color = StatusTextColor,
+      fontSize = 18.sp
+    )
     Text(text = value, fontSize = 18.sp)
   }
 }
