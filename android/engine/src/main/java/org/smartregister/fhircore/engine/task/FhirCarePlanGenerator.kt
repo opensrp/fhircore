@@ -24,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import java.time.Duration
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -199,6 +200,7 @@ constructor(
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
+      ?.updateDependentTaskDueDate(id)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
@@ -296,5 +298,33 @@ constructor(
     }
 
     return taskPeriods
+  }
+
+  /**
+   * @return updates dependent @Task expiry date  if it is DUE or OVERDUE or UPCOMING
+   */
+  private fun Task.updateDependentTaskDueDate(id: String): Task {
+    return this.apply {
+      val upcoming = status == TaskStatus.REQUESTED
+      val overdue =
+        (status == TaskStatus.READY || status == TaskStatus.INPROGRESS) &&
+          executionPeriod.end.before(Date())
+      val due = status == TaskStatus.INPROGRESS
+
+      if ((upcoming || overdue || due) && partOf.isNotEmpty()) {
+        val part = partOf.find { it.reference.replace("Task/", "") == id }
+        input.forEach { i ->
+          if (part != null) {
+            val inputDate = i.value
+            val startDate = executionPeriod.start.toInstant()
+            val adminDate = restriction.period.start.toInstant()
+            val difference = Duration.between(adminDate, startDate).toDays()
+            if (difference < (inputDate.toString().toIntOrNull() ?: 0)) {
+              executionPeriod.start = Date(difference)
+            }
+          }
+        }
+      }
+    }
   }
 }

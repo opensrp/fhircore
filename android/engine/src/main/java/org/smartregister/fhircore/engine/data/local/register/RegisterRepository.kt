@@ -302,7 +302,7 @@ constructor(
       paramsList
         ?.filter {
           (it.paramType == ActionParameterType.PARAMDATA ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && !it.value.isNullOrEmpty()
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
         ?.associate { it.key to it.value }
         ?: emptyMap()
