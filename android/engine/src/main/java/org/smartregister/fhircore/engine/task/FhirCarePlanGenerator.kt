@@ -312,12 +312,9 @@ constructor(
           ?: return@forEach
 
       val conditionIsTrue =
-        fhirPathEngine.evaluateToBoolean(
-          null,
-          null,
-          subject,
-          questionnaireConfig.carePlan.first().fhirPathExpression
-        )
+        questionnaireConfig.carePlan.any { carePlanConfig ->
+          fhirPathEngine.evaluateToBoolean(null, null, subject, carePlanConfig.fhirPathExpression)
+        }
 
       if (!conditionIsTrue) {
         return@forEach
