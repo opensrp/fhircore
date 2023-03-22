@@ -69,11 +69,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+  private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
-  val registerViewModel by viewModels<RegisterViewModel>()
+  private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -275,7 +275,9 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     }
   }
   @VisibleForTesting
-  fun emitPercentageProgress(progress: Int, isUploadSync: Boolean) {
-    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress, isUploadSync) }
+  fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
+    lifecycleScope.launch {
+      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
+    }
   }
 }

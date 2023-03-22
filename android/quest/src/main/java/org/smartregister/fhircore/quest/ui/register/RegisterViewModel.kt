@@ -203,7 +203,8 @@ constructor(
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
                 .toInt(),
-            progressPercentage = _percentageProgress
+            progressPercentage = _percentageProgress,
+            isSyncUpload = _isUploadSync
           )
       }
     }

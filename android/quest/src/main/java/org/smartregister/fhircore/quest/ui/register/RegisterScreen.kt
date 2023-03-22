@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,7 +48,6 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -113,11 +111,8 @@ fun RegisterScreen(
       if (registerUiState.isFirstTimeSync)
         LoaderDialog(
           modifier = modifier,
-          dialogMessage =
-            stringResource(
-              id = if (registerUiState.isSyncUpload) R.string.syncing_up else R.string.syncing_down
-            ),
-          percentageProgressFlow = registerUiState.progressPercentage
+          percentageProgressFlow = registerUiState.progressPercentage,
+          isSyncUploadFlow = registerUiState.isSyncUpload
         )
       if (registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
