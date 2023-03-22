@@ -152,6 +152,13 @@ android {
             versionCode 15
             versionName "0.1.5"
         }
+        mwcoreTests {
+            dimension "apps"
+            applicationIdSuffix ".mwcoreTest"
+            versionNameSuffix "-mwcoreTest"
+            versionCode 15
+            versionName "0.1.5"
+        }
         afyayangu {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
