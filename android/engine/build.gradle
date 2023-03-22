@@ -200,7 +200,7 @@ dependencies {
     api('javax.xml.stream:stax-api:1.0')
     api('com.github.ben-manes.caffeine:caffeine:2.9.1')
 
-    api("com.google.android.fhir:data-capture:1.0.0") {
+    api("org.smartregister:data-capture:1.0.0-preview2-SNAPSHOT") {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'engine'
