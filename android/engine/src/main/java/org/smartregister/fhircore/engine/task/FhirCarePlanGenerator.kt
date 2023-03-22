@@ -301,7 +301,9 @@ constructor(
   }
 
   /**
-   * @return updates dependent @Task expiry date  if it is DUE or OVERDUE or UPCOMING
+   *
+   * Updates the due date of a dependent task based on the current status of the task. @param id The
+   * ID of the dependent task to update. @return The updated task object.
    */
   private fun Task.updateDependentTaskDueDate(id: String): Task {
     return this.apply {
