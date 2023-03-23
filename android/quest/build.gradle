@@ -186,6 +186,12 @@ android {
             applicationIdSuffix ".zeir"
             versionNameSuffix "-zeir"
         }
+
+        colombia {
+            dimension "apps"
+            applicationIdSuffix ".colombia"
+            versionNameSuffix "-colombia"
+        }
     }
     sourceSets {
         main {
