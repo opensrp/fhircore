@@ -16,17 +16,24 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
+import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import java.sql.SQLException
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Measure
+import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
@@ -68,5 +75,79 @@ class FhirEngineExtensionTest : RobolectricTest() {
       "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
       searchQuerySlot.captured.query
     )
+  }
+
+  @Test
+  fun testLoadLibraryAtPathNullLibrary() {
+    val fhirContext = FhirContext(FhirVersionEnum.R4)
+    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
+
+    coEvery { fhirEngine.search<Library>(any<Search>()) } returns listOf()
+
+    runBlocking { fhirEngine.loadLibraryAtPath(fhirOperator, "") }
+
+    coVerify { fhirEngine.search<Library>(any<Search>()) }
+  }
+
+  @Test
+  fun testLoadLibraryAtPathReturnedLibrary() {
+    val fhirContext = FhirContext(FhirVersionEnum.R4)
+    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
+    val library =
+      Library().apply {
+        id = "123"
+        relatedArtifact =
+          listOf(
+            RelatedArtifact().apply {
+              type = RelatedArtifact.RelatedArtifactType.DEPENDSON
+              resource = "Library/456"
+            },
+            RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.CITATION }
+          )
+      }
+
+    coEvery { fhirEngine.search<Library>(any<Search>()) } returns
+      listOf(library) andThenAnswer
+      {
+        emptyList()
+      }
+
+    runBlocking { fhirEngine.loadLibraryAtPath(fhirOperator, "path") }
+
+    coVerify { fhirEngine.search<Library>(any<Search>()) }
+  }
+
+  @Test
+  fun testLoadCqlLibraryBundleNotUrl() {
+    val fhirContext = FhirContext(FhirVersionEnum.R4)
+    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
+    val measurePath = "path"
+    val measure = Measure().apply { id = "123" }
+
+    coEvery { fhirEngine.get(any(), measurePath) } returns measure
+
+    runBlocking { fhirEngine.loadCqlLibraryBundle(fhirOperator, measurePath) }
+
+    coVerify { fhirEngine.get(any(), measurePath) }
+  }
+
+  @Test
+  fun testLoadCqlLibraryBundleUrl() {
+    val fhirContext = FhirContext(FhirVersionEnum.R4)
+    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
+    val measurePath = "http://example.com"
+    val measure =
+      Measure().apply {
+        id = "123"
+        library = listOf(CanonicalType().apply { value = "Library/456" })
+        relatedArtifact =
+          listOf(RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.DEPENDSON })
+      }
+
+    coEvery { fhirEngine.search<Measure>(any<Search>()) } returns listOf(measure)
+
+    runBlocking { fhirEngine.loadCqlLibraryBundle(fhirOperator, measurePath) }
+
+    coVerify { fhirEngine.search<Measure>(any<Search>()) }
   }
 }
