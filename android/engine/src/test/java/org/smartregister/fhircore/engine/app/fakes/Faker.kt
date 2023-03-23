@@ -25,21 +25,22 @@ import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.toSha1
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 object Faker {
 
   private const val APP_DEBUG = "app/debug"
-
-  val authCredentials = AuthCredentials(username = "demo", password = "51r1K4l1".toSha1())
 
   val json = Json {
     encodeDefaults = true
@@ -48,15 +49,25 @@ object Faker {
     useAlternativeNames = true
   }
 
-  fun buildTestConfigurationRegistry(): ConfigurationRegistry {
+  fun buildTestConfigurationRegistry(
+    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
+    dispatcherProvider: DispatcherProvider = mockk()
+  ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    return buildTestConfigurationRegistry(fhirResourceService, fhirResourceDataSource)
+    return buildTestConfigurationRegistry(
+      fhirResourceService,
+      fhirResourceDataSource,
+      sharedPreferencesHelper,
+      dispatcherProvider
+    )
   }
 
   fun buildTestConfigurationRegistry(
     fhirResourceService: FhirResourceService,
-    fhirResourceDataSource: FhirResourceDataSource
+    fhirResourceDataSource: FhirResourceDataSource,
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    dispatcherProvider: DispatcherProvider
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
@@ -65,8 +76,8 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
-          dispatcherProvider = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json
         )
@@ -105,5 +116,21 @@ object Faker {
         city = "City 1"
       }
     }
+  }
+
+  fun buildCarePlan(referenceString: String = "Patient/sampleId"): CarePlan {
+    val carePlan: CarePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "value-1"
+            }
+          )
+        subject = Reference().apply { reference = referenceString }
+      }
+    return carePlan
   }
 }

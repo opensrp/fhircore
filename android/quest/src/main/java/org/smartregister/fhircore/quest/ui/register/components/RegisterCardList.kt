@@ -57,7 +57,8 @@ fun RegisterCardList(
   lazyListState: LazyListState,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
-  currentPage: MutableState<Int>
+  currentPage: MutableState<Int>,
+  showPagination: Boolean = false
 ) {
   LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     itemsIndexed(pagingItems) { _, item ->
@@ -95,7 +96,7 @@ fun RegisterCardList(
 
     // Register pagination
     item {
-      if (pagingItems.itemCount > 0) {
+      if (pagingItems.itemCount > 0 && showPagination) {
         RegisterFooter(
           resultCount = pagingItems.itemCount,
           currentPage = currentPage.value.plus(1),

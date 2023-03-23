@@ -22,8 +22,8 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
@@ -91,43 +91,27 @@ constructor(
     classType: Class<out Resource>
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
-      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
-
-      /*  val searchQuery =
+      val searchQuery =
         SearchQuery(
           """
-      SELECT a.serializedResource, b.index_to
-      FROM ResourceEntity a
-      LEFT JOIN DateTimeIndexEntity b
-      ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = '${classType.newInstance().resourceType}'
-      AND a.resourceId IN (
-      SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to > ?
-      )
-      ORDER BY b.index_from ASC
-      LIMIT ?
+            SELECT a.serializedResource
+              FROM ResourceEntity a
+              LEFT JOIN DateIndexEntity b
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid 
+              LEFT JOIN DateTimeIndexEntity c
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid
+              WHERE a.resourceUuid IN (
+              SELECT resourceUuid FROM DateTimeIndexEntity
+              WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
+              )
+              AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
+              ORDER BY c.index_from ASC, a.id ASC
+              LIMIT ? OFFSET ?
           """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize)
+          listOf(lastRecordUpdatedAt, batchSize, offset)
         )
 
-      fhirEngine.search(searchQuery)*/
-
-      val search =
-        Search(type = classType.newInstance().resourceType).apply {
-          filter(
-            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-            {
-              value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-            }
-          )
-
-          sort(DateClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
-          from = offset
-          count = batchSize
-        }
-      fhirEngine.search(search)
+      fhirEngine.search(searchQuery)
     }
   }
 

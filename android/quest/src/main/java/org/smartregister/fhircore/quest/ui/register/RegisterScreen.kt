@@ -108,7 +108,12 @@ fun RegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync) LoaderDialog(modifier = modifier)
+      if (registerUiState.isFirstTimeSync)
+        LoaderDialog(
+          modifier = modifier,
+          percentageProgressFlow = registerUiState.progressPercentage,
+          isSyncUploadFlow = registerUiState.isSyncUpload
+        )
       if (registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {
@@ -119,7 +124,8 @@ fun RegisterScreen(
           lazyListState = lazyListState,
           onEvent = onEvent,
           registerUiState = registerUiState,
-          currentPage = currentPage
+          currentPage = currentPage,
+          showPagination = searchText.value.isEmpty()
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->

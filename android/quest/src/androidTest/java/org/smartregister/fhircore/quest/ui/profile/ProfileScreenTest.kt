@@ -31,7 +31,6 @@ import io.mockk.spyk
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
@@ -64,8 +63,7 @@ class ProfileScreenTest {
             ResourceData(
               baseResourceId = "patientId",
               baseResourceType = ResourceType.Patient,
-              computedValuesMap = emptyMap(),
-              listResourceDataMap = emptyMap()
+              computedValuesMap = emptyMap()
             ),
           profileConfiguration =
             configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")

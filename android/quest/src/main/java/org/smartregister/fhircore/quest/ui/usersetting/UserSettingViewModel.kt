@@ -99,7 +99,11 @@ constructor(
           } else activity.launchActivityWithNoBackStackHistory<LoginActivity>()
         }
       }
-      is UserSettingsEvent.SyncData -> syncBroadcaster.runSync(syncSharedFlow)
+      is UserSettingsEvent.SyncData -> {
+        if (event.context.isDeviceOnline()) {
+          syncBroadcaster.runSync(syncSharedFlow)
+        }
+      }
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {

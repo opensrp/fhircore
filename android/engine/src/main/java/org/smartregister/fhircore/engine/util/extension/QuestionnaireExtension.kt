@@ -16,8 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
-import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.datacapture.extensions.asStringValue
+import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Locale
 import org.hl7.fhir.r4.model.BooleanType
@@ -39,10 +39,12 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
-  this.linkId
-    .replace("_", " ")
-    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
-    .plus(": ")
+  if (this.linkId != null) {
+    this.linkId
+      .replace("_", " ")
+      .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+      .plus(": ")
+  } else ""
 
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
@@ -149,7 +151,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
       }
       ?.let { actionParam ->
         item.initial =
-          arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+          arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {
               value = actionParam.dataType?.let { actionParam.value.castToType(it) }
             }
