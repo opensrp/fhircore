@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
@@ -41,7 +42,9 @@ import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.CarePlanStatus
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -63,7 +66,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -940,6 +945,69 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
 
     Assert.assertEquals(TaskStatus.COMPLETED, task.captured.status)
+  }
+
+  @Test
+  fun testConditionallyUpdateCarePlanStatusTerminatesWhenNoCarePlanIsFound() {
+    val planDefinitions = listOf("plandef-1")
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val questionnaireConfig: QuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "id-1",
+        planDefinitions = planDefinitions,
+        carePlan = listOf(carePlanConfig)
+      )
+    val patient =
+      Patient().apply {
+        id = "patient-1"
+        active = true
+      }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    runBlocking {
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = patient
+      )
+    }
+
+    coVerify(exactly = 0) { fhirEngine.get(any(), any()) }
+    coVerify(exactly = 0) { fhirEngine.update(any()) }
+  }
+
+  @Test
+  fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsClose() {
+    val planDefinitions = listOf("plandef-1")
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val questionnaireConfig: QuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "id-1",
+        planDefinitions = planDefinitions,
+        carePlan = listOf(carePlanConfig)
+      )
+    val patient =
+      Patient().apply {
+        id = "patient-1"
+        active = true
+      }
+    val carePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        status = CarePlan.CarePlanStatus.ACTIVE
+      }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = patient
+      )
+    }
+
+    val carePlanSlot = slot<CarePlan>()
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    assertEquals(CarePlan.CarePlanStatus.REVOKED, carePlanSlot.captured.status)
   }
 
   data class PlanDefinitionResources(

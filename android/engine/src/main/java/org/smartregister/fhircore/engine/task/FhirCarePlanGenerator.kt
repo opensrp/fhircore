@@ -315,8 +315,8 @@ constructor(
       val conditionIsTrue =
         questionnaireConfig.carePlan.any { carePlanConfig ->
           val base: Base =
-            if (carePlanConfig.fhirPathResource?.isNotEmpty() == true &&
-                carePlanConfig.fhirPathResourceId?.isNotEmpty() == true &&
+            if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
+                (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
                 isValidResourceType(carePlanConfig.fhirPathResource)
             ) {
               fhirEngine.get(
@@ -334,7 +334,7 @@ constructor(
       }
 
       if (questionnaireConfig.carePlan.first().operation == CarePlanOperation.CLOSE) {
-        carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+        carePlan.status = CarePlan.CarePlanStatus.REVOKED
         fhirEngine.update(carePlan)
       }
 
