@@ -54,7 +54,9 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) var coroutinesTestRule = CoroutineTestRule()
+  @kotlinx.serialization.ExperimentalSerializationApi
+  @get:Rule(order = 1)
+  var coroutinesTestRule = CoroutineTestRule()
   @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
@@ -66,6 +68,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
   @Before
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun setUp() {
     hiltRule.inject()
     sharedPreferencesHelper = mockk()

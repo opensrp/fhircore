@@ -22,7 +22,6 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
@@ -182,7 +181,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -218,7 +216,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -267,7 +264,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -305,7 +301,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -340,7 +335,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -375,7 +369,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
