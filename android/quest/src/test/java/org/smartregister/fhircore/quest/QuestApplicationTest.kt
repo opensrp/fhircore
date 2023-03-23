@@ -16,15 +16,10 @@
 
 package org.smartregister.fhircore.quest
 
-import androidx.hilt.work.HiltWorkerFactory
-import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.spyk
-import io.mockk.verify
-import javax.inject.Inject
-import junit.framework.TestCase.assertNotNull
+import io.mockk.mockk
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,32 +27,37 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestApplicationTest : RobolectricTest() {
-
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-
-  @Inject lateinit var workerFactory: HiltWorkerFactory
-
   private lateinit var application: QuestApplication
+
   @Before
   fun setUp() {
     hiltRule.inject()
-    application = spyk(QuestApplication())
+    application = QuestApplication()
+    application.referenceUrlResolver = mockk()
+    application.xFhirQueryResolver = mockk()
+    application.workerFactory = mockk()
   }
 
   @Test
   fun testGetDataCaptureConfig() {
-    every { application.getDataCaptureConfig() } returns DataCaptureConfig()
-
     val config = application.getDataCaptureConfig()
-    verify { application.getDataCaptureConfig() }
-    assertNotNull(config)
+
+    Assert.assertNotNull(config)
+  }
+
+  @Test
+  fun testGetDataCaptureConfigWhenAlreadySet() {
+    val config = application.getDataCaptureConfig()
+    val config2 = application.getDataCaptureConfig()
+
+    Assert.assertEquals(config, config2)
   }
 
   @Test
   fun testGetWorkManagerConfiguration() {
-    every { application.workerFactory } returns workerFactory
     val config = application.workManagerConfiguration
-    verify { application.workManagerConfiguration }
-    assertNotNull(config)
+
+    Assert.assertNotNull(config)
   }
 }
