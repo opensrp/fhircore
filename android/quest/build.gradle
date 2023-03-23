@@ -187,10 +187,10 @@ android {
             versionNameSuffix "-zeir"
         }
 
-        colombia {
+        engage {
             dimension "apps"
-            applicationIdSuffix ".colombia"
-            versionNameSuffix "-colombia"
+            applicationIdSuffix ".engage"
+            versionNameSuffix "-engage"
         }
     }
     sourceSets {
