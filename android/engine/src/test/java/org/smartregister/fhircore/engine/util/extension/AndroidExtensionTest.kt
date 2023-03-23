@@ -134,4 +134,34 @@ class AndroidExtensionTest : RobolectricTest() {
     val isDeviceOnline = activity.isDeviceOnline()
     Assert.assertFalse(isDeviceOnline)
   }
+
+  @Test
+  fun testAppVersionShouldReturnCorrectVersion() {
+    val appVersion = context.appVersion()
+    assertEquals(Pair(0, "0.0.1"), appVersion)
+  }
+
+  @Test
+  fun testRetrieveResourceId() {
+    val resourceId = context.retrieveResourceId("colorPrimary", "attr")
+    assertEquals(2130903301, resourceId)
+  }
+
+  @Test
+  fun testRetrieveResourceIdResourceNameNull() {
+    val resourceId = context.retrieveResourceId(null, "attr")
+    assertEquals(null, resourceId)
+  }
+
+  @Test
+  fun testRetrieveResourceIdResourceIdNull() {
+    val resourceId = context.retrieveResourceId("null", "attr")
+    assertEquals(null, resourceId)
+  }
+
+  @Test
+  fun testGetActivity() {
+    val activity = context.getActivity()
+    assertEquals(null, activity)
+  }
 }
