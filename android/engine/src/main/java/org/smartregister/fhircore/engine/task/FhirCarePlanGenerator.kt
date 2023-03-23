@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
@@ -313,7 +314,19 @@ constructor(
 
       val conditionIsTrue =
         questionnaireConfig.carePlan.any { carePlanConfig ->
-          fhirPathEngine.evaluateToBoolean(null, null, subject, carePlanConfig.fhirPathExpression)
+          val base: Base =
+            if (carePlanConfig.fhirPathResource?.isNotEmpty() == true &&
+                carePlanConfig.fhirPathResourceId?.isNotEmpty() == true &&
+                isValidResourceType(carePlanConfig.fhirPathResource)
+            ) {
+              fhirEngine.get(
+                ResourceType.fromCode(carePlanConfig.fhirPathResource),
+                carePlanConfig.fhirPathResourceId
+              )
+            } else {
+              subject
+            }
+          fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)
         }
 
       if (!conditionIsTrue) {

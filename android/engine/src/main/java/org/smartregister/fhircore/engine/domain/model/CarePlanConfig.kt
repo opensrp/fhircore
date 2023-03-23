@@ -21,6 +21,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CarePlanConfig(
   val fhirPathExpression: String? = null,
+  val fhirPathResource: String? = null,
+  val fhirPathResourceId: String? = null,
   val operation: CarePlanOperation = CarePlanOperation.CLOSE
 ) : java.io.Serializable
 
