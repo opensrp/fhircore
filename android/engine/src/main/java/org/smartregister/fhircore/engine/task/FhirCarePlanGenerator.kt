@@ -308,7 +308,7 @@ constructor(
     questionnaireConfig.planDefinitions?.forEach { planDefinition ->
       val carePlan =
         fhirEngine
-          .search<CarePlan> { filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition }) }
+          .search<CarePlan> { filter(CarePlan.INSTANTIATES_CANONICAL, { value = "${PlanDefinition().fhirType()}/$planDefinition" }) }
           .firstOrNull()
           ?: return@forEach
 
