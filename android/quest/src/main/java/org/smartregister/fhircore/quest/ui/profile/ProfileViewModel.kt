@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -167,8 +166,13 @@ constructor(
               ?.questionnaire
               .let { questionnaireConfig ->
                 if (questionnaireConfig == null) {
-                  emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_config_is_not_found)))
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
+                  emitSnackBarState(
+                    SnackBarMessageConfig(
+                      context.getString(R.string.error_msg_questionnaire_config_is_not_found)
+                    )
+                  )
+                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
+                    .d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
                   return@launch
                 }
                 questionnaireConfig.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
@@ -176,14 +180,23 @@ constructor(
               .let { questionnaireConfig ->
                 val questionnaire = loadQuestionnaire(questionnaireConfig.id)
                 if (questionnaire == null) {
-                  emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)))
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE").d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
+                  emitSnackBarState(
+                    SnackBarMessageConfig(
+                      context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
+                    )
+                  )
+                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
+                    .d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
                   return@launch
                 }
                 questionnaire.apply {
                   this.url = this.url ?: this.referenceValue()
-                  if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
-                    item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", questionnaireConfig.type.isReadOnly())
+                  if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()
+                  ) {
+                    item.prepareQuestionsForReadingOrEditing(
+                      "QuestionnaireResponse.item",
+                      questionnaireConfig.type.isReadOnly()
+                    )
                   }
                 }
 
@@ -191,15 +204,21 @@ constructor(
                 if (event.resourceData == null) return@let questionnaireResponse
 
                 if (!questionnaireConfig.type.isDefault()) {
-                  questionnaireResponse = getQuestionnaireResponseFromDbOrPopulation(
-                    questionnaire = questionnaire,
-                    subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                    subjectType = event.resourceData.baseResourceType
-                  )
+                  questionnaireResponse =
+                    getQuestionnaireResponseFromDbOrPopulation(
+                      questionnaire = questionnaire,
+                      subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
+                      subjectType = event.resourceData.baseResourceType
+                    )
                   questionnaireResponse.apply { generateMissingItems(questionnaire) }
 
-                  if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)) {
-                    emitSnackBarState(SnackBarMessageConfig(context.getString(R.string.error_msg_questionnaire_response_is_broken)))
+                  if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
+                  ) {
+                    emitSnackBarState(
+                      SnackBarMessageConfig(
+                        context.getString(R.string.error_msg_questionnaire_response_is_broken)
+                      )
+                    )
                     return@launch
                   }
                 }
@@ -244,9 +263,7 @@ constructor(
     }
   }
 
-  /**
-   * Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator].
-   * */
+  /** Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator]. */
   private fun isQuestionnaireResponseValid(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
@@ -270,11 +287,13 @@ constructor(
   }
 
   /**
-   * Gets a Questionnaire Response from the database if it exists. Generates Questionnaire Response from population, otherwise.
+   * Gets a Questionnaire Response from the database if it exists. Generates Questionnaire Response
+   * from population, otherwise.
    * @param questionnaire Questionnaire as the basis for how the resources are to be populated
-   * @param subjectId ID of the resource that submitted the Questionnaire Response, and related with the population resources
+   * @param subjectId ID of the resource that submitted the Questionnaire Response, and related with
+   * the population resources
    * @param subjectType resource type of the resource that submitted the Questionnaire Response
-   * */
+   */
   private suspend fun getQuestionnaireResponseFromDbOrPopulation(
     questionnaire: Questionnaire,
     subjectId: String,
@@ -295,25 +314,27 @@ constructor(
    * Generates a Questionnaire Response by populating the given resources.
    * @param questionnaire Questionnaire as the basis for how the resources are to be populated
    * @param populationResources resources to be populated
-   * */
+   */
   private suspend fun populateQuestionnaireResponse(
     questionnaire: Questionnaire,
     populationResources: ArrayList<Resource>
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray())
-      .also { questionnaireResponse ->
-        if (!questionnaireResponse.hasItem()) {
-          Timber.tag("ProfileViewModel.populateQuestionnaireResponse").d("Questionnaire response has no populated answers")
-        }
+    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
+      questionnaireResponse ->
+      if (!questionnaireResponse.hasItem()) {
+        Timber.tag("ProfileViewModel.populateQuestionnaireResponse")
+          .d("Questionnaire response has no populated answers")
       }
+    }
   }
 
   /**
-   * Loads the latest Questionnaire Response resource that is associated with the given subject ID and Questionnaire ID.
+   * Loads the latest Questionnaire Response resource that is associated with the given subject ID
+   * and Questionnaire ID.
    * @param subjectId ID of the resource that submitted the Questionnaire Response
    * @param subjectType resource type of the resource that submitted the Questionnaire Response
    * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
-   * */
+   */
   private suspend fun loadQuestionnaireResponse(
     subjectId: String,
     subjectType: ResourceType,
@@ -327,17 +348,19 @@ constructor(
       .maxByOrNull { it.meta.lastUpdated }
       .also { questionnaireResponse ->
         if (questionnaireResponse == null) {
-          Timber.tag("ProfileViewModel.loadQuestionnaireResponse").d("Questionnaire response is not found in database")
+          Timber.tag("ProfileViewModel.loadQuestionnaireResponse")
+            .d("Questionnaire response is not found in database")
         }
       }
   }
 
   /**
-   * Search Questionnaire Response resources that are associated with the given subject ID and Questionnaire ID.
+   * Search Questionnaire Response resources that are associated with the given subject ID and
+   * Questionnaire ID.
    * @param subjectId ID of the resource that submitted the Questionnaire Response
    * @param subjectType resource type of the resource that submitted the Questionnaire Response
    * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
-   * */
+   */
   private suspend fun searchQuestionnaireResponses(
     subjectId: String,
     subjectType: ResourceType,
