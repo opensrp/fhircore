@@ -25,14 +25,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @Inject lateinit var rulesFactory: RulesFactory
-
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
@@ -49,7 +48,6 @@ class RulesEngineServiceTest : RobolectricTest() {
 
   @Test
   fun testTranslateWithDefaultLocaleReturnsCorrectTranslatedString() {
-
     val templateString = "Vaccine status"
 
     val result = rulesEngineService.translate(templateString)
@@ -59,12 +57,43 @@ class RulesEngineServiceTest : RobolectricTest() {
 
   @Test
   fun testTranslateWithOtherLocaleReturnsCorrectTranslatedString() {
-
     val templateString = "Vaccine status"
     Locale.setDefault(Locale.FRENCH)
 
     val result = rulesEngineService.translate(templateString)
 
     Assert.assertEquals("Statut Vaccinal Traduit", result)
+  }
+
+  @Test
+  fun testComputeTotalCountShouldReturnSumOfAllCounts() {
+    val totalCount =
+      rulesEngineService.computeTotalCount(
+        listOf(
+          RelatedResourceCount("abc", 20),
+          RelatedResourceCount("zyx", 40),
+          RelatedResourceCount("xyz", 40)
+        )
+      )
+    Assert.assertEquals(100, totalCount)
+
+    Assert.assertEquals(0, rulesEngineService.computeTotalCount(emptyList()))
+    Assert.assertEquals(0, rulesEngineService.computeTotalCount(null))
+  }
+
+  @Test
+  fun testRetrieveCountShouldReturnExactCount() {
+    val relatedResourceCounts =
+      listOf(
+        RelatedResourceCount("abc", 20),
+        RelatedResourceCount("zyx", 40),
+        RelatedResourceCount("xyz", 40)
+      )
+    val theCount = rulesEngineService.retrieveCount("xyz", relatedResourceCounts)
+    Assert.assertEquals(40, theCount)
+
+    Assert.assertEquals(0, rulesEngineService.retrieveCount("abz", relatedResourceCounts))
+    Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", emptyList()))
+    Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", null))
   }
 }

@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
@@ -37,8 +39,11 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -55,13 +60,12 @@ class RulesFactory
 constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val dispatcherProvider: DispatcherProvider
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
     JexlBuilder()
       .namespaces(
@@ -76,6 +80,8 @@ constructor(
       .strict(false)
       .create()
 
+  private var facts: Facts = Facts()
+
   init {
     rulesEngine.registerRuleListener(this)
   }
@@ -84,6 +90,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
+      val computedValuesMap = facts.get(DATA) as Map<String, Any>
       Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
@@ -114,45 +121,67 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  fun fireRule(
-    ruleConfigs: List<RuleConfig>,
+  @Suppress("UNCHECKED_CAST")
+  fun fireRules(
+    rules: Rules,
     baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
   ): Map<String, Any> {
-    // Reset previously computed values and init facts
-    computedValuesMap.clear()
-    facts.apply {
-      clear()
-      put(FHIR_PATH, fhirPathDataExtractor)
-      put(DATA, computedValuesMap)
-      put(SERVICE, rulesEngineService)
-    }
 
-    val customRules = mutableSetOf<Rule>()
-    ruleConfigs.forEach { ruleConfig ->
+    // Initialize new facts and fire rules in background
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
+        relatedResourcesMap.forEach {
+          val actualValue =
+            it.value.map { queryResult ->
+              when (queryResult) {
+                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
+                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+              }
+            }
+          put(it.key, actualValue)
+        }
+      }
 
-      // Create JEXL rule
-      val customRule: JexlRule =
-        JexlRule(jexlEngine)
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .priority(ruleConfig.priority)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
 
-      ruleConfig.actions.forEach { customRule.then(it) }
-      customRules.add(customRule)
-    }
-
-    // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    if (baseResource != null) {
-      facts.put(baseResource.resourceType.name, baseResource)
-    }
-
-    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
-    rulesEngine.fire(Rules(customRules), facts)
-
-    return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
+    return facts.get(DATA) as Map<String, Any>
   }
+
+  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
+    withContext(dispatcherProvider.io()) {
+      Rules(
+        ruleConfigs
+          .map { ruleConfig ->
+            val customRule: JexlRule =
+              JexlRule(jexlEngine)
+                .name(ruleConfig.name)
+                .description(ruleConfig.description)
+                .priority(ruleConfig.priority)
+                .`when`(ruleConfig.condition.ifEmpty { TRUE })
+
+            for (action in ruleConfig.actions) {
+              try {
+                customRule.then(action)
+              } catch (jexlException: JexlException) {
+                Timber.e(jexlException)
+                continue // Skip action when an error occurs to avoid app force close
+              }
+            }
+            customRule
+          }
+          .toSet()
+      )
+    }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
@@ -264,7 +293,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String
-    ): String? =
+    ): String =
       resources
         ?.mapNotNull {
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
@@ -287,7 +316,7 @@ constructor(
       resource: Resource,
       fhirPathExpression: String,
       label: String
-    ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+    ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)
@@ -346,8 +375,8 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function filters resource provided the condition exracted from the [fhirPathExpression]
-     * is met
+     * This function filters resources provided the condition extracted from the
+     * [fhirPathExpression] is met
      */
     fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
@@ -377,6 +406,18 @@ constructor(
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
     }
+
+    fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
+      relatedResourceCounts?.sumOf { it.count } ?: 0
+
+    fun retrieveCount(
+      parentResourceId: String,
+      relatedResourceCounts: List<RelatedResourceCount>?
+    ): Long =
+      relatedResourceCounts
+        ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
+        ?.count
+        ?: 0
   }
 
   companion object {

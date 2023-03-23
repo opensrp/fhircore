@@ -38,6 +38,7 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -57,6 +58,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -75,32 +77,20 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
-  var fhirEngine: FhirEngine = mockk()
-
-  var fhirOperator: FhirOperator = mockk()
-
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-
-  @Inject lateinit var registerRepository: RegisterRepository
-
-  @Inject lateinit var defaultRepository: DefaultRepository
-
-  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-
-  val measureReportRepository = mockk<MeasureReportRepository>()
-
-  private lateinit var measureReportViewModel: MeasureReportViewModel
-
-  private val navController: NavController = mockk(relaxUnitFun = true)
-
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var registerRepository: RegisterRepository
+  @Inject lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  var fhirEngine: FhirEngine = mockk()
+  var fhirOperator: FhirOperator = mockk()
+  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  val measureReportRepository = mockk<MeasureReportRepository>()
+  private lateinit var measureReportViewModel: MeasureReportViewModel
+  private val navController: NavController = mockk(relaxUnitFun = true)
   private val reportId = "supplyChainMeasureReport"
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
   @Before
   fun setUp() {
@@ -112,7 +102,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
           baseResourceId = Faker.buildPatient().id,
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-          listResourceDataMap = emptyMap(),
         )
       )
 
@@ -126,7 +115,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          defaultRepository = defaultRepository
+          defaultRepository = defaultRepository,
+          rulesExecutor = rulesExecutor
         )
       )
   }
@@ -274,14 +264,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventOnSearchTextChanged() {
-    measureReportViewModel.onEvent(
-      MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = "Mandela")
-    )
-    Assert.assertNotNull(measureReportViewModel.patientsData.value)
-  }
-
-  @Test
   fun testFormatPopulationMeasureReport() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
@@ -418,5 +400,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     assertEquals("Test Code 3", result.first().dataList.elementAt(2).title)
     assertEquals("6", result.first().dataList.elementAt(2).count)
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfReportIdNotFound() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      measureReportViewModel.reportMeasuresList("")
+    }
+  }
+
+  @Test
+  fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
+    assertFailsWith<java.util.NoSuchElementException> {
+      val pager = measureReportViewModel.reportMeasuresList(reportId)
+    }
   }
 }

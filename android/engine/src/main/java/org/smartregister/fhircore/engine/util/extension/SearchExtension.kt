@@ -46,13 +46,13 @@ fun Search.filterByResourceTypeId(
   filter(token, { value = of("${resourceType.name}/$resourceId") })
 }
 
-fun Search.filterBy(filter: DataQuery) {
-  when (filter.filterType) {
-    Enumerations.SearchParamType.TOKEN -> filterToken(filter)
-    Enumerations.SearchParamType.STRING -> filterString(filter)
-    Enumerations.SearchParamType.DATE -> filterDate(filter)
+fun Search.filterBy(dataQuery: DataQuery) {
+  when (dataQuery.filterType) {
+    Enumerations.SearchParamType.TOKEN -> filterToken(dataQuery)
+    Enumerations.SearchParamType.STRING -> filterString(dataQuery)
+    Enumerations.SearchParamType.DATE -> filterDate(dataQuery)
     else ->
-      throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
+      throw UnsupportedOperationException("Can not apply ${dataQuery.filterType} as search filter")
   }
 }
 
@@ -60,11 +60,16 @@ fun Search.filterToken(dataQuery: DataQuery) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (dataQuery.valueType) {
     Enumerations.DataType.CODING ->
-      filter(TokenClientParam(dataQuery.key), { value = of(dataQuery.valueCoding!!.asCoding()) })
+      filter(
+        TokenClientParam(dataQuery.key),
+        { value = of(dataQuery.valueCoding!!.asCoding()) },
+        operation = dataQuery.operation
+      )
     Enumerations.DataType.CODEABLECONCEPT ->
       filter(
         TokenClientParam(dataQuery.key),
-        { value = of(dataQuery.valueCoding!!.asCodeableConcept()) }
+        { value = of(dataQuery.valueCoding!!.asCodeableConcept()) },
+        operation = dataQuery.operation
       )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
@@ -80,7 +85,8 @@ fun Search.filterString(dataQuery: DataQuery) {
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
           this.value = dataQuery.valueString!!
-        }
+        },
+        operation = dataQuery.operation
       )
     Enumerations.DataType.BOOLEAN ->
       filter(
@@ -88,7 +94,8 @@ fun Search.filterString(dataQuery: DataQuery) {
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
           this.value = dataQuery.valueBoolean.toString()
-        }
+        },
+        operation = dataQuery.operation
       )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
@@ -103,7 +110,8 @@ fun Search.filterDate(dataQuery: DataQuery) {
         {
           this.prefix = dataQuery.paramPrefix
           this.value = of(DateType(dataQuery.valueDate))
-        }
+        },
+        operation = dataQuery.operation
       )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")

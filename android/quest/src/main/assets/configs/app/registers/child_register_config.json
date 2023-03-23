@@ -159,7 +159,7 @@
                 "primaryTextColor": "#000000"
               }
             ],
-            "showVerticalDivider": true,
+            "showVerticalDivider": false,
             "serviceButton": {
               "visible": "@{showMemberTasks}",
               "text": "@{taskDescription}",

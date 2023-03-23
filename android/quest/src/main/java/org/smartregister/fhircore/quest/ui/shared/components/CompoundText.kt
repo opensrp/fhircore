@@ -205,7 +205,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
           textCase = TextCase.UPPER_CASE
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = navController
     )
     CompoundText(
@@ -214,7 +214,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = navController
     )
   }
@@ -228,7 +228,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = navController
     )
     SpacerView(spacerProperties = SpacerProperties(viewType = ViewType.SPACER, width = 8f))
@@ -242,7 +242,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
           separator = ".",
           secondaryTextBackgroundColor = "#FFA500"
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = navController
     )
   }

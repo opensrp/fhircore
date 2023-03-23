@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Bundle
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -47,11 +49,24 @@ data class ActionConfig(
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
 
+  fun interpolateManagingEntity(computedValuesMap: Map<String, Any>) =
+    with(managingEntity) {
+      managingEntity?.copy(
+        dialogTitle = this?.dialogTitle?.interpolate(computedValuesMap),
+        dialogWarningMessage = this?.dialogWarningMessage?.interpolate(computedValuesMap),
+        dialogContentMessage = this?.dialogContentMessage?.interpolate(computedValuesMap),
+        noMembersErrorMessage = this?.noMembersErrorMessage?.interpolate(computedValuesMap) ?: "",
+        managingEntityReassignedMessage =
+          this?.managingEntityReassignedMessage?.interpolate(computedValuesMap) ?: ""
+      )
+    }
+
   companion object {
     const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
   }
 }
 
+@Parcelize
 @Serializable
 data class ActionParameter(
   val key: String,
@@ -59,4 +74,4 @@ data class ActionParameter(
   val dataType: DataType? = null,
   val value: String,
   val linkId: String? = null
-) : java.io.Serializable
+) : Parcelable

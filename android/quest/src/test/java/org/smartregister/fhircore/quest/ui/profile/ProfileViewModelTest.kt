@@ -53,8 +53,10 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -67,22 +69,15 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var registerRepository: RegisterRepository
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
+  @Inject lateinit var rulesExecutor: RulesExecutor
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
-
   private lateinit var resourceData: ResourceData
-
   private lateinit var expectedBaseResource: Patient
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
   fun setUp() {
@@ -92,12 +87,13 @@ class ProfileViewModelTest : RobolectricTest() {
       ResourceData(
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
-        computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
+        computedValuesMap = emptyMap()
       )
     registerRepository = mockk()
-    coEvery { registerRepository.loadProfileData(any(), any()) } returns resourceData
-
+    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
+      )
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
@@ -110,13 +106,20 @@ class ProfileViewModelTest : RobolectricTest() {
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        rulesExecutor = rulesExecutor
       )
   }
 
   @Test
   fun testRetrieveProfileUiState() {
-    runBlocking { profileViewModel.retrieveProfileUiState("householdProfile", "sampleId") }
+    runBlocking {
+      profileViewModel.retrieveProfileUiState(
+        "householdProfile",
+        "sampleId",
+        paramsList = emptyArray()
+      )
+    }
 
     assertNotNull(profileViewModel.profileUiState.value)
     val theResourceData = profileViewModel.profileUiState.value.resourceData
@@ -139,13 +142,12 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
         params =
           listOf(
             ActionParameter(
@@ -220,7 +222,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
 
     val actionConfig =
@@ -288,7 +289,6 @@ class ProfileViewModelTest : RobolectricTest() {
         baseResourceId = "Patient/999",
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
-        listResourceDataMap = emptyMap(),
       )
     val actionConfig =
       ActionConfig(

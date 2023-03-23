@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -65,10 +66,12 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -105,6 +108,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+  private var actionParamUpdatableId: ActionParameter? = null
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -117,6 +121,10 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       if (prePopulationParams?.isNotEmpty() == true) {
+        actionParamUpdatableId =
+          prePopulationParams.firstOrNull {
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT
+          }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
       }
 
@@ -201,6 +209,10 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
+          if (questionnaireConfig.setAppVersion) {
+            appendAppVersion(bundleEntry.resource)
+          }
+
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -262,8 +274,10 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
-    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    if (bundle?.entry?.isNotEmpty()!!) {
+      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    }
   }
 
   fun savePartialQuestionnaireResponse(
@@ -303,6 +317,25 @@ constructor(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
           )
     }
+  }
+
+  /**
+   * This creates a meta tag that records the App Version as defined in the build.gradle and updates
+   * all resources created by the App with the relevant app version name. The tag defines three
+   * strings: 'setSystem - The code system' , 'setCode - The code would be the App Version defined
+   * on the build.gradle.', and 'setDisplay - The display name'. All resources created by the App
+   * will have a tag of the App Version on the meta.tag.
+   *
+   * @property resource The resource to add the meta tag to.
+   */
+  fun appendAppVersion(resource: Resource) {
+    // Create a tag with the app version
+    val metaTag = resource.meta.addTag()
+    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
+      "Application Version"
+
+    // Update resource with metaTag
+    resource.meta.apply { addTag(metaTag) }
   }
 
   suspend fun extractCarePlan(
@@ -370,6 +403,14 @@ constructor(
       }
   }
 
+  /**
+   * Add or update the [questionnaireResponse] resource with the passed content, and if an
+   * [actionParamUpdatableId] is set also update the resource it refers to by extracting its
+   * logicalIdUuid.
+   *
+   * @param questionnaire the [Questionnaire] this response is related to
+   * @param questionnaireResponse the questionnaireResponse resource to save
+   */
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
@@ -380,8 +421,17 @@ constructor(
       )
       return
     }
-
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
+    if (actionParamUpdatableId != null) {
+      val resource =
+        actionParamUpdatableId!!.value.let {
+          defaultRepository.loadResource(
+            it.extractLogicalIdUuid(),
+            it.substringBefore("/").resourceClassType().newInstance().resourceType
+          )
+        }
+      defaultRepository.addOrUpdate(resource = resource)
+    }
   }
 
   suspend fun performExtraction(
@@ -411,12 +461,12 @@ constructor(
         viewModelScope.launch {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(
-              context.getString(R.string.structure_map_missing_message, questionnaire.name),
+              context.getString(R.string.structure_map_missing_message),
               Toast.LENGTH_LONG
             )
           } else {
             context.showToast(
-              context.getString(R.string.structure_error_message, questionnaire.name),
+              context.getString(R.string.structuremap_failed, questionnaire.name),
               Toast.LENGTH_LONG
             )
           }

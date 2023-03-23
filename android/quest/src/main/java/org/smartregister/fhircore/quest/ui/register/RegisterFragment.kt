@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -82,7 +83,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -184,6 +185,10 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
+      is SyncJobStatus.InProgress ->
+        emitPercentageProgress(
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1
+        )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -201,12 +206,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         // Show error message in snackBar message
         // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         val hasAuthError =
-          syncJobStatus.exceptions?.any {
+          syncJobStatus.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
+        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
         val messageResourceId =
-          if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
+          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
@@ -227,7 +232,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle)
+        retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
   }
@@ -266,5 +271,9 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
+  }
+  @VisibleForTesting
+  fun emitPercentageProgress(progress: Int) {
+    lifecycleScope.launch { registerViewModel.emitPercentageProgressState(progress) }
   }
 }

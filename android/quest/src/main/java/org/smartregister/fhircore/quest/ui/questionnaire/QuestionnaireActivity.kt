@@ -76,10 +76,11 @@ import timber.log.Timber
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
-  private lateinit var fragment: QuestQuestionnaireFragment
+  private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
@@ -103,11 +104,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     prePopulationParams =
       actionParams.filter {
-        it.paramType == ActionParameterType.PREPOPULATE &&
+        (it.paramType == ActionParameterType.PREPOPULATE ||
+          it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
           !it.value.isNullOrEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
-
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
 
@@ -167,29 +168,34 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun renderFragment() {
-    fragment =
-      QuestQuestionnaireFragment().apply {
-        val questionnaireString = parser.encodeResourceToString(questionnaire)
-
-        // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
-        // pass questionnaire and questionnaire-response to fragment
-        // 1- editMode -> assert and pass response from intent
-        // 2- readonly -> assert and pass response from intent
-        // 3- default -> process, populate and pass response/data from intent if exists
-        arguments =
-          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-            .apply { attachQuestionnaireResponse(this, intent, questionnaireConfig) }
-      }
+  private suspend fun renderFragment() {
+    // Pass questionnaire and questionnaire-response to fragment
+    val questionnaireString = parser.encodeResourceToString(questionnaire)
+    val fragmentBuilder = QuestionnaireFragment.builder().setQuestionnaire(questionnaireString)
+    decodeQuestionnaireResponse(intent, questionnaireConfig)?.let {
+      fragmentBuilder.setQuestionnaireResponse(it)
+    }
+    fragment = fragmentBuilder.build()
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+    supportFragmentManager.setFragmentResultListener(
+      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
+      this
+    ) { _, _ ->
+      if (this.getQuestionnaireConfig().type.isReadOnly() ||
+          this.getQuestionnaireObject().experimental
+      ) { // Experimental questionnaires should not be submitted
+        this.finish()
+      } else {
+        this.handleQuestionnaireSubmit()
+      }
+    }
   }
 
   @VisibleForTesting
-  internal fun attachQuestionnaireResponse(
-    bundle: Bundle,
+  internal fun decodeQuestionnaireResponse(
     intent: Intent,
     questionnaireConfig: QuestionnaireConfig
-  ) {
+  ): String? {
     val questionnaireResponse =
       intent
         .getStringExtra(QUESTIONNAIRE_RESPONSE)
@@ -202,12 +208,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
     }
 
-    if (questionnaireResponse != null) {
-      bundle.putString(
-        QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-        questionnaireResponse.encodeResourceToString()
-      )
-    }
+    return questionnaireResponse?.encodeResourceToString()
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
@@ -254,7 +255,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         this.authored = Date()
       }
 
-      this@QuestionnaireActivity.questionnaire.useContext
+      this@QuestionnaireActivity.questionnaire
+        .useContext
+        .asSequence()
         .filter { it.hasValueCodeableConcept() }
         .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
 

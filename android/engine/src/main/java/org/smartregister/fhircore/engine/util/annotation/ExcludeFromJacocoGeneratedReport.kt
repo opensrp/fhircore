@@ -17,5 +17,11 @@
 package org.smartregister.fhircore.engine.util.annotation
 
 @Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
+@Target(
+  AnnotationTarget.CLASS,
+  AnnotationTarget.CONSTRUCTOR,
+  AnnotationTarget.FUNCTION,
+  AnnotationTarget.PROPERTY,
+  AnnotationTarget.TYPE
+)
 annotation class ExcludeFromJacocoGeneratedReport

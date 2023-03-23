@@ -130,7 +130,6 @@ constructor(
             practitioner = null
             /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
             practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-            lastReceivedOn = null // Non-null value not supported yet
           )
         } catch (exception: IllegalArgumentException) {
           Timber.e(exception)
@@ -147,9 +146,7 @@ constructor(
           endDateFormatted,
           measureUrl
         )
-      if (result != null) {
-        if (result.isNotEmpty()) defaultRepository.delete(result.last())
-      }
+      if (result.isNotEmpty()) defaultRepository.delete(result.last())
       defaultRepository.addOrUpdate(resource = measureReport)
     }
   }

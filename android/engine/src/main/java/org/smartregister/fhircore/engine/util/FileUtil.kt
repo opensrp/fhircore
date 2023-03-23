@@ -34,6 +34,7 @@ object FileUtil {
 
   /**
    * This method loads a property value from a .config file in android assets
+   *
    * @param key property key
    * @param context Android application context
    * @param fileName File name
@@ -46,6 +47,7 @@ object FileUtil {
 
   /**
    * Method to read Json from file and return string
+   *
    * @param fileName File name
    */
   @Throws(IOException::class)
@@ -81,6 +83,7 @@ object FileUtil {
 
   /**
    * Method for returning all files in a dir
+   *
    * @param dir Directory to recurse
    */
   @Throws(IOException::class)

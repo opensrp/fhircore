@@ -495,6 +495,7 @@
                     "id": "defaultProfile",
                     "params": [
                       {
+                        "paramType": "UPDATE_DATE_ON_EDIT",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
                       }
@@ -524,7 +525,14 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{familyLogicalId}"
+            "resourceIdentifier": "@{familyLogicalId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ]
           }
         }
       ]
@@ -551,6 +559,19 @@
       ]
     },
     {
+      "title": "View past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "householdpastencountersProfile"
+        }
+      ]
+    },
+    {
       "title": "Remove family",
       "titleColor": "#FF0000",
       "visible": "true",
@@ -562,7 +583,8 @@
           "params": [
             {
               "key": "familyId",
-              "value": "@{familyLogicalId}"
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
             },
             {
               "key": "familyName",
