@@ -39,6 +39,8 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -89,6 +91,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   val measureReportRepository = mockk<MeasureReportRepository>()
   private lateinit var measureReportViewModel: MeasureReportViewModel
   private val navController: NavController = mockk(relaxUnitFun = true)
+  private val invalidReportId = "invalidSupplyChainMeasureReport"
   private val reportId = "supplyChainMeasureReport"
   private val application: Context = ApplicationProvider.getApplicationContext()
 
@@ -412,7 +415,12 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Test
   fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
     assertFailsWith<java.util.NoSuchElementException> {
-      val pager = measureReportViewModel.reportMeasuresList(reportId)
+      val pager = measureReportViewModel.reportMeasuresList(invalidReportId)
     }
+  }
+
+  @Test
+  fun reportMeasuresListShouldReturnReportList() = runTest {
+    assertNotNull(measureReportViewModel.reportMeasuresList(reportId).first())
   }
 }

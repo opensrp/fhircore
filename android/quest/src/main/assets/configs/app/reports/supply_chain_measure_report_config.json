@@ -4,7 +4,7 @@
   "registerDate": "2020-10-27",
   "showFixedRangeSelection": true,
   "id": "supplyChainMeasureReport",
-  "registerId": "patientRegister",
+  "registerId": "inventoryRegister",
   "reports": [
     {
       "title": "Stock Consumption",
