@@ -191,6 +191,7 @@ android {
             dimension "apps"
             applicationIdSuffix ".engage"
             versionNameSuffix "-engage"
+
         }
     }
     sourceSets {
