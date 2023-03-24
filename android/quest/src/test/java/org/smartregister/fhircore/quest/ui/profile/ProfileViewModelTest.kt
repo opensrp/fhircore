@@ -179,10 +179,11 @@ class ProfileViewModelTest : RobolectricTest() {
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
 
-    val questionnaire = Questionnaire().apply {
-      id = "Questionnaire/444"
-      url = "Questionnaire/444"
-    }
+    val questionnaire =
+      Questionnaire().apply {
+        id = "Questionnaire/444"
+        url = "Questionnaire/444"
+      }
     coEvery { registerRepository.fhirEngine.loadResource<Questionnaire>("444") } returns
       questionnaire
 
