@@ -99,9 +99,9 @@ constructor(
   }
 
   /**
-   * Receives [paramsMap], [configKey] as inputs and interpolates the value if found and if
-   * [paramsMap] are not empty return the result return the value if key is found and [paramsMap] is
-   * empty
+   * This function interpolates the value for the given [configKey] by replacing the string
+   * placeholders e.g. {{ placeholder }} with value retrieved from the [paramsMap] using [configKey]
+   * as the key. If value is null the placeholder is returned
    */
   fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
     configsJsonMap.getValue(configKey).let { jsonValue ->
