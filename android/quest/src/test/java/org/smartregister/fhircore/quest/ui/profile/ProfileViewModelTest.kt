@@ -233,7 +233,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShouldLaunchQuestionnaireWhenQuestionnaireResponseIsFromPopulation() {
+  fun testShouldLaunchQuestionnaireWhenQuestionnaireResponseIsFromPopulationAndPatientBaseResource() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
     val resourceData =
@@ -267,7 +267,7 @@ class ProfileViewModelTest : RobolectricTest() {
         addItem(
           Questionnaire.QuestionnaireItemComponent().apply {
             linkId = "patient-assigned-id"
-            type = Questionnaire.QuestionnaireItemType.INTEGER
+            type = Questionnaire.QuestionnaireItemType.TEXT
             extension =
               listOf(
                 Extension(
@@ -285,7 +285,6 @@ class ProfileViewModelTest : RobolectricTest() {
     coEvery { registerRepository.fhirEngine.loadResource<Questionnaire>("444") } returns
       questionnaire
 
-    val questionnaireResponse = QuestionnaireResponse().apply { id = "QuestionnaireResponse/777" }
     coEvery {
       registerRepository.fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = "${ResourceType.Patient.name}/999" })
@@ -294,7 +293,7 @@ class ProfileViewModelTest : RobolectricTest() {
           { value = "${ResourceType.Questionnaire.name}/444" }
         )
       }
-    } returns listOf(questionnaireResponse)
+    } returns listOf()
 
     val patient = Patient().apply { id = "Patient/999" }
     coEvery { registerRepository.fhirEngine.loadResource<Patient>("999") } returns patient
@@ -326,6 +325,14 @@ class ProfileViewModelTest : RobolectricTest() {
             QuestionnaireResponse.QUESTIONNAIRE,
             { value = "${ResourceType.Questionnaire.name}/444" }
           )
+        }
+      }
+
+      coVerify { registerRepository.fhirEngine.loadResource<Patient>("999") }
+
+      coVerify {
+        registerRepository.fhirEngine.search<RelatedPerson> {
+          filter(RelatedPerson.PATIENT, { value = "${ResourceType.Patient.name}/999" })
         }
       }
 
