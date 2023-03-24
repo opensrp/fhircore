@@ -1970,7 +1970,7 @@
           "source": [
             {
               "context": "src",
-              "condition": "(encList.entry.where(flag.coding.code = 'tracing-task').count() >= 2)"
+              "condition": "(encList.entry.where(flag.coding.code = 'tracing-enc').count() >= 2)"
             }
           ],
           "rule": [
