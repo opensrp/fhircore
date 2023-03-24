@@ -301,12 +301,13 @@ constructor(
   }
 
   /**
-   * This function is used to update the status of a CarePlan based on its CarePlanConfigs and their
-   * referenced information.
+   * This function is used to update the status of all CarePlans connected to a
+   * [QuestionnaireConfig]'s PlanDefinitions based on the [QuestionnaireConfig]'s CarePlanConfigs
+   * and their configs filtering information.
    *
    * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
-   *   CarePlanConfig does not reference a resource.
+   * CarePlanConfig does not reference a resource.
    */
   suspend fun conditionallyUpdateCarePlanStatus(
     questionnaireConfig: QuestionnaireConfig,
@@ -314,13 +315,12 @@ constructor(
   ) {
     questionnaireConfig.planDefinitions?.forEach { planDefinition ->
       val carePlans =
-        fhirEngine
-          .search<CarePlan> {
-            filter(
-              CarePlan.INSTANTIATES_CANONICAL,
-              { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-            )
-          }
+        fhirEngine.search<CarePlan> {
+          filter(
+            CarePlan.INSTANTIATES_CANONICAL,
+            { value = "${PlanDefinition().fhirType()}/$planDefinition" }
+          )
+        }
 
       if (carePlans.isEmpty()) return@forEach
 
@@ -353,9 +353,9 @@ constructor(
                   cancelTask(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
                 }
               }
-            }
           }
         }
       }
     }
   }
+}

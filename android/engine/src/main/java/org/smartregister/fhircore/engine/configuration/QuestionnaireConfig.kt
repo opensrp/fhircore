@@ -40,7 +40,7 @@ data class QuestionnaireConfig(
   val taskId: String? = null,
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
-  val carePlanConfigs : List<CarePlanConfig> = emptyList()
+  val carePlanConfigs: List<CarePlanConfig> = emptyList()
 ) : java.io.Serializable
 
 @Serializable
