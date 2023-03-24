@@ -77,9 +77,12 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
       bottomBar = {
         Column(Modifier.fillMaxWidth()) {
           Button(onClick = { viewModel.clearAllTracingData() }) {
-            Text(text = "Clear Tracing Data for All")
+            Text(text = "Clear Tracing/APP Data for All")
           }
-          Box(modifier = Modifier.height(1.dp).background(Color.Blue).fillMaxWidth())
+          Box(modifier = Modifier
+                  .height(1.dp)
+                  .background(Color.Blue)
+                  .fillMaxWidth())
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -106,6 +109,8 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
             Button(
                     onClick = { viewModel.addTelecomToPatient() },
             ) { Text(text = "Add Telecom to patient") }
+          }
+          Row() {
             Button(
                     onClick = { viewModel.addTelecomToGuardian() },
             ) { Text(text = "Add Telecom to guardian") }
@@ -115,17 +120,23 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
     ) { paddingValues ->
       LazyColumn(
         modifier =
-          Modifier.fillMaxWidth()
-            .padding(paddingValues)
-            .padding(horizontal = 12.dp)
-            .padding(top = 8.dp),
+        Modifier
+                .fillMaxWidth()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp)
+                .padding(top = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         items(TracingTestsViewModel.testItems) { item ->
           when (item) {
             is TestItem.DividerItem -> {
-              Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
-                Box(Modifier.height(1.dp).fillMaxWidth().background(Color.Black)) {}
+              Box(Modifier
+                      .fillMaxWidth()
+                      .padding(horizontal = 12.dp)) {
+                Box(Modifier
+                        .height(1.dp)
+                        .fillMaxWidth()
+                        .background(Color.Black)) {}
               }
             }
             is TestItem.QuestItem -> {
@@ -172,5 +183,7 @@ fun QuestContainer(title: String, list: List<String>) {
       append(" ")
     }
   }
-  Text(text = annotatedString, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
+  Text(text = annotatedString, modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 6.dp))
 }

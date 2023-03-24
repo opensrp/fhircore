@@ -1191,6 +1191,60 @@
               "transform": "reference",
               "parameter": [{ "valueId": "encounter" }]
             }
+          ],
+          "rule": [
+            {
+              "name": "r_list_code",
+              "source": [{ "context": "src" }],
+              "target": [
+                {
+                  "context": "encListEntry",
+                  "contextType": "variable",
+                  "element": "flag",
+                  "variable": "listFlagCC",
+                  "transform": "create",
+                  "parameter": [{ "valueString": "CodeableConcept" }]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_list_code_coding",
+                  "source": [{ "context": "src" }],
+                  "target": [
+                    {
+                      "context": "listFlagCC",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [{ "valueString": "Coding" }]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_list_code_coding_value",
+                      "source": [{ "context": "src" }],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "https://d-tree.org" }]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [{ "valueString": "tracing-enc" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
           ]
         }
       ]

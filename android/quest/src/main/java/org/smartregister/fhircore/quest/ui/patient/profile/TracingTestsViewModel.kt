@@ -250,6 +250,8 @@ constructor(
           )
         }
       allData.forEach { fhirEngine.delete<Task>(it.logicalId) }
+        val lists = fhirEngine.search<ListResource>{}
+        lists.forEach { fhirEngine.delete<ListResource>(it.logicalId) }
       checkIfOnTracing()
     }
   }
