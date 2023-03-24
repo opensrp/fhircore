@@ -179,7 +179,10 @@ class ProfileViewModelTest : RobolectricTest() {
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
 
-    val questionnaire = Questionnaire().apply { id = "Questionnaire/444" }
+    val questionnaire = Questionnaire().apply {
+      id = "Questionnaire/444"
+      url = "Questionnaire/444"
+    }
     coEvery { registerRepository.fhirEngine.loadResource<Questionnaire>("444") } returns
       questionnaire
 
@@ -292,7 +295,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.READ_ONLY),
         params =
           listOf(
             ActionParameter(
