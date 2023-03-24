@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
@@ -44,7 +43,6 @@ import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.CarePlanStatus
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -957,7 +955,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -985,7 +983,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1009,7 +1007,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.REVOKED, carePlanSlot.captured.status)
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
   }
 
   @Test
@@ -1025,7 +1023,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1052,7 +1050,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.REVOKED, carePlanSlot.captured.status)
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
   }
 
   @Test
@@ -1068,7 +1066,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1108,7 +1106,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1148,7 +1146,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.REVOKED, carePlanSlot.captured.status)
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
 
     val taskSlot = slot<Task>()
     coVerify { defaultRepository.addOrUpdate(true, capture(taskSlot)) }
@@ -1169,7 +1167,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlan = listOf(carePlanConfig)
+        carePlanConfigs = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1209,7 +1207,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.REVOKED, carePlanSlot.captured.status)
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
 
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(any(), any()) }
   }

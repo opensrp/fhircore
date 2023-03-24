@@ -53,7 +53,6 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.CarePlanOperation
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -205,7 +204,7 @@ constructor(
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
-  suspend fun cancelTask(id: String, reason: String) {
+  private suspend fun cancelTask(id: String, reason: String) {
     transitionTaskTo(id, TaskStatus.CANCELLED, reason)
   }
 
@@ -301,12 +300,20 @@ constructor(
     return taskPeriods
   }
 
+  /**
+   * This function is used to update the status of a CarePlan based on its CarePlanConfigs and their
+   * referenced information.
+   *
+   * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
+   * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
+   *   CarePlanConfig does not reference a resource.
+   */
   suspend fun conditionallyUpdateCarePlanStatus(
     questionnaireConfig: QuestionnaireConfig,
     subject: Resource
   ) {
     questionnaireConfig.planDefinitions?.forEach { planDefinition ->
-      val carePlan =
+      val carePlans =
         fhirEngine
           .search<CarePlan> {
             filter(
@@ -314,47 +321,41 @@ constructor(
               { value = "${PlanDefinition().fhirType()}/$planDefinition" }
             )
           }
-          .firstOrNull()
-          ?: return@forEach
 
-      val conditionIsTrue =
-        questionnaireConfig.carePlan.any { carePlanConfig ->
-          val base: Base =
-            if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
-                (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
-                isValidResourceType(carePlanConfig.fhirPathResource)
-            ) {
-              fhirEngine.get(
-                ResourceType.fromCode(carePlanConfig.fhirPathResource),
-                carePlanConfig.fhirPathResourceId
-              )
-            } else {
-              subject
-            }
-          fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)
-        }
+      if (carePlans.isEmpty()) return@forEach
 
-      if (!conditionIsTrue) {
-        return@forEach
-      }
-
-      if (questionnaireConfig.carePlan.first().operation == CarePlanOperation.CLOSE) {
-        carePlan.status = CarePlan.CarePlanStatus.REVOKED
-        fhirEngine.update(carePlan)
-      }
-
-      carePlan
-        .activity
-        .flatMap { it.outcomeReference }
-        .filter { it.reference.startsWith(ResourceType.Task.name) }
-        .mapNotNull { getTask(it.extractId()) }
-        .forEach { task ->
-          if (task.status != TaskStatus.COMPLETED &&
-              questionnaireConfig.carePlan.first().operation == CarePlanOperation.CLOSE
+      questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
+        val base: Base =
+          if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
+              (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
+              isValidResourceType(carePlanConfig.fhirPathResource)
           ) {
-            cancelTask(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+            fhirEngine.get(
+              ResourceType.fromCode(carePlanConfig.fhirPathResource),
+              carePlanConfig.fhirPathResourceId
+            )
+          } else {
+            subject
+          }
+
+        if (fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)) {
+          carePlans.forEach { carePlan ->
+            carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+            fhirEngine.update(carePlan)
+
+            carePlan
+              .activity
+              .flatMap { it.outcomeReference }
+              .filter { it.reference.startsWith(ResourceType.Task.name) }
+              .mapNotNull { getTask(it.extractId()) }
+              .forEach { task ->
+                if (task.status != TaskStatus.COMPLETED) {
+                  cancelTask(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+                }
+              }
+            }
           }
         }
+      }
     }
   }
-}
