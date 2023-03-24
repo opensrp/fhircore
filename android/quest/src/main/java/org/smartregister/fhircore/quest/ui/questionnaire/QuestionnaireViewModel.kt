@@ -360,6 +360,7 @@ constructor(
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject)
     }
   }
 
