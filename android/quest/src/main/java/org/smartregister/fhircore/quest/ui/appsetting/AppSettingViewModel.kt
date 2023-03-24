@@ -109,6 +109,7 @@ constructor(
         val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         compositionResource
           .retrieveCompositionSections()
+          .asSequence()
           .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
           .groupBy { it.focus.reference.substringBefore("/") }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }

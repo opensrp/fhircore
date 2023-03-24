@@ -21,7 +21,8 @@
 
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
-            android:exported="true">
+            android:exported="true"
+            android:clearTaskOnLaunch="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,7 +43,8 @@
         <activity
             android:name=".ui.main.AppMainActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:clearTaskOnLaunch="true" />
 
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"

@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.has
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -37,9 +38,13 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
@@ -76,9 +81,10 @@ constructor(
 
   override suspend fun loadRegisterData(
     currentPage: Int,
-    registerId: String
+    registerId: String,
+    paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
@@ -95,6 +101,7 @@ constructor(
       withContext(dispatcherProvider.io()) {
         searchResource(
           baseResourceClass = baseResourceClass,
+          nestedSearchResources = baseResourceConfig.nestedSearchResources,
           dataQueries = baseResourceConfig.dataQueries,
           sortConfigs = baseResourceConfig.sortConfigs,
           currentPage = currentPage,
@@ -122,9 +129,12 @@ constructor(
 
       // Include secondary resourceData in each row if secondaryResources are configured
       RepositoryResourceData(
-        configId = baseResourceConfig.id ?: baseResourceType.name,
-        resource = baseResource,
-        relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
+        id = baseResourceConfig.id ?: baseResourceType.name,
+        queryResult =
+          RepositoryResourceData.QueryResult.Search(
+            resource = baseResource,
+            relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
+          )
       )
     }
   }
@@ -135,13 +145,12 @@ constructor(
     baseResource: Resource,
     fhirPathExpression: String?
   ): LinkedList<RepositoryResourceData> {
-    val start = System.currentTimeMillis()
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
     val relatedResourcesData = LinkedList<RepositoryResourceData>()
     if (fhirPathExpression.isNullOrEmpty()) {
-      val relatedResourceSearch =
+      val search =
         Search(type = relatedResourceType).apply {
           filterByResourceTypeId(
             ReferenceClientParam(resourceConfig.searchParameter),
@@ -149,16 +158,31 @@ constructor(
             baseResource.logicalId
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
-          sort(resourceConfig.sortConfigs)
+          applyNestedSearchFilters(resourceConfig.nestedSearchResources)
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+      if (resourceConfig.resultAsCount) {
+        val count = fhirEngine.count(search)
         relatedResourcesData.addLast(
           RepositoryResourceData(
-            configId = resourceConfig.id ?: resource.resourceType.name,
-            resource = resource
+            id = resourceConfig.id ?: relatedResourceType.name,
+            queryResult =
+              RepositoryResourceData.QueryResult.Count(
+                resourceType = relatedResourceType,
+                relatedResourceCount =
+                  RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
+              )
           )
         )
-
+      } else {
+        val relatedResourceSearch = search.apply { sort(resourceConfig.sortConfigs) }
+        fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+          relatedResourcesData.addLast(
+            RepositoryResourceData(
+              id = resourceConfig.id ?: resource.resourceType.name,
+              queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
+            )
+          )
+        }
         postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
       }
     } else {
@@ -180,8 +204,8 @@ constructor(
           resource?.let {
             relatedResourcesData.addLast(
               RepositoryResourceData(
-                configId = resourceConfig.id ?: resource.resourceType.name,
-                resource = resource
+                id = resourceConfig.id ?: resource.resourceType.name,
+                queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
               )
             )
           }
@@ -196,23 +220,26 @@ constructor(
     relatedResourcesData: LinkedList<RepositoryResourceData>
   ) {
 
-    if (relatedResourcesData.size < 1) return
+    if (relatedResourcesData.isEmpty()) return
 
     relatedResources.forEach {
+      val repositoryResourceData =
+        relatedResourcesData.last.queryResult as RepositoryResourceData.QueryResult.Search
       val searchRelatedResources =
         searchRelatedResources(
           resourceConfig = it,
-          baseResourceType = relatedResourcesData.last.resource.resourceType,
-          baseResource = relatedResourcesData.last.resource,
+          baseResourceType = repositoryResourceData.resource.resourceType,
+          baseResource = repositoryResourceData.resource,
           fhirPathExpression = it.fhirPathExpression
         )
 
-      relatedResourcesData.last.relatedResources.addAll(searchRelatedResources)
+      repositoryResourceData.relatedResources.addAll(searchRelatedResources)
     }
   }
 
   private suspend fun searchResource(
     baseResourceClass: Class<out Resource>,
+    nestedSearchResources: List<NestedSearchConfig>?,
     dataQueries: List<DataQuery>?,
     sortConfigs: List<SortConfig>,
     currentPage: Int? = null,
@@ -226,6 +253,7 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+        applyNestedSearchFilters(nestedSearchResources)
         sort(sortConfigs)
         if (currentPage != null && pageSize != null) {
           count = pageSize
@@ -233,6 +261,14 @@ constructor(
         }
       }
     return fhirEngine.search(search)
+  }
+
+  private fun Search.applyNestedSearchFilters(nestedSearchResources: List<NestedSearchConfig>?) {
+    nestedSearchResources?.forEach {
+      has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
+        it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery) }
+      }
+    }
   }
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
@@ -249,8 +285,11 @@ constructor(
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
-  override suspend fun countRegisterData(registerId: String): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+  override suspend fun countRegisterData(
+    registerId: String,
+    paramsMap: Map<String, String>?
+  ): Long {
+    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val resourceType = baseResourceClass.newInstance().resourceType
@@ -262,6 +301,7 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+        applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }
 
     return fhirEngine.count(search)
@@ -270,12 +310,22 @@ constructor(
   override suspend fun loadProfileData(
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig?
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsList: Array<ActionParameter>?
   ): RepositoryResourceData {
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.filter {
+          (it.paramType == ActionParameterType.PARAMDATA ||
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
+        }
+        ?.associate { it.key to it.value }
+        ?: emptyMap()
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
-        profileId
+        profileId,
+        paramsMap
       )
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
@@ -309,9 +359,12 @@ constructor(
     }
 
     return RepositoryResourceData(
-      configId = baseResourceConfig.id ?: baseResourceType.name,
-      resource = baseResource,
-      relatedResources = relatedResources
+      id = baseResourceConfig.id ?: baseResourceType.name,
+      queryResult =
+        RepositoryResourceData.QueryResult.Search(
+          resource = baseResource,
+          relatedResources = relatedResources
+        )
     )
   }
 
@@ -326,7 +379,8 @@ constructor(
           searchResource(
             baseResourceClass = fhirResourceConfig.baseResource.resource.resourceClassType(),
             dataQueries = fhirResourceConfig.baseResource.dataQueries,
-            sortConfigs = fhirResourceConfig.baseResource.sortConfigs
+            sortConfigs = fhirResourceConfig.baseResource.sortConfigs,
+            nestedSearchResources = fhirResourceConfig.baseResource.nestedSearchResources,
           )
         }
 
@@ -346,9 +400,12 @@ constructor(
         }
         repositoryResourceData.add(
           RepositoryResourceData(
-            configId = fhirResourceConfig.baseResource.id,
-            resource = baseResource,
-            relatedResources = baseRelatedResourceList
+            id = fhirResourceConfig.baseResource.id,
+            queryResult =
+              RepositoryResourceData.QueryResult.Search(
+                resource = baseResource,
+                relatedResources = baseRelatedResourceList
+              )
           )
         )
       }
@@ -357,8 +414,11 @@ constructor(
     return repositoryResourceData
   }
 
-  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration =
-    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+  fun retrieveRegisterConfiguration(
+    registerId: String,
+    paramsMap: Map<String, String>?
+  ): RegisterConfiguration =
+    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   companion object {
     const val ACTIVE = "active"

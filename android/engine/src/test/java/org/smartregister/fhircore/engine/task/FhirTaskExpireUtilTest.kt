@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.task
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -97,7 +98,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
       )
     }
 
-    coEvery { mockFhirEngine.search<Task>(any()) } returns taskList
+    coEvery { mockFhirEngine.search<Task>(any<Search>()) } returns taskList
     coEvery { mockFhirEngine.update(any()) } just runs
 
     val (maxDate, tasks) =

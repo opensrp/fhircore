@@ -108,7 +108,12 @@ fun RegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync) LoaderDialog(modifier = modifier)
+      if (registerUiState.isFirstTimeSync)
+        LoaderDialog(
+          modifier = modifier,
+          percentageProgressFlow = registerUiState.progressPercentage,
+          isSyncUploadFlow = registerUiState.isSyncUpload
+        )
       if (registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {

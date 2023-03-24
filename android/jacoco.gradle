@@ -15,7 +15,6 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**Constant*.*',
             '**/*$ViewBinder*.*',
             'android/**/*.*',
-            '**/*Application*.*',
             '**/*Test*.*',
             '**/*$ViewInjector*.*',
             '**/BuildConfig.*',
@@ -23,12 +22,41 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/Manifest*.*',
             '**/R.class',
             '**/R$*.class',
-            '**/*Preview*.*',
-            // kotlin (Sealed and Data classes)
+            // Kotlin (Sealed and Data classes)
             '**/*$Lambda$*.*',
             '**/*Companion*.*',
             '**/*$Result.*',
             '**/*$Result$*.*',
+            // Data classes and enums without functions or methods
+            'org/smartregister/fhircore/engine/auth/*',
+            'org/smartregister/fhircore/engine/configuration/ConfigType.*',
+            'org/smartregister/fhircore/engine/configuration/app/*',
+            'org/smartregister/fhircore/engine/configuration/geowidget/*',
+            'org/smartregister/fhircore/engine/configuration/navigation/*',
+            'org/smartregister/fhircore/engine/configuration/profile/*',
+            'org/smartregister/fhircore/engine/configuration/register/*',
+            'org/smartregister/fhircore/engine/configuration/report/measure/*',
+            'org/smartregister/fhircore/engine/configuration/view/ButtonProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/CardViewProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/ColumnProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/CompoundTextProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/ListProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/PersonalDataProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/RowProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/ServiceCardProperties.*',
+            'org/smartregister/fhircore/engine/configuration/view/SpacerProperties.*',
+            'org/smartregister/fhircore/engine/data/remote/model/response/*',
+            'org/smartregister/fhircore/engine/domain/model/ExtractedResource.*',
+            'org/smartregister/fhircore/engine/domain/model/FhirResourceConfigs.*',
+            'org/smartregister/fhircore/engine/domain/model/OverflowMenuItemConfig.*',
+            'org/smartregister/fhircore/engine/domain/model/RuleConfig.*',
+            'org/smartregister/fhircore/engine/domain/model/SearchFilters.*',
+            'org/smartregister/fhircore/engine/domain/model/ServiceMemberIcon.*',
+            'org/smartregister/fhircore/engine/domain/model/ServiceStatus.*',
+            'org/smartregister/fhircore/engine/domain/model/SnackBarMessageConfig.*',
+            'org/smartregister/fhircore/engine/domain/model/TopBarConfig.*',
+            'org/smartregister/fhircore/engine/data/remote/model/response/*',
+            'org/smartregister/fhircore/geowidget/model/*',
             // DI (Dagger and Hilt)
             '**/*_MembersInjector.class',
             '**/Dagger*Component.class',
@@ -47,6 +75,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             // Data Binding
             '**/databinding/*',
             'org/hl7/fhir/*'
+
     ]
 
     def moduleVariant = project.name == "quest" ? "questDebug" : "debug"

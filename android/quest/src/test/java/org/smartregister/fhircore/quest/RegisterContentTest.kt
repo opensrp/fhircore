@@ -64,6 +64,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun testG6pdTestResultsExtraction() = runTest {
     val structureMap = "test-results-questionnaire/structure-map.txt".readFile()
     val response = "test-results-questionnaire/questionnaire-response.json".readFile()
@@ -105,7 +106,7 @@ class RegisterContentTest : RobolectricTest() {
     assertResourceContent(hb, sampleHb)
   }
 
-  fun assertResourceContent(expected: Resource, actual: Resource) {
+  private fun assertResourceContent(expected: Resource, actual: Resource) {
     // replace properties generating dynamically
     actual.setPropertySafely("id", expected.idElement)
 
@@ -122,6 +123,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun testG6pdPatientRegistrationExtraction() = runTest {
     val structureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
     val response = "patient-registration-questionnaire/questionnaire-response.json".readFile()

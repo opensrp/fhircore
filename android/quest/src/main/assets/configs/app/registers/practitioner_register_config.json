@@ -42,11 +42,11 @@
     "visible": true,
     "display": "{{ search.by.name }}",
     "computedRules": [
-      "practitionerName",
-      "practitionerId"
+      "practitionerName"
     ]
   },
   "registerCard": {
+
     "rules": [
       {
         "name": "practitionerFirstName",
@@ -116,6 +116,7 @@
                     "setOrganizationDetails": true
                   }
                 }
+
               ]
             },
             "actions": [

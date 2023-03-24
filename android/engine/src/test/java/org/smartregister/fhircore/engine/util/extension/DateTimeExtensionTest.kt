@@ -94,7 +94,7 @@ class DateTimeExtensionTest : RobolectricTest() {
     val dateFormat = SimpleDateFormat("yyyy-MMM-dd", Locale.FRENCH)
 
     val result = dateFormat.tryParse("2022-Feb-28")
-    val calendarDate = Calendar.getInstance().apply { time = result }
+    val calendarDate = Calendar.getInstance().apply { time = result!! }
 
     assertEquals(2022, calendarDate.get(Calendar.YEAR))
     assertEquals(1, calendarDate.get(Calendar.MONTH)) // months are 0 indexed

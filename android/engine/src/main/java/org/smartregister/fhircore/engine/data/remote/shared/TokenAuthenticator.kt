@@ -83,8 +83,8 @@ constructor(
                 true
               }
             )
-          } catch (operationCancelledException: OperationCanceledException) {
-            Timber.e(operationCancelledException)
+          } catch (operationCanceledException: OperationCanceledException) {
+            Timber.e(operationCanceledException)
           } catch (ioException: IOException) {
             Timber.e(ioException)
           } catch (authenticatorException: AuthenticatorException) {

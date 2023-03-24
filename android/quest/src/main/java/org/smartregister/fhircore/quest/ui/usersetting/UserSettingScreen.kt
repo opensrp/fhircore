@@ -69,7 +69,6 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -81,6 +80,7 @@ import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
@@ -383,7 +383,7 @@ fun ConfirmClearDatabaseDialog(
 }
 
 @Composable
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 fun UserSettingPreview() {
   UserSettingScreen(
     username = "Jam",

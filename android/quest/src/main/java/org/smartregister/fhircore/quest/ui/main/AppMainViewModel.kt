@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -90,7 +91,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
@@ -110,7 +111,7 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
 
   val navigationConfiguration: NavigationConfiguration by lazy {
@@ -118,7 +119,9 @@ constructor(
   }
 
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration.clientRegisters
+    navigationConfiguration
+      .clientRegisters
+      .asSequence()
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
@@ -239,7 +242,7 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }.forEach { menuConfig ->
+    this.asSequence().filter { it.showCount }.forEach { menuConfig ->
       val countAction =
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
       if (countAction != null) {

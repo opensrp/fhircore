@@ -402,7 +402,6 @@ constructor(
       practitioner = null
       /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
       practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-      lastReceivedOn = null // Non-null value not supported yet
     )
   }
 
@@ -491,6 +490,7 @@ constructor(
             group to
               group
                 .stratifier
+                .asSequence()
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
                 .map { stratifier ->

@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -42,6 +43,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
@@ -67,11 +69,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+  private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
-  val registerViewModel by viewModels<RegisterViewModel>()
+  private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -82,7 +84,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -184,6 +186,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
+      is SyncJobStatus.InProgress ->
+        emitPercentageProgress(
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
+          syncJobStatus.syncOperation == SyncOperation.UPLOAD
+        )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -227,7 +234,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle)
+        retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
   }
@@ -265,6 +272,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         // Reset activity livedata
         appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
+    }
+  }
+  @VisibleForTesting
+  fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
+    lifecycleScope.launch {
+      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }
 }

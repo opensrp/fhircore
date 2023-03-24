@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -44,13 +45,16 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesExecutor: RulesExecutor
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -66,6 +70,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
@@ -85,13 +90,13 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          ""
+          emptyMap()
         )
 
-      Assert.assertEquals(resourceData.baseResourceId, patientId)
-      Assert.assertEquals(resourceData.baseResourceType, ResourceType.Patient)
+      Assert.assertEquals(patientId, resourceData.baseResourceId)
+      Assert.assertEquals(ResourceType.Patient, resourceData.baseResourceType)
       Assert.assertNull(resourceData.listResourceDataMap)
-      Assert.assertEquals(resourceData.computedValuesMap.size, 1)
+      Assert.assertEquals(1, resourceData.computedValuesMap.size)
     }
   }
 
@@ -112,10 +117,82 @@ class RulesExecutorTest : RobolectricTest() {
           computedValuesMap
         )
 
-      Assert.assertEquals(resourceData.size, 0)
+      Assert.assertEquals(0, resourceData.size)
     }
   }
 
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun processListResourceDataWithDataAndNoExpression() {
+    val registerCard = RegisterCardConfig()
+    val viewType = ViewType.CARD
+    val patient = Faker.buildPatient()
+    val listResource = ListResource("id", resourceType = ResourceType.Patient)
+    val resources = listOf(listResource)
+    val listProperties =
+      ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
+    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
+      LinkedList<RepositoryResourceData>()
+    val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+    relatedRepositoryResourceData.add(repositoryResourceData)
+
+    runBlocking(Dispatchers.Default) {
+      val resourceData =
+        rulesExecutor.processListResourceData(
+          listProperties,
+          relatedRepositoryResourceData,
+          computedValuesMap
+        )
+
+      Assert.assertEquals(1, resourceData.size)
+      Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
+      Assert.assertEquals(patient.resourceType, resourceData.first().baseResourceType)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun processListResourceDataWithDataAndExpression() {
+    val registerCard = RegisterCardConfig()
+    val viewType = ViewType.CARD
+    val patient = Faker.buildPatient()
+    val listResource =
+      ListResource(
+        "id",
+        resourceType = ResourceType.Patient,
+        conditionalFhirPathExpression = "Patient.active"
+      )
+    val resources = listOf(listResource)
+    val listProperties =
+      ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
+    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
+      LinkedList<RepositoryResourceData>()
+    val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+    relatedRepositoryResourceData.add(repositoryResourceData)
+
+    runBlocking(Dispatchers.Default) {
+      val resourceData =
+        rulesExecutor.processListResourceData(
+          listProperties,
+          relatedRepositoryResourceData,
+          computedValuesMap
+        )
+
+      Assert.assertEquals(resourceData.size, 1)
+      Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
+      Assert.assertEquals(patient.resourceType, resourceData.first().baseResourceType)
+    }
+  }
   @Test
   fun getRulesFactory() {
     Assert.assertEquals(rulesExecutor.rulesFactory, rulesFactory)
