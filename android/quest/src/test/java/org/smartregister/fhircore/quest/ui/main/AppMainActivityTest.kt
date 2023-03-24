@@ -216,4 +216,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     verify(exactly = 0) { syncBroadcaster.runSync(any()) }
     verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
   }
+
+  @Test
+  fun testStartForResult() {
+    val event = appMainActivity.startForResult
+
+    Assert.assertNotNull(event)
+  }
 }

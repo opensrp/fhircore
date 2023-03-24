@@ -186,6 +186,13 @@ android {
             applicationIdSuffix ".zeir"
             versionNameSuffix "-zeir"
         }
+
+        engage {
+            dimension "apps"
+            applicationIdSuffix ".engage"
+            versionNameSuffix "-engage"
+
+        }
     }
     sourceSets {
         main {
