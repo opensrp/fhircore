@@ -16,11 +16,23 @@
             "code": "386452003"
           }
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
       ]
     },
     "relatedResources": [
       {
         "resource": "Observation",
+        "searchParameter": "subject"
+      },
+      {
+        "id": "stockOutFlags",
+        "resource": "Flag",
         "searchParameter": "subject"
       }
     ]
@@ -66,14 +78,49 @@
         "name": "lastUpdatedDate",
         "condition": "true",
         "actions": [
-          "data.put('lastUpdatedDate', 'Last count ' + service.prettifyDate(data.get('lastUpdated')))"
+          "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
         ]
       },
       {
-        "name": "status",
+        "name": "latestObservation",
         "condition": "true",
         "actions": [
-          "data.put('status', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value') == '' ? 'UPCOMING' : 'DUE')"
+          "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
+        ]
+      },
+      {
+        "name": "runningBalance",
+        "condition": "true",
+        "actions": [
+          "data.put('runningBalance', fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value'))"
+        ]
+      },
+      {
+        "name": "latestObservationId",
+        "condition": "true",
+        "actions": [
+          "data.put('latestObservationId', fhirPath.extractValue( data.get('latestObservation'), 'Observation.id.replace(\"Observation/\",\"\")').split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "activeStockOutFlag",
+        "condition": "true",
+        "actions": [
+          "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
+        ]
+      },
+      {
+        "name": "stockoutFlagId",
+        "condition": "true",
+        "actions": [
+          "data.put('stockoutFlagId', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.id.replace(\"Flag/\",\"\")').split(\"/\").get(0))"
+        ]
+      },
+      {
+        "name": "stockoutStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('stockoutStartDate', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.period.start'))"
         ]
       }
     ],
@@ -99,8 +146,8 @@
             "showVerticalDivider": false,
             "serviceButton": {
               "visible": true,
-              "text": "@{quantity}",
-              "status": "@{status}",
+              "text": "@{runningBalance}",
+              "status": "DUE",
               "fontSize": 14.0,
               "smallSized": false,
               "actions": [
@@ -128,7 +175,28 @@
                       "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
                       "dataType": "INTEGER",
                       "key": "currentBalance",
-                      "value": "@{quantity}"
+                      "value": "@{runningBalance}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d6c39388-fb56-4e1f-8cfc-f199f2c89919",
+                      "dataType": "STRING",
+                      "key": "latestObservationId",
+                      "value": "@{latestObservationId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "513d5111-449e-49e0-d43a-8953fb53ba7d",
+                      "dataType": "STRING",
+                      "key": "stockoutFlagId",
+                      "value": "@{stockoutFlagId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "6c5c6fd7-749c-402b-990b-df96a92bf6c8",
+                      "dataType": "STRING",
+                      "key": "stockoutStartDate",
+                      "value": "@{stockoutStartDate}"
                     }
                   ]
                 }

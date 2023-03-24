@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -83,7 +82,6 @@ class ChangeManagingEntityViewTest {
   }
 
   @Test
-  @Ignore("Flaky test to be fixed")
   fun testChangeManagingEntityViewDisplaysCancelAndSaveButtons() {
     composeTestRule.onNodeWithTag(TEST_TAG_CANCEL).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(TEST_TAG_SAVE).assertExists().assertIsDisplayed()

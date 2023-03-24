@@ -30,7 +30,7 @@
     <string name="unknown">Haijulikani</string>
     <string name="logout_user">Toka kama %1$s</string>
     <string name="sync_completed">Kusawazisha imekamilika</string>
-    <string name="syncing">Inasawazisha&#8230;</string>
+    <string name="syncing">Inasawazisha</string>
     <string name="syncing_initiated">Kusawazisha imeanza&#8230;</string>
     <string name="sync_failed">Hitilafu ukisawazisha. Angalia muunganisho wako wa mtandao au jaribu tena.</string>
     <string name="sync_unauthorised">Usawazishaji haukufaulu kwa sababu hauna vitambulisho sahihi vya uthibitishaji</string>
@@ -78,6 +78,7 @@
     <string name="select_register">Chagua rejista</string>
     <string name="tick">Tiki</string>
     <string name="invalid_login_credentials">Jina la mtumiaji au nenosiri batili</string>
+    <string name="app_id_sample">k.m ecbis, quest, cha</string>
     <string name="load_configurations">PAKIA MIPANGILIO</string>
     <string name="edit">Hariri</string>
     <string name="clients">Wateja</string>

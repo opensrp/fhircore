@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Bundle
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -39,15 +41,32 @@ data class ActionConfig(
 ) {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.map { Pair(it.key, it.value.interpolate(computedValuesMap)) }.forEach {
-        putString(it.first, it.second)
+      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
+        putString(it.key, it.value.interpolate(computedValuesMap))
       }
     }
 
   fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
     display?.interpolate(computedValuesMap) ?: ""
+
+  fun interpolateManagingEntity(computedValuesMap: Map<String, Any>) =
+    with(managingEntity) {
+      managingEntity?.copy(
+        dialogTitle = this?.dialogTitle?.interpolate(computedValuesMap),
+        dialogWarningMessage = this?.dialogWarningMessage?.interpolate(computedValuesMap),
+        dialogContentMessage = this?.dialogContentMessage?.interpolate(computedValuesMap),
+        noMembersErrorMessage = this?.noMembersErrorMessage?.interpolate(computedValuesMap) ?: "",
+        managingEntityReassignedMessage =
+          this?.managingEntityReassignedMessage?.interpolate(computedValuesMap) ?: ""
+      )
+    }
+
+  companion object {
+    const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
+  }
 }
 
+@Parcelize
 @Serializable
 data class ActionParameter(
   val key: String,
@@ -55,4 +74,4 @@ data class ActionParameter(
   val dataType: DataType? = null,
   val value: String,
   val linkId: String? = null
-) : java.io.Serializable
+) : Parcelable

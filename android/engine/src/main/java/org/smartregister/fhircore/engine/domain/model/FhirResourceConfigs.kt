@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
@@ -55,7 +56,9 @@ data class ResourceConfig(
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
-  val sortConfigs: List<SortConfig> = emptyList()
+  val sortConfigs: List<SortConfig> = emptyList(),
+  val resultAsCount: Boolean = false,
+  val nestedSearchResources: List<NestedSearchConfig>? = null
 ) : Parcelable
 
 @Serializable
@@ -64,4 +67,12 @@ data class SortConfig(
   val paramName: String,
   val dataType: DataType,
   val order: Order = Order.ASCENDING
+) : Parcelable
+
+@Serializable
+@Parcelize
+data class NestedSearchConfig(
+  val resourceType: ResourceType,
+  val referenceParam: String,
+  val dataQueries: List<DataQuery>? = null
 ) : Parcelable

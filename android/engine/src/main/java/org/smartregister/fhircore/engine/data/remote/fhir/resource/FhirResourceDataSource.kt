@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.hl7.fhir.r4.model.Resource
 /** Interact with HAPI FHIR server */
 class FhirResourceDataSource @Inject constructor(private val resourceService: FhirResourceService) {
 
-  suspend fun loadData(path: String): Bundle {
+  suspend fun getResource(path: String): Bundle {
     return resourceService.getResource(path)
   }
 

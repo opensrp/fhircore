@@ -168,14 +168,21 @@
         },
         {
           "viewType": "LIST",
-          "baseResource": "Patient",
+          "listResource": "Patient",
           "padding": 16,
           "relatedResources": [
             {
-              "resourceType": "CarePlan",
-              "fhirPathExpression": "CarePlan.subject.reference"
+              "id": "householdPatients",
+              "resourceType": "Patient",
+              "relatedResources": [
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                }
+              ]
             }
           ],
+          "padding": 16,
           "registerCard": {
             "rules": [
               {

@@ -10,7 +10,7 @@
     "en"
   ],
   "useDarkTheme": false,
-  "syncInterval": 15,
+  "syncInterval": 30,
   "syncStrategy": [
     "Location",
     "Organization",
@@ -31,8 +31,10 @@
       "Observation",
       "Condition",
       "Questionnaire",
-      "QuestionnaireResponse"
+      "QuestionnaireResponse",
+      "RelatedPerson",
+      "List",
+      "Flag"
     ]
-  },
-  "taskExpireJobDuration": "PT15M"
+  }
 }

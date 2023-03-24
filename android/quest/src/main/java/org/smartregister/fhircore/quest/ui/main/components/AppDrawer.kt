@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -174,6 +175,7 @@ private fun NavBottomSection(
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit
 ) {
+  val context = LocalContext.current
   Box(
     modifier =
       modifier
@@ -190,7 +192,7 @@ private fun NavBottomSection(
       endTextColor = SubtitleTextColor
     ) {
       openDrawer(false)
-      onSideMenuClick(AppMainEvent.SyncData)
+      onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }
 }
@@ -240,13 +242,17 @@ private fun NavTopSection(
       text = appUiState.appTitle,
       fontSize = 22.sp,
       color = AppTitleColor,
-      modifier = modifier.padding(vertical = 16.dp)
+      modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis
     )
     Text(
       text = "$versionCode($versionName)",
       fontSize = 22.sp,
       color = AppTitleColor,
-      modifier = modifier.padding(vertical = 16.dp)
+      modifier = modifier.padding(vertical = 16.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis
     )
   }
 }

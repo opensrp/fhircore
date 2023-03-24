@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,8 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 
 @Serializable
-data class ExtractedResource(val resourceType: ResourceType, val fhirPathExpression: String)
+data class ExtractedResource(
+  val id: String? = null,
+  val resourceType: ResourceType,
+  val fhirPathExpression: String
+)

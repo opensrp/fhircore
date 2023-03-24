@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ abstract class ViewProperties {
   abstract val fillMaxWidth: Boolean
   abstract val fillMaxHeight: Boolean
   abstract val clickable: String
+  abstract val visible: String
 }
 
 enum class ViewAlignment {

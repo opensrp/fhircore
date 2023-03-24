@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import java.time.Duration
 import java.time.format.DateTimeParseException
 import kotlin.time.Duration as KotlinDuration
+import org.hl7.fhir.r4.model.Timing
 
 /**
  * Parses a string that represents a duration in ISO-8601 format and returns the parsed Duration
@@ -31,3 +32,9 @@ fun KotlinDuration.Companion.tryParse(durationString: String): Duration {
     return Duration.ofDays(1)
   }
 }
+
+fun Timing.extractFhirpathPeriod() =
+  this.repeat.let { if (it.hasPeriod()) "${it.period} '${it.periodUnit.display}'" else "" }
+
+fun Timing.extractFhirpathDuration() =
+  this.repeat.let { if (it.hasDuration()) "${it.duration} '${it.durationUnit.display}'" else "" }

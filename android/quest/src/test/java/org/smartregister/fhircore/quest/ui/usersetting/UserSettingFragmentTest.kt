@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,29 +49,17 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 class UserSettingFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
-
   lateinit var userSettingViewModel: UserSettingViewModel
-
   lateinit var accountAuthenticator: AccountAuthenticator
-
   lateinit var secureSharedPreference: SecureSharedPreference
-
   var sharedPreferencesHelper: SharedPreferencesHelper
-
   private var configService: ConfigService
-
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
-
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-
   private val resourceService: FhirResourceService = mockk()
-
   private var fhirResourceDataSource: FhirResourceDataSource
-
   private lateinit var syncBroadcaster: SyncBroadcaster
-
   private val application: Context = ApplicationProvider.getApplicationContext()
 
   init {
@@ -98,11 +86,13 @@ class UserSettingFragmentTest : RobolectricTest() {
     userSettingViewModel =
       UserSettingViewModel(
         fhirEngine = mockk(),
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        configurationRegistry
+        syncBroadcaster = syncBroadcaster,
+        accountAuthenticator = accountAuthenticator,
+        secureSharedPreference = secureSharedPreference,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        workManager = mockk(relaxed = true),
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
   }
 

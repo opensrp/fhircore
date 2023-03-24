@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ object NavigationArg {
   const val RESOURCE_CONFIG = "resourceConfig"
   const val CONFIG_ID = "configId"
   const val REPORT_ID = "reportId"
+  const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
 
   /** Create route paths */

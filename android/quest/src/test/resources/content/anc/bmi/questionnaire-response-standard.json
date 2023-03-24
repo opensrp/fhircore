@@ -1,55 +1,122 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "status": "in-progress",
+  "id": "1170dc9f-e0d6-465e-b857-6c86cc3bdb22",
+  "meta": {
+    "lastUpdated": "2023-02-01T18:02:29.209+00:00",
+    "tag": [
+      {
+        "system": "https://smartregister.org/",
+        "code": "3811",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "5",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "2",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "3812",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+  "status": "completed",
+  "subject": {
+    "reference": "Group/6f3980e0-d1d6-4a7a-a950-939f3ca7b301"
+  },
+  "authored": "2023-02-01T18:02:28+00:00",
   "item": [
     {
-      "linkId": "7133a736-f901-4ef3-8861-2d0d00b1856e",
-      "text": "FAMILY"
-    },
-    {
-      "linkId": "family.name",
-      "text": "Family name",
+      "linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
+      "text": "Commodity:",
       "answer": [
         {
-          "valueString": "Doe Family"
+          "valueString": "Albendazole 400mg, Tabs"
         }
       ]
     },
     {
-      "linkId": "family.id",
-      "text": "Household ID",
+      "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
+      "text": "Current Stock Balance:",
       "answer": [
         {
-          "valueString": "1234567"
+          "valueInteger": 60
         }
       ]
     },
     {
-      "linkId": "family.village",
-      "text": "Village",
+      "linkId": "4571fa5f-8448-4e69-8395-c1962154e39c",
+      "text": "Damaged Stock",
       "answer": [
         {
-          "valueString": "Kerio"
+          "valueInteger": 0
         }
       ]
     },
     {
-      "linkId": "family.landmark",
-      "text": "Landmark/ description of house location",
+      "linkId": "cc3a573f-8faf-49bd-8649-c74fcd31ab7e",
+      "text": "Expired Stock",
       "answer": [
         {
-          "valueString": "Escapement "
+          "valueInteger": 0
         }
       ]
     },
     {
-      "linkId": "family.nearest_hf",
-      "text": "Nearest health facility",
+      "linkId": "a71d3a65-9f08-4316-8ebf-41c376a4932e",
+      "text": "Stock on hand (no damaged/expired)",
       "answer": [
         {
-          "valueString": "Kerio Valley Hospital"
+          "valueInteger": 60
         }
       ]
+    },
+    {
+      "linkId": "6feb8bd4-701d-4864-aa4e-16e2b9332880",
+      "text": "Adjust Stock By (Hidden) - not absolute",
+      "answer": [
+        {
+          "valueInteger": 0
+        }
+      ]
+    },
+    {
+      "linkId": "35f0cdc3-7c3f-4a7a-8299-62fd801b9510",
+      "text": "Quantity Restocked",
+      "answer": [
+        {
+          "valueInteger": 20
+        }
+      ]
+    },
+    {
+      "linkId": "d6c39388-fb56-4e1f-8cfc-f199f2c89919",
+      "text": "Latest Observation ID (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "40dbe891-80da-45d0-98ff-9e192f3055df"
+        }
+      ]
+    },
+    {
+      "linkId": "513d5111-449e-49e0-d43a-8953fb53ba7d",
+      "text": "Stockout Flag ID (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "no-flag"
+        }
+      ]
+    },
+    {
+      "linkId": "6c5c6fd7-749c-402b-990b-df96a92bf6c8",
+      "text": "Stockout Flag Start Date (Pre-populated) (Hidden)"
     }
   ]
 }

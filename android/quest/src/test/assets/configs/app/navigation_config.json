@@ -33,7 +33,7 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "defaultMeasureReport"
+          "id": "supplyChainMeasureReport"
         }
       ]
     },

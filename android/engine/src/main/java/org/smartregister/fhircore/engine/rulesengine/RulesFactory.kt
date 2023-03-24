@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -38,8 +39,11 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -56,13 +60,12 @@ class RulesFactory
 constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val dispatcherProvider: DispatcherProvider
 ) : RuleListener {
 
   val rulesEngineService = RulesEngineService()
-  private val facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private val computedValuesMap = mutableMapOf<String, Any>()
   private val jexlEngine =
     JexlBuilder()
       .namespaces(
@@ -77,6 +80,8 @@ constructor(
       .strict(false)
       .create()
 
+  private var facts: Facts = Facts()
+
   init {
     rulesEngine.registerRuleListener(this)
   }
@@ -85,6 +90,7 @@ constructor(
 
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
+      val computedValuesMap = facts.get(DATA) as Map<String, Any>
       Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
     }
   }
@@ -115,43 +121,67 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  fun fireRule(
-    ruleConfigs: List<RuleConfig>,
-    baseResource: Resource,
-    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+  @Suppress("UNCHECKED_CAST")
+  fun fireRules(
+    rules: Rules,
+    baseResource: Resource? = null,
+    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
   ): Map<String, Any> {
-    // Reset previously computed values and init facts
-    computedValuesMap.clear()
-    facts.apply {
-      clear()
-      put(FHIR_PATH, fhirPathDataExtractor)
-      put(DATA, computedValuesMap)
-      put(SERVICE, rulesEngineService)
-    }
 
-    val customRules = mutableSetOf<Rule>()
-    ruleConfigs.forEach { ruleConfig ->
+    // Initialize new facts and fire rules in background
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
+        relatedResourcesMap.forEach {
+          val actualValue =
+            it.value.map { queryResult ->
+              when (queryResult) {
+                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
+                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+              }
+            }
+          put(it.key, actualValue)
+        }
+      }
 
-      // Create JEXL rule
-      val customRule: JexlRule =
-        JexlRule(jexlEngine)
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .priority(ruleConfig.priority)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
 
-      ruleConfig.actions.forEach { customRule.then(it) }
-      customRules.add(customRule)
-    }
-
-    // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
-    facts.put(baseResource.resourceType.name, baseResource)
-    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
-
-    rulesEngine.fire(Rules(customRules), facts)
-
-    return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
+    return facts.get(DATA) as Map<String, Any>
   }
+
+  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
+    withContext(dispatcherProvider.io()) {
+      Rules(
+        ruleConfigs
+          .map { ruleConfig ->
+            val customRule: JexlRule =
+              JexlRule(jexlEngine)
+                .name(ruleConfig.name)
+                .description(ruleConfig.description)
+                .priority(ruleConfig.priority)
+                .`when`(ruleConfig.condition.ifEmpty { TRUE })
+
+            for (action in ruleConfig.actions) {
+              try {
+                customRule.then(action)
+              } catch (jexlException: JexlException) {
+                Timber.e(jexlException)
+                continue // Skip action when an error occurs to avoid app force close
+              }
+            }
+            customRule
+          }
+          .toSet()
+      )
+    }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
@@ -169,31 +199,31 @@ constructor(
 
     /**
      * This method retrieves a list of relatedResources for a given resource from the facts map It
-     * fetches a list of facts of the given [relatedResourceType] then iterates through this list in
+     * fetches a list of facts of the given [relatedResourceKey] then iterates through this list in
      * order to return a list of all resources whose subject reference matches the logical Id of the
      * [resource]
      *
-     * [resource]
-     * - The parent resource for which the related resources will be retrieved [relatedResourceType]
-     * - The ResourceType the relatedResources belong to [fhirPathExpression]
-     * - A fhir path expression used to retrieve the subject reference Id from the related resources
+     * @param resource The parent resource for which the related resources will be retrieved
+     * @param relatedResourceKey The key representing the relatedResources in the map
+     * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
+     * reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
-      relatedResourceType: ResourceType,
-      fhirPathExpression: String,
+      relatedResourceKey: String,
+      referenceFhirPathExpression: String,
       relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-        relatedResourcesMap?.get(relatedResourceType.name)
-          ?: if (facts.getFact(relatedResourceType.name) != null)
-            facts.getFact(relatedResourceType.name).value as List<Resource>
+        relatedResourcesMap?.get(relatedResourceKey)
+          ?: if (facts.getFact(relatedResourceKey) != null)
+            facts.getFact(relatedResourceKey).value as List<Resource>
           else emptyList()
 
       return value.filter {
         resource.logicalId ==
-          fhirPathDataExtractor.extractValue(it, fhirPathExpression).extractLogicalIdUuid()
+          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
       }
     }
 
@@ -202,7 +232,6 @@ constructor(
      * fetches a list of facts of the given [parentResourceType] then iterates through this list in
      * order to return a resource whose logical id matches the subject reference retrieved via
      * fhirPath from the [childResource]
-     *
      * - The logical Id of the parentResource [parentResourceType]
      * - The ResourceType the parentResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the logical Id from the parent resources
@@ -226,6 +255,7 @@ constructor(
      * [resources] List of resources the expressions are run against [fhirPathExpression] An
      * expression to run against the provided resources [matchAll] When true the function checks
      * whether all of the resources fulfill the expression provided
+     *
      * ```
      *            When false the function checks whether any of the resources fulfills the expression provided
      * ```
@@ -263,7 +293,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String
-    ): String? =
+    ): String =
       resources
         ?.mapNotNull {
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
@@ -274,6 +304,7 @@ constructor(
           else null
         }
         ?.joinToString(",")
+        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -285,7 +316,7 @@ constructor(
       resource: Resource,
       fhirPathExpression: String,
       label: String
-    ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+    ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)
@@ -344,27 +375,49 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function filters resource if the [value] provided matches the result of the extracted
-     * [fhirPathExpression]
+     * This function filters resources provided the condition extracted from the
+     * [fhirPathExpression] is met
      */
-    fun filterResources(resources: List<Resource>, fhirPathExpression: String): List<Resource> {
+    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.filter {
+      return resources?.filter {
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
+        ?: emptyList()
+    }
+
+    /** This function combines all string indexes to comma separated */
+    fun joinToString(source: MutableList<String?>): String {
+      source.removeIf { it == null }
+      val inputString = source.joinToString()
+      val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
+      return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
     }
 
     fun mapResourcesToExtractedValues(
-      resources: List<Resource>,
+      resources: List<Resource>?,
       fhirPathExpression: String
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
-      return resources.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+      return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
+        ?: emptyList()
     }
+
+    fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
+      relatedResourceCounts?.sumOf { it.count } ?: 0
+
+    fun retrieveCount(
+      parentResourceId: String,
+      relatedResourceCounts: List<RelatedResourceCount>?
+    ): Long =
+      relatedResourceCounts
+        ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
+        ?.count
+        ?: 0
   }
 
   companion object {

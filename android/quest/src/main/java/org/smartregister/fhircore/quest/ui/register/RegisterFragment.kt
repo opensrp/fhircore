@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -42,6 +43,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
@@ -51,7 +53,6 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
@@ -68,11 +69,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+  private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
-  val registerViewModel by viewModels<RegisterViewModel>()
+  private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -83,7 +84,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -185,6 +186,11 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
+      is SyncJobStatus.InProgress ->
+        emitPercentageProgress(
+          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
+          syncJobStatus.syncOperation == SyncOperation.UPLOAD
+        )
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -202,14 +208,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         // Show error message in snackBar message
         // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         val hasAuthError =
-          syncJobStatus.exceptions?.any {
+          syncJobStatus.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        if (hasAuthError == true)
-          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken(requireContext()))
-        Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
+        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
         val messageResourceId =
-          if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
+          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
@@ -230,7 +234,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle)
+        retrieveRegisterUiState(registerId, screenTitle, params)
       }
     }
   }
@@ -249,7 +253,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
         // Always refresh data when registration happens
         registerViewModel.paginateRegisterData(
@@ -268,6 +272,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         // Reset activity livedata
         appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
+    }
+  }
+  @VisibleForTesting
+  fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
+    lifecycleScope.launch {
+      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }
 }

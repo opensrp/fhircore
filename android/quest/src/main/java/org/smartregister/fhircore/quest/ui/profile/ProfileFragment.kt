@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     savedInstanceState: Bundle?
   ): View {
     with(profileFragmentArgs) {
-      lifecycleScope.launchWhenCreated {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+      lifecycleScope.launch {
+        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -80,10 +80,10 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
     lifecycleScope.launch {
       questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmit(questionnaireSubmission)
+        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
         // Always refresh data when questionnaire is submitted
         with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
         }
 
         // Display SnackBar message

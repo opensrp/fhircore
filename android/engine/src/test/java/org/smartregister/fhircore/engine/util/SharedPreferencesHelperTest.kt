@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,10 @@ import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var gson: Gson
 
   @Before

@@ -15,12 +15,7 @@
           "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,
-          "setOrganizationDetails": true,
-          "snackBarMessage": {
-            "message": "Household has been created",
-            "actionLabel": "UNDO",
-            "duration": "Short"
-          }
+          "setOrganizationDetails": true
         }
       }
     ]
@@ -252,9 +247,9 @@
       ]
     },
     {
-      "id": "reports",
+      "id": "serviceDeliveryReports",
       "visible": true,
-      "display": "Household Reports",
+      "display": "Service Delivery Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -263,14 +258,14 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "householdMeasureReport"
+          "id": "serviceDeliveryMeasureReport"
         }
       ]
     },
     {
-      "id": "otherReports",
+      "id": "supplyChainReports",
       "visible": true,
-      "display": "Other Reports",
+      "display": "Supply Chain Reports",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_reports"
@@ -279,7 +274,7 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REPORT",
-          "id": "defaultMeasureReport"
+          "id": "supplyChainMeasureReport"
         }
       ]
     },

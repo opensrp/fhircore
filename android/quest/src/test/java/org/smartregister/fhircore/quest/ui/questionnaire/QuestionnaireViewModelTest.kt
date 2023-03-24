@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,13 +43,16 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Age
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -61,6 +66,8 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -79,13 +86,19 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -96,33 +109,19 @@ import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
   @Inject lateinit var jsonParser: IParser
-
   @Inject lateinit var configService: ConfigService
-
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private val fhirEngine: FhirEngine = mockk()
-
   private val context: Application = ApplicationProvider.getApplicationContext()
-
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
-
   private lateinit var defaultRepo: DefaultRepository
-
   private val libraryEvaluator: LibraryEvaluator = mockk()
-
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @Before
@@ -415,6 +414,54 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadQuestionnaireShouldPrepopulateFieldsWithPrepopulationParams() {
+
+    val prePopulationParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age",
+          dataType = DataType.INTEGER,
+          key = "patientAge",
+          value = "100"
+        )
+      )
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertEquals("100", result.item[1].initial[0].value.valueToString())
+  }
+
+  @Test
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
     val patient = samplePatient()
@@ -566,6 +613,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testLoadPatientShouldReturnPatientResource() {
     val patient =
       Patient().apply {
@@ -592,6 +640,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testLoadRelatedPersonShouldReturnOnlyOneItemList() {
     val relatedPerson =
       RelatedPerson().apply {
@@ -604,7 +653,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(relatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
 
     runBlocking {
       val list = questionnaireViewModel.loadRelatedPerson("1")
@@ -626,10 +675,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testGetPopulationResourcesShouldReturnListOfResources() {
 
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(RelatedPerson().apply { id = "2" })
 
     val intent = Intent()
@@ -656,8 +706,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testSaveQuestionnaireResponseShouldCallAddOrUpdateWhenResourceIdIsNotBlank() {
-
     val questionnaire = Questionnaire().apply { id = "qId" }
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(resource = any()) } returns Unit
@@ -670,8 +720,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testSaveQuestionnaireResponseWithExperimentalQuestionnaireShouldNotSave() {
-
     val questionnaire = Questionnaire().apply { experimental = true }
     val questionnaireResponse = QuestionnaireResponse()
 
@@ -680,6 +730,34 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testSaveQuestionnaireResponseWithActionParameterIdShouldAddOrUpdate() {
+    val theId = "the Id"
+    val uuid = "the uuid"
+    val relatedResourceId = "Group/$uuid"
+    val questionnaire = Questionnaire().apply { id = theId }
+    val questionnaireResponse = QuestionnaireResponse()
+    val resource = Group().apply { id = uuid }
+
+    coEvery { fhirEngine.loadResource<Questionnaire>(theId) } returns questionnaire
+    coEvery { defaultRepo.loadResource(uuid, ResourceType.Group) } returns resource
+
+    runBlocking {
+      questionnaireViewModel.loadQuestionnaire(
+        theId,
+        QuestionnaireType.DEFAULT,
+        listOf(
+          ActionParameter("key", ActionParameterType.UPDATE_DATE_ON_EDIT, value = relatedResourceId)
+        )
+      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
+
+    coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+    coVerify { defaultRepo.addOrUpdate(resource = resource) }
   }
 
   @Test
@@ -1018,7 +1096,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaire = Questionnaire()
     val questionnaireResponse = QuestionnaireResponse()
     questionnaire.name = "eCBIS Add Family Member Registration"
-    val errorMessage = context.getString(R.string.structure_error_message, questionnaire.name)
+    val errorMessage = context.getString(R.string.structuremap_failed, questionnaire.name)
     coEvery { questionnaireViewModel.retrieveStructureMapProvider() } throws
       Exception("Failed to process resources")
 
@@ -1026,7 +1104,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
-    coVerify { context.getString(R.string.structure_error_message, questionnaire.name) }
+    coVerify { context.getString(R.string.structuremap_failed, questionnaire.name) }
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
   }
 
@@ -1154,6 +1232,89 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testPartialQuestionnaireResponseHasValues() {
+    // empty QuestionnaireResponse
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(QuestionnaireResponse())
+    )
+
+    // empty item
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply { item = mutableListOf(QuestionnaireResponseItemComponent()) }
+      )
+    )
+
+    // with answer
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer = mutableListOf(QuestionnaireResponseItemAnswerComponent())
+              }
+            )
+        }
+      )
+    )
+
+    // with answer and value that is empty
+    Assert.assertFalse(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(QuestionnaireResponseItemAnswerComponent().apply { value = Age() })
+              }
+            )
+        }
+      )
+    )
+
+    // with answer and value that is not empty
+    Assert.assertTrue(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Age().apply { value = BigDecimal.ONE }
+                    }
+                  )
+              }
+            )
+        }
+      )
+    )
+
+    // second answer has non empty value
+    Assert.assertTrue(
+      questionnaireViewModel.partialQuestionnaireResponseHasValues(
+        QuestionnaireResponse().apply {
+          item =
+            mutableListOf(
+              QuestionnaireResponseItemComponent().apply {
+                answer =
+                  mutableListOf(
+                    QuestionnaireResponseItemAnswerComponent(),
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Age().apply { value = BigDecimal.ONE }
+                    }
+                  )
+              }
+            )
+        }
+      )
+    )
+  }
+
+  @Test
   fun testSavePartialQuestionnaireResponseCallsSaveResponse() {
     val questionnaireResponse = QuestionnaireResponse()
     questionnaireViewModel.savePartialQuestionnaireResponse(Questionnaire(), questionnaireResponse)
@@ -1184,6 +1345,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val group = Group().apply { id = "123" }
     questionnaireViewModel.appendOrganizationInfo(group)
     Assert.assertEquals("Organization/105", group.managingEntity.reference)
+  }
+
+  @Test
+  fun testAppVersionIsAppendedToPatientResource() {
+    // Version name
+    val versionName = BuildConfig.VERSION_NAME
+
+    // For Patient
+    val patient = samplePatient()
+    questionnaireViewModel.appendAppVersion(resource = patient)
+    val tag = patient.meta.tag
+    val appVersionTag = tag[0]
+    Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
+    Assert.assertEquals(versionName, appVersionTag.code)
+    Assert.assertEquals("Application Version", appVersionTag.display)
   }
 
   @Test
@@ -1264,5 +1440,53 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify { defaultRepo.delete(resourceType = resourceType, resourceId = resourceIdentifier) }
+  }
+
+  @Test
+  fun testGenerateMissingItemsForQuestionnaire() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/sample/missingitem-questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/sample/missingitem-questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaire.item.generateMissingItems(questionnaireResponse.item)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
+  }
+
+  @Test
+  fun testGenerateMissingItemsForQuestionnaireResponse() {
+    val patientRegistrationQuestionnaire =
+      "patient-registration-questionnaire/questionnaire.json".readFile()
+
+    val patientRegistrationQuestionnaireResponse =
+      "patient-registration-questionnaire/questionnaire-response.json".readFile()
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+
+    val questionnaireResponse =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
+
+    questionnaireResponse.generateMissingItems(questionnaire)
+
+    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
 }

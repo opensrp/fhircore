@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       message = R.string.form_progress_message,
       title = R.string.questionnaire_alert_invalid_title,
       confirmButtonListener = {},
-      confirmButtonText = R.string.submit_button_text
+      confirmButtonText = R.string.submit_questionnaire
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -129,7 +129,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       getString(R.string.form_progress_message),
       getString(R.string.questionnaire_alert_invalid_title),
-      getString(R.string.submit_button_text)
+      getString(R.string.submit_questionnaire)
     )
 
     // test an additional cancel or neutral button in confirm alert
@@ -187,7 +187,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       context = context,
       message = "Here is the complete info",
       title = "Info title",
-      confirmButtonText = R.string.submit_button_text
+      confirmButtonText = R.string.submit_questionnaire
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -196,20 +196,19 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       "Here is the complete info",
       "Info title",
-      getString(R.string.submit_button_text)
+      getString(R.string.submit_questionnaire)
     )
   }
 
   @Test
   fun testShowDatePromptShouldShowAlertWithCorrectData() {
-    val dateDialog =
-      AlertDialogue.showDatePickerAlert(
-        context = context,
-        max = Date(),
-        title = "Date title",
-        confirmButtonText = "Date confirm",
-        confirmButtonListener = {}
-      )
+    AlertDialogue.showDatePickerAlert(
+      context = context,
+      max = Date(),
+      title = "Date title",
+      confirmButtonText = "Date confirm",
+      confirmButtonListener = {}
+    )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")

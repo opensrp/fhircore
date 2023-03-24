@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 @Composable
 fun GenerateView(
@@ -105,12 +106,14 @@ fun GenerateView(
             else properties.arrangement?.position ?: Arrangement.Top
         ) {
           for (child in children) {
-            GenerateView(
-              modifier = generateModifier(child),
-              properties = child,
-              resourceData = resourceData,
-              navController = navController
-            )
+            if (child.isVisible(resourceData.computedValuesMap)) {
+              GenerateView(
+                modifier = generateModifier(child),
+                properties = child,
+                resourceData = resourceData,
+                navController = navController
+              )
+            }
           }
         }
       }

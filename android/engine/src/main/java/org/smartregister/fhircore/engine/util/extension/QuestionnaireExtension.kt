@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
-import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.datacapture.extensions.asStringValue
+import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Locale
 import org.hl7.fhir.r4.model.BooleanType
@@ -39,10 +39,12 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
-  this.linkId
-    .replace("_", " ")
-    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
-    .plus(": ")
+  if (this.linkId != null) {
+    this.linkId
+      .replace("_", " ")
+      .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+      .plus(": ")
+  } else ""
 
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
@@ -135,20 +137,28 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
 }
 
 /** Pre-Populate Questionnaire items with initial values */
+// TODO: handle interpolation for null values on rules engine and not where the values are used
 fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
+  interpolationPrefix: String,
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    prePopulationParams.firstOrNull { it.linkId == item.linkId }?.let { actionParam ->
-      item.initial =
-        arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
-          Questionnaire.QuestionnaireItemInitialComponent().apply {
-            value = actionParam.dataType?.let { actionParam.value.castToType(it) }
-          }
-        )
-    }
+    prePopulationParams
+      .firstOrNull {
+        it.linkId == item.linkId &&
+          !it.value.isNullOrEmpty() &&
+          !it.value.contains(interpolationPrefix)
+      }
+      ?.let { actionParam ->
+        item.initial =
+          arrayListOf(
+            Questionnaire.QuestionnaireItemInitialComponent().apply {
+              value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+            }
+          )
+      }
     if (item.item.isNotEmpty()) {
-      item.item.prePopulateInitialValues(prePopulationParams)
+      item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
     }
   }
 }

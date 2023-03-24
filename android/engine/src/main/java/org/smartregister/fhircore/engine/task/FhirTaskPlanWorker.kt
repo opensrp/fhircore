@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ constructor(
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
       }
+      .asSequence()
       .filter {
         it.status == Task.TaskStatus.REQUESTED ||
           it.status == Task.TaskStatus.READY ||

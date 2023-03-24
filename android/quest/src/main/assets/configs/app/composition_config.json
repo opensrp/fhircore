@@ -16,7 +16,7 @@
     ]
   },
   "date": "2022-09-16",
-  "title": "Device configurations",
+  "title": "eCBIS CHA",
   "confidentiality": "L",
   "section": [
     {
@@ -50,25 +50,15 @@
       "mode": "working"
     },
     {
-      "title": "Measure reports configurations",
+      "title": "In-App reports configuration",
       "mode": "working",
       "section": [
         {
-          "title": "Household Measure Report",
+          "title": "Service Delivery reports",
           "focus": {
             "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
             "identifier": {
-              "value": "householdMeasureReport"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "Default Measure Report",
-          "focus": {
-            "reference": "Binary/730232e1-547c-47a2-9fdf-c218caa6c5e6",
-            "identifier": {
-              "value": "defaultMeasureReport"
+              "value": "serviceDeliveryMeasureReport"
             }
           },
           "mode": "working"
@@ -177,15 +167,6 @@
               "value": "tbRegister"
             }
           }
-        },
-        {
-          "title": "Patient register configuration",
-          "focus": {
-            "reference": "Binary/9aa6bbb6-df76-42a4-bdbe-72dc197378ca",
-            "identifier": {
-              "value": "patientRegister"
-            }
-          }
         }
       ]
     },
@@ -205,7 +186,7 @@
         {
           "title": "Default profile configuration",
           "focus": {
-            "reference": "Binary/40352701-4e80-41dc-9584-0847b2a04964",
+            "reference": "Binary/34b709f3-e8a1-44e9-867a-714b68bb1367",
             "identifier": {
               "value": "defaultProfile"
             }
@@ -429,7 +410,7 @@
           "mode": "working"
         },
         {
-          "title": "Under 2 Year Child Visit Form",
+          "title": "Under 1 Year Child Visit Form",
           "focus": {
             "reference": "Questionnaire/5a60a629-bcf4-4101-96ac-a5e07b35f30e",
             "identifier": {
@@ -439,7 +420,7 @@
           "mode": "working"
         },
         {
-          "title": "Over 2 Year Child Visit Form",
+          "title": "Over 1 Year Child Visit Form",
           "focus": {
             "reference": "Questionnaire/91c51999-0e04-495a-8d70-58c3aabefcab",
             "identifier": {
@@ -712,6 +693,16 @@
             }
           },
           "mode": "working"
+        },
+        {
+          "title": "Supply chain Physically count & restock",
+          "focus": {
+            "reference": "StructureMap/8f7828f5-3910-4bfc-94a9-a0da749fb37c",
+            "identifier": {
+              "value": "eCBISSupplyChainPhysicallyCountAndRestock"
+            }
+          },
+          "mode": "working"
         }
       ]
     },
@@ -722,309 +713,9 @@
         {
           "title": "",
           "focus": {
-            "reference": "Group/6f3980e0-d1d6-4a7a-a950-939f3ca7b301",
+            "reference": "List/ea15c35a-8e8c-47ce-8122-c347cefa1b4a",
             "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/e50eb835-7827-4001-b233-e1dda721d4e8",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/90b10fdb-592c-47b6-a265-c8806a15d77c",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/dde1cd4f-bef4-4d2b-ad1b-f63b639ed254",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/592181bc-0a68-47bc-8275-ac853bba1b09",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/b339a63b-84db-45e8-b357-7fcce3bddc34",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/7c5c3eb6-0382-4c7b-8c2d-3abfb31d29f4",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/9aa4d38c-1c8c-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/3e5529c8-1c8d-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/1a06dc73-575f-4cff-9424-c95605ba7c30",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/961eb18c-1c8e-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/23c0fed8-1c8e-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/8e6fc3e6-1c8d-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/75a7f6ec-1c8f-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/3b603f72-22b1-40f9-b2e0-5e9c3df7003f",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/21fc9958-1c8f-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/6e7d2b70-1c90-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/951da426-1506-4cab-b03e-5583bdf0ca76",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/d1ad8a94-ba92-4f78-903d-0653ebd41336",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/6a59c142-1c87-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/567ec5f2-db90-4fac-b578-6e07df3f48de",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/197faa30-1c90-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/09a63acb-81d1-4117-b61d-a59dfdc177fa",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/24dcbee9-a665-4b3e-b97d-61b3ff675589",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/853341c8-1c91-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546",
-            "identifier": {
-              "value": "referral"
-            }
-          },
-          "mode": "working"
-        },
-        {
-          "title": "",
-          "focus": {
-            "reference": "Group/6815d390-1c8b-11ed-861d-0242ac120002",
-            "identifier": {
-              "value": "referral"
+              "value": "commodityList"
             }
           },
           "mode": "working"

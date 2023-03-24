@@ -14,6 +14,13 @@
           "valueDate": "2017-03-14",
           "paramPrefix": "GREATERTHAN_OR_EQUALS"
         }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
       ]
     },
     "relatedResources": [
@@ -89,6 +96,48 @@
         "actions": [
           "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
         ]
+      },
+      {
+        "name": "showMemberTasks",
+        "condition": "true",
+        "actions": [
+          "data.put('showMemberTasks', size(Task) > 0)"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+        ]
+      },
+      {
+        "name": "taskDescription",
+        "condition": "true",
+        "actions": [
+          "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+        ]
+      },
+      {
+        "name": "taskFor",
+        "condition": "true",
+        "actions": [
+          "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+        ]
+      },
+      {
+        "name": "taskQuestionnaireId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
+        ]
       }
     ],
     "views": [
@@ -111,6 +160,25 @@
               }
             ],
             "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": "@{showMemberTasks}",
+              "text": "@{taskDescription}",
+              "status": "@{serviceStatus}",
+              "smallSized": true,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "@{taskQuestionnaireId}",
+                    "title": "@{taskDescription}",
+                    "saveButtonText": "Save",
+                    "taskId": "@{taskId}",
+                    "resourceIdentifier": "@{taskFor}"
+                  }
+                }
+              ]
+            },
             "actions": [
               {
                 "trigger": "ON_CLICK",

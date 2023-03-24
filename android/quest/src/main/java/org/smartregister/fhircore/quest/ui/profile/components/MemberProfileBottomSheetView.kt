@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -105,9 +106,9 @@ fun MemberProfileBottomSheetView(
       Spacer(modifier = modifier.height(8.dp))
       buttonProperties.forEach {
         ActionableButton(
-          buttonProperties = it,
+          buttonProperties = it.copy(buttonType = ButtonType.BIG),
           resourceData = ResourceData,
-          navController = navController
+          navController = navController,
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -138,7 +139,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
   )
 }
 
@@ -157,6 +158,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
   )
 }

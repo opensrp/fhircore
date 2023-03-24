@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ListenableWorker
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.time.Duration
@@ -30,8 +32,17 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   repeatInterval: Long = 15,
   duration: Duration? = null,
   timeUnit: TimeUnit = TimeUnit.MINUTES,
-  existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
+  existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
+  requiresNetwork: Boolean = true
 ) {
+
+  val constraint =
+    Constraints.Builder()
+      .setRequiredNetworkType(
+        if (requiresNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED
+      )
+      .build()
+
   val workRequestBuilder =
     if (duration == null) PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
     else PeriodicWorkRequestBuilder<W>(duration)
@@ -41,6 +52,7 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
     workRequestBuilder
       .setInitialDelay(repeatInterval, timeUnit)
       .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+      .setConstraints(constraint)
       .build()
   )
 }

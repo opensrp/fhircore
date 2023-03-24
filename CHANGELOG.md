@@ -5,14 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2022-xx-xx
+## [0.2.0-rc1] - 2022-xx-xx
 ### Added
+- Initial Sync progress as a percentage
 - Adds internationalization(MLS) for App configs
 - Adds register, navigation menus and profile configurations using JSON files
 - Implements Practitioner Details
 - Integrates Geo Widget
 - Implements configurable side menu icons
 - Implements resource tagging
+
+### Fixed
+
+- Geowidget | Fixed a bug disabling the link between registered families and their location
+- Geowidget | Fixed a crash when a family location is not found
 
 ## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added

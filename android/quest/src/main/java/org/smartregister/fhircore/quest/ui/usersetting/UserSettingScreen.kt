@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,6 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -81,6 +80,7 @@ import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
@@ -176,7 +176,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Sync,
         text = stringResource(id = R.string.sync),
-        clickListener = { onEvent(UserSettingsEvent.SyncData) },
+        clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
         modifier = modifier
       )
 
@@ -239,7 +239,7 @@ fun UserSettingScreen(
         ConfirmClearDatabaseDialog(
           permanentResetDatabase = {
             onEvent(UserSettingsEvent.ShowLoaderView(true, R.string.clear_database))
-            onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
+            onEvent(UserSettingsEvent.ResetDatabaseFlag(true, context))
           },
           onDismissDialog = {
             onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false))
@@ -269,7 +269,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Logout,
         text = stringResource(id = R.string.logout),
-        clickListener = { onEvent(UserSettingsEvent.Logout) },
+        clickListener = { onEvent(UserSettingsEvent.Logout(context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT),
         iconTint = colorResource(id = R.color.colorError),
         textColor = colorResource(id = R.color.colorError)
@@ -383,7 +383,7 @@ fun ConfirmClearDatabaseDialog(
 }
 
 @Composable
-@Preview(showBackground = true)
+@PreviewWithBackgroundExcludeGenerated
 fun UserSettingPreview() {
   UserSettingScreen(
     username = "Jam",

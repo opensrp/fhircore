@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       CircularProgressIndicator(
-        modifier = modifier.align(Alignment.CenterHorizontally).size(28.dp),
-        strokeWidth = 2.4.dp
+        modifier = modifier.align(Alignment.CenterHorizontally).size(24.dp),
+        strokeWidth = 1.8.dp
       )
       if (text != null) {
         Text(text = text, modifier = modifier.testTag(PROGRESS_MSG_TAG))
