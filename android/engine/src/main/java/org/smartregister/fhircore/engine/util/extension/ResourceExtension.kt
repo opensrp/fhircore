@@ -21,10 +21,13 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.absoluteValue
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -44,6 +47,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
@@ -314,4 +318,37 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
 
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
+}
+
+fun Task.updateDependentTaskDueDate(id: String): Task {
+  return apply {
+    val isUpcoming = status == Task.TaskStatus.REQUESTED
+    val isOverdue =
+      (status == Task.TaskStatus.READY || status == Task.TaskStatus.INPROGRESS) &&
+        executionPeriod.end.before(Date())
+    val isDue = status == Task.TaskStatus.INPROGRESS
+
+    if ((isUpcoming || isOverdue || isDue) && partOf.isNotEmpty()) {
+      val isDependentTask = partOf.find { it.reference.replace("Task/", "") == id }
+      if (input.isNotEmpty())
+        input.forEach { i ->
+          if (isDependentTask != null) {
+            val inputDate = i.value.dateTimeValue().value
+            val startDate = executionPeriod.start.toInstant()
+            val adminDate = restriction.period.start
+            val difference = Duration.between(adminDate.toInstant(), startDate).toDays()
+            // inputDate.time.absoluteValue.toInt() to be updated once the type is updated correctly
+            if (difference < inputDate.time.absoluteValue.toInt()) {
+              executionPeriod.start =
+                Date(
+                  LocalDateTime.parse(adminDate.time.toString())
+                    .toLocalDate()
+                    .plusDays(inputDate.daysPassed())
+                    .toString()
+                )
+            }
+          }
+        }
+    }
+  }
 }

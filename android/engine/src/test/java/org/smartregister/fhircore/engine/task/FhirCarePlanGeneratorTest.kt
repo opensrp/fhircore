@@ -32,6 +32,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
@@ -45,6 +46,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
@@ -52,6 +54,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -59,6 +62,7 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.joda.time.LocalDateTime
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -67,6 +71,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -76,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -93,6 +99,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   lateinit var structureMapUtilities: StructureMapUtilities
 
   private val defaultRepository: DefaultRepository = mockk()
+  private var task = Task()
+  private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
 
   @Before
   fun setup() {
@@ -109,8 +117,42 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         workManager = workManager
       )
-
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
+
+    coEvery { fhirEngine.get<Task>(any()) } returns
+      task.apply {
+        id = "123456"
+        status = TaskStatus.COMPLETED
+        executionPeriod.start = LocalDateTime.parse("2022-01-01").toDate()
+        executionPeriod.end = LocalDateTime.parse("2023-02-01").toDate()
+        restriction.period.start = LocalDateTime.parse("2022-01-15").toDate()
+        partOf =
+          listOf(
+            Reference(
+              "{\n" +
+                "   \"type\":{\n" +
+                "      \"coding\":[\n" +
+                "         {\n" +
+                "            \"system\":\"http://snomed.info/sct\",\n" +
+                "            \"code\":\"900000000000457003\",\n" +
+                "            \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
+                "         }\n" +
+                "      ]\n" +
+                "   },\n" +
+                "   \"value\":{\n" +
+                "      \"reference\":\"Task/123456\"\n" +
+                "   }\n" +
+                "}"
+            )
+          )
+        input =
+          listOf(
+            Task.ParameterComponent(
+              CodeableConcept(),
+              DateTimeType().setValue(LocalDateTime.parse("2022-01-17").toDate())
+            )
+          )
+      }
   }
 
   @Test
@@ -934,7 +976,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
     coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
 
-    fhirCarePlanGenerator.transitionTaskTo("12345", TaskStatus.COMPLETED)
+    fhirCarePlanGenerator.updateTaskDetailsById("12345", TaskStatus.COMPLETED)
 
     val task = slot<Task>()
     coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
@@ -1021,6 +1063,70 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
     assertEquals(visitTasks, carePlan.activityFirstRep.outcomeReference.size)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with upcoming task`() = runTest {
+    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.REQUESTED }
+    val updatedTask = task.updateDependentTaskDueDate("1234")
+    val inputDate = task.input[0].value.dateTimeValue()
+    val updatedTaskStartDate = updatedTask.executionPeriod.start
+    val actual = Date(task.executionPeriod.start.time.plus(Date().daysPassed()))
+    // This code below this comment will be updated once I get a working Task with correct
+    // input.value
+    assertNotNull(updatedTaskStartDate.time)
+    assertNotNull(actual)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with overdue task`() {
+    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.READY }
+    val updatedTask = task.updateDependentTaskDueDate("1234")
+    val inputDate = task.input[0].value.dateTimeValue()
+    val updatedTaskStartDate = updatedTask.executionPeriod.start
+    val actual = Date(task.executionPeriod.start.time.plus(Date().daysPassed()))
+    // This code below this comment will be updated once I get a working Task with correct
+    // input.value
+    assertNotNull(updatedTaskStartDate.time)
+    assertNotNull(actual)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with due task and dependent task`() {
+    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.INPROGRESS }
+    val updatedTask = task.updateDependentTaskDueDate("1234")
+    val inputDate = task.input[0].value.dateTimeValue()
+    val updatedTaskStartDate = updatedTask.executionPeriod.start
+    val actual = Date(task.executionPeriod.start.time.plus(inputDate.day))
+    // The code below this comment will be updated once I get a working Task with correct
+    // input.value
+    assertNotNull(updatedTaskStartDate.time)
+    assertNotNull(actual)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with due task and non-dependent task`() {
+    coEvery { fhirEngine.get<Task>(any()) } returns
+      task.apply {
+        task.apply {
+          id = "123456"
+          status = TaskStatus.INPROGRESS
+          executionPeriod.start = LocalDateTime.parse("2022-01-01").toDate()
+          executionPeriod.end = LocalDateTime.parse("2023-02-01").toDate()
+          restriction.period.start = LocalDateTime.parse("2022-01-15").toDate()
+          partOf = emptyList()
+          input =
+            listOf(
+              Task.ParameterComponent(
+                CodeableConcept(),
+                DateTimeType().setValue(LocalDateTime.parse("2022-01-17").toDate())
+              )
+            )
+        }
+      }
+    val updatedTask = task.updateDependentTaskDueDate("1234")
+    val updatedTaskStartDate = updatedTask.executionPeriod.start
+    assertEquals(updatedTaskStartDate, LocalDateTime.parse("2022-01-01").toDate())
   }
 }
 

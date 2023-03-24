@@ -24,7 +24,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import java.time.Duration
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,6 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -193,7 +193,7 @@ constructor(
     }
   }
 
-  suspend fun transitionTaskTo(id: String, status: TaskStatus, reason: String? = null) {
+  suspend fun updateTaskDetailsById(id: String, status: TaskStatus, reason: String? = null) {
     getTask(id)
       ?.apply {
         this.status = status
@@ -205,7 +205,7 @@ constructor(
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    transitionTaskTo(id, TaskStatus.CANCELLED, reason)
+    updateTaskDetailsById(id, TaskStatus.CANCELLED, reason)
   }
 
   suspend fun getTask(id: String) =
@@ -305,28 +305,4 @@ constructor(
    * Updates the due date of a dependent task based on the current status of the task. @param id The
    * ID of the dependent task to update. @return The updated task object.
    */
-  private fun Task.updateDependentTaskDueDate(id: String): Task {
-    return this.apply {
-      val upcoming = status == TaskStatus.REQUESTED
-      val overdue =
-        (status == TaskStatus.READY || status == TaskStatus.INPROGRESS) &&
-          executionPeriod.end.before(Date())
-      val due = status == TaskStatus.INPROGRESS
-
-      if ((upcoming || overdue || due) && partOf.isNotEmpty()) {
-        val part = partOf.find { it.reference.replace("Task/", "") == id }
-        input.forEach { i ->
-          if (part != null) {
-            val inputDate = i.value
-            val startDate = executionPeriod.start.toInstant()
-            val adminDate = restriction.period.start.toInstant()
-            val difference = Duration.between(adminDate, startDate).toDays()
-            if (difference < (inputDate.toString().toIntOrNull() ?: 0)) {
-              executionPeriod.start = Date(difference)
-            }
-          }
-        }
-      }
-    }
-  }
 }
