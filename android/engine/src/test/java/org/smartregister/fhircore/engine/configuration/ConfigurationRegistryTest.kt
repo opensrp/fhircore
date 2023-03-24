@@ -152,6 +152,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, configId)
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
     Assert.assertEquals(appId, registerConfig.appId)
     Assert.assertEquals(id, registerConfig.id)
   }
