@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
-import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -37,12 +36,10 @@ import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -363,6 +360,7 @@ constructor(
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject)
     }
   }
 
@@ -501,60 +499,8 @@ constructor(
     return defaultRepository.loadResource(patientId)
   }
 
-  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson> {
-    return defaultRepository.searchResourceFor(
-      token = RelatedPerson.RES_ID,
-      subjectType = ResourceType.RelatedPerson,
-      subjectId = patientId
-    )
-  }
-
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.create(true, resource) }
-  }
-
-  open suspend fun getPopulationResources(
-    intent: Intent,
-    questionnaireConfig: QuestionnaireConfig
-  ): Array<Resource> {
-    val resourcesList = mutableListOf<Resource>()
-
-    intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
-    }
-
-    questionnaireConfig.resourceIdentifier?.let { patientId ->
-      loadPatient(patientId)?.apply {
-        if (identifier.isEmpty()) {
-          identifier =
-            mutableListOf(
-              Identifier().apply {
-                value = logicalId
-                use = Identifier.IdentifierUse.OFFICIAL
-                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-              }
-            )
-          Timber.e(jsonParser.encodeResourceToString(this))
-        }
-
-        resourcesList.add(this)
-      }
-        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-      loadRelatedPerson(patientId).forEach { resourcesList.add(it) }
-    }
-
-    return resourcesList.toTypedArray()
-  }
-
-  suspend fun generateQuestionnaireResponse(
-    questionnaire: Questionnaire,
-    intent: Intent,
-    questionnaireConfig: QuestionnaireConfig
-  ): QuestionnaireResponse {
-    return ResourceMapper.populate(
-      questionnaire,
-      *getPopulationResources(intent, questionnaireConfig = questionnaireConfig)
-    )
   }
 
   fun partialQuestionnaireResponseHasValues(questionnaireResponse: QuestionnaireResponse): Boolean {

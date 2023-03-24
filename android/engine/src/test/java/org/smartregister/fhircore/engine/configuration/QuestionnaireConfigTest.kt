@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.configuration
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -26,24 +28,32 @@ class QuestionnaireConfigTest : RobolectricTest() {
 
   @Test
   fun testVerifyInterpolationInQuestionnaireConfig() {
-
     val questionnaireConfig =
       QuestionnaireConfig(
         id = "@{id}",
         title = "@{title}",
+        setPractitionerDetails = false,
+        setOrganizationDetails = false,
+        setAppVersion = false,
+        type = QuestionnaireType.EDIT,
         resourceIdentifier = "@{resourceIdentifier}",
         confirmationDialog =
           ConfirmationDialog(
             title = "@{dialogTitle}",
             message = "@{dialogMessage}",
-            actionButtonText = "@{dialogActionButtonText}"
+            actionButtonText = "@{dialogActionButtonText}",
           ),
         groupResource =
           GroupResourceConfig(
             groupIdentifier = "@{groupIdentifier}",
             memberResourceType = "Condition",
+            removeMember = true,
+            removeGroup = true,
+            deactivateMembers = false
           ),
-        taskId = "@{taskId}"
+        taskId = "@{taskId}",
+        saveDraft = true,
+        carePlanConfigs = listOf(CarePlanConfig())
       )
 
     val map = mutableMapOf<String, String>()
@@ -66,5 +76,14 @@ class QuestionnaireConfigTest : RobolectricTest() {
     Assert.assertEquals("Alert", interpolatedConfig.confirmationDialog?.title)
     Assert.assertEquals("Are you sure?", interpolatedConfig.confirmationDialog?.message)
     Assert.assertEquals("Yes", interpolatedConfig.confirmationDialog?.actionButtonText)
+  }
+
+  @Test
+  fun testDefaultConfirmationDialog() {
+    ConfirmationDialog().apply {
+      Assert.assertEquals("", title)
+      Assert.assertEquals("", message)
+      Assert.assertEquals("", actionButtonText)
+    }
   }
 }
