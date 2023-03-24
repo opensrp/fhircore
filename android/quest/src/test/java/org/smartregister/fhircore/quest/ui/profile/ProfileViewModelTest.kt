@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -45,6 +46,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -77,7 +79,9 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   private lateinit var registerRepository: RegisterRepository
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   @Inject lateinit var rulesExecutor: RulesExecutor
@@ -87,6 +91,7 @@ class ProfileViewModelTest : RobolectricTest() {
   private lateinit var expectedBaseResource: Patient
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     expectedBaseResource = Faker.buildPatient()
@@ -129,6 +134,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveProfileUiState() {
     runBlocking {
       profileViewModel.retrieveProfileUiState(
@@ -151,6 +157,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testShouldLaunchQuestionnaireWhenQuestionnaireResponseIsFromDb() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
@@ -237,6 +244,89 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testShouldHaveErrorSnackBarMessageWhenQuestionnaireConfigIsNull() {
+    val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
+    val navController = NavController(context)
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
+      )
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
+
+    val event =
+      ProfileEvent.OverflowMenuClick(
+        navController = navController,
+        resourceData = null,
+        overflowMenuItemConfig = overflowMenuItemConfig,
+      )
+
+    runBlocking {
+      profileViewModel.onEvent(event)
+      delay(100)
+    }
+
+    Assert.assertNotNull(profileViewModel.snackBarStateFlow)
+    coVerify(inverse = true) { registerRepository.fhirEngine }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testShouldHaveErrorSnackBarMessageWhenQuestionnaireIsNull() {
+    val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
+    val navController = NavController(context)
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
+      )
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
+
+    coEvery { registerRepository.fhirEngine.get(ResourceType.Questionnaire, "444") } throws
+      ResourceNotFoundException("type", "id")
+
+    val event =
+      ProfileEvent.OverflowMenuClick(
+        navController = navController,
+        resourceData = null,
+        overflowMenuItemConfig = overflowMenuItemConfig,
+      )
+
+    runBlocking {
+      profileViewModel.onEvent(event)
+      delay(100)
+    }
+
+    Assert.assertNotNull(profileViewModel.snackBarStateFlow)
+    coVerify { registerRepository.fhirEngine.loadResource<Questionnaire>("444") }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testShouldNotLaunchQuestionnaireWhenQuestionnaireIsNotFoundInDb() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
@@ -283,6 +373,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testShouldLaunchQuestionnaireWhenQuestionnaireResponseIsFromPopulationAndPatientBaseResource() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
@@ -402,6 +493,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testShouldNotLaunchQuestionnaireWhenContextIsNotQuestionnaireHandler() {
     val context = mockk<Context>()
     val navController = NavController(context)

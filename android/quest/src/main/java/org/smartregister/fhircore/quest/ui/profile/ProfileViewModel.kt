@@ -201,7 +201,7 @@ constructor(
                 }
 
                 var questionnaireResponse: QuestionnaireResponse? = null
-                if (event.resourceData == null) return@let questionnaireResponse
+                if (event.resourceData == null) return@let null
 
                 if (!questionnaireConfig.type.isDefault()) {
                   questionnaireResponse =
