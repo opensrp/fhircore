@@ -266,7 +266,13 @@ constructor(
     }
   }
 
-  /** Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator]. */
+  /**
+   * Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator].
+   *
+   * @param questionnaire Questionnaire to use in validation
+   * @param questionnaireResponse QuestionnaireResponse to validate
+   * @param context Context to use in validation
+   */
   private fun isQuestionnaireResponseValid(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
@@ -292,6 +298,7 @@ constructor(
   /**
    * Gets a Questionnaire Response from the database if it exists. Generates Questionnaire Response
    * from population, otherwise.
+   *
    * @param questionnaire Questionnaire as the basis for how the resources are to be populated
    * @param subjectId ID of the resource that submitted the Questionnaire Response, and related with
    * the population resources
@@ -315,6 +322,7 @@ constructor(
 
   /**
    * Generates a Questionnaire Response by populating the given resources.
+   *
    * @param questionnaire Questionnaire as the basis for how the resources are to be populated
    * @param populationResources resources to be populated
    */
@@ -334,6 +342,7 @@ constructor(
   /**
    * Loads the latest Questionnaire Response resource that is associated with the given subject ID
    * and Questionnaire ID.
+   *
    * @param subjectId ID of the resource that submitted the Questionnaire Response
    * @param subjectType resource type of the resource that submitted the Questionnaire Response
    * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
@@ -360,6 +369,7 @@ constructor(
   /**
    * Search Questionnaire Response resources that are associated with the given subject ID and
    * Questionnaire ID.
+   *
    * @param subjectId ID of the resource that submitted the Questionnaire Response
    * @param subjectType resource type of the resource that submitted the Questionnaire Response
    * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
@@ -386,6 +396,7 @@ constructor(
 
   /**
    * Loads resources to be populated into a Questionnaire Response.
+   *
    * @param subjectId can be Patient ID or Group ID
    * @param subjectType resource type of the ID
    */
