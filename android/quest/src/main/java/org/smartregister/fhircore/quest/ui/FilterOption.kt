@@ -16,17 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui
 
-import androidx.navigation.NavHostController
-
-sealed class StandardRegisterEvent {
-  data class SearchRegister(val searchText: String = "") : StandardRegisterEvent()
-
-  object MoveToNextPage : StandardRegisterEvent()
-
-  object MoveToPreviousPage : StandardRegisterEvent()
-
-  data class ApplyFilter<T>(val filterState: T) : StandardRegisterEvent()
-
-  data class OpenProfile(val patientId: String, val navController: NavHostController) :
-    StandardRegisterEvent()
+interface FilterOption {
+  fun text(): String
 }

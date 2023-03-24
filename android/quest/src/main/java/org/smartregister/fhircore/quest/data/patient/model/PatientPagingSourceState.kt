@@ -17,11 +17,15 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.RegisterFilter
 
 data class PatientPagingSourceState(
   val healthModule: HealthModule = HealthModule.DEFAULT,
   val appFeatureName: String? = null,
   val currentPage: Int = 0,
   val loadAll: Boolean = false,
-  val searchFilter: String? = null
-)
+  val searchFilter: String? = null,
+  val filters: RegisterFilter? = null
+) {
+  val requiresFilter = filters != null
+}
