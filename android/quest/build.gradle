@@ -37,8 +37,6 @@ android {
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
-        buildConfigField("String", "SENTRY_DSN", "\"" + getProps("sentry.dsn") + "\"")
-
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
 
@@ -287,8 +285,6 @@ dependencies {
     }
     implementation 'com.github.bumptech.glide:glide:4.13.0'
 
-    implementation 'io.sentry:sentry-android:5.0.1'
-
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
@@ -333,14 +329,4 @@ dependencies {
    // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
     testImplementation 'info.cqframework:cql-to-elm:2.4.0'
-}
-
-def getProps(String propName) {
-    def propsFile = rootProject.file('local.properties')
-    if (propsFile.exists()) {
-        def props = new Properties()
-        props.load(new FileInputStream(propsFile))
-        return props[propName]
-    }
-    return "";
 }

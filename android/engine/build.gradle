@@ -26,6 +26,8 @@ android {
         targetSdkVersion sdk_versions.target_sdk
         testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField("String", "SENTRY_DSN", "\"" + getProps("sentry.dsn") + "\"")
     }
 
     buildTypes {
@@ -250,6 +252,9 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
 
+    // Sentry
+    api 'io.sentry:sentry-android:5.0.1'
+
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
@@ -282,4 +287,14 @@ dependencies {
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutineVersion")
     testImplementation "androidx.work:work-testing:2.7.1"
     androidTestImplementation deps.mockk_android
+}
+
+def getProps(String propName) {
+    def propsFile = rootProject.file('local.properties')
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        return props[propName]
+    }
+    return ""
 }

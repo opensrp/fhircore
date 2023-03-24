@@ -28,6 +28,7 @@ import dagger.hilt.android.HiltAndroidApp
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.BuildConfig as EngineBuildConfig
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
@@ -71,9 +72,11 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   }
 
   private fun initSentryMonitoring() {
-    if (BuildConfig.SENTRY_DSN.isNotBlank()) {
+    if (EngineBuildConfig.SENTRY_DSN.isNotBlank()) {
       SentryAndroid.init(this) { options: SentryAndroidOptions ->
-        options.dsn = BuildConfig.SENTRY_DSN.trim { it <= ' ' }
+        options.dsn = EngineBuildConfig.SENTRY_DSN.trim { it <= ' ' }
+        // To set a uniform sample rate
+        options.tracesSampleRate = 1.0
       }
     }
   }
