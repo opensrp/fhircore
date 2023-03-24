@@ -233,6 +233,52 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testShouldNotLaunchQuestionnaireWhenQuestionnaireIsNotFoundInDb() {
+    val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
+    val navController = NavController(context)
+    val resourceData =
+      ResourceData(
+        baseResourceId = "Patient/999",
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = emptyMap(),
+      )
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444", type = QuestionnaireType.EDIT),
+        params =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
+              dataType = DataType.INTEGER,
+              key = "maleCondomPreviousBalance",
+              value = "100"
+            )
+          )
+      )
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(visible = "", actions = listOf(actionConfig))
+
+    coEvery { registerRepository.fhirEngine.loadResource<Questionnaire>("444") } returns null
+
+    val event =
+      ProfileEvent.OverflowMenuClick(
+        navController = navController,
+        resourceData = resourceData,
+        overflowMenuItemConfig = overflowMenuItemConfig,
+      )
+
+    runBlocking {
+      profileViewModel.onEvent(event)
+      delay(100)
+
+      coVerify { registerRepository.fhirEngine.loadResource<Questionnaire>("444") }
+    }
+  }
+
+  @Test
   fun testShouldLaunchQuestionnaireWhenQuestionnaireResponseIsFromPopulationAndPatientBaseResource() {
     val context = mockk<Context>(moreInterfaces = arrayOf(QuestionnaireHandler::class))
     val navController = NavController(context)
