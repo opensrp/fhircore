@@ -31,6 +31,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
@@ -52,6 +53,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -552,6 +554,18 @@ constructor(
     return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
   }
 
+  private suspend fun getActiveListResource(patient: String): ListResource? {
+    val list =
+      fhirEngine.search<ListResource> {
+        filter(ListResource.SUBJECT, { value = "Patient/$patient" })
+        filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
+        sort(ListResource.DATE, Order.ASCENDING)
+        count = 1
+        from = 0
+      }
+    return list.firstOrNull()
+  }
+
   suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
     return fhirEngine
       .search<Appointment> {
@@ -636,6 +650,12 @@ constructor(
           bundle.id = TracingHelpers.tracingBundleId
           val tasks = loadTracing(patientId)
           tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+
+          val list = getActiveListResource(patientId)
+          if (list != null) {
+            bundle.addEntry(Bundle.BundleEntryComponent().setResource(list))
+          }
+
           currentBundle.addEntry(
             Bundle.BundleEntryComponent().setResource(bundle).apply {
               id = TracingHelpers.tracingBundleId
