@@ -32,6 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # 'java' includes Kotlin support
         language: [ 'java', 'javascript' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
