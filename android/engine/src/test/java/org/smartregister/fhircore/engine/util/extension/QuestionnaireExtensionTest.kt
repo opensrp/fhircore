@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Questionnaire
@@ -269,6 +270,24 @@ class QuestionnaireExtensionTest {
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       innerQuestionnaireItemComponent.initial
     )
+  }
+
+  @Test
+  fun testFindQuestionnaireItemComponentPrepopulateRemovesInitialExpression() {
+    val theLinkId = "linkId"
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = theLinkId
+        addExtension(
+          ITEM_INITIAL_EXPRESSION_URL,
+          Expression().apply {
+            language = "text/fhirpath"
+            expression = "expression"
+          }
+        )
+      }
+    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
+    Assert.assertFalse(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
   }
 
   @Test

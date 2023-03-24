@@ -36,7 +36,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -50,7 +49,6 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -152,8 +150,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply { id = "12345" }
-    coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
-      QuestionnaireResponse()
 
     questionnaireFragment = spyk()
 
@@ -714,64 +710,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         questionnaireActivity.decodeQuestionnaireResponse(Intent(), questionnaireConfig)
       }
     }
-  }
-
-  @Test
-  fun `Bundle#attachQuestionnaireResponse() should generate populated QR when population resources provided`() {
-    val fhirJsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val patientString =
-      fhirJsonParser.encodeResourceToString(Patient().apply { id = "my-patient-id" })
-    val intent =
-      Intent().apply { putExtra("questionnaire-population-resources", arrayListOf(patientString)) }
-
-    val questionnaire =
-      Questionnaire().apply {
-        addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
-            linkId = "patient-assigned-id"
-            type = Questionnaire.QuestionnaireItemType.TEXT
-            extension =
-              listOf(
-                Extension(
-                  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-                  Expression().apply {
-                    language = "text/fhirpath"
-                    expression = "Patient.id"
-                  }
-                )
-              )
-          }
-        )
-      }
-
-    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
-
-    runBlocking { questionnaireActivity.decodeQuestionnaireResponse(intent, questionnaireConfig) }
-
-    coVerify {
-      questionnaireViewModel.generateQuestionnaireResponse(
-        questionnaire,
-        intent,
-        questionnaireConfig
-      )
-    }
-  }
-
-  @Test
-  fun `intentHasPopulationResources() should return false when questionnaire-population-resources extra is not set`() {
-    assertFalse { questionnaireActivity.intentHasPopulationResources(Intent()) }
-  }
-
-  @Test
-  fun `intentHasPopulationResources() should return true when questionnaire-population-resources extra is set`() {
-    val patientString =
-      FhirContext.forCached(FhirVersionEnum.R4)
-        .newJsonParser()
-        .encodeResourceToString(Patient().apply { id = "my-patient-id" })
-    val intent =
-      Intent().apply { putExtra("questionnaire-population-resources", arrayListOf(patientString)) }
-
-    assertTrue { questionnaireActivity.intentHasPopulationResources(intent) }
   }
 
   @Ignore("Needs fixing")

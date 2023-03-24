@@ -190,11 +190,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   @VisibleForTesting
-  internal suspend fun decodeQuestionnaireResponse(
+  internal fun decodeQuestionnaireResponse(
     intent: Intent,
     questionnaireConfig: QuestionnaireConfig
   ): String? {
-    var questionnaireResponse =
+    val questionnaireResponse =
       intent
         .getStringExtra(QUESTIONNAIRE_RESPONSE)
         ?.decodeResourceFromString<QuestionnaireResponse>()
@@ -206,22 +206,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
     }
 
-    if (questionnaireResponse == null && intentHasPopulationResources(intent)) {
-      questionnaireResponse =
-        questionnaireViewModel.generateQuestionnaireResponse(
-          questionnaire = questionnaire,
-          intent = intent,
-          questionnaireConfig = questionnaireConfig
-        )
-    }
-
     return questionnaireResponse?.encodeResourceToString()
-  }
-
-  @VisibleForTesting
-  internal fun intentHasPopulationResources(intent: Intent): Boolean {
-    val resourceList = intent.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
-    return resourceList != null && resourceList.size > 0
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
