@@ -174,56 +174,59 @@ constructor(
                   Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
                     .d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
                   return@launch
-                }
-                questionnaireConfig.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-              }
-              .let { questionnaireConfig ->
-                val questionnaire = loadQuestionnaire(questionnaireConfig.id)
-                if (questionnaire == null) {
-                  emitSnackBarState(
-                    SnackBarMessageConfig(
-                      context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
-                    )
+                } else {
+                  questionnaireConfig.interpolate(
+                    event.resourceData?.computedValuesMap ?: emptyMap()
                   )
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
-                    .d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
-                  return@launch
-                }
-                questionnaire.apply {
-                  this.url = this.url ?: this.referenceValue()
-                  if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()
-                  ) {
-                    item.prepareQuestionsForReadingOrEditing(
-                      "QuestionnaireResponse.item",
-                      questionnaireConfig.type.isReadOnly()
-                    )
-                  }
-                }
-
-                var questionnaireResponse: QuestionnaireResponse? = null
-                if (event.resourceData == null) return@let null
-
-                if (!questionnaireConfig.type.isDefault()) {
-                  questionnaireResponse =
-                    getQuestionnaireResponseFromDbOrPopulation(
-                      questionnaire = questionnaire,
-                      subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                      subjectType = event.resourceData.baseResourceType
-                    )
-                  questionnaireResponse.apply { generateMissingItems(questionnaire) }
-
-                  if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
-                  ) {
+                  val questionnaire = loadQuestionnaire(questionnaireConfig.id)
+                  if (questionnaire == null) {
                     emitSnackBarState(
                       SnackBarMessageConfig(
-                        context.getString(R.string.error_msg_questionnaire_response_is_broken)
+                        context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
                       )
                     )
+                    Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
+                      .d(
+                        context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
+                      )
                     return@launch
                   }
-                }
+                  questionnaire.apply {
+                    this.url = this.url ?: this.referenceValue()
+                    if (questionnaireConfig.type.isReadOnly() ||
+                        questionnaireConfig.type.isEditMode()
+                    ) {
+                      item.prepareQuestionsForReadingOrEditing(
+                        "QuestionnaireResponse.item",
+                        questionnaireConfig.type.isReadOnly()
+                      )
+                    }
+                  }
 
-                questionnaireResponse
+                  var questionnaireResponse: QuestionnaireResponse? = null
+                  if (event.resourceData == null) return@let null
+
+                  if (!questionnaireConfig.type.isDefault()) {
+                    questionnaireResponse =
+                      getQuestionnaireResponseFromDbOrPopulation(
+                        questionnaire = questionnaire,
+                        subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
+                        subjectType = event.resourceData.baseResourceType
+                      )
+                    questionnaireResponse.apply { generateMissingItems(questionnaire) }
+
+                    if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
+                    ) {
+                      emitSnackBarState(
+                        SnackBarMessageConfig(
+                          context.getString(R.string.error_msg_questionnaire_response_is_broken)
+                        )
+                      )
+                      return@launch
+                    }
+                  }
+                  questionnaireResponse
+                }
               }
 
           actions?.run {
