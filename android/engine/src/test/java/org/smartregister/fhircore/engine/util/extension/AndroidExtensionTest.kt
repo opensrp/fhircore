@@ -35,6 +35,8 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows
@@ -150,18 +152,24 @@ class AndroidExtensionTest : RobolectricTest() {
   @Test
   fun testRetrieveResourceIdResourceNameNull() {
     val resourceId = context.retrieveResourceId(null, "attr")
-    assertEquals(null, resourceId)
+    assertNull(resourceId)
   }
 
   @Test
   fun testRetrieveResourceIdResourceIdNull() {
     val resourceId = context.retrieveResourceId("null", "attr")
-    assertEquals(null, resourceId)
+    assertNull(resourceId)
   }
 
   @Test
   fun testGetActivity() {
     val activity = context.getActivity()
-    assertEquals(null, activity)
+    assertNull(activity)
+  }
+
+  @Test
+  fun testShowToast() {
+    val toast = context.showToast("Test")
+    assertNotNull(toast)
   }
 }
