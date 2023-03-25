@@ -22,3 +22,6 @@ coverage:
 flag_management:
   default_rules:
     carryforward: true
+
+ignore:
+  - "**org/smartregister/fhircore/engine/domain/model/CarePlanConfig.*"
