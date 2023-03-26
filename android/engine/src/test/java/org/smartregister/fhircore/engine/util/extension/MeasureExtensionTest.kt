@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.FhirEngineProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -37,11 +38,12 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var fhirEngine: FhirEngine
+  private lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    fhirEngine = FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext())
   }
 
   @Test

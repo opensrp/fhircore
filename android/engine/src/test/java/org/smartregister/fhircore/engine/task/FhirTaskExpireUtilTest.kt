@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.util.extension.today
 
 @HiltAndroidTest
 class FhirTaskExpireUtilTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var fhirTaskExpireUtil: FhirTaskExpireUtil
