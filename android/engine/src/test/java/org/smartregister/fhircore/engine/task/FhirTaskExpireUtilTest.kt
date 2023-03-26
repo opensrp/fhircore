@@ -20,15 +20,14 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -37,14 +36,13 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.joda.time.DateTime
-import org.junit.Assert
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.today
 
@@ -63,6 +61,11 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     fhirTaskExpireUtil =
       spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), fhirEngine))
+  }
+
+  @After
+  fun tearDown() {
+    clearAllMocks()
   }
 
   @Test
@@ -111,7 +114,11 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     assertEquals(4, tasks.size)
     assertEquals(authoredOnToday, maxDate)
 
-    taskList.forEach { verify { it.isPastExpiry() } }
+    taskList.toSet().subtract(tasks.toSet()).forEach {
+      assertEquals(TaskStatus.INPROGRESS, it.status)
+      coVerify(inverse = true) { fhirEngine.update(it) }
+    }
+
     tasks.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
       coVerify { fhirEngine.update(it) }
@@ -161,11 +168,18 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
         fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = authoredOnToday)
       }
 
-    // TODO: this should be 4 but the search is not working as expected
-    assertEquals(0, tasks.size)
-    assertEquals(null, maxDate)
+    assertEquals(4, tasks.size)
+    assertEquals(twoDaysAhead.toString(), maxDate.toString())
 
-    taskList.forEach { Assert.assertTrue(it.isPastExpiry()) }
+    taskList.toSet().subtract(tasks.toSet()).forEach {
+      assertEquals(TaskStatus.INPROGRESS, it.status)
+      coVerify(inverse = true) { fhirEngine.update(it) }
+    }
+
+    tasks.forEach {
+      assertEquals(TaskStatus.CANCELLED, it.status)
+      coVerify { fhirEngine.update(it) }
+    }
   }
 
   @Test
