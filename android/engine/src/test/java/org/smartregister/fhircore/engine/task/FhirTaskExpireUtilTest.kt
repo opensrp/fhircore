@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -36,7 +35,6 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.joda.time.DateTime
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -59,11 +57,6 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     fhirTaskExpireUtil =
       spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), fhirEngine))
-  }
-
-  @After
-  fun tearDown() {
-    clearAllMocks()
   }
 
   @Test
