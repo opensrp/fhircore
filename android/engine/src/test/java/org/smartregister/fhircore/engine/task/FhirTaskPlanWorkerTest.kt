@@ -65,9 +65,14 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork executes successfully when status is inProgress`() {
+  fun `FhirTaskPlanWorker doWork executes successfully for requested, accepted, inProgress, and received`() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(Task().apply { status = Task.TaskStatus.INPROGRESS })
+      listOf(
+        Task().apply { status = Task.TaskStatus.REQUESTED },
+        Task().apply { status = Task.TaskStatus.ACCEPTED },
+        Task().apply { status = Task.TaskStatus.INPROGRESS },
+        Task().apply { status = Task.TaskStatus.RECEIVED }
+      )
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
@@ -101,7 +106,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork fails when past end no CarePlan found`() {
+  fun `FhirTaskPlanWorker doWork task fails when past end no reference`() {
     val task =
       Task()
         .apply {
@@ -122,7 +127,29 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork fails when past end CarePlan found no ID`() {
+  fun `FhirTaskPlanWorker doWork task fails when past end reference not CarePlan`() {
+    val task =
+      Task()
+        .apply {
+          status = Task.TaskStatus.REQUESTED
+          executionPeriod = Period().apply { end = DateTime.now().minusDays(2).toDate() }
+          basedOn = listOf(Reference().apply { reference = "Patient" })
+        }
+        .apply { isReady() }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    coVerify { fhirEngine.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork task fails when past end CarePlan found no ID`() {
     val task =
       Task()
         .apply {
@@ -144,8 +171,9 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork fails when past end found CarePlan with ID`() {
+  fun `FhirTaskPlanWorker doWork task fails when past end found CarePlan with no ID`() {
     val carePlanId = "123"
+    val carePlan = CarePlan().apply { id = carePlanId }
     val task =
       Task()
         .apply {
@@ -156,7 +184,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
     coEvery { fhirEngine.update(task) } just runs
-    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns CarePlan()
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
@@ -165,11 +193,17 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     coVerify { fhirEngine.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
+    Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork fails when past end found CarePlan with empty reference`() {
+  fun `FhirTaskPlanWorker doWork task fails when past end found CarePlan with empty reference`() {
     val carePlanId = "123"
+    val carePlan =
+      CarePlan().apply {
+        id = carePlanId
+        activity = listOf(CarePlan.CarePlanActivityComponent())
+      }
     val task =
       Task()
         .apply {
@@ -180,8 +214,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
     coEvery { fhirEngine.update(task) } just runs
-    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns
-      CarePlan().apply { activity = listOf(CarePlan.CarePlanActivityComponent()) }
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
@@ -190,20 +223,54 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     coVerify { fhirEngine.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
+    Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 
   @Test
-  fun `FhirTaskPlanWorker doWork fails when past end found CarePlan and this is last task`() {
+  fun `FhirTaskPlanWorker doWork task fails when past end found CarePlan not task ID`() {
     val carePlanId = "123"
+    val carePlan =
+      CarePlan().apply {
+        id = carePlanId
+        activity =
+          listOf(
+            CarePlan.CarePlanActivityComponent().apply {
+              outcomeReference = listOf(Reference().apply { reference = "Task/456" })
+            }
+          )
+      }
     val task =
       Task()
         .apply {
-          id = "456"
           status = Task.TaskStatus.REQUESTED
           executionPeriod = Period().apply { end = DateTime.now().minusDays(2).toDate() }
           basedOn = listOf(Reference().apply { reference = "CarePlan/$carePlanId" })
         }
         .apply { isReady() }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.update(task) } just runs
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    coVerify { fhirEngine.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
+    Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork task ready when past end found CarePlan and this is last task`() {
+    val carePlanId = "123"
+    val task =
+      Task().apply {
+        id = "456"
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod = Period().apply { end = DateTime.now().minusDays(2).toDate() }
+        basedOn = listOf(Reference().apply { reference = "CarePlan/$carePlanId" })
+      }
     val carePlan =
       CarePlan().apply {
         activity =
@@ -247,6 +314,25 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     coVerify { fhirEngine.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.READY, task.status)
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork does not set status when ready and not requested`() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.INPROGRESS
+        executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    coVerify(inverse = true) { fhirEngine.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
   }
 
   class FhirTaskPlanWorkerFactory(val fhirEngine: FhirEngine) : WorkerFactory() {
