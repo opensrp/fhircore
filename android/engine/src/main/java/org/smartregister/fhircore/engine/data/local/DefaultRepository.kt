@@ -85,9 +85,11 @@ constructor(
     subjectParam: ReferenceClientParam,
     filters: List<DataQuery>? = null
   ): List<T> =
-    fhirEngine.search {
-      filterByResourceTypeId(subjectParam, subjectType, subjectId)
-      filters?.forEach { filterBy(it) }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByResourceTypeId(subjectParam, subjectType, subjectId)
+        filters?.forEach { filterBy(it) }
+      }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
