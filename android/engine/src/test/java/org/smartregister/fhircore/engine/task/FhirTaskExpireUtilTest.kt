@@ -46,7 +46,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.today
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-11-2022. */
 @HiltAndroidTest
 class FhirTaskExpireUtilTest : RobolectricTest() {
 
