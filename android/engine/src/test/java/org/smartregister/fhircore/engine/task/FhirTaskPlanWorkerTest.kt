@@ -168,6 +168,32 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
+  fun `FhirTaskPlanWorker doWork fails when past end found CarePlan with empty reference`() {
+    val carePlanId = "123"
+    val task =
+      Task()
+        .apply {
+          status = Task.TaskStatus.REQUESTED
+          executionPeriod = Period().apply { end = DateTime.now().minusDays(2).toDate() }
+          basedOn = listOf(Reference().apply { reference = "CarePlan/$carePlanId" })
+        }
+        .apply { isReady() }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.update(task) } just runs
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns CarePlan().apply {
+      activity = listOf(CarePlan.CarePlanActivityComponent())
+    }
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    coVerify { fhirEngine.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
+  }
+
+  @Test
   fun `FhirTaskPlanWorker doWork fails when past end found CarePlan and this is last task`() {
     val carePlanId = "123"
     val task =

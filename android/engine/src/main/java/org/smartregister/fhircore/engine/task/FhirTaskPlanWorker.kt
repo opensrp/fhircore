@@ -96,7 +96,7 @@ constructor(
   }
 
   private fun CarePlan.isLastTask(task: Task) =
-    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
+    this.activity.lastOrNull()?.outcomeReference?.lastOrNull()?.extractId() == task.logicalId
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"
