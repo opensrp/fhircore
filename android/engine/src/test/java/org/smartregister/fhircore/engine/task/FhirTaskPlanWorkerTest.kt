@@ -25,8 +25,13 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
+import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -90,6 +95,27 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         .build()
     val result = worker.startWork().get()
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork fails when past end`() {
+    val task =
+      Task()
+        .apply {
+          status = Task.TaskStatus.REQUESTED
+          executionPeriod = Period().apply { end = DateTime.now().minusDays(2).toDate() }
+        }
+        .apply { isReady() }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
+        .build()
+    val result = worker.startWork().get()
+    coVerify { fhirEngine.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
   }
 
   class FhirTaskPlanWorkerFactory(val fhirEngine: FhirEngine) : WorkerFactory() {
