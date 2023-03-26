@@ -180,9 +180,8 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
     coEvery { fhirEngine.update(task) } just runs
-    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns CarePlan().apply {
-      activity = listOf(CarePlan.CarePlanActivityComponent())
-    }
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns
+      CarePlan().apply { activity = listOf(CarePlan.CarePlanActivityComponent()) }
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(FhirTaskPlanWorkerFactory(fhirEngine))
