@@ -120,4 +120,55 @@ class ActionConfigTest : RobolectricTest() {
     Assert.assertEquals("No members found", result?.noMembersErrorMessage)
     Assert.assertEquals("Head reassigned successfully", result?.managingEntityReassignedMessage)
   }
+
+  @Test
+  fun testInterpolateManagingEntityNoChangeIfNoValuesArePassed() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display",
+        managingEntity =
+          ManagingEntityConfig(
+            dialogTitle = "@{dialogTitle}",
+            dialogWarningMessage = "@{dialogWarningMessage}",
+            dialogContentMessage = "@{dialogContentMessage}",
+            noMembersErrorMessage = "@{noMembersErrorMessage}",
+            managingEntityReassignedMessage = "@{managingEntityReassignedMessage}",
+          )
+      )
+    val oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
+  }
+
+  @Test
+  fun testInterpolateManagingEntityHandlesNulls() {
+    var actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display"
+      )
+    var oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
+
+    actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display",
+        managingEntity = ManagingEntityConfig()
+      )
+    oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
+  }
 }
