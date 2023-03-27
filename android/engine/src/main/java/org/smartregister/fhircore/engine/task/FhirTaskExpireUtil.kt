@@ -25,7 +25,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -63,7 +63,7 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
               Task.AUTHORED_ON,
               {
                 prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-                value = of(DateType(lastAuthoredOnDate))
+                value = of(DateTimeType(lastAuthoredOnDate))
               }
             )
           }
