@@ -57,7 +57,7 @@
           },
           {
             "resource": "RelatedPerson",
-            "fhirPathExpression": "patient"
+            "searchParameter": "patient"
           }
         ],
         "sortConfigs": [
@@ -242,6 +242,10 @@
                 {
                   "resourceType": "Observation",
                   "fhirPathExpression": "Observation.subject.reference"
+                },
+                {
+                  "resourceType": "RelatedPerson",
+                  "fhirPathExpression": "RelatedPerson.patient.reference"
                 }
               ]
             }
@@ -378,7 +382,7 @@
                 "name": "familyHeadId",
                 "condition": "true",
                 "actions": [
-                  "data.put('familyHeadId', fhirPath.extractValue(service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0), 'relationship.id))"
+                  "data.put('familyHeadId', service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0).patient.reference)"
                 ]
               },
               {

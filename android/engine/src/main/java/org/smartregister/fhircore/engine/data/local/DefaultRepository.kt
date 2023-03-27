@@ -166,7 +166,7 @@ constructor(
             .firstOrNull()
         }
     }
-  //todo : refactor this method after testing
+
   suspend fun changeManagingEntity(
     newManagingEntityId: String,
     groupId: String,
@@ -174,36 +174,39 @@ constructor(
   ) {
 
     val group = fhirEngine.get<Group>(groupId)
-    if (group.managingEntity.id != null) {
-      val relatedPerson = fhirEngine.get<RelatedPerson>(group.managingEntity.id)
-      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
-      changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
-      fhirEngine.update(group)
-    } else {
-      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
-      val relatedPerson = RelatedPerson()
-      changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
-      create(true, relatedPerson)
-      fhirEngine.update(group)
+    val relatedPerson =
+      if (group.managingEntity.id != null) {
+        fhirEngine.get<RelatedPerson>(group.managingEntity.id)
+      } else {
+        RelatedPerson().apply { id = UUID.randomUUID().toString() }
       }
-    }
+    val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
+    // update relatedPerson details
+    changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
+    // update relatedPerson
+    addOrUpdate(resource = relatedPerson)
+    // update group
+    group.managingEntity = relatedPerson.asReference()
+    group.managingEntity.id = relatedPerson.id
+    fhirEngine.update(group)
+  }
 
   private fun changeFamilyHead(
     existingPerson: RelatedPerson,
     newPatient: Patient,
-    relationshipCode: Code?) {
+    relationshipCode: Code?
+  ) {
     existingPerson.apply {
-    active = true
-    name = newPatient.name
-    birthDate = newPatient.birthDate
-    telecom = newPatient.telecom
-    address = newPatient.address
-    gender = newPatient.gender
-    patient = newPatient.asReference()
-    relationshipFirstRep.codingFirstRep.system = relationshipCode?.system
-    relationshipFirstRep.codingFirstRep.code = relationshipCode?.code
-    relationshipFirstRep.codingFirstRep.display = relationshipCode?.display
-    id = UUID.randomUUID().toString()
+      active = true
+      name = newPatient.name
+      birthDate = newPatient.birthDate
+      telecom = newPatient.telecom
+      address = newPatient.address
+      gender = newPatient.gender
+      patient = newPatient.asReference()
+      relationshipFirstRep.codingFirstRep.system = relationshipCode?.system
+      relationshipFirstRep.codingFirstRep.code = relationshipCode?.code
+      relationshipFirstRep.codingFirstRep.display = relationshipCode?.display
     }
   }
 
