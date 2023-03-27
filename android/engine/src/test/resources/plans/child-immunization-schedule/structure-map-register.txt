@@ -36,7 +36,13 @@ group ExtractTask(
                task.owner = evaluate(subject, $this.generalPractitioner.first()),
                task.code = evaluate(definition, code),
                task.reasonCode = evaluate(definition, product) "r_task_data";
+        // task groupIdentifier
+        subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
+               subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
+               subject -> groupIdentifier.value = evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.period.toString() + '_' + timing.repeat.periodUnit)) "rule_group_identifier_value";
+               subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
 
+        } "rule_group_identifier";
         // form to be filled
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
 
