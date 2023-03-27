@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.sync
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.fhir.sync.SyncJobStatus
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +36,7 @@ import timber.log.Timber
 
 /**
  * A singleton class that maintains a list of [OnSyncListener] that have been registered to listen
- * to sync [State] events.
+ * to [SyncJobStatus] emitted to indicate sync progress.
  */
 @Singleton
 class SyncListenerManager
@@ -46,12 +47,16 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
 
+  private val syncConfig by lazy {
+    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+  }
+
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
     get() = _onSyncListeners.mapNotNull { it.get() }
 
   /**
-   * Register [OnSyncListener] for sync [State] events. Typically the [OnSyncListener] will be
+   * Register [OnSyncListener] for [SyncJobStatus]. Typically the [OnSyncListener] will be
    * implemented in a [Lifecycle](an Activity/Fragment). This function ensures the [OnSyncListener]
    * is removed for the [_onSyncListeners] list when the [Lifecycle] changes to
    * [Lifecycle.State.DESTROYED]
@@ -82,9 +87,6 @@ constructor(
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
-    val syncConfig =
-      configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)

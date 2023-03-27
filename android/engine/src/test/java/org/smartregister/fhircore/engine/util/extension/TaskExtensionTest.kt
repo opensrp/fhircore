@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
@@ -142,5 +143,48 @@ class TaskExtensionTest {
     Assert.assertEquals(task.status.system, coding.system)
     Assert.assertEquals(task.status.toCode(), coding.code)
     Assert.assertEquals(task.status.display, coding.display)
+  }
+
+  @Test
+  fun `isPastExpiry no restriction`() {
+    val task = Task()
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, no period`() {
+    val task = Task().apply { restriction = Task.TaskRestrictionComponent() }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, no end`() {
+    val task =
+      Task().apply { restriction = Task.TaskRestrictionComponent().apply { period = Period() } }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, end before today`() {
+    val task =
+      Task().apply {
+        restriction =
+          Task.TaskRestrictionComponent().apply {
+            period = Period().apply { end = Date().plusDays(1) }
+          }
+      }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, end after today`() {
+    val task =
+      Task().apply {
+        restriction =
+          Task.TaskRestrictionComponent().apply {
+            period = Period().apply { end = Date().plusDays(-1) }
+          }
+      }
+    Assert.assertTrue(task.isPastExpiry())
   }
 }
