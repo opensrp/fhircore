@@ -113,5 +113,12 @@ sealed class ProfileViewData(
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
+    val hasFinishedAttempts: Boolean =
+      currentAttempt.run {
+        if (this != null) {
+          return@run this.numberOfAttempts >= 3
+        }
+        return@run true
+      }
   }
 }
