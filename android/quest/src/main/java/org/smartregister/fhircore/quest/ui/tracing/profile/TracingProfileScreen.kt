@@ -174,6 +174,7 @@ fun TracingProfilePage(
           onClick = {
             tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
           },
+          enabled = !profileViewData.hasFinishedAttempts,
           modifier = modifier.fillMaxWidth()
         ) {
           Text(
