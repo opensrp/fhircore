@@ -53,7 +53,8 @@ jobs:
 
     - run: |
         echo "Run, Build Application using script"
-        cd android && ./gradlew build
+        ./gradlew build
+      working-directory: android
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
