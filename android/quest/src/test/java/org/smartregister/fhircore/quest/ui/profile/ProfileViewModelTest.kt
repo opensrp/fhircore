@@ -383,6 +383,6 @@ class ProfileViewModelTest : RobolectricTest() {
           )
       )
     )
-    coVerify { registerRepository.changeManagingEntity(any(), any()) }
+    coVerify { registerRepository.changeManagingEntity(any(), any(), any()) }
   }
 }

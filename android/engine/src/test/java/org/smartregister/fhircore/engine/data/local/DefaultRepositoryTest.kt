@@ -63,6 +63,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -344,7 +346,18 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
-      defaultRepository.changeManagingEntity(newManagingEntityId = "54321", groupId = "73847")
+      defaultRepository.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            }
+        )
+      )
     }
 
     coVerify { fhirEngine.get<Patient>("54321") }
