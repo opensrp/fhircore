@@ -86,6 +86,7 @@ import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -153,7 +154,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             Task.ParameterComponent(
               CodeableConcept(),
-              DateTimeType().setValue(LocalDateTime.parse("2022-01-17").toDate())
+              dateTimeValue().setDay(17)
             )
           )
       }

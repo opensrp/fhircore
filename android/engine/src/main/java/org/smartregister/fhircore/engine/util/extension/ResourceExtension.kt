@@ -22,7 +22,9 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
@@ -333,19 +335,15 @@ fun Task.updateDependentTaskDueDate(id: String): Task {
       if (input.isNotEmpty())
         input.forEach { i ->
           if (isDependentTask != null) {
-            val inputDate = i.value.dateTimeValue().value
+            val inputDate = i.value
             val startDate = executionPeriod.start.toInstant()
             val adminDate = restriction.period.start
             val difference = Duration.between(adminDate.toInstant(), startDate).toDays()
             // inputDate.time.absoluteValue.toInt() to be updated once the type is updated correctly
-            if (difference < inputDate.time.absoluteValue.toInt()) {
-              executionPeriod.start =
-                Date(
-                  LocalDateTime.parse(adminDate.time.toString())
-                    .toLocalDate()
-                    .plusDays(inputDate.daysPassed())
-                    .toString()
-                )
+            if (difference < inputDate.valueToString().toInt()) {
+              LocalDate.parse(adminDate.toString())
+                .plusDays(inputDate.valueToString().toLong())
+                .also { executionPeriod.start = Date.from(it.atStartOfDay().toInstant(ZoneOffset.UTC)) }
             }
           }
         }
