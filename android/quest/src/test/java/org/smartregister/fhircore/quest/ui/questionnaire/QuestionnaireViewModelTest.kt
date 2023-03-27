@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.os.Looper
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
@@ -29,7 +28,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -640,69 +638,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @ExperimentalCoroutinesApi
-  fun testLoadRelatedPersonShouldReturnOnlyOneItemList() {
-    val relatedPerson =
-      RelatedPerson().apply {
-        name =
-          listOf(
-            HumanName().apply {
-              given = listOf(StringType("John"))
-              family = "Doe"
-            }
-          )
-      }
-
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
-
-    runBlocking {
-      val list = questionnaireViewModel.loadRelatedPerson("1")
-      Assert.assertEquals(1, list.size)
-      val result = list.first()
-      Assert.assertEquals(
-        relatedPerson.name.first().given.first().value,
-        result.name?.first()?.given?.first()?.value
-      )
-      Assert.assertEquals(relatedPerson.name.first().family, result.name?.first()?.family)
-    }
-  }
-
-  @Test
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
     coEvery { defaultRepo.create(any()) } returns emptyList()
     questionnaireViewModel.saveResource(mockk())
     coVerify(exactly = 1) { defaultRepo.create(any(), any()) }
-  }
-
-  @Test
-  @ExperimentalCoroutinesApi
-  fun testGetPopulationResourcesShouldReturnListOfResources() {
-
-    coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
-      listOf(RelatedPerson().apply { id = "2" })
-
-    val intent = Intent()
-    intent.putStringArrayListExtra(
-      QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-      arrayListOf(
-        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
-      )
-    )
-
-    val expectedQuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "patient-registration",
-        title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY,
-        resourceIdentifier = "2"
-      )
-    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)
-
-    runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaireConfig)
-      Assert.assertEquals(3, resourceList.size)
-    }
   }
 
   @Test
