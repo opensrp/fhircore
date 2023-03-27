@@ -73,6 +73,7 @@ constructor(
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
+  private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -202,7 +203,8 @@ constructor(
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
                 .toInt(),
-            progressPercentage = _percentageProgress
+            progressPercentage = _percentageProgress,
+            isSyncUpload = _isUploadSync
           )
       }
     }
@@ -211,7 +213,8 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
-  suspend fun emitPercentageProgressState(progress: Int) {
+  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
+    _isUploadSync.emit(isUploadSync)
   }
 }

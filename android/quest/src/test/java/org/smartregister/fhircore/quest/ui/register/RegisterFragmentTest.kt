@@ -108,15 +108,20 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
   fun `test On Sync Progress emits progress percentage`() = runTest {
-    val progressSyncStatus: SyncJobStatus =
+    val downloadProgressSyncStatus: SyncJobStatus =
       SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
+    val uploadProgressSyncStatus: SyncJobStatus =
+      SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85)
     val registerFragment = mockk<RegisterFragment>()
 
-    coEvery { registerFragment.onSync(progressSyncStatus) } answers { callOriginal() }
-    coEvery { registerFragment.emitPercentageProgress(any()) } just runs
+    coEvery { registerFragment.onSync(downloadProgressSyncStatus) } answers { callOriginal() }
+    coEvery { registerFragment.onSync(uploadProgressSyncStatus) } answers { callOriginal() }
+    coEvery { registerFragment.emitPercentageProgress(any(), any()) } just runs
 
-    registerFragment.onSync(progressSyncStatus)
+    registerFragment.onSync(downloadProgressSyncStatus)
+    registerFragment.onSync(uploadProgressSyncStatus)
 
-    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30) }
+    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30, false) }
+    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(85, true) }
   }
 }

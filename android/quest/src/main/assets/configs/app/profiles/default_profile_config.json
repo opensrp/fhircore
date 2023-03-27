@@ -125,6 +125,13 @@
       ]
     },
     {
+      "name": "childCardVisible",
+      "condition": "true",
+      "actions": [
+        "data.put('childCardVisible', data.get('patientAge') == 'true' && data.get('patientAge')<=5)"
+      ]
+    },
+    {
       "name": "patientGender",
       "condition": "true",
       "actions": [
@@ -827,7 +834,6 @@
   ],
   "views": [
     {
-
       "viewType": "COLUMN",
       "children": [
         {
@@ -2186,6 +2192,13 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+            ],
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
             ]
           }
         }
@@ -2209,6 +2222,11 @@
             ]
           },
           "params": [
+            {
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
+            },
             {
               "paramType": "PREPOPULATE",
               "linkId": "652a752f-280a-4560-aac8-fa3196449961",
@@ -2585,6 +2603,13 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4ac4f9d6-6fc7-45bf-9a29-398798fc3134"
+            ],
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
             ]
           }
         }
@@ -2605,6 +2630,13 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "a881d53a-590c-4d52-ae0f-c87b7ff04148"
+            ],
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
             ]
           }
         }
@@ -2628,6 +2660,11 @@
             ]
           },
           "params": [
+            {
+              "paramType": "UPDATE_DATE_ON_EDIT",
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}"
+            },
             {
               "paramType": "PREPOPULATE",
               "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
@@ -2693,6 +2730,11 @@
             ]
           },
           "params": [
+            {
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
+            },
             {
               "paramType": "PREPOPULATE",
               "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
@@ -2818,8 +2860,54 @@
             "planDefinitions": [
               "55d89227-3a06-4a9a-b526-2819dcb1d301",
               "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
+            ],
+            "params": [
+              {
+                "paramType": "UPDATE_DATE_ON_EDIT",
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
             ]
           }
+        }
+      ]
+    },
+    {
+      "title": "Child health card",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{childCardVisible}",
+      "enabled": "@{childCardVisible}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "childhealthcardProfile"
+        }
+      ]
+    },
+    {
+      "title": "Past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "individualpastencountersProfile"
+        }
+      ]
+    },
+    {
+      "title": "Upcoming encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "individualupcomingencountersProfile"
         }
       ]
     },
@@ -2837,7 +2925,14 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Update registration",
+            "params": [
+              {
+                "paramType": "UPDATE_DATE_ON_EDIT",
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
+            ]
           }
         }
       ]

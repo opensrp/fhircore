@@ -216,6 +216,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = UnknownHostException::class)
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun testFetchConfigurationsThrowsUnknownHostException() = runTest {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
@@ -234,6 +235,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = Exception::class)
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun testFetchConfigurationsThrowsException() = runTest {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
@@ -253,6 +255,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.serialization.ExperimentalSerializationApi
   fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
