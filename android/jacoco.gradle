@@ -50,6 +50,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/org/smartregister/fhircore/engine/domain/model/ExtractedResource*.*',
             '**/org/smartregister/fhircore/engine/domain/model/FhirResourceConfigs*.*',
             '**/org/smartregister/fhircore/engine/domain/model/OverflowMenuItemConfig*.*',
+            '**/org/smartregister/fhircore/engine/domain/model/RepositoryResourceData*.*',
             '**/org/smartregister/fhircore/engine/domain/model/RuleConfig*.*',
             '**/org/smartregister/fhircore/engine/domain/model/SearchFilters*.*',
             '**/org/smartregister/fhircore/engine/domain/model/ServiceMemberIcon*.*',
