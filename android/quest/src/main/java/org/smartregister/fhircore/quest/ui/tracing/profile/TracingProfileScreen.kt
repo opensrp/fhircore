@@ -171,6 +171,7 @@ fun TracingProfilePage(
               backgroundColor = LoginButtonColor,
               LoginFieldBackgroundColor
             ),
+          enabled = !profileViewData.hasFinishedAttempts,
           onClick = {
             tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
           },
