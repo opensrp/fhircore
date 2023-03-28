@@ -79,7 +79,6 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -309,6 +308,7 @@ constructor(
 
       schedulePeriodically<FhirCompleteCarePlanWorker>(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false
       )
 
