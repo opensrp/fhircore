@@ -23,13 +23,15 @@ import com.google.android.fhir.datacapture.extensions.createQuestionnaireRespons
 import com.google.android.fhir.logicalId
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
-import kotlin.math.absoluteValue
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -37,8 +39,10 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
@@ -322,31 +326,47 @@ fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
 }
 
-fun Task.updateDependentTaskDueDate(id: String): Task {
+suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
   return apply {
     val isUpcoming = status == Task.TaskStatus.REQUESTED
     val isOverdue =
       (status == Task.TaskStatus.READY || status == Task.TaskStatus.INPROGRESS) &&
         executionPeriod.end.before(Date())
     val isDue = status == Task.TaskStatus.INPROGRESS
-
-    if ((isUpcoming || isOverdue || isDue) && partOf.isNotEmpty()) {
-      val isDependentTask = partOf.find { it.reference.replace("Task/", "") == id }
-      if (input.isNotEmpty())
-        input.forEach { i ->
-          if (isDependentTask != null) {
-            val inputDate = i.value
-            val startDate = executionPeriod.start.toInstant()
-            val adminDate = restriction.period.start
-            val difference = Duration.between(adminDate.toInstant(), startDate).toDays()
-            // inputDate.time.absoluteValue.toInt() to be updated once the type is updated correctly
-            if (difference < inputDate.valueToString().toInt()) {
-              LocalDate.parse(adminDate.toString())
-                .plusDays(inputDate.valueToString().toLong())
-                .also { executionPeriod.start = Date.from(it.atStartOfDay().toInstant(ZoneOffset.UTC)) }
+    if (!(isUpcoming || isOverdue || isDue) || partOf.isEmpty()) {
+      return this
+    }
+    partOf.forEach { task ->
+      val dependentTask = defaultRepository.loadResource(task.reference as Reference) as? Task
+      dependentTask?.output?.forEach { dependentTaskOutputValue ->
+        val encounterResource =
+          defaultRepository.loadResource(
+            readValueFromJsonString(dependentTaskOutputValue.valueToString(), "reference")
+          ) as?
+            Encounter
+        encounterResource?.partOf?.reference?.let { partOfReference ->
+          val immunizationResource =
+            defaultRepository.loadResource(partOfReference) as? Immunization
+          immunizationResource?.occurrenceDateTimeType?.dateTimeValue()?.valueAsCalendar?.let {
+            immunizationDate ->
+            val dependentTaskStartDate = dependentTask.executionPeriod.start.toInstant()
+            val difference =
+              Duration.between(immunizationDate.toInstant(), dependentTaskStartDate).toDays()
+            if (difference < dependentTask.input.first().valueToString().toInt()) {
+              dependentTask.executionPeriod.start =
+                Date.from(
+                  LocalDate.parse(immunizationDate.toString())
+                    .plusDays(dependentTask.input.first().valueToString().toLong())
+                    .atStartOfDay()
+                    .toInstant(ZoneOffset.UTC)
+                )
             }
           }
         }
+      }
     }
   }
 }
+
+fun readValueFromJsonString(referenceString: String, key: String) =
+  Json.decodeFromString<JsonObject>(referenceString)[key]!!.jsonPrimitive.content

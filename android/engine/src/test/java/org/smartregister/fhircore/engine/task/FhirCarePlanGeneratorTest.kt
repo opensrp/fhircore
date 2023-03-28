@@ -18,6 +18,9 @@ package org.smartregister.fhircore.engine.task
 
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -48,12 +51,13 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CarePlan.CarePlanActivityComponent
-import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -64,7 +68,6 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
-import org.joda.time.LocalDateTime
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -75,7 +78,6 @@ import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -86,7 +88,6 @@ import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -104,8 +105,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   lateinit var structureMapUtilities: StructureMapUtilities
 
   private val defaultRepository: DefaultRepository = mockk()
-  private var task = Task()
   private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+
+  private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  private var immunizationResource = Immunization()
+  private var encounter = Encounter()
+  private var groupTask = Task()
+  private var dependentTask = Task()
 
   @Before
   fun setup() {
@@ -123,41 +129,241 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         workManager = workManager
       )
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
+    immunizationResource =
+      iParser.parseResource(
+        Immunization::class.java,
+        "{\n" +
+          "   \"resourceType\":\"Immunization\",\n" +
+          "   \"id\":\"41921cfe-5074-4eec-925f-2bc581237660\",\n" +
+          "   \"identifier\":{\n" +
+          "      \"use\":\"official\",\n" +
+          "      \"value\":\"6a637a79-df7b-4cc9-93b2-f73f965c31ab\"\n" +
+          "   },\n" +
+          "   \"status\":\"completed\",\n" +
+          "   \"patient\":{\n" +
+          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+          "   },\n" +
+          "   \"encounter\":{\n" +
+          "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "   },\n" +
+          "   \"occurrenceDateTime\":\"2021-10-01T00:00:00+00:00\"\n" +
+          "}"
+      )
 
-    coEvery { fhirEngine.get<Task>(any()) } returns
-      task.apply {
-        id = "123456"
-        status = TaskStatus.COMPLETED
-        executionPeriod.start = LocalDateTime.parse("2022-01-01").toDate()
-        executionPeriod.end = LocalDateTime.parse("2023-02-01").toDate()
-        restriction.period.start = LocalDateTime.parse("2022-01-15").toDate()
-        partOf =
-          listOf(
-            Reference(
-              "{\n" +
-                "   \"type\":{\n" +
-                "      \"coding\":[\n" +
-                "         {\n" +
-                "            \"system\":\"http://snomed.info/sct\",\n" +
-                "            \"code\":\"900000000000457003\",\n" +
-                "            \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
-                "         }\n" +
-                "      ]\n" +
-                "   },\n" +
-                "   \"value\":{\n" +
-                "      \"reference\":\"Task/123456\"\n" +
-                "   }\n" +
-                "}"
-            )
-          )
-        input =
-          listOf(
-            Task.ParameterComponent(
-              CodeableConcept(),
-              dateTimeValue().setDay(17)
-            )
-          )
-      }
+    encounter =
+      iParser.parseResource(
+        Encounter::class.java,
+        "{\n" +
+          "   \"resourceType\":\"Encounter\",\n" +
+          "   \"id\":\"ebcfb052-47ed-4846-bb13-0f136cdc53a1\",\n" +
+          "   \"identifier\":{\n" +
+          "      \"use\":\"official\",\n" +
+          "      \"value\":\"4b62fff3-6010-4674-84a2-71f2bbdbf2e5\"\n" +
+          "   },\n" +
+          "   \"status\":\"finished\",\n" +
+          "   \"type\":[\n" +
+          "      {\n" +
+          "         \"coding\":[\n" +
+          "            {\n" +
+          "               \"system\":\"http://snomed.info/sct\",\n" +
+          "               \"code\":\"33879002\",\n" +
+          "               \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
+          "            }\n" +
+          "         ]\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"subject\":{\n" +
+          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+          "   },\n" +
+          "   \"period\":{\n" +
+          "      \"end\":\"2021-10-01T00:00:00+00:00\"\n" +
+          "   },\n" +
+          "   \"partOf\":{\n" +
+          "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "   }\n" +
+          "}"
+      )
+    groupTask =
+      iParser.parseResource(
+        Task::class.java,
+        "{\n" +
+          "   \"resourceType\":\"Task\",\n" +
+          "   \"id\":\"a9100c01-c84b-404f-9d24-9b830463a152\",\n" +
+          "   \"identifier\":[\n" +
+          "      {\n" +
+          "         \"use\":\"official\",\n" +
+          "         \"value\":\"a20e88b4-4beb-4b31-86cd-572e1445e5f3\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"basedOn\":[\n" +
+          "      {\n" +
+          "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"partOf\":{\n" +
+          "      \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+          "   },\n" +
+          "   \"status\":\"requested\",\n" +
+          "   \"intent\":\"plan\",\n" +
+          "   \"priority\":\"routine\",\n" +
+          "   \"code\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"33879002\",\n" +
+          "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
+          "         }\n" +
+          "      ]\n" +
+          "   },\n" +
+          "   \"description\":\"OPV 1 at 6 wk vaccine\",\n" +
+          "   \"for\":{\n" +
+          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+          "   },\n" +
+          "   \"executionPeriod\":{\n" +
+          "      \"start\":\"2021-11-12T00:00:00+00:00\",\n" +
+          "      \"end\":\"2026-11-11T00:00:00+00:00\"\n" +
+          "   },\n" +
+          "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
+          "   \"requester\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"owner\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"reasonCode\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"111164008\",\n" +
+          "            \"display\":\"Poliovirus vaccine\"\n" +
+          "         }\n" +
+          "      ],\n" +
+          "      \"text\":\"OPV\"\n" +
+          "   },\n" +
+          "   \"reasonReference\":{\n" +
+          "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
+          "   },\n" +
+          "   \"input\":[\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"900000000000457003\",\n" +
+          "                  \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":{\n" +
+          "            \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+          "         }\n" +
+          "      },\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"371154000\",\n" +
+          "                  \"display\":\"Dependent (qualifier value)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":28\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"output\":[\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"41000179103\",\n" +
+          "                  \"display\":\"Immunization record (record artifact)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":{\n" +
+          "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "         }\n" +
+          "      }\n" +
+          "   ]\n" +
+          "} "
+      )
+    dependentTask =
+      iParser.parseResource(
+        Task::class.java,
+        "{\n" +
+          "   \"resourceType\":\"Task\",\n" +
+          "   \"id\":\"650203d2-f327-4eb4-a9fd-741e0ce29c3f\",\n" +
+          "   \"identifier\":[\n" +
+          "      {\n" +
+          "         \"use\":\"official\",\n" +
+          "         \"value\":\"ad17cda3-0ac8-43c5-8d9a-9f3adee45e2b\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"basedOn\":[\n" +
+          "      {\n" +
+          "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"status\":\"requested\",\n" +
+          "   \"intent\":\"plan\",\n" +
+          "   \"priority\":\"routine\",\n" +
+          "   \"code\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"33879002\",\n" +
+          "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
+          "         }\n" +
+          "      ]\n" +
+          "   },\n" +
+          "   \"description\":\"OPV 0 at 0 d vaccine\",\n" +
+          "   \"for\":{\n" +
+          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+          "   },\n" +
+          "   \"executionPeriod\":{\n" +
+          "      \"start\":\"2021-10-01T00:00:00+00:00\",\n" +
+          "      \"end\":\"2021-10-15T00:00:00+00:00\"\n" +
+          "   },\n" +
+          "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
+          "   \"requester\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"owner\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"reasonCode\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"111164008\",\n" +
+          "            \"display\":\"Poliovirus vaccine\"\n" +
+          "         }\n" +
+          "      ],\n" +
+          "      \"text\":\"OPV\"\n" +
+          "   },\n" +
+          "   \"reasonReference\":{\n" +
+          "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
+          "   },\n" +
+          "   \"output\":[\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"41000179103\",\n" +
+          "                  \"display\":\"Immunization record (record artifact)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":{\n" +
+          "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "         }\n" +
+          "      }\n" +
+          "   ]\n" +
+          "}"
+      )
   }
 
   @Test
@@ -1348,67 +1554,38 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with upcoming task`() = runTest {
-    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.REQUESTED }
-    val updatedTask = task.updateDependentTaskDueDate("1234")
-    val inputDate = task.input[0].value.dateTimeValue()
-    val updatedTaskStartDate = updatedTask.executionPeriod.start
-    val actual = Date(task.executionPeriod.start.time.plus(Date().daysPassed()))
-    // This code below this comment will be updated once I get a working Task with correct
-    // input.value
-    assertNotNull(updatedTaskStartDate.time)
-    assertNotNull(actual)
+  fun `updateDependentTaskDueDate - no dependent tasks`() = runBlocking {
+    groupTask.apply {
+      status = TaskStatus.REQUESTED
+      partOf = emptyList()
+    }
+    // when
+    val updatedTask = groupTask.updateDependentTaskDueDate(defaultRepository)
+    // then
+    assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", dependentTask.logicalId)
+    assertEquals(groupTask, updatedTask)
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with overdue task`() {
-    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.READY }
-    val updatedTask = task.updateDependentTaskDueDate("1234")
-    val inputDate = task.input[0].value.dateTimeValue()
-    val updatedTaskStartDate = updatedTask.executionPeriod.start
-    val actual = Date(task.executionPeriod.start.time.plus(Date().daysPassed()))
-    // This code below this comment will be updated once I get a working Task with correct
-    // input.value
-    assertNotNull(updatedTaskStartDate.time)
-    assertNotNull(actual)
-  }
-
-  @Test
-  fun `test updateDependentTaskDueDate with due task and dependent task`() {
-    coEvery { fhirEngine.get<Task>(any()) } returns task.apply { status = TaskStatus.INPROGRESS }
-    val updatedTask = task.updateDependentTaskDueDate("1234")
-    val inputDate = task.input[0].value.dateTimeValue()
-    val updatedTaskStartDate = updatedTask.executionPeriod.start
-    val actual = Date(task.executionPeriod.start.time.plus(inputDate.day))
-    // The code below this comment will be updated once I get a working Task with correct
-    // input.value
-    assertNotNull(updatedTaskStartDate.time)
-    assertNotNull(actual)
-  }
-
-  @Test
-  fun `test updateDependentTaskDueDate with due task and non-dependent task`() {
-    coEvery { fhirEngine.get<Task>(any()) } returns
-      task.apply {
-        task.apply {
-          id = "123456"
-          status = TaskStatus.INPROGRESS
-          executionPeriod.start = LocalDateTime.parse("2022-01-01").toDate()
-          executionPeriod.end = LocalDateTime.parse("2023-02-01").toDate()
-          restriction.period.start = LocalDateTime.parse("2022-01-15").toDate()
-          partOf = emptyList()
-          input =
-            listOf(
-              Task.ParameterComponent(
-                CodeableConcept(),
-                DateTimeType().setValue(LocalDateTime.parse("2022-01-17").toDate())
-              )
-            )
+  fun `test updateDependentTaskDueDate - dependent task without output`() {
+    groupTask.apply {
+      status = TaskStatus.READY
+      partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+    }
+    dependentTask.apply {
+      output = emptyList()
+      executionPeriod =
+        Period().apply {
+          start = Date()
+          end = Date()
         }
-      }
-    val updatedTask = task.updateDependentTaskDueDate("1234")
-    val updatedTaskStartDate = updatedTask.executionPeriod.start
-    assertEquals(updatedTaskStartDate, LocalDateTime.parse("2022-01-01").toDate())
+    }
+
+    coEvery {
+      defaultRepository.loadResource(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+    } returns dependentTask
+    val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(groupTask, updatedTask)
   }
 }
 

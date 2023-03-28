@@ -25,6 +25,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.util.Date
+import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -707,5 +708,13 @@ class ResourceExtensionTest : RobolectricTest() {
     questionnaireResponse.generateMissingItems(questionnaire)
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
+  }
+  @Test
+  fun testReadValueFromJsonString() {
+    val jsonString = "{\"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"}"
+    val key = "reference"
+    val expectedValue = "Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90"
+    val actualValue = readValueFromJsonString(jsonString, key)
+    assertEquals(expectedValue, actualValue)
   }
 }
