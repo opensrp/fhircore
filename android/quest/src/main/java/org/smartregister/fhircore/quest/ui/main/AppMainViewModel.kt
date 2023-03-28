@@ -307,7 +307,6 @@ constructor(
         requiresNetwork = false
       )
 
-      Timber.e("Scheduling FhirCompleteCarePlanWorker worker...")
       schedulePeriodically<FhirCompleteCarePlanWorker>(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         requiresNetwork = false
