@@ -262,7 +262,7 @@ constructor(
       val extras = mutableListOf<Resource>()
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-
+        questionnaireResponse.contained = mutableListOf()
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
@@ -540,7 +540,10 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+    val resources = getPopulationResources(intent)
+    val questResponse = ResourceMapper.populate(questionnaire, *resources)
+    questResponse.contained = resources.toList()
+    return questResponse
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
