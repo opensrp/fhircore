@@ -26,6 +26,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 
 @HiltWorker
@@ -48,18 +49,23 @@ constructor(
       }
       .forEach { carePlan ->
         // fetch associated tasks
-        carePlan
-          .activity
-          .flatMap { it.outcomeReference }
-          .filter { it.reference.startsWith(ResourceType.Task.name) }
-          .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
-          .forEach { task ->
-            // process task status
-          }
+        val tasks: List<Task> =
+          carePlan
+            .activity
+            .flatMap { it.outcomeReference }
+            .filter { it.reference.startsWith(ResourceType.Task.name) }
+            .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
 
-        // complete careplan if all tasks are cancelled
+        val tasksNotCompleteOrCancelledPredicate: (Task) -> Boolean = {
+          it.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED)
+        }
+        val shouldCompleteCarePlan = !tasks.any(tasksNotCompleteOrCancelledPredicate)
 
-        // complete careplan if all tasks are a mix of completed or cancelled
+        // complete CarePlan
+        if (shouldCompleteCarePlan) {
+          carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+          fhirEngine.update(carePlan)
+        }
       }
     return Result.success()
   }
