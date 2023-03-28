@@ -363,7 +363,6 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.get<Patient>("54321") }
 
-
     coVerify { fhirEngine.get<Group>("73847") }
 
     coVerify { defaultRepository.addOrUpdate(resource = RelatedPerson()) }
