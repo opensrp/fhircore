@@ -44,6 +44,7 @@ object ViewPropertiesSerializer :
       ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
       ViewType.SERVICE_CARD -> ServiceCardProperties.serializer()
       ViewType.CARD -> CardViewProperties.serializer()
+      ViewType.TABS -> TabViewProperties.serializer()
       ViewType.PERSONAL_DATA -> PersonalDataProperties.serializer()
       ViewType.BUTTON -> ButtonProperties.serializer()
       ViewType.SPACER -> SpacerProperties.serializer()

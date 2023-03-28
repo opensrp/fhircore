@@ -38,6 +38,7 @@ import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
@@ -169,6 +170,13 @@ fun GenerateView(
       CardView(
         modifier = modifier,
         viewProperties = properties as CardViewProperties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    ViewType.TABS ->
+      TabView(
+        modifier = modifier,
+        viewProperties = properties as TabViewProperties,
         resourceData = resourceData,
         navController = navController
       )
