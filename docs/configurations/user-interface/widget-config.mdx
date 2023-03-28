@@ -1,10 +1,8 @@
 # Widget configurations
 
-Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, buttons
-:::info
-:::
+Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, and buttons.
 
-## Flex Alignment widgets
+## Flex alignment widgets
 
 To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
 
@@ -34,7 +32,7 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
    }
  ```
 
-## Display other resources (List Resources) inside another list
+## Display resources inside another list
 To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
 If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
 ``` json
@@ -99,7 +97,7 @@ conditionalFhirPathExpression | FhirPathExpression to get to use when filtering 
 
 
 
-## Config properties of a List Widget
+## Config properties of a list widget
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id | Unique identifier for the application | Yes | |
@@ -201,7 +199,7 @@ Displays Patient's details ,other related services and tasks. The details field 
           }
         ]
       }
-``` 
+```
 
 
 ## Config properties of SERVICE_CARD
@@ -250,7 +248,7 @@ The column widgets are used to create a vertical layout container that can hold 
                     }
                   ]
                 }
- ``` 
+ ```
 
 
 ## Config properties of COLUMN
@@ -270,4 +268,3 @@ spacedBy | An integer value that represents the spacing between the children vie
 wrapContent| A boolean value that represents whether the column should wrap its content or not | | false |
 arrangement | An enum value that represents the vertical arrangement of the child views of the column | | Null|
 children | A list of ViewProperties objects that represents the child views of the column | | emptyList()|
-
