@@ -43,8 +43,11 @@ constructor(
       .search<CarePlan> {
         filter(
           CarePlan.STATUS,
-          { value = of(CarePlan.CarePlanStatus.REVOKED.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCode()) }
+          { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
         )
       }
       .forEach { carePlan ->
