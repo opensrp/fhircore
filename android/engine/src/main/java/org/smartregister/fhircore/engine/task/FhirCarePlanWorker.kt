@@ -48,18 +48,16 @@ constructor(
         )
       }
       .forEach { carePlan ->
-        // fetch associated tasks
-        val tasks: List<Task> =
-          carePlan
-            .activity
-            .flatMap { it.outcomeReference }
-            .filter { it.reference.startsWith(ResourceType.Task.name) }
-            .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
-
-        val tasksNotCompleteOrCancelledPredicate: (Task) -> Boolean = {
-          it.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED)
-        }
-        val shouldCompleteCarePlan = !tasks.any(tasksNotCompleteOrCancelledPredicate)
+        var shouldCompleteCarePlan: Boolean = false
+        carePlan
+          .activity
+          .flatMap { it.outcomeReference }
+          .filter { it.reference.startsWith(ResourceType.Task.name) }
+          .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
+          .forEach { task ->
+            shouldCompleteCarePlan =
+              (task.status in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+          }
 
         // complete CarePlan
         if (shouldCompleteCarePlan) {
