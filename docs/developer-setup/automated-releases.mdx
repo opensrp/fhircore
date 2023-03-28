@@ -6,11 +6,11 @@ OpenSRP FHIR Core releases occur at most once every 2 weeks, i.e. at the conclus
 
 This allows changes to occur on the code release branch while unrelated code continues being merged into main.
 
-## Release Notes
+## Release notes
 
 Release notes provide a summary of the changes, improvements, and bug fixes in each new release. They are an essential resource for developers and users to understand what has been updated and any potential impacts on their implementations.
 
-### How to Write Release Notes
+### How to write release notes
 
 To write effective release notes, follow these guidelines:
 
@@ -19,7 +19,7 @@ To write effective release notes, follow these guidelines:
 3. **Highlight breaking changes:** Clearly indicate any breaking changes that may impact existing implementations or require special attention.
 4. **Include relevant issue numbers:** Link to the related GitHub issues or pull requests for more context and easier tracking.
 
-### Adding Release Notes to the Repository
+### Adding release notes to the repository
 
 Before a new release is created, the release notes must be added to the [changelog](https://github.com/opensrp/fhircore/blob/main/CHANGELOG.md). The changelog is ordered from newest release at the top to oldest releases at the bottom. Follow these steps to add a changelog entry for your new release:
 
@@ -30,11 +30,11 @@ Before a new release is created, the release notes must be added to the [changel
     * At a minimum, the release notes must link to and include the title text from the the newly closed issues, excluding any testing, doc, or cleanup issues that are uninformative or immaterial to the changes.
 3. Commit and open a PR for your updates to the changelog.
 
-### Viewing Release Notes
+### Viewing release notes
 
 Release notes can be viewed in the [changelog](https://github.com/opensrp/fhircore/blob/main/CHANGELOG.md).
 
-## Code Releases
+## Code releases
 
 We conduct code releases with the following steps:
 
@@ -48,7 +48,7 @@ We conduct code releases with the following steps:
 1. Repeat step (2.) until QA passes, e.g. with more pre-releases and tags, `opensrp-0.2.0-rc3`, ...
 1. Final code release: when the release meets requirements, a final code release, `opensrp-0.2.0` is created, with a tag `v0.2.0`.
 
-## APK Releases
+## APK releases
 
 Once a final code release is created, attach a generic flavor APK release e.g. `opensrp-0.2.0.apk` to the release. In addition, attach APK releases for any specific flavors requested, e.g. `opensrp-0.2.0-bunda.apk`, `opensrp-0.2.0-ecbis.apk`, `opensrp-0.2.0-wdf.apk`.
 
