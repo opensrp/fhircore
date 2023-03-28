@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -68,7 +69,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
-import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -79,6 +79,7 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -303,6 +304,12 @@ constructor(
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
+      )
+
+      Timber.e("Scheduling FhirCompleteCarePlanWorker worker...")
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
         requiresNetwork = false
       )
 

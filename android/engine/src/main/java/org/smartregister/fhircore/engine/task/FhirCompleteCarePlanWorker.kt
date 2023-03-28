@@ -30,7 +30,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 
 @HiltWorker
-class FhirCarePlanWorker
+class FhirCompleteCarePlanWorker
 @AssistedInject
 constructor(
   @Assisted val context: Context,
@@ -50,8 +50,8 @@ constructor(
           { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
         )
       }
-      .forEach { carePlan ->
-        var shouldCompleteCarePlan: Boolean = false
+      .forEach carePlanLoop@{ carePlan ->
+        var shouldCompleteCarePlan = true
         carePlan
           .activity
           .flatMap { it.outcomeReference }
@@ -60,14 +60,18 @@ constructor(
           .forEach { task ->
             shouldCompleteCarePlan =
               (task.status in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+
+            if (!shouldCompleteCarePlan) return@carePlanLoop
           }
 
         // complete CarePlan
-        if (shouldCompleteCarePlan) {
-          carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-          fhirEngine.update(carePlan)
-        }
+        carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+        fhirEngine.update(carePlan)
       }
     return Result.success()
+  }
+
+  companion object {
+    const val WORK_ID = "FhirCompleteCarePlanWorker"
   }
 }
