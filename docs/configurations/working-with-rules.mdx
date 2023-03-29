@@ -1,9 +1,7 @@
 # Working with rules
 
-Rules are used to define logic and conditions for evaluating and processing healthcare data. FHIR rules can be used to validate data, create alerts and notifications based on certain conditions, or trigger workflows and other automated processes. 
+Rules are used to define logic and conditions for evaluating and processing healthcare data. FHIR rules can be used to validate data, create alerts and notifications based on certain conditions, or trigger workflows and other automated processes.
 Rules can also be used to extract specific data from a FHIR resource or to transform data from one format to another.
-:::info
-:::
 
 ## extractValue() rule
 
@@ -43,4 +41,3 @@ condition | Indicates that the rule should always be evaluated | Yes | true |
 actions | Specifies the specific operations to be performed when the rule is evaluated | Yes | |
 
 The **"data.put()"** function is used to store the extracted data in a data object, using a key-value pair format.
-
