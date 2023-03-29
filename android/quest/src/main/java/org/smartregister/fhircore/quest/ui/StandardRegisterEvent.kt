@@ -25,6 +25,8 @@ sealed class StandardRegisterEvent {
 
   object MoveToPreviousPage : StandardRegisterEvent()
 
+  data class ApplyFilter<T>(val filterState: T) : StandardRegisterEvent()
+
   data class OpenProfile(val patientId: String, val navController: NavHostController) :
     StandardRegisterEvent()
 }

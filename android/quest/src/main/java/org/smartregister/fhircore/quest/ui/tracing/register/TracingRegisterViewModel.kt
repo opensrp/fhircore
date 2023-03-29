@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -69,6 +71,9 @@ import org.smartregister.fhircore.quest.ui.StandardRegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.REGISTER_FORM_ID_KEY
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.transformPatientCategoryToHealthStatus
+import org.smartregister.fhircore.quest.util.mappers.transformToTracingAgeFilterEnum
+import org.smartregister.fhircore.quest.util.mappers.transformTracingUiReasonToCode
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -113,21 +118,39 @@ constructor(
   val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
+  private val _filtersMutableStateFlow: MutableStateFlow<TracingRegisterFilterState> =
+    MutableStateFlow(TracingRegisterFilterState.default(healthModule))
+  val filtersStateFlow: StateFlow<TracingRegisterFilterState> =
+    _filtersMutableStateFlow.asStateFlow()
+
   override var registerViewConfiguration: RegisterViewConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
 
   init {
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
-    val refreshCounterFlow = _refreshCounter
+    val registerFilterFlow =
+      _filtersMutableStateFlow.map {
+        val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
+        val ageFilter = transformToTracingAgeFilterEnum(it)
+        val reasonCode = transformTracingUiReasonToCode(it.reason.selected)
+        TracingRegisterFilter(
+          patientCategory = categories,
+          isAssignedToMe = it.patientAssignment.selected.assignedToMe(),
+          age = ageFilter,
+          reasonCode = reasonCode
+        )
+      }
     viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
+      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
+        Triple(s, p, f)
+      }
         .mapLatest {
           val pagingFlow =
             if (it.first.isNotBlank()) {
               filterRegisterDataFlow(text = it.first)
             } else {
-              paginateRegisterDataFlow(page = it.second)
+              paginateRegisterDataFlow(page = it.second, filters = it.third)
             }
 
           return@mapLatest pagingFlow.onEach { _isRefreshing.emit(false) }
@@ -135,13 +158,17 @@ constructor(
         .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
     viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
+      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
+        Triple(s, p, f)
+      }
         .filter { it.first.isBlank() }
-        .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
+        .mapLatest {
+          registerRepository.countRegisterFiltered(appFeatureName, healthModule, filters = it.third)
+        }
         .collect { _totalRecordsCount.postValue(it) }
     }
 
-    viewModelScope.launch { paginateRegisterDataForSearch() }
+    viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
 
     val syncStateListener =
       object : OnSyncListener {
@@ -163,8 +190,8 @@ constructor(
   fun isAppFeatureHousehold() =
     appFeatureName.equals(AppFeature.HouseholdManagement.name, ignoreCase = true)
 
-  fun paginateRegisterDataFlow(page: Int) =
-    getPager(appFeatureName, loadAll = false, page = page).flow
+  fun paginateRegisterDataFlow(filters: TracingRegisterFilter, page: Int) =
+    getPager(appFeatureName, loadAll = false, page = page, registerFilters = filters).flow
 
   fun filterRegisterDataFlow(text: String) =
     paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
@@ -174,15 +201,16 @@ constructor(
       }
     }
 
-  fun paginateRegisterDataForSearch() {
+  fun paginateRegisterDataForSearch(filters: TracingRegisterFilter) {
     paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, true).flow.cachedIn(viewModelScope)
+      getPager(appFeatureName, true, registerFilters = filters).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
     appFeatureName: String?,
     loadAll: Boolean = false,
-    page: Int = 0
+    page: Int = 0,
+    registerFilters: TracingRegisterFilter
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
@@ -198,7 +226,8 @@ constructor(
               appFeatureName = appFeatureName,
               healthModule = healthModule,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else page
+              currentPage = if (loadAll) 0 else page,
+              filters = registerFilters
             )
           )
         }
@@ -234,6 +263,10 @@ constructor(
             route = MainNavigationScreen.TracingProfile.route + urlParams
           )
       }
+      is StandardRegisterEvent.ApplyFilter<*> -> {
+        val newFilterState = event.filterState as TracingRegisterFilterState
+        _filtersMutableStateFlow.update { newFilterState }
+      }
     }
   }
 
@@ -249,4 +282,50 @@ constructor(
     } else {
       configurationRegistry.context.resources.getString(R.string.search_progress_message)
     }
+}
+
+data class TracingRegisterFilterState(
+  val patientAssignment: TracingRegisterUiFilter<TracingPatientAssignment>,
+  val patientCategory: TracingRegisterUiFilter<TracingPatientCategory>,
+  val reason: TracingRegisterUiFilter<TracingReason>,
+  val age: TracingRegisterUiFilter<AgeFilter>
+) {
+  companion object {
+    fun default(healthModule: HealthModule) =
+      when (healthModule) {
+        HealthModule.PHONE_TRACING ->
+          TracingRegisterFilterState(
+            patientAssignment =
+              TracingRegisterUiFilter(
+                PhonePatientAssignment.ALL_PHONE,
+                PhonePatientAssignment.values().asList()
+              ),
+            patientCategory =
+              TracingRegisterUiFilter(
+                TracingPatientCategory.ALL_PATIENT_CATEGORIES,
+                TracingPatientCategory.values().asList()
+              ),
+            reason =
+              TracingRegisterUiFilter(TracingReason.ALL_REASONS, TracingReason.values().asList()),
+            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+          )
+        HealthModule.HOME_TRACING ->
+          TracingRegisterFilterState(
+            patientAssignment =
+              TracingRegisterUiFilter(
+                HomePatientAssignment.ALL_HOME,
+                HomePatientAssignment.values().asList()
+              ),
+            patientCategory =
+              TracingRegisterUiFilter(
+                TracingPatientCategory.ALL_PATIENT_CATEGORIES,
+                TracingPatientCategory.values().asList()
+              ),
+            reason =
+              TracingRegisterUiFilter(TracingReason.ALL_REASONS, TracingReason.values().asList()),
+            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+          )
+        else -> throw IllegalArgumentException("Not allowed")
+      }
+  }
 }

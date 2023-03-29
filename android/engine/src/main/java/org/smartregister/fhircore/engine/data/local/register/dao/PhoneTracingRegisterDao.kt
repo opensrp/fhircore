@@ -22,7 +22,9 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @Singleton
 class PhoneTracingRegisterDao
@@ -30,9 +32,19 @@ class PhoneTracingRegisterDao
 constructor(
   fhirEngine: FhirEngine,
   defaultRepository: DefaultRepository,
+  tracingRepository: TracingRepository,
   configurationRegistry: ConfigurationRegistry,
-  dispatcherProvider: DefaultDispatcherProvider
-) : TracingRegisterDao(fhirEngine, defaultRepository, configurationRegistry, dispatcherProvider) {
+  dispatcherProvider: DefaultDispatcherProvider,
+  sharedPreferencesHelper: SharedPreferencesHelper
+) :
+  TracingRegisterDao(
+    fhirEngine,
+    defaultRepository,
+    tracingRepository,
+    configurationRegistry,
+    dispatcherProvider,
+    sharedPreferencesHelper
+  ) {
 
   override val tracingCoding: Coding =
     Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")

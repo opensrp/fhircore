@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -46,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
@@ -58,12 +61,12 @@ class TracingProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  syncBroadcaster: SyncBroadcaster,
-  val overflowMenuFactory: OverflowMenuFactory,
+  private val syncBroadcaster: SyncBroadcaster,
+  private val overflowMenuFactory: OverflowMenuFactory,
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper,
-  val registerViewDataMapper: RegisterViewDataMapper
+  val registerViewDataMapper: RegisterViewDataMapper,
 ) : ViewModel() {
 
   val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
@@ -92,15 +95,23 @@ constructor(
   val showTracingOutcomes: LiveData<Boolean>
     get() = _showTracingOutcomes
 
+  val isSyncing = mutableStateOf(false)
+
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
             is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+              isSyncing.value = false
               fetchTracingData()
             }
-            else -> {}
+            is SyncJobStatus.Started -> {
+              isSyncing.value = true
+            }
+            else -> {
+              isSyncing.value = false
+            }
           }
         }
       },
@@ -139,8 +150,15 @@ constructor(
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          R.id.tracing_history -> event.context.showToast("//todo Tracing History action here")
-          else -> {}
+          R.id.tracing_history -> {
+            val urlParams = NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, patientId))
+            event.navController.navigate(
+              route = MainNavigationScreen.TracingHistory.route + urlParams
+            )
+          }
+          else -> {
+            event.context.showToast("//todo Tracing action here")
+          }
         }
       }
       is TracingProfileEvent.OpenTaskForm ->
@@ -151,15 +169,36 @@ constructor(
           populationResources = profile.populationResources
         )
       is TracingProfileEvent.LoadOutComesForm -> {
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          // TODO: Replace with actual tracing outcomes url
-          if (profile.isHomeTracing) "home-tracing-outcome" else "phone-tracing-outcome",
-          clientIdentifier = patientId,
-          questionnaireType = QuestionnaireType.EDIT,
-          populationResources = profile.populationResources
-        )
+        profile.isHomeTracing?.let { isHomeTracing ->
+          event.context.launchQuestionnaire<QuestionnaireActivity>(
+            // TODO: Replace with actual tracing outcomes url
+            if (isHomeTracing) "tests/home_outcome.json" else "tests/phone_outcome.json",
+            clientIdentifier = patientId,
+            questionnaireType = QuestionnaireType.EDIT,
+            populationResources = profile.populationResources
+          )
+        }
+      }
+      is TracingProfileEvent.OpenTracingOutcomeScreen -> {
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.PATIENT_ID, patientId),
+            Pair(NavigationArg.TRACING_ID, event.historyId)
+          )
+        event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
+      }
+      is TracingProfileEvent.CallPhoneNumber -> {
+        if (event.phoneNumber.isNotBlank()) {
+          event.context.startActivity(
+            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${event.phoneNumber}") }
+          )
+        }
       }
     }
+  }
+
+  fun reSync() {
+    syncBroadcaster.runSync()
   }
 
   companion object {

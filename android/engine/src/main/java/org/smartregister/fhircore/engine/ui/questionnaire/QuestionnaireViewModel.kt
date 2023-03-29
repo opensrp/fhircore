@@ -31,6 +31,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -54,6 +55,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -84,6 +86,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -92,6 +95,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -565,6 +569,31 @@ constructor(
       }
   }
 
+  private suspend fun getLastActiveCarePlan(patientId: String): CarePlan? {
+    val carePlans =
+      fhirEngine.search<CarePlan> {
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
+          operation = Operation.OR
+        )
+      }
+    return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
+  }
+
+  private suspend fun getActiveListResource(patient: String): ListResource? {
+    val list =
+      fhirEngine.search<ListResource> {
+        filter(ListResource.SUBJECT, { value = "Patient/$patient" })
+        filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
+        sort(ListResource.DATE, Order.ASCENDING)
+        count = 1
+        from = 0
+      }
+    return list.firstOrNull()
+  }
+
   suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
     return fhirEngine
       .search<Appointment> {
@@ -649,6 +678,12 @@ constructor(
           bundle.id = TracingHelpers.tracingBundleId
           val tasks = loadTracing(patientId)
           tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+
+          val list = getActiveListResource(patientId)
+          if (list != null) {
+            bundle.addEntry(Bundle.BundleEntryComponent().setResource(list))
+          }
+
           currentBundle.addEntry(
             Bundle.BundleEntryComponent().setResource(bundle).apply {
               id = TracingHelpers.tracingBundleId
@@ -664,6 +699,12 @@ constructor(
         loadScheduledAppointments(patientId).forEach {
           currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
         }
+
+        val lastCarePlan = getLastActiveCarePlan(patientId)
+        if (lastCarePlan != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(lastCarePlan))
+        }
+
         resourcesList[bundleIndex] = currentBundle
       }
 
