@@ -247,7 +247,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsById(any(), any()) } just runs
 
     val questionnaireSubmission =
       QuestionnaireSubmission(
@@ -256,13 +256,13 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify { fhirCarePlanGenerator.updateTaskDetailsById("12345", Task.TaskStatus.COMPLETED) }
   }
 
   @Test
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsById(any(), any()) } just runs
 
     val questionnaireSubmission =
       QuestionnaireSubmission(
@@ -274,13 +274,13 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+    coVerify { fhirCarePlanGenerator.updateTaskDetailsById("12345", Task.TaskStatus.INPROGRESS) }
   }
 
   @Test
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsById(any(), any()) } just runs
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
@@ -291,13 +291,13 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify { fhirCarePlanGenerator.updateTaskDetailsById("12345", Task.TaskStatus.COMPLETED) }
   }
 
   @Test
   fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsById(any(), any()) } just runs
 
     appMainViewModel.onQuestionnaireSubmission(
       QuestionnaireSubmission(
@@ -306,6 +306,6 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     )
 
-    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+    coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsById(any(), any()) }
   }
 }
