@@ -127,10 +127,10 @@
             },
             {
               "paramType": "PREPOPULATE",
-              "linkId": "ed77104e-c279-4030-ab20-8cd99ca99832",
-              "dataType": "STRING",
-              "key": "familyHeadId",
-              "value": "@{familyHeadId}"
+              "linkId": "toggle-is-family-head",
+              "dataType": "INTEGER",
+              "key": "isFamilyHeadExists",
+              "value": "@{isFamilyHeadExists}"
             }
           ]
         }
@@ -171,6 +171,20 @@
       "condition": "true",
       "actions": [
         "data.put('humanReadableId', service.generateRandomSixDigitInt())"
+      ]
+    },
+    {
+      "name": "familyHeadId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadId', service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0).patient.reference)"
+      ]
+    },
+    {
+      "name": "isFamilyHeadExists",
+      "condition": "true",
+      "actions": [
+        "data.put('isFamilyHeadExists', empty(data.get('familyHeadId'))? 0 : 1)"
       ]
     }
   ],
@@ -379,13 +393,6 @@
                 ]
               },
               {
-                "name": "familyHeadId",
-                "condition": "true",
-                "actions": [
-                  "data.put('familyHeadId', service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0).patient.reference)"
-                ]
-              },
-              {
                 "name": "getChildStatus",
                 "condition": "true",
                 "actions": [
@@ -516,6 +523,11 @@
                         "paramType": "UPDATE_DATE_ON_EDIT",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
+                      },
+                      {
+                        "paramType": "PARAMDATA",
+                        "key": "isFamilyHeadExists",
+                        "value": "@{isFamilyHeadExists}"
                       }
                     ]
                   }
@@ -571,7 +583,12 @@
             "dialogWarningMessage": "{{ assign.household.head.warning }}",
             "dialogContentMessage": "{{ select.new.household.head }}",
             "noMembersErrorMessage": "{{ no.members.error.message }}",
-            "managingEntityReassignedMessage": "Household head reassigned successfully"
+            "managingEntityReassignedMessage": "Household head reassigned successfully",
+            "relationshipCode": {
+              "system": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
+              "code": "99990006",
+              "display": "Family Head"
+            }
           }
         }
       ]

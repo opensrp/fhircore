@@ -247,13 +247,6 @@ constructor(
         }
       }
       is ProfileEvent.OnChangeManagingEntity -> {
-        val relationshipCode =
-          Code().apply {
-            system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
-            code = "99990006"
-            display = "Family Head"
-          }
-        event.managingEntityConfig?.relationshipCode = relationshipCode
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(
             event.eligibleManagingEntity.logicalId,
