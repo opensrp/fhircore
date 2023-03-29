@@ -174,26 +174,27 @@ constructor(
     groupId: String,
     managingEntityConfig: ManagingEntityConfig?
   ) {
-
     val group = fhirEngine.get<Group>(groupId)
-    val relatedPerson =
-      if (group.managingEntity.id != null) {
-        fhirEngine.get<RelatedPerson>(group.managingEntity.id)
-      } else {
-        RelatedPerson().apply { id = UUID.randomUUID().toString() }
-      }
-    val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
-    // update relatedPerson details
-    changeFamilyHead(relatedPerson, newPatient, managingEntityConfig?.relationshipCode)
-    // update relatedPerson
-    addOrUpdate(resource = relatedPerson)
-    // update group
-    group.managingEntity = relatedPerson.asReference()
-    group.managingEntity.id = relatedPerson.id
-    fhirEngine.update(group)
+    if (managingEntityConfig?.resourceType == ResourceType.Patient) {
+      val relatedPerson =
+        if (group.managingEntity.id != null) {
+          fhirEngine.get<RelatedPerson>(group.managingEntity.id)
+        } else {
+          RelatedPerson().apply { id = UUID.randomUUID().toString() }
+        }
+      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
+
+      updateRelatedPersonDetails(relatedPerson, newPatient, managingEntityConfig.relationshipCode)
+
+      addOrUpdate(resource = relatedPerson)
+
+      group.managingEntity = relatedPerson.asReference()
+      group.managingEntity.id = relatedPerson.id
+      fhirEngine.update(group)
+    }
   }
 
-  private fun changeFamilyHead(
+  private fun updateRelatedPersonDetails(
     existingPerson: RelatedPerson,
     newPatient: Patient,
     relationshipCode: Code?
