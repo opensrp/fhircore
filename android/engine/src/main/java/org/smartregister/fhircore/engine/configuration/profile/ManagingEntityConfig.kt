@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.profile
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.domain.model.Code
 
 /**
  * @property nameFhirPathExpression FHIRPath expression used to extract the name of the
@@ -47,5 +48,6 @@ data class ManagingEntityConfig(
   val dialogWarningMessage: String? = null,
   val dialogContentMessage: String? = null,
   val noMembersErrorMessage: String = "",
-  val managingEntityReassignedMessage: String = ""
+  val managingEntityReassignedMessage: String = "",
+  var relationshipCode: Code? = null
 )
