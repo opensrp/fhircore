@@ -1,14 +1,14 @@
-# FHIRPath Expressions
+# FHIRPath expressions
 Paths are defined using [FhirPath](http://hl7.org/fhirpath), which is an expression language defined by FHIR. In its simplest form, this can take the form of a single dotted path:
 ```
 Patient.name.given
 ```
 In the example above, the FHIRPath expression matches all of the patient's given names.
 
-# Using Expressions
+# Using expressions
 The [Form Behavior](http://build.fhir.org/ig/HL7/sdc/behavior.html), [Questionnaire Population](http://build.fhir.org/ig/HL7/sdc/populate.html) and [Data Extraction](http://build.fhir.org/ig/HL7/sdc/extraction.html) all rely on (or have features that rely on) the use of [expressions](http://hl7.org/fhir/R4/metadatatypes.html#Expression).
 
-# Expression Extensions
+# Expression extensions
 Expressions are introduced into Questionnaires using extensions - none of the 'core' data elements of Questionnaire makes use of extensions because they're considered an 'advanced' capability that is not currently supported by a large portion of the systems that make use of the Questioannaire resource. The extensions that make use of expressions and are supported in Android FHIR SDK are shown in the table below. Check out all types of [available expression extensions](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions)
 | Extension | Specs | Example |
 | --------- | ----- | ------- |
@@ -28,7 +28,7 @@ The content type of a variable can be pretty much anything. It can be a collecti
 The variable can be referenced by its name. Variable expressions SHALL specify a name. It is not allowed to define variable names that are already reserved by the base specification or by other variables in the questionnaire.
 
 ### How to evaluate the variable expression
-Variable expressions can be defined at the questionnaire and questionnaire item levels. The Structure Data Capture Library provides separate APIs to evaluate variable expressions defined at either questionnaire or questionnaire item level. 
+Variable expressions can be defined at the questionnaire and questionnaire item levels. The Structure Data Capture Library provides separate APIs to evaluate variable expressions defined at either questionnaire or questionnaire item level.
 
 #### Sample Questionnaire for Questionnaire level variable expressions
 ```
@@ -125,12 +125,12 @@ internal fun evaluateQuestionnaireItemVariableExpression(
 
 ## Initial Expression
 
-Besides using [initial](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.initial) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing a default answer on questionnaire load, [initial expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-initialExpression.html) is another alternate way of providing default answer based on a FHIRPath expression i.e. rather than specifying a fixed value, the value is calculable. 
+Besides using [initial](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.initial) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing a default answer on questionnaire load, [initial expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-initialExpression.html) is another alternate way of providing default answer based on a FHIRPath expression i.e. rather than specifying a fixed value, the value is calculable.
 - It is a Questionnaire.item-level extension
-- Examples could be 
-  - current date i.e. `today() + 7 days` or 
+- Examples could be
+  - current date i.e. `today() + 7 days` or
   - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in the current context can be referred to by %resource. i.e. `%resource.item.where(linkId='weight').answer.first()`
-  - an expression of based on launch context or information queried from external sources i.e. `%patient.birthDate`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html). 
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.birthDate`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
   - an expression based on `variable` extension. i.e. `%weight * 0.25`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
 
 Both of the approaches are mutually exclusive and only one of these can be specified.
@@ -157,20 +157,20 @@ Both of the approaches are mutually exclusive and only one of these can be speci
 
 ## EnableWhen Expression
 
-`enableWhen` aka skip logic controls which questions, groups and display items would show or hide based on answers of other referenced questions within the response. 
-Besides using [enableWhen](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.enableWhen) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing skip logic, [enableWhen expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-enableWhenExpression.html) is another alternate way of providing skip logic based on a dynamic fhirpath expression. 
+`enableWhen` aka skip logic controls which questions, groups and display items would show or hide based on answers of other referenced questions within the response.
+Besides using [enableWhen](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.enableWhen) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing skip logic, [enableWhen expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-enableWhenExpression.html) is another alternate way of providing skip logic based on a dynamic fhirpath expression.
 
 - Elements that are not enabled are hidden from the user and can not be edited
-- It needs to be evaluated each time any of the answers it depends on changes 
+- It needs to be evaluated each time any of the answers it depends on changes
 - Any constraints associated with non-enabled elements i.e. [required](https://build.fhir.org/ig/HL7/sdc/behavior.html#required) or [minOccurs](https://build.fhir.org/ig/HL7/sdc/behavior.html#minOccurs) are ignored and no answers are stored for these.
-- Examples could be 
+- Examples could be
   - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in current context can be referred by %resource. i.e. `%resource.item.where(linkId='weight').answer.first() > 45`
-  - an expression of based on launch context or information queried from external sources i.e. `%patient.deceased = flase`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html). 
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.deceased = flase`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
   - an expression based on `variable` extension. i.e. `%weight > 60`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
 
 Both of the approaches are mutually exclusive and only one of these can specified.
 
-```json 
+```json
 {
    "extension":[
       {
@@ -188,17 +188,17 @@ Both of the approaches are mutually exclusive and only one of these can specifie
 
 ```
 
-## Calculated Expression
+## Calculated expression
 
-[Calculated Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html) is an extension which allows to set answers to [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) (generally but not limited to [readOnly](https://build.fhir.org/ig/HL7/sdc/behavior.html#readOnly) or [hidden](https://build.fhir.org/ig/HL7/sdc/rendering.html#hidden)). The calculation is dynamic via a [fhirpath](http://hl7.org/fhirpath) expression which can be based on answers of other Questionnaire.items. 
+[Calculated Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html) is an extension which allows to set answers to [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) (generally but not limited to [readOnly](https://build.fhir.org/ig/HL7/sdc/behavior.html#readOnly) or [hidden](https://build.fhir.org/ig/HL7/sdc/rendering.html#hidden)). The calculation is dynamic via a [fhirpath](http://hl7.org/fhirpath) expression which can be based on answers of other Questionnaire.items.
 
-- Unlike [initialExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#initialExpression) extension, instead of only setting value on Questionnaire.item loading, this extension- keeps updating the value as soon as the answers of dependent questions change. 
+- Unlike [initialExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#initialExpression) extension, instead of only setting value on Questionnaire.item loading, this extension- keeps updating the value as soon as the answers of dependent questions change.
 - Mostly it is used for displaying or calculating scores, patient age, BMI, estimated cost etc
 - In most cases, 'calculated' answers are 'readOnly', however, the extension can be applied to any Questionnaire.item.
 - For modifiable Questionnaire.item if a user has edited the answer of calculated expression, it can no longer be changed based on expression i.e. an edited item does not update by expression anymore
-- Examples could be 
+- Examples could be
   - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in current context can be referred by %resource. i.e. `%resource.item.where(linkId='weight').answer.first()`
-  - an expression of based on launch context or information queried from external sources i.e. `%patient.active`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html). 
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.active`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
   - an expression based on `variable` extension. i.e. `%weight + 20`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
 
 ``` json
@@ -233,14 +233,14 @@ Both of the approaches are mutually exclusive and only one of these can specifie
   }
 ```
 
-## Answer Expression
+## Answer expression
 
 The possible answers for a [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) are restricted or validated based on it type. The allowed value of a Questionnaire.item must conform to an enumerated set. The answerOption the possible allowed values and the type of  answerOption must match the type of the question. (Coding type is used for choice and open-choice)
 
 Mainly answers can be enumerated  by three ways
 - [answerOption](https://build.fhir.org/ig/HL7/sdc/examples.html#answeroption) are hardcoded set of option values and works well when there is a small number of choices and support variety of question types
 - [answerValueSet](https://build.fhir.org/ig/HL7/sdc/behavior.html#answerValueSet) element only supports 'string' and Coding elements. It is better when set of codes is large or dynamic e.g. SNOMED or LOINC codes
-- **[answerExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#answerExpression) extension** allows a FHIR Query, FHIRPath, or CQL (not implemented yet) expression that can be resolved to a list of permitted answers. 
+- **[answerExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#answerExpression) extension** allows a FHIR Query, FHIRPath, or CQL (not implemented yet) expression that can be resolved to a list of permitted answers.
   - Expression must evaluate to a collection with the same type as the Questionnaire.item.type
   - If the type is Reference it should evaluate to resources allowed as the referenced type
   - It is often used with [Choice Column](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-choiceColumn.html) extension to provide display or UI definitions
