@@ -709,12 +709,4 @@ class ResourceExtensionTest : RobolectricTest() {
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
-  @Test
-  fun testReadValueFromJsonString() {
-    val jsonString = "{\"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"}"
-    val key = "reference"
-    val expectedValue = "Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90"
-    val actualValue = readValueFromJsonString(jsonString, key)
-    assertEquals(expectedValue, actualValue)
-  }
 }

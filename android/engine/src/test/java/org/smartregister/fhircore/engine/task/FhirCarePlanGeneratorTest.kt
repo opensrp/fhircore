@@ -35,7 +35,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
-import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
@@ -44,13 +44,19 @@ import javax.inject.Inject
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CarePlan.CarePlanActivityComponent
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
@@ -63,6 +69,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -72,10 +79,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -105,13 +114,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   lateinit var structureMapUtilities: StructureMapUtilities
 
   private val defaultRepository: DefaultRepository = mockk()
-  private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
 
   private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   private var immunizationResource = Immunization()
   private var encounter = Encounter()
   private var groupTask = Task()
-  private var dependentTask = Task()
+  private var dependentTask: Task = Task()
 
   @Before
   fun setup() {
@@ -119,6 +127,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
     val workManager = mockk<WorkManager>()
+    every { defaultRepository.dispatcherProvider.io() } returns Dispatchers.IO
+    every { defaultRepository.fhirEngine } returns fhirEngine
 
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
@@ -146,7 +156,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "   \"encounter\":{\n" +
           "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
           "   },\n" +
-          "   \"occurrenceDateTime\":\"2021-10-01T00:00:00+00:00\"\n" +
+          "   \"occurrenceDateTime\":\"2021-10-10T00:00:00+00:00\"\n" +
           "}"
       )
 
@@ -179,7 +189,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "      \"end\":\"2021-10-01T00:00:00+00:00\"\n" +
           "   },\n" +
           "   \"partOf\":{\n" +
-          "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "      \"reference\":\"Encounter/15e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
           "   }\n" +
           "}"
       )
@@ -1682,10 +1692,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun `test updateDependentTaskDueDate - dependent task without output`() {
-    groupTask.apply {
-      status = TaskStatus.READY
-      partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
-    }
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      groupTask.apply {
+        status = TaskStatus.READY
+        partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+      }
     dependentTask.apply {
       output = emptyList()
       executionPeriod =
@@ -1696,10 +1707,144 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     }
 
     coEvery {
-      defaultRepository.loadResource(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+      defaultRepository.loadResource(Reference(groupTask.partOf.first().reference))
     } returns dependentTask
     val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
     assertEquals(groupTask, updatedTask)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with dependent task , with output but no execution period start date`() {
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      groupTask.apply { status = TaskStatus.INPROGRESS }
+    dependentTask.apply { dependentTask.executionPeriod.start = null }
+    coEvery {
+      defaultRepository.loadResource(Reference(groupTask.partOf.first().reference))
+    } returns dependentTask
+    val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(groupTask, updatedTask)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
+
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      dependentTask.apply {
+        status = TaskStatus.INPROGRESS
+        output =
+          listOf(
+            Task.TaskOutputComponent(
+              CodeableConcept(),
+              StringType(
+                "{\n" +
+                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+                  "        }"
+              )
+            )
+          )
+      }
+    coEvery {
+      defaultRepository.loadResource(
+        Reference(
+          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
+              REFERENCE]
+            ?.jsonPrimitive
+            ?.content
+        )
+      )
+    } returns encounter.apply { partOf = null }
+    coEvery { defaultRepository.loadResource(Reference(ArgumentMatchers.anyString())) } returns
+      Immunization()
+    val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(groupTask, updatedTask)
+  }
+
+  @Test
+  fun `updateDependentTaskDueDate with Task input value equal or greater than difference between administration date and depedentTask executionPeriod start`() {
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      dependentTask.apply {
+        status = TaskStatus.INPROGRESS
+        output =
+          listOf(
+            Task.TaskOutputComponent(
+              CodeableConcept(),
+              StringType(
+                "{\n" +
+                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+                  "        }"
+              )
+            )
+          )
+        input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
+      }
+    coEvery {
+      fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns encounter
+    coEvery {
+      fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns immunizationResource
+
+    coEvery {
+      defaultRepository.loadResource(
+        Reference(
+          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
+              REFERENCE]
+            ?.jsonPrimitive
+            ?.content
+        )
+      )
+    } returns encounter
+
+    coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
+      immunizationResource
+
+    val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(groupTask, updatedTask)
+  }
+  @Test
+  fun `updateDependentTaskDueDate sets executionPeriod start correctly`() {
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      dependentTask.apply {
+        status = TaskStatus.INPROGRESS
+        output =
+          listOf(
+            Task.TaskOutputComponent(
+              CodeableConcept(),
+              StringType(
+                "{\n" +
+                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+                  "        }"
+              )
+            )
+          )
+        input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
+      }
+    coEvery {
+      fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns encounter
+    coEvery {
+      fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns immunizationResource
+
+    coEvery {
+      defaultRepository.loadResource(
+        Reference(
+          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
+              REFERENCE]
+            ?.jsonPrimitive
+            ?.content
+        )
+      )
+    } returns encounter
+
+    coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
+      immunizationResource
+
+    runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(
+      Date.from(Instant.parse("2021-11-07T00:00:00Z")),
+      dependentTask.executionPeriod.start
+    )
   }
 }
 

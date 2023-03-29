@@ -22,12 +22,11 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.time.Duration
-import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -326,40 +325,74 @@ fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
 }
 
+/**
+ * The code you provided is a suspend function in Kotlin, which updates the due date of a task's
+ * dependent tasks based on the date of a related immunization. The function takes a
+ * defaultRepository parameter that is an instance of DefaultRepository. The function loops through
+ * all the tasks that this task is a part of, loads the dependent tasks and their related
+ * immunization resources from the repository, and updates the start date of the dependent task if
+ * it's scheduled to start before the immunization date plus the required number of days.
+ */
 suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
   return apply {
-    val isUpcoming = status == Task.TaskStatus.REQUESTED
-    val isOverdue =
-      (status == Task.TaskStatus.READY || status == Task.TaskStatus.INPROGRESS) &&
-        executionPeriod.end.before(Date())
-    val isDue = status == Task.TaskStatus.INPROGRESS
-    if (!(isUpcoming || isOverdue || isDue) || partOf.isEmpty()) {
-      return this
-    }
-    partOf.forEach { task ->
-      val dependentTask = defaultRepository.loadResource(task.reference as Reference) as? Task
-      dependentTask?.output?.forEach { dependentTaskOutputValue ->
-        val encounterResource =
-          defaultRepository.loadResource(
-            readValueFromJsonString(dependentTaskOutputValue.valueToString(), "reference")
-          ) as?
-            Encounter
-        encounterResource?.partOf?.reference?.let { partOfReference ->
-          val immunizationResource =
-            defaultRepository.loadResource(partOfReference) as? Immunization
-          immunizationResource?.occurrenceDateTimeType?.dateTimeValue()?.valueAsCalendar?.let {
-            immunizationDate ->
-            val dependentTaskStartDate = dependentTask.executionPeriod.start.toInstant()
-            val difference =
-              Duration.between(immunizationDate.toInstant(), dependentTaskStartDate).toDays()
-            if (difference < dependentTask.input.first().valueToString().toInt()) {
-              dependentTask.executionPeriod.start =
-                Date.from(
-                  LocalDate.parse(immunizationDate.toString())
-                    .plusDays(dependentTask.input.first().valueToString().toLong())
-                    .atStartOfDay()
-                    .toInstant(ZoneOffset.UTC)
-                )
+    if (hasPartOf()) {
+      partOf.forEach { task ->
+        val dependentTask =
+          defaultRepository.loadResource<Task>(task.reference.extractLogicalIdUuid())
+        if (dependentTask != null &&
+            dependentTask.hasOutput() &&
+            dependentTask.executionPeriod.hasStart() &&
+            dependentTask.hasInput()
+        ) {
+          if (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming()) {
+            dependentTask.output?.forEach { dependentTaskOutputValue ->
+              if (dependentTaskOutputValue.hasValue()) {
+                val dependentTaskReference =
+                  Reference(
+                    Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
+                        REFERENCE]
+                      ?.jsonPrimitive
+                      ?.content
+                  )
+                val encounterResource =
+                  defaultRepository.loadResource<Encounter>(
+                    dependentTaskReference.reference.extractLogicalIdUuid()
+                  )
+                if (encounterResource != null &&
+                    encounterResource.hasPartOf() &&
+                    encounterResource.partOf.hasReference()
+                ) {
+                  encounterResource.partOf.reference.let { partOfReference ->
+                    val immunizationResource =
+                      defaultRepository.loadResource<Immunization>(
+                        partOfReference.extractLogicalIdUuid()
+                      )
+                    immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
+                      ?.valueAsCalendar
+                      ?.let { immunizationDate ->
+                        val dependentTaskStartDate = dependentTask.executionPeriod.start
+                        dependentTask.input.forEach {
+                          val dependentTaskInputDate = it.value.toString().toInt()
+                          val difference =
+                            abs(
+                              Duration.between(
+                                  immunizationDate.toInstant(),
+                                  dependentTaskStartDate.toInstant()
+                                )
+                                .toDays()
+                            )
+                          if (difference < dependentTaskInputDate &&
+                              dependentTask.executionPeriod.hasStart()
+                          ) {
+                            dependentTask.executionPeriod.start =
+                              Date.from(immunizationDate.toInstant())
+                                .plusDays(dependentTaskInputDate)
+                          }
+                        }
+                      }
+                  }
+                }
+              }
             }
           }
         }
@@ -368,5 +401,4 @@ suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository
   }
 }
 
-fun readValueFromJsonString(referenceString: String, key: String) =
-  Json.decodeFromString<JsonObject>(referenceString)[key]!!.jsonPrimitive.content
+const val REFERENCE = "reference"

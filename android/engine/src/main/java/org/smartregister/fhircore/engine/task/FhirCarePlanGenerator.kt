@@ -308,7 +308,6 @@ constructor(
    * ID of the dependent task to update. @return The updated task object. This function is used to
    * update the status of all CarePlans connected to a [QuestionnaireConfig]'s PlanDefinitions based
    * on the [QuestionnaireConfig]'s CarePlanConfigs and their configs filtering information.
-   *
    * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
    * CarePlanConfig does not reference a resource.
