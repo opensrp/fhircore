@@ -1,19 +1,19 @@
 ## CQL Logic/Decision Library
 
-The Clinical Quality Language (CQL) Specification provides a way to define, data querying, processing and logical expressions in a simplified and user-friendly way. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on CQL. Some example CQL scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
+The Clinical Quality Language (`CQL`) Specification provides a way to define, data querying, processing and logical expressions in a simplified and user-friendly way. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on `CQL`. Some example `CQL` scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
 
-Since CQL itself is a user-friendly script rather than a parseable configuration or program, it needs a `JSON` or `XML` form that can be lexically parsed and understood by the parser. Thus, it is transformed into a JSON form called Expression Logical Model(ELM) aka `json+elm`. An XML form `xml+elm` is also used. In most cases, we shall be using `json+elm` for parsing FHIR Core libraries. 
+Since `CQL` itself is a user-friendly script rather than a parseable configuration or program, it needs a `JSON` or `XML` form that can be lexically parsed and understood by the parser.For this it is needs to be transformed into a JSON form called Expression Logical Model(ELM) aka `json+elm`. An XML form `xml+elm` can also used. In most cases, we shall be using `json+elm` for parsing FHIR Core Decision or Reporting Logic. 
 
-The translated `elm` and `cql` is then added to FHIR [Library](http://hl7.org/fhir/R4/library.html) resource as Base64 encoded data to allow the code to get the calculation for each variable and be able to be used by FHIR compatible software.
+The translated `elm` and `cql` is then added to FHIR [Library](http://hl7.org/fhir/R4/library.html) resource as Base64 encoded data to allow the code to get the calculation for each variable to be used by FHIR compatible software.
 
 Some resources to get details on CQL writing are below:
 
 - CQL brief authoring guide https://cql.hl7.org/02-authorsguide.html
 - CQL operators and functions https://cql.hl7.org/04-logicalspecification.html and https://cql.hl7.org/09-b-cqlreference.html
-- Fhirpath mapping in CQL https://cql.hl7.org/16-i-fhirpathtranslation.html
-- Examples [Time Interval](https://cql.hl7.org/15-h-timeintervalcalculations.html) and [Detail on Queries](https://cql.hl7.org/03-developersguide.html#conditional-expressions)
-- CQL Sandbox is [here](https://sandbox.cqlab.io/ CQL sandbox)
-- CQL android editor app is [here](https://github.com/Path-Check/cql-editor-app/)
+- FHIRPath mapping in CQL https://cql.hl7.org/16-i-fhirpathtranslation.html
+    - Examples [Time Interval](https://cql.hl7.org/15-h-timeintervalcalculations.html) and [Detail on Queries](https://cql.hl7.org/03-developersguide.html#conditional-expressions)
+- CQL Sandbox [here](https://sandbox.cqlab.io/)
+- CQL Android editor app [here](https://github.com/Path-Check/cql-editor-app/)
 
 Here is a working example of CQL for a [Measure](http://hl7.org/fhir/measure.html)
 
@@ -63,7 +63,7 @@ define "Age Stratifier":
 ````
 
 
-The variables in CQL can be referenced into a [Measure](http://hl7.org/fhir/measure.html) and/or [PlanDefinition](http://hl7.org/fhir/plandefinition.html) after adding the `Library` containing CQL as referenced Library.
+The variables in CQL can be referenced into a [Measure](http://hl7.org/fhir/measure.html) and/or [PlanDefinition](http://hl7.org/fhir/plandefinition.html) after adding the `Library` containing CQL as referenced library.
 
 **Android FHIR SDK CQL Builder**
 
@@ -82,22 +82,22 @@ The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircor
 
 **FHIR Core Tooling Library**
 
-FHIR Core tooling library can also be used to get a Library by running commands
+FHIR Core tooling library can also be used to get a Library by running the command below. Details on the tool can be found [here](https://github.com/opensrp/fhircore-tooling#converting-library-cql-to-json).
 ```
 fct convert -t cql -i /some/path/Patient-1.0.0.cql
 ```
 
-Details on the tool can be found [here](https://github.com/opensrp/fhircore-tooling#converting-library-cql-to-json)
 
-##### Other possible but not recommended ways to get the translated elm+json
 
-**CQL to ELM REST Translator**
+## Other possible but not recommended ways to get the translated elm+json
+
+**1. CQL to ELM REST Translator**
 
 A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API.
 
 
-**CQL to ELM JAVA Translator**
+**2. CQL to ELM JAVA Translator**
 
 Her is an [elm java app](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/READM.md) that can be used as an elm translator on related files and get an output. Instructions can be found [here](https://github.com/cqframework/cql-execution#to-execute-your-cql)
 
-**Note** : The above approaches output a `json-elm` which then needs to be Base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
+**NB** : The above approaches output a `json-elm` which then needs to be Base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
