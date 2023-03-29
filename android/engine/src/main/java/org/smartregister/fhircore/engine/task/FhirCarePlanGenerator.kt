@@ -62,6 +62,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -194,18 +195,19 @@ constructor(
     }
   }
 
-  suspend fun transitionTaskTo(id: String, status: TaskStatus, reason: String? = null) {
+  suspend fun updateTaskDetailsById(id: String, status: TaskStatus, reason: String? = null) {
     getTask(id)
       ?.apply {
         this.status = status
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
+      ?.updateDependentTaskDueDate(defaultRepository)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
-  private suspend fun cancelTask(id: String, reason: String) {
-    transitionTaskTo(id, TaskStatus.CANCELLED, reason)
+  suspend fun cancelTask(id: String, reason: String) {
+    updateTaskDetailsById(id, TaskStatus.CANCELLED, reason)
   }
 
   suspend fun getTask(id: String) =
@@ -301,9 +303,10 @@ constructor(
   }
 
   /**
-   * This function is used to update the status of all CarePlans connected to a
-   * [QuestionnaireConfig]'s PlanDefinitions based on the [QuestionnaireConfig]'s CarePlanConfigs
-   * and their configs filtering information.
+   * Updates the due date of a dependent task based on the current status of the task. @param id The
+   * ID of the dependent task to update. @return The updated task object. This function is used to
+   * update the status of all CarePlans connected to a [QuestionnaireConfig]'s PlanDefinitions based
+   * on the [QuestionnaireConfig]'s CarePlanConfigs and their configs filtering information.
    *
    * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
