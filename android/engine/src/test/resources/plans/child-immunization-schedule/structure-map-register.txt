@@ -43,6 +43,25 @@ group ExtractTask(
                subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
 
         } "rule_group_identifier";
+
+        //task partOf
+        subject -> task.partOf = create('Reference') as ref, ref.reference = 'Task/1234' "r_task_part_of_ref_";
+
+        //add task.input for task dependencies
+        subject -> task.input = create('Task_Input') as input then{
+                    task -> input.type = create("CodeableConcept") as code then{
+                            code.system = "http://snomed.info/sct",
+                            code.code = "371154000",
+                            code.display = "Dependent (qualifier value)",
+                            code.value = 28
+                    }
+                    task -> input.value =  create('Period') as period1 then {
+                                         period1.start = '2023-04-01T08:00:00Z';
+                                         period1.end = '2023-04-01T09:00:00Z';
+                    }
+        } "task_input_rule";
+
+
         // form to be filled
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
 
@@ -61,4 +80,22 @@ group ExtractTask(
                  subject -> careplan.contained = task  "r_add_task";
         } "r_cp_task";
     } "r_task";
+}
+group TaskDependencies(source task: Task, target task: Task) {
+
+    // Define dependencies for Task
+    task.where(status = 'requested' and focus.text = 'Task 1')
+        -> create('Task_Input') as input1 then {
+            task -> input1.type = create('CodeableConcept') as code1 then {
+                code1.coding = create('Coding') as coding1 then {
+                    coding1.system = 'http://snomed.info/sct'
+                    coding1.code = '371154000'
+                    coding1.display = 'Dependent (qualifier value)'
+                }
+            }
+            task -> input1.value = create('Period') as period1 then {
+                period1.start = '2023-04-01T08:00:00Z'
+                period1.end = '2023-04-01T09:00:00Z'
+            }
+        }
 }
