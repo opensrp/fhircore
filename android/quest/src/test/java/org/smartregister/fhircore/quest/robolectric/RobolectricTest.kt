@@ -27,11 +27,11 @@ import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
 import java.io.File
-import java.io.FileReader
 import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.apache.commons.io.FileUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -71,8 +71,8 @@ abstract class RobolectricTest {
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
       object : Observer<T> {
-        override fun onChanged(o: T?) {
-          data[0] = o
+        override fun onChanged(value: T) {
+          data[0] = value
           latch.countDown()
           liveData.removeObserver(this)
         }
@@ -169,11 +169,11 @@ abstract class RobolectricTest {
 
     fun String.readFile(systemPath: String = ASSET_BASE_PATH): String {
       val file = File("$systemPath/$this")
-      val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-      return String(charArray)
+      return FileUtils.readFileToString(file, "UTF-8")
     }
 
-    fun String.readDir(): List<File> = File("$ASSET_BASE_PATH/$this").listFiles().toList()
+    fun String.readDir(): List<File> =
+      File("$ASSET_BASE_PATH/$this").listFiles()?.toList() ?: emptyList()
 
     @JvmStatic
     @BeforeClass
