@@ -1726,7 +1726,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
+  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is null`() {
 
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
       dependentTask.apply {
@@ -1755,6 +1755,49 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     } returns encounter.apply { partOf = null }
     coEvery { defaultRepository.loadResource(Reference(ArgumentMatchers.anyString())) } returns
       Immunization()
+    val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
+    assertEquals(groupTask, updatedTask)
+  }
+
+  @Test
+  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
+    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+      dependentTask.apply {
+        status = TaskStatus.INPROGRESS
+        output =
+          listOf(
+            Task.TaskOutputComponent(
+              CodeableConcept(),
+              StringType(
+                "{\n" +
+                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+                  "        }"
+              )
+            )
+          )
+        input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
+      }
+    coEvery {
+      fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns encounter
+    coEvery {
+      fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
+    } returns Task()
+
+    coEvery {
+      defaultRepository.loadResource(
+        Reference(
+          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
+              REFERENCE]
+            ?.jsonPrimitive
+            ?.content
+        )
+      )
+    } returns encounter
+
+    coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
+      immunizationResource
+
     val updatedTask = runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
     assertEquals(groupTask, updatedTask)
   }
