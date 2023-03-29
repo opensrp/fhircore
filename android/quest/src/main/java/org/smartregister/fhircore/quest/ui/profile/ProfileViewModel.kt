@@ -249,7 +249,8 @@ constructor(
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(
             event.eligibleManagingEntity.logicalId,
-            event.eligibleManagingEntity.groupId
+            event.eligibleManagingEntity.groupId,
+            event.managingEntityConfig
           )
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
