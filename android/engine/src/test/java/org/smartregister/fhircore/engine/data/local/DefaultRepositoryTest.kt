@@ -331,18 +331,23 @@ class DefaultRepositoryTest : RobolectricTest() {
         }
         gender = Enumerations.AdministrativeGender.MALE
       }
-    val relatedPerson = RelatedPerson().apply {
-      active = true
-      name = patient.name
-      birthDate = patient.birthDate
-      telecom = patient.telecom
-      address = patient.address
-      gender = patient.gender
-      this.patient = patient.asReference()
-      id = "testRelatedPersonId"
-    }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
 
     coEvery { fhirEngine.get<Patient>("54321") } returns patient
+
+    coEvery { fhirEngine.get<RelatedPerson>("33292") } returns relatedPerson
 
     coEvery { fhirEngine.create(any()) } returns listOf()
 
@@ -356,15 +361,16 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coEvery { fhirEngine.update(any()) } just runs
 
-    val defaultRepositorySpy = spyk(defaultRepository)
-
-    coEvery { defaultRepositorySpy.addOrUpdate(resource = any())} just runs
-
+    coEvery { fhirEngine.get(relatedPerson.resourceType, relatedPerson.logicalId) } answers
+      {
+        relatedPerson
+      }
     runBlocking {
-      defaultRepository.changeManagingEntity(
+      defaultRepositorySpy.changeManagingEntity(
         newManagingEntityId = "54321",
         groupId = "73847",
         ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
           relationshipCode =
             Code().apply {
               system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
@@ -379,7 +385,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.get<Group>("73847") }
 
-    coVerify { defaultRepository.addOrUpdate(resource = relatedPerson) }
+    coVerify { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test
