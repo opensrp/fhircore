@@ -342,55 +342,53 @@ suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository
         if (dependentTask != null &&
             dependentTask.hasOutput() &&
             dependentTask.executionPeriod.hasStart() &&
-            dependentTask.hasInput()
+            dependentTask.hasInput() &&
+            (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming())
         ) {
-          if (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming()) {
-            dependentTask.output?.forEach { dependentTaskOutputValue ->
-              if (dependentTaskOutputValue.hasValue()) {
-                val dependentTaskReference =
-                  Reference(
-                    Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
-                        REFERENCE]
-                      ?.jsonPrimitive
-                      ?.content
-                  )
-                val encounterResource =
-                  defaultRepository.loadResource<Encounter>(
-                    dependentTaskReference.reference.extractLogicalIdUuid()
-                  )
-                if (encounterResource != null &&
-                    encounterResource.hasPartOf() &&
-                    encounterResource.partOf.hasReference()
-                ) {
-                  encounterResource.partOf.reference.let { partOfReference ->
-                    val immunizationResource =
-                      defaultRepository.loadResource<Immunization>(
-                        partOfReference.extractLogicalIdUuid()
-                      )
-                    immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
-                      ?.valueAsCalendar
-                      ?.let { immunizationDate ->
-                        val dependentTaskStartDate = dependentTask.executionPeriod.start
-                        dependentTask.input.forEach {
-                          val dependentTaskInputDate = it.value.toString().toInt()
-                          val difference =
-                            abs(
-                              Duration.between(
-                                  immunizationDate.toInstant(),
-                                  dependentTaskStartDate.toInstant()
-                                )
-                                .toDays()
-                            )
-                          if (difference < dependentTaskInputDate &&
-                              dependentTask.executionPeriod.hasStart()
-                          ) {
-                            dependentTask.executionPeriod.start =
-                              Date.from(immunizationDate.toInstant())
-                                .plusDays(dependentTaskInputDate)
-                          }
+          dependentTask.output?.forEach { dependentTaskOutputValue ->
+            if (dependentTaskOutputValue.hasValue()) {
+              val dependentTaskReference =
+                Reference(
+                  Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
+                      REFERENCE]
+                    ?.jsonPrimitive
+                    ?.content
+                )
+              val encounterResource =
+                defaultRepository.loadResource<Encounter>(
+                  dependentTaskReference.reference.extractLogicalIdUuid()
+                )
+              if (encounterResource != null &&
+                  encounterResource.hasPartOf() &&
+                  encounterResource.partOf.hasReference()
+              ) {
+                encounterResource.partOf.reference.let { partOfReference ->
+                  val immunizationResource =
+                    defaultRepository.loadResource<Immunization>(
+                      partOfReference.extractLogicalIdUuid()
+                    )
+                  immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
+                    ?.valueAsCalendar
+                    ?.let { immunizationDate ->
+                      val dependentTaskStartDate = dependentTask.executionPeriod.start
+                      dependentTask.input.forEach {
+                        val dependentTaskInputDate = it.value.toString().toInt()
+                        val difference =
+                          abs(
+                            Duration.between(
+                                immunizationDate.toInstant(),
+                                dependentTaskStartDate.toInstant()
+                              )
+                              .toDays()
+                          )
+                        if (difference < dependentTaskInputDate &&
+                            dependentTask.executionPeriod.hasStart()
+                        ) {
+                          dependentTask.executionPeriod.start =
+                            Date.from(immunizationDate.toInstant()).plusDays(dependentTaskInputDate)
                         }
                       }
-                  }
+                    }
                 }
               }
             }
