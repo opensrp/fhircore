@@ -52,7 +52,7 @@ jobs:
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
 
     - name: Build application using script
-      run: ./gradlew :quest:clean && ./gradlew :quest:build
+      run: ./gradlew :quest:clean && ./gradlew :quest:assembleRelease
       working-directory: android
 
     - name: Perform CodeQL Analysis
