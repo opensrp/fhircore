@@ -189,13 +189,17 @@ constructor(
           .mapNotNull { getTask(it.extractId()) }
           .forEach {
             if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
-              cancelTask(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+              cancelTaskByTaskId(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
             }
           }
     }
   }
 
-  suspend fun updateTaskDetailsById(id: String, status: TaskStatus, reason: String? = null) {
+  suspend fun updateTaskDetailsByResourceId(
+    id: String,
+    status: TaskStatus,
+    reason: String? = null
+  ) {
     getTask(id)
       ?.apply {
         this.status = status
@@ -206,8 +210,8 @@ constructor(
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
-  suspend fun cancelTask(id: String, reason: String) {
-    updateTaskDetailsById(id, TaskStatus.CANCELLED, reason)
+  suspend fun cancelTaskByTaskId(id: String, reason: String) {
+    updateTaskDetailsByResourceId(id, TaskStatus.CANCELLED, reason)
   }
 
   suspend fun getTask(id: String) =
@@ -353,7 +357,7 @@ constructor(
               .mapNotNull { getTask(it.extractId()) }
               .forEach { task ->
                 if (task.status != TaskStatus.COMPLETED) {
-                  cancelTask(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+                  cancelTaskByTaskId(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
                 }
               }
           }
