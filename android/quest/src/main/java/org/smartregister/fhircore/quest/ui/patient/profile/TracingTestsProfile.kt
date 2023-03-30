@@ -114,6 +114,9 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
             Button(
                     onClick = { viewModel.addTelecomToGuardian() },
             ) { Text(text = "Add Telecom to guardian") }
+            Button(
+                    onClick = { viewModel.createTracingClients(context) },
+            ) { Text(text = "Add Tracing (100)") }
           }
         }
       }

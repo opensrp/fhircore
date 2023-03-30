@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.delete
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,6 +45,8 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -51,78 +55,82 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 import timber.log.Timber
+import java.time.Instant
+import java.time.LocalDate
+import java.time.Period
 import java.util.*
+import kotlin.random.Random
 
 @HiltViewModel
 class TracingTestsViewModel
 @Inject
 constructor(
-  syncBroadcaster: SyncBroadcaster,
-  savedStateHandle: SavedStateHandle,
-  val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: AppRegisterRepository,
-  val configurationRegistry: ConfigurationRegistry,
-  val profileViewDataMapper: ProfileViewDataMapper,
-  val registerViewDataMapper: RegisterViewDataMapper,
-  val fhirEngine: FhirEngine
+        syncBroadcaster: SyncBroadcaster,
+        savedStateHandle: SavedStateHandle,
+        val overflowMenuFactory: OverflowMenuFactory,
+        val patientRegisterRepository: AppRegisterRepository,
+        val configurationRegistry: ConfigurationRegistry,
+        val profileViewDataMapper: ProfileViewDataMapper,
+        val registerViewDataMapper: RegisterViewDataMapper,
+        val fhirEngine: FhirEngine
 ) : ViewModel() {
-  val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
-  val healthModule =
-    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
-  val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
-  val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
+    val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
+    val healthModule =
+            savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
+    val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
+    val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
 
-  private val _patientProfileViewDataFlow =
-    MutableStateFlow(ProfileViewData.PatientProfileViewData())
-  val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
-    get() = _patientProfileViewDataFlow.asStateFlow()
+    private val _patientProfileViewDataFlow =
+            MutableStateFlow(ProfileViewData.PatientProfileViewData())
+    val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
+        get() = _patientProfileViewDataFlow.asStateFlow()
 
-  var patientProfileData: ProfileData? = null
+    var patientProfileData: ProfileData? = null
 
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
-  val hasTracing = MutableLiveData(false)
+    val hasTracing = MutableLiveData(false)
 
-  val tracingHomeCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")
-  val tracingPhoneCoding: Coding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
+    val tracingHomeCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")
+    val tracingPhoneCoding: Coding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
 
-  init {
-    fetchPatientProfileData()
-    checkIfOnTracing()
-    val syncStateListener =
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
-          if (isStateCompleted) checkIfOnTracing()
-        }
-      }
-    syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
-  }
-
-  fun fetchPatientProfileData() {
-    if (patientId.isNotEmpty()) {
-      viewModelScope.launch {
-        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
-          ?.let {
-            patientProfileData = it
-            _patientProfileViewDataFlow.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.PatientProfileViewData
-          }
-      }
+    init {
+        fetchPatientProfileData()
+        checkIfOnTracing()
+        val syncStateListener =
+                object : OnSyncListener {
+                    override fun onSync(state: SyncJobStatus) {
+                        val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
+                        if (isStateCompleted) checkIfOnTracing()
+                    }
+                }
+        syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
     }
-  }
 
-  fun open(context: Context, item: TestItem.QuestItem) {
-    val profile = patientProfileViewData.value
+    fun fetchPatientProfileData() {
+        if (patientId.isNotEmpty()) {
+            viewModelScope.launch {
+                patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+                        ?.let {
+                            patientProfileData = it
+                            _patientProfileViewDataFlow.value =
+                                    profileViewDataMapper.transformInputToOutputModel(it) as
+                                            ProfileViewData.PatientProfileViewData
+                        }
+            }
+        }
+    }
 
-    context.launchQuestionnaire<QuestionnaireActivity>(
-      questionnaireId = item.questionnaire,
-      populationResources = profile.populationResources,
-      clientIdentifier = patientId,
-      questionnaireType = QuestionnaireType.EDIT
-    )
-  }
+    fun open(context: Context, item: TestItem.QuestItem) {
+        val profile = patientProfileViewData.value
+
+        context.launchQuestionnaire<QuestionnaireActivity>(
+                questionnaireId = item.questionnaire,
+                populationResources = profile.populationResources,
+                clientIdentifier = patientId,
+                questionnaireType = QuestionnaireType.EDIT
+        )
+    }
 
     fun addPregnancy() {
         viewModelScope.launch {
@@ -137,124 +145,74 @@ constructor(
         }
     }
 
-  fun checkIfOnTracing() {
-    viewModelScope.launch {
-      try {
-        val patientRef = "Patient/$patientId"
-        val valuesHome =
-          fhirEngine.search<Task> {
-            filter(
-              Task.CODE,
-              {
-                value =
-                  of(
-                    CodeableConcept()
-                      .addCoding(
-                        Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)")
-                      )
-                  )
-              }
-            )
-            filter(Task.SUBJECT, { value = patientRef })
-          }
-        valuesHome.forEach {
-          val data = jsonParser.encodeResourceToString(it)
-          Timber.e(data)
+    fun checkIfOnTracing() {
+        viewModelScope.launch {
+            try {
+                val patientRef = "Patient/$patientId"
+                val valuesHome =
+                        fhirEngine.search<Task> {
+                            filter(
+                                    Task.CODE,
+                                    {
+                                        value =
+                                                of(
+                                                        CodeableConcept()
+                                                                .addCoding(
+                                                                        Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)")
+                                                                )
+                                                )
+                                    }
+                            )
+                            filter(Task.SUBJECT, { value = patientRef })
+                        }
+                valuesHome.forEach {
+                    val data = jsonParser.encodeResourceToString(it)
+                    Timber.e(data)
+                }
+                hasTracing.value = valuesHome.isNotEmpty() // || valuesPhone.isNotEmpty()
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
-        hasTracing.value = valuesHome.isNotEmpty() // || valuesPhone.isNotEmpty()
-      } catch (e: Exception) {
-        Timber.e(e)
-      }
     }
-  }
 
-  fun updateUserWithTracing(isHomeTracing: Boolean) {
-    try {
-      viewModelScope.launch {
-        val data =
-          """
-            {
-        "resourceType": "Task",
-        "status": "ready",
-        "intent": "plan",
-        "priority": "routine",
-        "code": {
-          "coding": [
-            {
-              "system": "http://snomed.info/sct",
-              "code": "225368008",
-              "display": "Contact tracing (procedure)"
+    fun updateUserWithTracing(isHomeTracing: Boolean) {
+        try {
+            viewModelScope.launch {
+                val task = generateTracingTask(patientId, isHomeTracing)
+                val tasks = fhirEngine.create(task)
+                val createdTask = fhirEngine.get(ResourceType.Task, tasks.first())
+                Timber.i(jsonParser.encodeResourceToString(createdTask))
+                checkIfOnTracing()
             }
-          ],
-          "text": "Contact Tracing"
-        },
-        "executionPeriod": { "start": "2022-11-22T09:51:57+02:00" },
-        "authoredOn": "2022-11-22T09:51:57+02:00",
-        "lastModified": "2022-11-22T09:51:57+02:00",
-        "owner": {
-          "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec"
-        },
-        "reasonCode": {
-          "coding": [
-            {
-              "system": "https://d-tree.org",
-              "code": "missing-vl",
-              "display": "Missing Viral Load"
-            }
-          ],
-          "text": "Missing VL"
-        },
-        "reasonReference": {
-          "reference": "Questionnaire/art-client-viral-load-test-results"
-        },
-        "for": { "reference": "Patient/$patientId" }
-      }
-          """.trimIndent()
-
-        val task = jsonParser.parseResource(Task::class.java, data)
-        task.description =
-          if (isHomeTracing) "HIV Contact Tracing via home visit"
-          else "HIV Contact Tracing via phone"
-        task.meta.tag.add(
-          Coding(
-            "https://d-tree.org",
-            if (isHomeTracing) "home-tracing" else "phone-tracing",
-            if (isHomeTracing) "Home Tracing" else "Phone Tracing"
-          )
-        )
-        val tasks = fhirEngine.create(task)
-        val createdTask = fhirEngine.get(ResourceType.Task, tasks.first())
-        Timber.i(jsonParser.encodeResourceToString(createdTask))
-        checkIfOnTracing()
-      }
-    } catch (e: Exception) {
-      Timber.e(e)
-    }
-  }
-
-  fun clearAllTracingData() {
-    viewModelScope.launch {
-      val allData =
-        fhirEngine.search<Task> {
-          filter(
-            Task.CODE,
-            {
-              value =
-                of(
-                  CodeableConcept()
-                    .addCoding(
-                      Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)")
-                    )
-                )
-            }
-          )
+        } catch (e: Exception) {
+            Timber.e(e)
         }
-      allData.forEach { fhirEngine.delete<Task>(it.logicalId) }
-        val lists = fhirEngine.search<ListResource>{}
-        lists.forEach { fhirEngine.delete<ListResource>(it.logicalId) }
-      checkIfOnTracing()
     }
-  }
+
+    fun clearAllTracingData() {
+        viewModelScope.launch {
+            val allData =
+                    fhirEngine.search<Task> {
+                        filter(
+                                Task.CODE,
+                                {
+                                    value =
+                                            of(
+                                                    CodeableConcept()
+                                                            .addCoding(
+                                                                    Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)")
+                                                            )
+                                            )
+                                }
+                        )
+                    }
+            allData.forEach { fhirEngine.delete<Task>(it.logicalId) }
+            val lists = fhirEngine.search<ListResource> {}
+            lists.forEach { fhirEngine.delete<ListResource>(it.logicalId) }
+            checkIfOnTracing()
+        }
+    }
 
     fun addTelecomToGuardian() {
         viewModelScope.launch {
@@ -303,7 +261,7 @@ constructor(
 
     fun addRelatedPerson() {
         viewModelScope.launch {
-            fhirEngine.loadResource<Patient>(patientId)?.let {patient->
+            fhirEngine.loadResource<Patient>(patientId)?.let { patient ->
                 if (patient.link.isEmpty()) {
                     val guardian = RelatedPerson().apply {
                         gender = Enumerations.AdministrativeGender.MALE
@@ -325,7 +283,7 @@ constructor(
                     if (ids != null) {
                         patient.link.add(
                                 Patient.PatientLinkComponent().apply {
-                                    other = Reference().apply { this.reference = "${guardian.fhirType()}/$ids"  }
+                                    other = Reference().apply { this.reference = "${guardian.fhirType()}/$ids" }
                                     type = Patient.LinkType.REFER
                                 }
                         )
@@ -336,64 +294,261 @@ constructor(
         }
     }
 
-    companion object {
-    val testItems: List<TestItem> =
-      listOf(
-        TestItem.QuestItem(
-          title = "art client viral load test results",
-          questionnaire = "tests/art_client_viral_load_test_results.json",
-          tracingList = listOf("HVL", "MVl", "IVl"),
-          appointmentList = listOf("ICT", "VL")
-        ),
-        TestItem.QuestItem(
-          title = "exposed infant hiv test and results",
-          questionnaire = "tests/exposed_infant_hiv_test_and_results.json",
-          tracingList = listOf("PDBS", "MDBS", "IDBS"),
-          appointmentList = listOf("Milestone")
-        ),
-        TestItem.QuestItem(
-          title = "hiv test and next appointment",
-          questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
-        ),
-      TestItem.QuestItem(
-              title = "Woman health Screening",
-              questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json",
-              appointmentList = listOf("Cervical Cancer Screening")
-      ),
-              TestItem.DividerItem,
-              TestItem.QuestItem(
-                      title = "Welcome Service Newly Diagnosed",
-                      questionnaire = "tests/art_client_welcome_service_newly_diagnosed.json",
-                      appointmentList = listOf("Followup")
-              ),
-              TestItem.QuestItem(
-                      title = "Welcome Service high or detectable viral load",
-                      questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
-                      tracingList = listOf("-HVL"),
-                      appointmentList = listOf("Followup")
-              ),
-              TestItem.QuestItem(
-                      title = "Welcome Service Back to Care",
-                      questionnaire = "tests/art_client_welcome_welcome_service_back_to_care.json",
-                      appointmentList = listOf("Followup")
-              ),
-              TestItem.DividerItem,
-              TestItem.QuestItem(
-                      title = "TB History regimen",
-                      questionnaire = "tests/tb_history_and_regimen.json",
-                      appointmentList = listOf("Followup")
-              ),
+    fun createTracingClients(context: Context) {
+        viewModelScope.launch {
+            Toast.makeText(context, "Adding users", Toast.LENGTH_SHORT).show()
+            val isHomeTracing = kotlin.random.Random.nextBoolean()
+            val random = Random.nextInt(1, 5)
 
-      )
-  }
+            val lists = fhirEngine.search<Patient> {
+                sort(Patient.NAME, if (kotlin.random.Random.nextBoolean()) Order.ASCENDING else Order.DESCENDING)
+                count = 100
+            }
+            lists.forEach { patient ->
+                if (!patient.hasGender()) {
+                    patient.gender = Enumerations.AdministrativeGender.MALE
+                }
+                if (!patient.hasBirthDate()) {
+                    patient.birthDate = Date()
+                }
+                fhirEngine.update(patient)
+                val task = generateTracingTask(patient.logicalId, isHomeTracing)
+                val list: MutableList<DomainResource> = mutableListOf()
+                for (numberOfOutcomes in 0..random) {
+                    val create = createEncounter(task, numberOfOutcomes == random, isHomeTracing)
+                    list.addAll(create)
+                }
+                fhirEngine.create(task, *list.toTypedArray())
+                Toast.makeText(context, "Finished adding users", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createEncounter(task: Task, isCurrent: Boolean, isHomeTracing: Boolean): Array<DomainResource> {
+        val encounterData = """
+            {
+              "resourceType": "Encounter",
+              "status": "finished",
+              "class": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                "code": "IMP",
+                "display": "inpatient encounter"
+              },
+              "type": [
+                {
+                  "coding": [
+                    {
+                      "system": "http://snomed.info/sct",
+                      "code": "225368008",
+                      "display": "Contact tracing (procedure)"
+                    }
+                  ],
+                  "text": "Contact Tracing"
+                }
+              ],
+              "serviceType": {
+                "coding": [
+                  { "system": "https://d-tree.org", "code": "${if (isHomeTracing) "home" else "phone"}-tracing-outcome" }
+                ]
+              },
+              "priority": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/ValueSet/v3-ActPriority",
+                    "code": "EL",
+                    "display": "elective"
+                  }
+                ],
+                "text": "elective"
+              },
+              "subject": {
+                "reference": "Patient/8d4ce9c0-469e-4a84-93e2-e9638bf2f8df"
+              },
+              "participant": [
+                {
+                  "individual": {
+                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec"
+                  }
+                }
+              ],
+              "period": {
+                "start": "2023-03-30T14:59:43+02:00",
+                "end": "2023-03-30T14:59:43+02:00"
+              },
+              "reasonCode": [
+                {
+                  "coding": [
+                    {
+                      "system": "https://d-tree.org",
+                      "code": "linkage",
+                      "display": "Linkage"
+                    }
+                  ],
+                  "text": "Linkage"
+                }
+              ]
+            }
+
+        """.trimIndent()
+        val encounter = jsonParser.parseResource(Encounter::class.java, encounterData)
+        val listItem = """
+            {
+              "resourceType": "List",
+              "title": "Tracing Encounter List_1",
+              "orderedBy": {
+                "coding": [{ "system": "https://d-tree.org", "code": "1" }],
+                "text": "1"
+              },
+              "status": "${if (isCurrent) "current" else "retired"}",
+              "mode": "snapshot",
+              "entry": [
+                {
+                  "flag": {
+                    "coding": [{ "system": "https://d-tree.org", "code": "tracing-task" }],
+                    "text": "${task.asReference()}"
+                  },
+                  "item": { "reference": "${task.asReference()}" }
+                },
+                {
+                  "flag": {
+                    "coding": [{ "system": "https://d-tree.org", "code": "tracing-enc" }]
+                  },
+                  "item": {
+                    "reference": "${encounter.asReference()}"
+                  }
+                }
+              ]
+            }
+
+        """.trimIndent()
+        val list = jsonParser.parseResource(ListResource::class.java, listItem)
+        list.date = randomDate()
+        return arrayOf(encounter, list)
+    }
+
+    private fun generateTracingTask(patientId: String, isHomeTracing: Boolean): Task {
+        val data =
+                """
+            {
+        "resourceType": "Task",
+        "status": "ready",
+        "intent": "plan",
+        "priority": "routine",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "225368008",
+              "display": "Contact tracing (procedure)"
+            }
+          ],
+          "text": "Contact Tracing"
+        },
+        "executionPeriod": { "start": "2022-11-22T09:51:57+02:00" },
+        "authoredOn": "2022-11-22T09:51:57+02:00",
+        "lastModified": "2022-11-22T09:51:57+02:00",
+        "owner": {
+          "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec"
+        },
+        "reasonCode": {
+          "coding": [
+            {
+              "system": "https://d-tree.org",
+              "code": "missing-vl",
+              "display": "Missing Viral Load"
+            }
+          ],
+          "text": "Missing VL"
+        },
+        "reasonReference": {
+          "reference": "Questionnaire/art-client-viral-load-test-results"
+        },
+        "for": { "reference": "Patient/$patientId" }
+      }
+          """.trimIndent()
+
+        val task = jsonParser.parseResource(Task::class.java, data)
+        task.description =
+                if (isHomeTracing) "HIV Contact Tracing via home visit"
+                else "HIV Contact Tracing via phone"
+        task.meta.tag.add(
+                Coding(
+                        "https://d-tree.org",
+                        if (isHomeTracing) "home-tracing" else "phone-tracing",
+                        if (isHomeTracing) "Home Tracing" else "Phone Tracing"
+                )
+        )
+        return task
+    }
+
+    private fun randomDate(): Date {
+        val year = Random.nextInt(2020, 2023)
+        val dayOfYear = Random.nextInt(1, 365)
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.DAY_OF_YEAR, dayOfYear);
+        return calendar.time
+    }
+
+    companion object {
+        val testItems: List<TestItem> =
+                listOf(
+                        TestItem.QuestItem(
+                                title = "art client viral load test results",
+                                questionnaire = "tests/art_client_viral_load_test_results.json",
+                                tracingList = listOf("HVL", "MVl", "IVl"),
+                                appointmentList = listOf("ICT", "VL")
+                        ),
+                        TestItem.QuestItem(
+                                title = "exposed infant hiv test and results",
+                                questionnaire = "tests/exposed_infant_hiv_test_and_results.json",
+                                tracingList = listOf("PDBS", "MDBS", "IDBS"),
+                                appointmentList = listOf("Milestone")
+                        ),
+                        TestItem.QuestItem(
+                                title = "hiv test and next appointment",
+                                questionnaire = "tests/contact_and_community_positive_hiv_test_and_next_appointment.json"
+                        ),
+                        TestItem.QuestItem(
+                                title = "Woman health Screening",
+                                questionnaire = "tests/art_client_womens_health_screening_female_25_years_plus.json",
+                                appointmentList = listOf("Cervical Cancer Screening")
+                        ),
+                        TestItem.DividerItem,
+                        TestItem.QuestItem(
+                                title = "Welcome Service Newly Diagnosed",
+                                questionnaire = "tests/art_client_welcome_service_newly_diagnosed.json",
+                                appointmentList = listOf("Followup")
+                        ),
+                        TestItem.QuestItem(
+                                title = "Welcome Service high or detectable viral load",
+                                questionnaire = "tests/art_client_welcome_service_high_or_detectable_viral_load.json",
+                                tracingList = listOf("-HVL"),
+                                appointmentList = listOf("Followup")
+                        ),
+                        TestItem.QuestItem(
+                                title = "Welcome Service Back to Care",
+                                questionnaire = "tests/art_client_welcome_welcome_service_back_to_care.json",
+                                appointmentList = listOf("Followup")
+                        ),
+                        TestItem.DividerItem,
+                        TestItem.QuestItem(
+                                title = "TB History regimen",
+                                questionnaire = "tests/tb_history_and_regimen.json",
+                                appointmentList = listOf("Followup")
+                        ),
+
+                        )
+    }
 }
 
 sealed class TestItem() {
-  data class QuestItem(
-    val title: String,
-    val questionnaire: String,
-    val tracingList: List<String> = listOf(),
-    val appointmentList: List<String> = listOf()
-  ) : TestItem()
-  object DividerItem : TestItem()
+    data class QuestItem(
+            val title: String,
+            val questionnaire: String,
+            val tracingList: List<String> = listOf(),
+            val appointmentList: List<String> = listOf()
+    ) : TestItem()
+
+    object DividerItem : TestItem()
 }
