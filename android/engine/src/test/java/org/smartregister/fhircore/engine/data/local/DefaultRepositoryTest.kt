@@ -63,6 +63,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -329,8 +331,23 @@ class DefaultRepositoryTest : RobolectricTest() {
         }
         gender = Enumerations.AdministrativeGender.MALE
       }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
 
     coEvery { fhirEngine.get<Patient>("54321") } returns patient
+
+    coEvery { fhirEngine.get<RelatedPerson>("33292") } returns relatedPerson
 
     coEvery { fhirEngine.create(any()) } returns listOf()
 
@@ -338,22 +355,37 @@ class DefaultRepositoryTest : RobolectricTest() {
       Group().apply {
         id = "73847"
         managingEntity = Reference("RelatedPerson/12983")
+        managingEntity.id = "33292"
       }
     coEvery { fhirEngine.get<Group>("73847") } returns group
 
     coEvery { fhirEngine.update(any()) } just runs
 
+    coEvery { fhirEngine.get(relatedPerson.resourceType, relatedPerson.logicalId) } answers
+      {
+        relatedPerson
+      }
     runBlocking {
-      defaultRepository.changeManagingEntity(newManagingEntityId = "54321", groupId = "73847")
+      defaultRepositorySpy.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            }
+        )
+      )
     }
 
     coVerify { fhirEngine.get<Patient>("54321") }
 
-    coVerify { fhirEngine.create(any()) }
-
     coVerify { fhirEngine.get<Group>("73847") }
 
-    coVerify { fhirEngine.update(any()) }
+    coVerify { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test

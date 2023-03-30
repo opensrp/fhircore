@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
-import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -322,7 +321,7 @@ constructor(
           else -> Task.TaskStatus.COMPLETED
         }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
       }
     }
   }
