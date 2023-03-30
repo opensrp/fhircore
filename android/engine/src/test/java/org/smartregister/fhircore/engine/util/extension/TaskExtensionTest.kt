@@ -16,15 +16,131 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
 class TaskExtensionTest {
+  private var task = Task()
+  private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+  @Before
+  fun setUp() {
+    task =
+      iParser.parseResource(
+        Task::class.java,
+        "{\n" +
+          "   \"resourceType\":\"Task\",\n" +
+          "   \"id\":\"a9100c01-c84b-404f-9d24-9b830463a152\",\n" +
+          "   \"identifier\":[\n" +
+          "      {\n" +
+          "         \"use\":\"official\",\n" +
+          "         \"value\":\"a20e88b4-4beb-4b31-86cd-572e1445e5f3\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"basedOn\":[\n" +
+          "      {\n" +
+          "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"partOf\":{\n" +
+          "      \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+          "   },\n" +
+          "   \"status\":\"requested\",\n" +
+          "   \"intent\":\"plan\",\n" +
+          "   \"priority\":\"routine\",\n" +
+          "   \"code\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"33879002\",\n" +
+          "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
+          "         }\n" +
+          "      ]\n" +
+          "   },\n" +
+          "   \"description\":\"OPV 1 at 6 wk vaccine\",\n" +
+          "   \"for\":{\n" +
+          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+          "   },\n" +
+          "   \"executionPeriod\":{\n" +
+          "      \"start\":\"2021-11-12T00:00:00+00:00\",\n" +
+          "      \"end\":\"2026-11-11T00:00:00+00:00\"\n" +
+          "   },\n" +
+          "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
+          "   \"requester\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"owner\":{\n" +
+          "      \"reference\":\"Practitioner/3812\"\n" +
+          "   },\n" +
+          "   \"reasonCode\":{\n" +
+          "      \"coding\":[\n" +
+          "         {\n" +
+          "            \"system\":\"http://snomed.info/sct\",\n" +
+          "            \"code\":\"111164008\",\n" +
+          "            \"display\":\"Poliovirus vaccine\"\n" +
+          "         }\n" +
+          "      ],\n" +
+          "      \"text\":\"OPV\"\n" +
+          "   },\n" +
+          "   \"reasonReference\":{\n" +
+          "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
+          "   },\n" +
+          "   \"input\":[\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"900000000000457003\",\n" +
+          "                  \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":{\n" +
+          "            \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+          "         }\n" +
+          "      },\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"371154000\",\n" +
+          "                  \"display\":\"Dependent (qualifier value)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":28\n" +
+          "      }\n" +
+          "   ],\n" +
+          "   \"output\":[\n" +
+          "      {\n" +
+          "         \"type\":{\n" +
+          "            \"coding\":[\n" +
+          "               {\n" +
+          "                  \"system\":\"http://snomed.info/sct\",\n" +
+          "                  \"code\":\"41000179103\",\n" +
+          "                  \"display\":\"Immunization record (record artifact)\"\n" +
+          "               }\n" +
+          "            ]\n" +
+          "         },\n" +
+          "         \"value\":{\n" +
+          "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+          "         }\n" +
+          "      }\n" +
+          "   ]\n" +
+          "} "
+      )
+  }
 
   @Test
   fun testHasPastEnd() {
@@ -186,5 +302,44 @@ class TaskExtensionTest {
           }
       }
     Assert.assertTrue(task.isPastExpiry())
+  }
+
+  @Test
+  fun testTaskIsUpcoming() {
+    task.apply {
+      status = Task.TaskStatus.REQUESTED
+      executionPeriod.start = today().plusDays(1)
+      val expected = task.isUpcoming()
+      Assert.assertTrue(expected)
+    }
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusInProgress() {
+    task.apply {
+      status = Task.TaskStatus.INPROGRESS
+      executionPeriod.end = today().plusDays(-1)
+      val expected = task.isOverDue()
+      Assert.assertTrue(expected)
+    }
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusReady() {
+    task.apply {
+      status = Task.TaskStatus.READY
+      executionPeriod.end = today().plusDays(-10)
+      val expected = task.isOverDue()
+      Assert.assertTrue(expected)
+    }
+  }
+
+  @Test
+  fun testTaskIsDue() {
+    task.apply {
+      status = Task.TaskStatus.READY
+      val expected = task.isDue()
+      Assert.assertTrue(expected)
+    }
   }
 }
