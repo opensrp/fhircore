@@ -29,7 +29,7 @@ This repository contains the folders
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
-We recommend reviewing the [docs](docs) before setting up the Android Studio Project in the [android](android) folder.
+We recommend reviewing the [docs](https://fhircore.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
 
 For starter resources on the FHIR specification:
 
@@ -41,4 +41,3 @@ For starter resources on the Android FHIR SDK and this repo:
 1. Android FHIR SDK Demo - [Link](https://drive.google.com/file/d/1ORjk3pNOKjGyZlbayAViPy4xkI8p-aFB/view?usp=sharing)
 1. Android FHIR SDK Intro Slide deck - [Link](https://docs.google.com/presentation/d/1oc6EBJAcXsBwyBgtnra61xoM7naBF0aj8WbfrUT7Y2A)
 1. FHIR Core Intro slide deck - [Link](https://docs.google.com/presentation/d/1eFsf9a5dcNqKXlfsEWyNZyoVooIbK3jq6694xarARr8)
-1. General FHIR Modelling for LMIC resource mapping- [Link](https://docs.google.com/drawings/d/1mRESJI_YywQG-YjhBy4zvVik28gBj2n_YscWKZZ_wOc)

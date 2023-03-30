@@ -328,7 +328,7 @@ constructor(
           else -> Task.TaskStatus.COMPLETED
         }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsById(taskId.extractLogicalIdUuid(), status)
       }
     }
   }
