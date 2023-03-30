@@ -19,7 +19,7 @@ CQL allows for a more modular, flexible, and robust expression of the logic. It 
 
 The Clinical Quality Language (`CQL`) Specification provides a way to define, data querying, processing and logical expressions in a simplified and user-friendly way. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on `CQL`. Some example `CQL` scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
 
-Since `CQL` itself is a user-friendly script rather than a parseable configuration or program, it needs a `JSON` or `XML` form that can be lexically parsed and understood by the parser.For this it is needs to be transformed into a JSON form called Expression Logical Model(ELM) aka `json+elm`. An XML form `xml+elm` can also used. In most cases, we shall be using `json+elm` for parsing FHIR Core Decision or Reporting Logic. 
+Since `CQL` itself is a user-friendly script rather than a parseable configuration or program, it needs a `JSON` or `XML` form that can be lexically parsed and understood by the parser.For this it is needs to be transformed into a JSON form called Expression Logical Model(ELM) aka `json+elm`. An XML form `xml+elm` can also used. In most cases, we shall be using `json+elm` for parsing FHIR Core Decision or Reporting Logic.
 
 The translated `elm` and `cql` is then added to FHIR [Library](http://hl7.org/fhir/R4/library.html) resource as Base64 encoded data to allow the code to get the calculation for each variable to be used by FHIR compatible software.
 
@@ -79,5 +79,8 @@ define "Age Stratifier":
   end
 ````
 
-
 The variables in CQL can be referenced into a [Measure](http://hl7.org/fhir/measure.html) and/or [PlanDefinition](http://hl7.org/fhir/plandefinition.html) after adding the `Library` containing CQL as referenced library.
+
+## Common challenges with CQL
+
+CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup. To solve this pre-load the libraries.
