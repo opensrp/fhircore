@@ -386,8 +386,18 @@ suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository
                         if (difference < dependentTaskInputDate &&
                             dependentTask.executionPeriod.hasStart()
                         ) {
-                          dependentTask.executionPeriod.start =
-                            Date.from(immunizationDate.toInstant()).plusDays(dependentTaskInputDate)
+                          dependentTask
+                            .apply {
+                              executionPeriod.start =
+                                Date.from(immunizationDate.toInstant())
+                                  .plusDays(dependentTaskInputDate)
+                            }
+                            .run {
+                              defaultRepository.addOrUpdate(
+                                addMandatoryTags = true,
+                                resource = dependentTask
+                              )
+                            }
                         }
                       }
                     }
