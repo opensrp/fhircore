@@ -2198,6 +2198,13 @@
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
                 "paramType": "UPDATE_DATE_ON_EDIT"
+              },
+              {
+                "paramType": "PREPOPULATE",
+                "linkId": "652a752f-280a-4560-aac8-fa3196449961",
+                "dataType": "INTEGER",
+                "key": "isFamilyHeadExists",
+                "value": "@{isFamilyHeadExists}"
               }
             ]
           }
