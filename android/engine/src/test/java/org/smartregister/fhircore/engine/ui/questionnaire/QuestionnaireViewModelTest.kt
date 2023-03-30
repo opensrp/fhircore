@@ -1114,4 +1114,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNull(resource.status)
   }
+
+  @Test
+  fun `test generateQuestionnaireResponse`() = runTest {
+    val questionnaire = Questionnaire()
+    val patient = samplePatient()
+    coEvery { questionnaireViewModel.getPopulationResources(any()) } returns arrayOf(patient)
+    val intent = Intent()
+
+    val response = questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+
+    Assert.assertNotNull(response.contained.firstOrNull { it.resourceType == ResourceType.Patient })
+  }
 }
