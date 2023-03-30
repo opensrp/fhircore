@@ -33,7 +33,7 @@ class LoginScreenTest {
   private val listenerObjectSpy =
     object {
       // Imitate click action by doing nothing
-      fun onUsernameUpdated(userName: String) {}
+      fun onUsernameUpdated() {}
       fun onPasswordUpdated() {}
       fun forgotPassword() {}
       fun attemptRemoteLogin() {}
@@ -52,7 +52,7 @@ class LoginScreenTest {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
         username = "user",
-        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated("test") },
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
         password = "password",
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
