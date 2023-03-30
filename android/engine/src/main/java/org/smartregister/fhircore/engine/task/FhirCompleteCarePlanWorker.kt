@@ -51,17 +51,14 @@ constructor(
         )
       }
       .forEach carePlanLoop@{ carePlan ->
-        var shouldCompleteCarePlan = true
         carePlan
           .activity
           .flatMap { it.outcomeReference }
           .filter { it.reference.startsWith(ResourceType.Task.name) }
           .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
           .forEach { task ->
-            shouldCompleteCarePlan =
-              (task.status in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
-
-            if (!shouldCompleteCarePlan) return@carePlanLoop
+            if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+              return@carePlanLoop
           }
 
         // complete CarePlan
