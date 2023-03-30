@@ -193,6 +193,12 @@ android {
             versionNameSuffix "-engage"
 
         }
+
+        mpower {
+            dimension "apps"
+            applicationIdSuffix ".mpower"
+            versionNameSuffix "-mpower"
+        }
     }
     sourceSets {
         main {

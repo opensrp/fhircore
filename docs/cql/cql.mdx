@@ -1,3 +1,20 @@
+# CQL
+
+This Documentation on CQL is to give some insights on
+1. How to author the CQL script
+2. How to load and execute CQL scripts
+3. Some sample use cases where we have used CQL
+
+## What is CQL
+
+CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS).
+
+CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019.
+
+CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.
+
+CQL allows for a more modular, flexible, and robust expression of the logic. It allows logic to be shared between measures and with clinical decision support.
+
 ## CQL Logic/Decision Library
 
 The Clinical Quality Language (`CQL`) Specification provides a way to define, data querying, processing and logical expressions in a simplified and user-friendly way. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on `CQL`. Some example `CQL` scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
@@ -64,40 +81,3 @@ define "Age Stratifier":
 
 
 The variables in CQL can be referenced into a [Measure](http://hl7.org/fhir/measure.html) and/or [PlanDefinition](http://hl7.org/fhir/plandefinition.html) after adding the `Library` containing CQL as referenced library.
-
-**Android FHIR SDK CQL Builder**
-
-SDK workflow testing module has [com.google.android.fhir.workflow.testing.CqlBuilder](https://github.com/google/android-fhir/blob/master/workflow-testing/src/main/java/com/google/android/fhir/workflow/testing/CqlBuilder.kt) which can do translation from a `CQL` to `Library` resource. This automatically does the `elm` conversion for you internally. 
-
-An example usage can be seen in tests found [here](https://github.com/google/android-fhir/blob/master/workflow/src/test/java/com/google/android/fhir/workflow/FhirOperatorTest.kt#L150)
-
-```
-val library = CqlBuilder.compileAndBuild(cqlScriptInputStream)
-```
-
-**FHIR Core CQL Testing Module**
-
-The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing) repository has a testing module which allows to not only get the complete Library resource to directly save to the server but also allows to test the output and make changes on the fly. Check the cucumber tests [Feature File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/resources/measure-report/household-members.feature), the [Test Code File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt#L28) and the [Convertor Util Method](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/kotlin/com/fhircore/resources/testing/CqlUtils.kt)
-
-
-**FHIR Core Tooling Library**
-
-FHIR Core tooling library can also be used to get a Library by running the command below. Details on the tool can be found [here](https://github.com/opensrp/fhircore-tooling#converting-library-cql-to-json).
-```
-fct convert -t cql -i /some/path/Patient-1.0.0.cql
-```
-
-
-
-## Other possible but not recommended ways to get the translated elm+json
-
-**1. CQL to ELM REST Translator**
-
-A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API.
-
-
-**2. CQL to ELM JAVA Translator**
-
-Her is an [elm java app](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/READM.md) that can be used as an elm translator on related files and get an output. Instructions can be found [here](https://github.com/cqframework/cql-execution#to-execute-your-cql)
-
-**NB** : The above approaches output a `json-elm` which then needs to be Base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
