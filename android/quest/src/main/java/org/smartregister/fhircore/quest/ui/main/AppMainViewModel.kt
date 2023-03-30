@@ -18,13 +18,18 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.accounts.AccountManager
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.util.Date
@@ -33,6 +38,9 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Appointment
+import org.hl7.fhir.r4.model.Bundle
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -41,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -63,7 +72,10 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,
-  val appFeatureManager: AppFeatureManager
+  val appFeatureManager: AppFeatureManager,
+  val fhirEngine: FhirEngine,
+  val dispatcherProvider: DispatcherProvider,
+  @ApplicationContext val applicationContext: Context
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
@@ -75,6 +87,9 @@ constructor(
 
   private val applicationConfiguration: ApplicationConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+
+  private val assetManager by lazy { applicationContext.assets }
+  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =
@@ -148,6 +163,32 @@ constructor(
             appMainUiState.value =
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
+      }
+      is AppMainEvent.Testing -> {
+
+        when (event) {
+          AppMainEvent.Testing.SeedAppointment -> {
+            viewModelScope.launch(dispatcherProvider.io()) { seedAppointments() }
+          }
+          AppMainEvent.Testing.SeedTracing -> TODO()
+        }
+      }
+    }
+  }
+
+  private suspend fun seedAppointments() {
+    val seedPath = "seeds/appointments.json"
+    withContext(dispatcherProvider.io()) {
+      assetManager.open(seedPath).bufferedReader().use { it.readText() }.let {
+        val bundle = jsonParser.parseResource(Bundle::class.java, it)
+        val appointments =
+          bundle
+            .entry
+            .map { entry -> entry.resource }
+            .filterIsInstance<Appointment>()
+            .toTypedArray()
+        fhirEngine.create(*appointments)
+        Timber.e("${appointments.size} saved!")
       }
     }
   }

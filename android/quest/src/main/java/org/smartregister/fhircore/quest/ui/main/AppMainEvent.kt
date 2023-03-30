@@ -27,6 +27,11 @@ sealed class AppMainEvent {
   object Logout : AppMainEvent()
   data class SyncData(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
   object ResumeSync : AppMainEvent()
+  sealed class Testing : AppMainEvent() {
+    object SeedAppointment : Testing()
+
+    object SeedTracing : Testing()
+  }
   data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
   data class RefreshAuthToken(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
 }
