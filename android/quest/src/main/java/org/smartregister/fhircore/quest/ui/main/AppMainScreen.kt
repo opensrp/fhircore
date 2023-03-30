@@ -144,7 +144,7 @@ private fun AppMainNavigationGraph(
       route =
         "tracing_tests${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
       arguments = commonNavArgs.plus(patientIdNavArgument())
-    ) { TracingTestsProfile() }
+    ) { TracingTestsProfile(navController) }
     mainNavigationScreens.forEach {
       val commonNavArgs =
         NavigationArg.commonNavArgs(

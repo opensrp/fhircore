@@ -190,8 +190,9 @@ constructor(
         }
     }
 
-    fun clearAllTracingData() {
+    fun clearAllTracingData(context: Context) {
         viewModelScope.launch {
+            Toast.makeText(context, "Clearing users", Toast.LENGTH_SHORT).show()
             val allData =
                     fhirEngine.search<Task> {
                         filter(
@@ -211,6 +212,7 @@ constructor(
             val lists = fhirEngine.search<ListResource> {}
             lists.forEach { fhirEngine.delete<ListResource>(it.logicalId) }
             checkIfOnTracing()
+            Toast.makeText(context, "Finished clearing users", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -297,11 +299,11 @@ constructor(
     fun createTracingClients(context: Context) {
         viewModelScope.launch {
             Toast.makeText(context, "Adding users", Toast.LENGTH_SHORT).show()
-            val isHomeTracing = kotlin.random.Random.nextBoolean()
+            val isHomeTracing = Random.nextBoolean()
             val random = Random.nextInt(1, 5)
 
             val lists = fhirEngine.search<Patient> {
-                sort(Patient.NAME, if (kotlin.random.Random.nextBoolean()) Order.ASCENDING else Order.DESCENDING)
+                sort(Patient.NAME, if (Random.nextBoolean()) Order.ASCENDING else Order.DESCENDING)
                 count = 100
             }
             lists.forEach { patient ->
@@ -319,8 +321,8 @@ constructor(
                     list.addAll(create)
                 }
                 fhirEngine.create(task, *list.toTypedArray())
-                Toast.makeText(context, "Finished adding users", Toast.LENGTH_SHORT).show()
             }
+            Toast.makeText(context, "Finished adding users", Toast.LENGTH_SHORT).show()
         }
     }
 

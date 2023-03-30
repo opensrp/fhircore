@@ -51,11 +51,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
+fun TracingTestsProfile(navController: NavController, viewModel: TracingTestsViewModel = hiltViewModel()) {
   val context = LocalContext.current
   val isOnTracing by viewModel.hasTracing.observeAsState(initial = false)
 
@@ -67,7 +68,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
       topBar = {
         TopAppBar(
           navigationIcon = {
-            IconButton(onClick = { /*TODO*/}) {
+            IconButton(onClick = { navController.popBackStack() }) {
               Icon(Icons.Default.ArrowBack, contentDescription = "")
             }
           },
@@ -76,7 +77,7 @@ fun TracingTestsProfile(viewModel: TracingTestsViewModel = hiltViewModel()) {
       },
       bottomBar = {
         Column(Modifier.fillMaxWidth()) {
-          Button(onClick = { viewModel.clearAllTracingData() }) {
+          Button(onClick = { viewModel.clearAllTracingData(context) }) {
             Text(text = "Clear Tracing/APP Data for All")
           }
           Box(modifier = Modifier
