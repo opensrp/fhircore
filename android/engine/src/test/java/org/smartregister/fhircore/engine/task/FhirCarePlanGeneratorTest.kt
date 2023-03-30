@@ -1323,7 +1323,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
     coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
 
-    fhirCarePlanGenerator.updateTaskDetailsById("12345", TaskStatus.COMPLETED)
+    fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", TaskStatus.COMPLETED)
 
     val task = slot<Task>()
     coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
@@ -1883,11 +1883,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
       immunizationResource
 
+    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) } just runs
     runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
     assertEquals(
       Date.from(Instant.parse("2021-11-07T00:00:00Z")),
       dependentTask.executionPeriod.start
     )
+    coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) }
   }
 }
 
