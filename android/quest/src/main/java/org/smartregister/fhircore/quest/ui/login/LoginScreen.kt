@@ -253,7 +253,8 @@ fun LoginPage(
           },
           visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Done),
+          keyboardOptions =
+            KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
           modifier =
             modifier
               .fillMaxWidth()

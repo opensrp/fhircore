@@ -94,13 +94,17 @@ class LoginScreenTest {
         appVersionPair = Pair(1, "1.0.1")
       )
     }
-    composeRule.onNodeWithTag(USERNAME_FIELD_TAG)
+    composeRule
+      .onNodeWithTag(USERNAME_FIELD_TAG)
       .assertExists()
       .performTextInput("usernameFieldTag")
-    composeRule.onNodeWithTag(PASSWORD_FIELD_TAG)
+    composeRule
+      .onNodeWithTag(PASSWORD_FIELD_TAG)
       .assertExists()
       .performTextInput("passwordFieldTag")
-    composeRule.onNodeWithTag(PASSWORD_FIELD_TAG)
-      .performImeAction().equals(EditorInfo.IME_ACTION_DONE)
+    composeRule
+      .onNodeWithTag(PASSWORD_FIELD_TAG)
+      .performImeAction()
+      .equals(EditorInfo.IME_ACTION_DONE)
   }
 }
