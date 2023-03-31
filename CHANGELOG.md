@@ -1,11 +1,16 @@
-# Changelog
+# Change Log
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-rc1] - 2022-xx-xx
+## [0.2.2] - 2023-xx-xx
+### Added
+### Fixed
+### Changed
+
+## [0.2.1] - 2023-03-27
 ### Added
 - Initial Sync progress as a percentage
 - Adds internationalization(MLS) for App configs
@@ -71,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Performance improvement when opening questionnaires and saving QRs
 - Engine | Add debug mode to optionally load local config
 - Engine | Add support for Group.Characteristic model in StructureMap extraction
-- Engine | Make the list of resources to be synced via P2P configurable 
+- Engine | Make the list of resources to be synced via P2P configurable
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected
@@ -105,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
-- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update. 
+- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update.
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27

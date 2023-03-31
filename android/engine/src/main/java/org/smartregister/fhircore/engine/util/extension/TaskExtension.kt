@@ -47,3 +47,18 @@ fun Task.isPastExpiry() =
     this.restriction.hasPeriod() &&
     this.restriction.period.hasEnd() &&
     !this.restriction.period.end.after(today())
+
+fun Task.isUpcoming() =
+  this.hasStatus() &&
+    this.status == Task.TaskStatus.REQUESTED &&
+    this.hasExecutionPeriod() &&
+    this.executionPeriod.hasStart() &&
+    this.executionPeriod.start.after(today())
+
+fun Task.isOverDue() =
+  (this.hasStatus() &&
+    (this.status == Task.TaskStatus.INPROGRESS || this.status == Task.TaskStatus.READY)) &&
+    this.executionPeriod.hasEnd() &&
+    this.executionPeriod.end.before(today())
+
+fun Task.isDue() = this.hasStatus() && this.status == Task.TaskStatus.READY

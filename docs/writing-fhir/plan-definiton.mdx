@@ -1,0 +1,1493 @@
+# PlanDefinitions
+
+A [PlanDefinition](https://hl7.org/fhir/R4/plandefinition.html) is a pre-defined group of actions to be taken in particular circumstances, often including conditional elements, options, and other decision points. The resource is flexible enough to be used to represent a variety of workflows, as well as clinical decision support and quality improvement assets, including order sets, protocols, and decision support rules.
+
+It can be used to define an end to end activities that will be used to generate both a CarePlan and related Tasks for a Patient or Group. The CarePlan can include one or more activities to carry on across the lifecycle of Patient care. The PlanDefinition is usually associated to address a specific workflow e.g. ANC, PNC, Child Vaccination, Household Visits, etc.
+
+The pre-defined set of actions, are often conditional and based on certain decision points (triggers and conditions). Each action defines an activity to be performed often in terms of an [ActivityDefinition](http://hl7.org/fhir/activitydefinition.html) (via definition and/or transform).
+
+
+For defining whether the specific action should be taken, the `condition` element can be used to provide an expression that evaluates to true or false to indicate the applicability of the action to the specific context.
+
+
+Applying a PlanDefinition for a specific context/subject yields a [CarePlan](http://hl7.org/fhir/careplan.html#CarePlan) and [Task](http://hl7.org/fhir/task.html) resources representing the actions that should be performed for given beneficiary. This is done via the `$apply` or `$lite` operation.
+
+Inside the PlanDefinition, the `definition` element specifies an ActivityDefinition which is used to construct a specific resource (Task and CarePlan only for now). Along with definition, a PlanDefinition may also provide a `transform` element for the activity a StructureMap to do the transformation and creation of elements for CarePlan. Another element `dynamicValue` list can also be provided in ActivityDefinition to provide dynamic values for CarePlan using [FHIRPath](https://hl7.org/fhir/fhirpath.html).
+
+Below is a detailed description of notable properties of PlanDefinition and its usage in fhircore
+
+## PlanDefinition notable properties:
+
+- `resourceType`: PlanDefinition
+- `id`: unique identifier of resource, ideally UUID (Universal Unique Identifier),
+- `contained`: [ ... ] : An array of resources to embed details (ActivityDefinition) about given plan
+- `name`: Human readable name of the PlanDefinition
+- `title`: Title or summary of what PlanDefinition is about. This is output to generated CarePlan as title
+- `status`: `active`,
+- `description`: Detailed summary of what plan does. This is output to generated CarePlan as description
+- `action`: [ ... ] : An array action elements to define `condition`, `definition` and `transform` to be applied while generating CarePlan.
+
+
+## PlanDefinition `action` notable properties:
+
+- `priority`: high-priority | medium-priority | low-priority
+- `condition`: [ ]
+  - `kind`: only `applicability` is handled for now. This provides details on what aspect of CarePlan should be assessed.
+  - `expression`: The expression which runs on the context i.e. the [QuestionnaireResponse](https://hl7.org/fhir/questionnaireresponse.html), [Patient](https://hl7.org/fhir/patient.html), and other generated resources by QuestionnaireResponse extraction
+    - `language`: text/FHIRPath can be handled only for now
+    - `expression`: The FHIRPath expression that runs on context resources.
+      - `$this` : Patient or Group on which PlanDefinition is applied
+      - `%resource.entry` : The Bundle which was generated as a result of extraction of QuestionnaireResponse. QuestionnaireResponse which resulted into this CarePlan generation is also available into this Bundle
+      - example: `$this` is Patient and `%resource.entry.first().resource` is Patient and `(today() - 60 'months') <= $this.birthDate`
+
+  - `definitionCanonical`: The ActivityDefinition `id` in `contained` resources into this PlanDefinition prefixed by `#`
+    - `example` : #careplan-init-activity
+    - `transform`: The StructureMap to run on this action definition to do the resource generation. If this is not provided only `dynamicValue` component of ActivityDefinition is used to modify the resources
+      - The values available in to be used StructureMap are
+        - `definition`: Current ActivityDefinition
+        - `depends-on`: The context resource QuestionnaireResponse which resulted this PlanDefintion
+        - `subject` : The Patient or Group for which this Plan is running
+        - `period`: The evaluated `executionPeriod` for ActivityDefinition
+        - `version`: The index of Task evaluated by ActivityDefinition `timing` or 1 by default
+
+## Example StrcutureMap to Extract Tasks
+
+Below is an example of a StructureMap to extract Refferal Tasks
+
+```map
+map "http://hl7.org/fhir/StructureMap/ab62f8e8-e6d8-4ffb-b460-64b23e89b370" = 'eCBIS Pregnancy Referral'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group pregnancyReferral(source src : Parameters, target tgt: CarePlan) {
+src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+    evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+    evaluate(subject, today()) as dueDate
+    then ExtractTasks(dueDate, subject, tgt) "r_careplan";
+}
+
+group ExtractTasks(
+source dueDate: DateType,
+source subject : Patient,
+target careplan: CarePlan){
+
+subject -> dueDate as start,
+        evaluate(subject, today() + '1 \'months\''.toQuantity()) as end,
+        create('Period') as period,
+        careplan.contained = create('Task') as task then {
+
+subject then ExtractPeriod(start, end, period) "r_task_period_extr";
+
+subject -> task.id = uuid(),
+        task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+        task.status = 'ready',
+        task.intent = 'plan',
+        task.executionPeriod = period,
+        task.priority = 'routine',
+        task.description = 'Pregnancy Referral Task',
+        task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+        // should refer to plandefinition since referral has no careplan
+        task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
+        task.authoredOn = evaluate(subject, now()),
+        task.requester = evaluate(subject, $this.generalPractitioner.first()),
+        task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+// pregnancy referral referral form
+subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/c309abfa-7536-4c60-baea-cf631201f79e' "r_task_reason_ref";
+} "r_cp_acti_outcome";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+start -> period.start = create('dateTime') as dt,
+      dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+end -> period.end = create('dateTime') as dt,
+    dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+```
+
+
+## PlanDefinition `definition` notable properties:
+
+- `resourceType`: ActivityDefinition
+- `id`: the unique id of resource into contained resource of this PlanDefinition.
+- `title`: title or summary of this definition
+- `status`: active
+- `description`: Detailed summary of what activity does
+- `kind`: CarePlan|Task supported for now
+- `dynamicValue`: [ ] an array of FHIRPath expression which defines the value for each property of resource of given kind
+  - `path`: the name of property to set the value
+    - example: `title` | `status` | `subject.reference` | `period.start` etc. for CarePlan
+  - `expression`: The expression for retrieveing the value from context resources i.e. the QuestionnaireResponse, Patient, and other generated resources by QuestionnaireResponse extraction
+    - `language`: text/FHIRPath supported for now
+    - `expression`: The FHIRPath expression that runs on context resources.
+      - `%rootResource` : Current PlanDefinition
+      - `$this` : Patient or Group on which Plan is running
+      - `%resource.entry` : The Bundle which was generated as a result of extraction of QuestionnaireResponse. QuestionnaireResponse which resulted into this CarePlan generation is also available into this Bundle
+      - example:
+        - `%rootResource.id.replaceMatches('/_history/.*', '')`
+        - `$this.generalPractitioner.first()`
+        - `%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='lmp').answer.value`
+- `code` : CodeableConcept for standard code for this activity.
+- `productCodeableConcept`: The CodeableConcept for product for which current activity is running. For Medication or Immunization this is helpful to run ActivityDefinition for specific type of Drug
+- `dosage`: The dosages applicable for this `product`. This defines the `timing` for each dose of given product.
+  - `timing`: The timing for given dose
+  - `sequence` : The sequence of dose
+- `timing`: If dosage is define this can not be use. This is an alternate way of defining timing for Task. The timing can define a complete schedule
+  - `repeat`: The repeat schedule
+    - `count`: Number of Tasks to be generated. If count is defined the `executionPeriod` timing reference is Careplan.period.start. Otherwise if missing the reference of this timing is today
+    duration: The duration of Task to be active for with reference to `executionPeriod.start`
+    durationUnit: Duration time unit. mo | d | wk | y etc
+    period: The `executionPeriod.start` reference based of current task index. If count is defined the `executionPeriod` timing reference is Careplan.period.start. Otherwise if missing the reference of this timing is today
+    periodUnit: Period time unit. mo | d | wk | y etc:
+
+## Example ANC PlanDefinition that generates all Tasks at once
+
+```json
+  {
+    "resourceType": "PlanDefinition",
+    "id": "132157",
+    "meta": {
+      "versionId": "1",
+      "lastUpdated": "2022-06-20T22:30:39.217+00:00"
+    },
+    "contained": [
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-init-activity",
+        "title": "ANC Register Handler Activity",
+        "status": "active",
+        "description": "This action will assess careplan on registration to init careplan",
+        "kind": "CarePlan",
+        "dynamicValue": [
+          {
+            "path": "title",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.title"
+            }
+          },
+          {
+            "path": "description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.description"
+            }
+          },
+          {
+            "path": "instantiatesCanonical",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+            }
+          },
+          {
+            "path": "status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'active'"
+            }
+          },
+          {
+            "path": "intent",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'plan'"
+            }
+          },
+          {
+            "path": "created",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "now()"
+            }
+          },
+          {
+            "path": "subject",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+            }
+          },
+          {
+            "path": "author",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          },
+          {
+            "path": "period.start",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value"
+            }
+          },
+          {
+            "path": "period.end",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 9 'months'"
+            }
+          },
+          {
+            "path": "activity.detail.kind",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'Task'"
+            }
+          },
+          {
+            "path": "activity.detail.status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'in-progress'"
+            }
+          },
+          {
+            "path": "activity.detail.description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'This action will assess careplan on registration to init careplan'"
+            }
+          },
+          {
+            "path": "activity.detail.performer",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity",
+        "title": "ANC Visits Plan",
+        "status": "active",
+        "description": "This action will performed every month for a pregnant woman",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 8,
+            "duration": 1,
+            "durationUnit": "mo",
+            "period": 1,
+            "periodUnit": "mo"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-end-activity",
+        "title": "Careplan completion Activity",
+        "status": "active",
+        "description": "This action will assess careplan every time a followup happens on a task generated by plan to mark it complete",
+        "kind": "CarePlan",
+        "dynamicValue": [
+          {
+            "path": "status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'completed'"
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-referral-activity",
+        "title": "ANC Referral Handler Activity",
+        "status": "active",
+        "description": "This action will assess careplan and generate referral task every time a followup happens on a task generated by plan",
+        "kind": "Task"
+      }
+    ],
+    "name": "ANC Follow Up Plan",
+    "title": "ANC Follow Up Plan",
+    "status": "active",
+    "description": "This defines the schedule of care for pregnant women",
+    "action": [
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132152').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-init-activity"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132152').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-task-activity",
+        "transform": "http://hl7.org/fhir/StructureMap/132156"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-end-activity"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-referral-activity",
+        "transform": "http://hl7.org/fhir/StructureMap/528a8603-2e43-4a2e-a33d-1ec2563ffd3e"
+      }
+    ]
+  }
+```
+
+### ANC PlanDefinition generating Tasks on demand
+```json
+  {
+    "resourceType": "PlanDefinition",
+    "id": "132157",
+    "meta": {
+      "versionId": "1",
+      "lastUpdated": "2022-06-20T22:30:39.217+00:00"
+    },
+    "contained": [
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-init-activity",
+        "title": "ANC Register Handler Activity",
+        "status": "active",
+        "description": "This action will assess careplan on registration to init careplan",
+        "kind": "CarePlan",
+        "dynamicValue": [
+          {
+            "path": "title",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.title"
+            }
+          },
+          {
+            "path": "description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.description"
+            }
+          },
+          {
+            "path": "instantiatesCanonical",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+            }
+          },
+          {
+            "path": "status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'active'"
+            }
+          },
+          {
+            "path": "intent",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'plan'"
+            }
+          },
+          {
+            "path": "created",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "now()"
+            }
+          },
+          {
+            "path": "subject",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+            }
+          },
+          {
+            "path": "author",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          },
+          {
+            "path": "period.start",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value"
+            }
+          },
+          {
+            "path": "period.end",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 9 'months'"
+            }
+          },
+          {
+            "path": "activity.detail.kind",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'Task'"
+            }
+          },
+          {
+            "path": "activity.detail.status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'in-progress'"
+            }
+          },
+          {
+            "path": "activity.detail.description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'This action will assess careplan on registration to init careplan'"
+            }
+          },
+          {
+            "path": "activity.detail.performer",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity",
+        "title": "ANC Visits Plan",
+        "status": "active",
+        "description": "This action will performed every month for a pregnant woman",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "duration": 1,
+            "durationUnit": "mo",
+            "period": 1,
+            "periodUnit": "mo"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-end-activity",
+        "title": "Careplan completion Activity",
+        "status": "active",
+        "description": "This action will assess careplan every time a followup happens on a task generated by plan to mark it complete",
+        "kind": "CarePlan",
+        "dynamicValue": [
+          {
+            "path": "status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'completed'"
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-referral-activity",
+        "title": "ANC Referral Handler Activity",
+        "status": "active",
+        "description": "This action will assess careplan and generate referral task every time a followup happens on a task generated by plan",
+        "kind": "Task"
+      }
+    ],
+    "name": "ANC Follow Up Plan",
+    "title": "ANC Follow Up Plan",
+    "description": "This defines the schedule of care for pregnant women",
+    "action": [
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132152').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-init-activity"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132152').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-task-activity",
+        "transform": "http://hl7.org/fhir/StructureMap/132156"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-end-activity"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-referral-activity",
+        "transform": "http://hl7.org/fhir/StructureMap/528a8603-2e43-4a2e-a33d-1ec2563ffd3e"
+      }
+    ]
+  }
+```
+
+###  Child Immunization schedule PlanDefinition
+
+```json
+  {
+    "resourceType": "PlanDefinition",
+    "id": "e994ab6f-30a5-4450-9a90-691c8199f379",
+    "contained": [
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-init-activity",
+        "title": "ANC Register Handler Activity",
+        "status": "active",
+        "description": "This action will assess careplan on registration to init careplan",
+        "kind": "CarePlan",
+        "dynamicValue": [
+          {
+            "path": "title",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.title"
+            }
+          },
+          {
+            "path": "description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.description"
+            }
+          },
+          {
+            "path": "instantiatesCanonical",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+            }
+          },
+          {
+            "path": "status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'active'"
+            }
+          },
+          {
+            "path": "intent",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'plan'"
+            }
+          },
+          {
+            "path": "created",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "now()"
+            }
+          },
+          {
+            "path": "subject.reference",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.id.replaceMatches('/_history/.*', '')"
+            }
+          },
+          {
+            "path": "author",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          },
+          {
+            "path": "period.start",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.birthDate"
+            }
+          },
+          {
+            "path": "period.end",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.birthDate + 4017 'days'"
+            }
+          },
+          {
+            "path": "activity.detail.kind",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'Task'"
+            }
+          },
+          {
+            "path": "activity.detail.status",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'in-progress'"
+            }
+          },
+          {
+            "path": "activity.detail.description",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "'This action will assess careplan on registration to init careplan'"
+            }
+          },
+          {
+            "path": "activity.detail.performer",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this.generalPractitioner.first()"
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-bcg-task-activity",
+        "title": "Child BCG Immunization",
+        "description": "This is the BCG scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "42284007",
+              "display": "BCG vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "BCG"
+        },
+        "dosage": [
+          {
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 0,
+                "periodUnit": "d"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-opv-task-activity",
+        "title": "Child OPV Immunization",
+        "description": "This is the OPV scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "111164008",
+              "display": "Poliovirus vaccine",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "OPV"
+        },
+        "dosage": [
+          {
+            "sequence": 0,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 14,
+                "durationUnit": "d",
+                "period": 0,
+                "periodUnit": "d"
+              }
+            }
+          },
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 6,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 10,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 3,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 14,
+                "periodUnit": "wk"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-penta-task-activity",
+        "title": "Child PENTA Immunization",
+        "description": "This is the PENTA scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "429511000124109",
+              "display": "Tetanus + diphtheria + acellular pertussis vaccine",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "PENTA"
+        },
+        "dosage": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1460,
+                "durationUnit": "d",
+                "period": 6,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1460,
+                "durationUnit": "d",
+                "period": 10,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 3,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1460,
+                "durationUnit": "d",
+                "period": 14,
+                "periodUnit": "wk"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-rota-task-activity",
+        "title": "Child ROTA Immunization",
+        "description": "This is the ROTA scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "415354003",
+              "display": "Rotavirus vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "ROTA"
+        },
+        "dosage": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 105,
+                "durationUnit": "d",
+                "period": 6,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 105,
+                "durationUnit": "d",
+                "period": 10,
+                "periodUnit": "wk"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-pcv-task-activity",
+        "title": "Child PCV Immunization",
+        "description": "This is the PCV scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "12866006",
+              "display": "Pneumococcal vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "PCV"
+        },
+        "dosage": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 6,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 10,
+                "periodUnit": "wk"
+              }
+            }
+          },
+          {
+            "sequence": 3,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 14,
+                "periodUnit": "wk"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-ipv-task-activity",
+        "title": "Child IPV Immunization",
+        "description": "This is the PCV scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "396435000",
+              "display": "Inactivated Poliovirus vaccine",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "IPV"
+        },
+        "dosage": [
+          {
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 14,
+                "periodUnit": "wk"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-measles-task-activity",
+        "title": "Child MEASLES Immunization",
+        "description": "This is the MEASLES scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "38598009",
+              "display": "Measles-mumps-rubella vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "MEASLES"
+        },
+        "dosage": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 9,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 15,
+                "periodUnit": "mo"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-yellowfever-task-activity",
+        "title": "Child YELLOW FEVER Immunization",
+        "description": "This is the YELLOW FEVER scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "67308009",
+              "display": "Yellow fever vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "YELLOW FEVER"
+        },
+        "dosage": [
+          {
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 1825,
+                "durationUnit": "d",
+                "period": 9,
+                "periodUnit": "mo"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-typhoid-task-activity",
+        "title": "Child TYPHOID Immunization",
+        "description": "This is the TYPHOID scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "15483003",
+              "display": "Typhoid vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "TYPHOID"
+        },
+        "dosage": [
+          {
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 730,
+                "durationUnit": "d",
+                "period": 9,
+                "periodUnit": "mo"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-hpv-task-activity",
+        "title": "Child HPV Immunization",
+        "description": "This is the HPV scheduled immunization.",
+        "status": "active",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "code": "33879002",
+              "display": "Administration of vaccine to produce active immunity (procedure)",
+              "system": "http://snomed.info/sct"
+            }
+          ]
+        },
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "code": "761841000",
+              "display": "Human papillomavirus vaccination",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "HPV"
+        },
+        "dosage": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3653,
+                "durationUnit": "d",
+                "period": 3285,
+                "periodUnit": "d"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 4017,
+                "durationUnit": "d",
+                "period": 3467,
+                "periodUnit": "d"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "name": "Child Immunization",
+    "title": "Child Immunization",
+    "status": "active",
+    "description": "This scheduled will be used to track the child's immunization.",
+    "action": [
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-init-activity"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-bcg-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-opv-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-penta-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-rota-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-pcv-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-ipv-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-measles-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-yellowfever-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-typhoid-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            }
+          }
+        ],
+        "definitionCanonical": "#careplan-hpv-task-activity",
+        "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593"
+      }
+    ]
+  }
+```
