@@ -56,15 +56,11 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
   application = HiltTestApplication::class
 )
 @HiltAndroidTest
-// TODO add relevant tests
 class GeoWidgetFragmentTest {
-
   lateinit var geowidgetFragment: GeoWidgetFragment
   var kujakuMapView = mockk<KujakuMapView>()
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   lateinit var kujakuMapViewLifecycle: String
 
   @Before
