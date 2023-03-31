@@ -88,9 +88,7 @@ class GeoWidgetExtensionsTest {
                 Attachment().apply {
                   contentType = "application/geo+json"
                   data =
-                    Base64.encodeBase64(
-                      """{"type":"Feature","properties":{"key":"value"},"geometry":{"type":"Point","coordinates":[12.83203125,28.304380682962783]}}""".encodeToByteArray()
-                    )
+                    Base64.encodeBase64("""{"properties":{"key":"value"}}""".encodeToByteArray())
                 }
               )
             }
@@ -100,6 +98,52 @@ class GeoWidgetExtensionsTest {
     location.updateBoundaryGeoJsonProperties(feature)
 
     Assert.assertEquals("value", feature.getJSONObject("properties").get("key"))
+  }
+
+  @Test
+  fun `updateBoundaryGeoJsonProperties does nothing if no location properties keys`() {
+    val location =
+      Location().apply {
+        extension =
+          listOf(
+            Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
+              setValue(
+                Attachment().apply {
+                  contentType = "application/geo+json"
+                  data = Base64.encodeBase64("""{"properties":{}}""".encodeToByteArray())
+                }
+              )
+            }
+          )
+      }
+    val feature =
+      JSONObject().apply { put("properties", JSONObject().apply { put("key", "old-value") }) }
+    location.updateBoundaryGeoJsonProperties(feature)
+
+    Assert.assertEquals("old-value", feature.getJSONObject("properties").get("key"))
+  }
+
+  @Test
+  fun `updateBoundaryGeoJsonProperties does nothing if no location properties`() {
+    val location =
+      Location().apply {
+        extension =
+          listOf(
+            Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
+              setValue(
+                Attachment().apply {
+                  contentType = "application/geo+json"
+                  data = Base64.encodeBase64("""{}""".encodeToByteArray())
+                }
+              )
+            }
+          )
+      }
+    val feature =
+      JSONObject().apply { put("properties", JSONObject().apply { put("key", "old-value") }) }
+    location.updateBoundaryGeoJsonProperties(feature)
+
+    Assert.assertEquals("old-value", feature.getJSONObject("properties").get("key"))
   }
 
   @Test
@@ -113,9 +157,7 @@ class GeoWidgetExtensionsTest {
                 Attachment().apply {
                   contentType = "application/geo+json"
                   data =
-                    Base64.encodeBase64(
-                      """{"type":"Feature","properties":{"key":"value"},"geometry":{"type":"Point","coordinates":[12.83203125,28.304380682962783]}}""".encodeToByteArray()
-                    )
+                    Base64.encodeBase64("""{"properties":{"key":"value"}}""".encodeToByteArray())
                 }
               )
             }
