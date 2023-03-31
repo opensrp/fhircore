@@ -88,6 +88,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -973,6 +974,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
     coVerify(exactly = 1, timeout = 2000) {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
+  }
+
+  @Test
+  fun testPerformExtractionOnNullBundle() {
+    runTest {
+      val bundle = null
+      val questionnaire = Questionnaire()
+      val questionnaireResponse = QuestionnaireResponse()
+      val questionnaireConfig = questionnaireConfig
+      questionnaireViewModel.performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
+      coVerifyOrder(inverse = true) {
+        questionnaireViewModel.extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        questionnaireViewModel.extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+      }
     }
   }
 

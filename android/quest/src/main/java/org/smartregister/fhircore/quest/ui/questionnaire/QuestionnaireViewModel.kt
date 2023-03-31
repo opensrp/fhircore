@@ -268,7 +268,7 @@ constructor(
   /* We can remove this after we review why a subject is needed for every questionnaire response in fhir core.
   The subject is not required in the questionnaire response
    https://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.subject */
-  private suspend fun performExtraction(
+  suspend fun performExtraction(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
     questionnaire: Questionnaire,
