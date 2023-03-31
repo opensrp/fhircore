@@ -98,6 +98,7 @@ constructor(
       fhirEngine
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
+          filter(CarePlan.SUBJECT, { value = subject.logicalId })
         }
         .firstOrNull()
         ?: CarePlan().apply {
