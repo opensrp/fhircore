@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import com.google.android.fhir.logicalId
-import io.sentry.ISpan
 import java.util.LinkedList
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Resource
@@ -40,22 +39,15 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     baseResource: Resource,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     ruleConfigs: List<RuleConfig>,
-    params: Map<String, String>?,
-    span: ISpan? = null
+    params: Map<String, String>?
   ): ResourceData {
-    val innerSpan = span?.startChild("task", "createQueryResultMap")
     val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
-    innerSpan?.finish()
-
-    val computeRulesInnerSpan = span?.startChild("task", "computeRules")
     val computedValuesMap =
       computeRules(
         ruleConfigs = ruleConfigs,
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
       )
-    computeRulesInnerSpan?.finish()
-
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,

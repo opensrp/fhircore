@@ -19,9 +19,6 @@ package org.smartregister.fhircore.quest.data.register
 import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import io.sentry.ITransaction
-import io.sentry.Sentry
-import io.sentry.SpanStatus
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -75,31 +72,18 @@ class RegisterPagingSource(
           else -> null
         }
 
-      // A good name for the transaction is key, to help identify what this is about
-      val transaction: ITransaction =
-        Sentry.startTransaction("Register rulesExecutor.processResourceData", "task")
-      try {
-        val data =
-          registerData.map { repoResourceData ->
-            val queryResult =
-              repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
-            rulesExecutor.processResourceData(
-              baseResource = queryResult.resource,
-              relatedRepositoryResourceData = queryResult.relatedResources,
-              ruleConfigs = ruleConfigs,
-              params = emptyMap(),
-              span = transaction
-            )
-          }
-
-        LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
-      } catch (e: Exception) {
-        transaction.throwable = e
-        transaction.status = SpanStatus.INTERNAL_ERROR
-        throw e
-      } finally {
-        transaction.finish()
-      }
+      val data =
+        registerData.map { repoResourceData ->
+          val queryResult =
+            repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
+          rulesExecutor.processResourceData(
+            baseResource = queryResult.resource,
+            relatedRepositoryResourceData = queryResult.relatedResources,
+            ruleConfigs = ruleConfigs,
+            emptyMap()
+          )
+        }
+      LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)

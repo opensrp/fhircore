@@ -8,6 +8,7 @@ plugins {
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs'
+    id "io.sentry.android.gradle" version "3.4.3"
 }
 
 apply from: '../jacoco.gradle'
@@ -36,6 +37,7 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
+        buildConfigField("String", "SENTRY_DSN", "\"" + getProps("sentry.dsn") + "\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
