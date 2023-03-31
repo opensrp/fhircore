@@ -108,14 +108,14 @@ class PinLoginScreenKtTest {
         onMenuLoginClicked = {},
         forgotPin = {},
         pinUiState =
-        PinUiState(
-          currentUserPin = "",
-          message = errorMessage,
-          appName = "MOH eCBIS",
-          setupPin = false,
-          pinLength = 4,
-          showLogo = true
-        ),
+          PinUiState(
+            currentUserPin = "",
+            message = errorMessage,
+            appName = "MOH eCBIS",
+            setupPin = false,
+            pinLength = 4,
+            showLogo = true
+          ),
         onPinVerified = {},
         onShowPinError = {}
       )
