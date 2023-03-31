@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performTextInput
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
@@ -74,5 +77,30 @@ class LoginScreenTest {
   fun testForgotPasswordDialog() {
     composeRule.setContent { ForgotPasswordDialog(forgotPassword = {}, onDismissDialog = {}) }
     composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists()
+  }
+
+  @Test
+  fun testOnDoneKeyboardActionPerformsLoginButtonClicked() {
+    val onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() }
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1")
+      )
+    }
+    composeRule.onNodeWithTag(USERNAME_FIELD_TAG)
+      .assertExists()
+      .performTextInput("usernameFieldTag")
+    composeRule.onNodeWithTag(PASSWORD_FIELD_TAG)
+      .assertExists()
+      .performTextInput("passwordFieldTag")
+    composeRule.onNodeWithTag(PASSWORD_FIELD_TAG)
+      .performImeAction().equals(EditorInfo.IME_ACTION_DONE)
   }
 }
