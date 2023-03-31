@@ -317,7 +317,7 @@ constructor(
                 val task = generateTracingTask(patient.logicalId, isHomeTracing)
                 val list: MutableList<DomainResource> = mutableListOf()
                 for (numberOfOutcomes in 0..random) {
-                    val create = createEncounter(task, numberOfOutcomes == random, isHomeTracing)
+                    val create = createEncounter(patient, task, numberOfOutcomes == random, isHomeTracing)
                     list.addAll(create)
                 }
                 fhirEngine.create(task, *list.toTypedArray())
@@ -326,7 +326,7 @@ constructor(
         }
     }
 
-    private fun createEncounter(task: Task, isCurrent: Boolean, isHomeTracing: Boolean): Array<DomainResource> {
+    private fun createEncounter(patient: Patient, task: Task, isCurrent: Boolean, isHomeTracing: Boolean): Array<DomainResource> {
         val encounterData = """
             {
               "resourceType": "Encounter",
@@ -364,7 +364,7 @@ constructor(
                 "text": "elective"
               },
               "subject": {
-                "reference": "Patient/8d4ce9c0-469e-4a84-93e2-e9638bf2f8df"
+                "reference": "Patient/${patient.logicalId}"
               },
               "participant": [
                 {
@@ -400,6 +400,9 @@ constructor(
               "orderedBy": {
                 "coding": [{ "system": "https://d-tree.org", "code": "1" }],
                 "text": "1"
+              },
+              "subject": {
+                "reference": "Patient/${patient.logicalId}"
               },
               "status": "${if (isCurrent) "current" else "retired"}",
               "mode": "snapshot",
