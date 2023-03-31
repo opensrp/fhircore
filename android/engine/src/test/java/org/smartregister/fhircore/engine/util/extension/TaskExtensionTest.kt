@@ -187,4 +187,44 @@ class TaskExtensionTest {
       }
     Assert.assertTrue(task.isPastExpiry())
   }
+
+  @Test
+  fun testTaskIsUpcoming() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod.start = today().plusDays(1)
+      }
+    val expected = task.isUpcoming()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusInProgress() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.INPROGRESS
+        executionPeriod.end = today().plusDays(-1)
+      }
+    val expected = task.isOverDue()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusReady() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.READY
+        executionPeriod.end = today().plusDays(-10)
+      }
+    val expected = task.isOverDue()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsDue() {
+    val task = Task().apply { status = Task.TaskStatus.READY }
+    val expected = task.isDue()
+    Assert.assertTrue(expected)
+  }
 }
