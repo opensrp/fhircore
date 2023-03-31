@@ -274,8 +274,10 @@ constructor(
     questionnaire: Questionnaire,
     bundle: Bundle?
   ) {
+    if (bundle?.entry?.isNotEmpty() == true) {
       extractCqlOutput(questionnaire, questionnaireResponse, bundle)
       extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+    }
   }
 
   fun savePartialQuestionnaireResponse(
