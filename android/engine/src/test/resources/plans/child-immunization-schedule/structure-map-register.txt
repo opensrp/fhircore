@@ -7,9 +7,10 @@ group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.resource) as questionnaireResponse,
+            //evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
             evaluate(src, $this.parameter.where(name='version').value) as version
-            then ExtractTask(period, version, subject, definition, tgt) "r_careplan";
+            then ExtractTask(period, version, subject, definition, tgt,questionnaireResponse) "r_careplan";
 }
 
 group ExtractTask(
@@ -17,9 +18,9 @@ group ExtractTask(
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
-    target careplan: CarePlan){
+    target careplan: CarePlan, source questionnaireResponse:QuestionnaireResponse){
 
-    // fill task into careplan contained and add reference in activity.outcome
+    // fill task into careplan contained and add reference in activity.outcome task.execution.start = task.restriction.start
     subject -> create('Task') as task then {
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
@@ -44,22 +45,12 @@ group ExtractTask(
 
         } "rule_group_identifier";
 
-        //task partOf
-        subject -> task.partOf = create('Reference') as ref, ref.reference = 'Task/1234' "r_task_part_of_ref_";
+     subject -> task.partOf = create('Reference') as ref then {
+            subject -> evaluate(questionnaireResponse, questionnaireResponse.descendants().where(linkId='123456').answer.valueString) as taskId then{
+                  subject -> ref.reference = taskId "r_task_ref_id";
+              }"r_ref_id";
+     } "r_task_part_of";
 
-        //add task.input for task dependencies
-        subject -> task.input = create('Task_Input') as input then{
-                    task -> input.type = create("CodeableConcept") as code then{
-                            code.system = "http://snomed.info/sct",
-                            code.code = "371154000",
-                            code.display = "Dependent (qualifier value)",
-                            code.value = 28
-                    }
-                    task -> input.value =  create('Period') as period1 then {
-                                         period1.start = '2023-04-01T08:00:00Z';
-                                         period1.end = '2023-04-01T09:00:00Z';
-                    }
-        } "task_input_rule";
 
 
         // form to be filled
@@ -80,22 +71,4 @@ group ExtractTask(
                  subject -> careplan.contained = task  "r_add_task";
         } "r_cp_task";
     } "r_task";
-}
-group TaskDependencies(source task: Task, target task: Task) {
-
-    // Define dependencies for Task
-    task.where(status = 'requested' and focus.text = 'Task 1')
-        -> create('Task_Input') as input1 then {
-            task -> input1.type = create('CodeableConcept') as code1 then {
-                code1.coding = create('Coding') as coding1 then {
-                    coding1.system = 'http://snomed.info/sct'
-                    coding1.code = '371154000'
-                    coding1.display = 'Dependent (qualifier value)'
-                }
-            }
-            task -> input1.value = create('Period') as period1 then {
-                period1.start = '2023-04-01T08:00:00Z'
-                period1.end = '2023-04-01T09:00:00Z'
-            }
-        }
 }
