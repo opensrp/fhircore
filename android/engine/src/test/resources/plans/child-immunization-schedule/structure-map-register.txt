@@ -46,19 +46,12 @@ group ExtractTask(
         } "rule_group_identifier";
 
          subject -> task.partOf = create('Reference') as ref then {
-                subject -> evaluate(questionnaireResponse, questionnaireResponse.descendants().where(linkId='123456').answer.valueString) as taskId then{
+                subject -> evaluate(questionnaireResponse, $this.descendants().where(linkId='123456').answer.value.toString()) as taskId then{
                             subject -> ref.reference = taskId "r_task_ref_id";
                 }"r_ref_id";
          } "r_task_part_of";
 
-        //add task.input for task dependencies
-        subject -> task.input = create('Task_Input') as input then{
-                    subject -> input.type = create("CodeableConcept") as concept then{
-                            subject -> concept.coding = c("http://snomed.info/sct") as coding then {
-                                        subject -> coding.display = "Dependent (qualifier value)" "r_display";
-                            }"r_coding_display";
-                    }"r_codable_concept";
-        } "task_input_rule";
+
 
         // form to be filled
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
