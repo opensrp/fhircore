@@ -53,8 +53,8 @@ class RegisterPagingSource(
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
     Timber.e("RegisterPagingSource.load called")
-    //return loadProfileDataSlowly(params)
-    return loadProfileDataFast(params)
+    return loadProfileDataSlowly(params)
+    //return loadProfileDataFast(params)
   }
 
   private suspend fun loadProfileDataFast(params: LoadParams<Int>): LoadResult<Int, ResourceData> {

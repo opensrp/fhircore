@@ -200,7 +200,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
       //
 
-      createAndUpdateRelationalTable()
+        // Uncomment this to enable the fast register
+        //createAndUpdateRelationalTable()
 
     }
 

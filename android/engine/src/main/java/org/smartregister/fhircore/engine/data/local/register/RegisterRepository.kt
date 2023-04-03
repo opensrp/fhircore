@@ -28,6 +28,7 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
 import java.util.LinkedList
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
@@ -268,7 +269,7 @@ constructor(
     baseResource: Resource,
     fhirPathExpression: String?,
     updateImmediately: Boolean = false,
-    relatedResourceData: ObservedRepositoryResourceData? = null
+    observedRelatedResourceData: ObservedRepositoryResourceData? = null
   ): LinkedList<RepositoryResourceData> {
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
@@ -324,6 +325,13 @@ constructor(
         )
 
         postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
+        if (updateImmediately && observedRelatedResourceData != null) {
+          Timber.e("Finished fetching and processing data for relatedResource")
+          //observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
+          observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
+        } else {
+
+        }
       }
       // }
     } else {
@@ -345,10 +353,11 @@ constructor(
             )
             postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
 
-            relatedResources.addAll(relatedResourcesData)
-            if (updateImmediately && relatedResourceData != null) {
+            //relatedResources.addAll(relatedResourcesData)
+            if (updateImmediately && observedRelatedResourceData != null) {
               Timber.e("Finished fetching and processing data for relatedResource")
-              relatedResourceData.relatedResources.postValue(relatedResources)
+              //observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
+              observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
             } else {
 
             }
@@ -563,8 +572,8 @@ constructor(
             observedRelatedResourceData
           )
         }
-      relatedResources.addAll(resources)
-      observedRelatedResourceData.relatedResources.postValue(relatedResources)
+      /*relatedResources.addAll(resources)
+      observedRelatedResourceData.relatedResources.postValue(relatedResources)*/
     }
 
     if (!secondaryResourceConfig.isNullOrEmpty()) {
