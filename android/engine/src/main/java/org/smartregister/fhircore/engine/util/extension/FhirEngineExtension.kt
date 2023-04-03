@@ -93,7 +93,7 @@ suspend fun FhirEngine.addDateTimeIndex() {
   try {
     val addDateTimeIndexEntityIndexFromIndexQuery =
       SearchQuery(
-        "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+        "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
         emptyList()
       )
     search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
