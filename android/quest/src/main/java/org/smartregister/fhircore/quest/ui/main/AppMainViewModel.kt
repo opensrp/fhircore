@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -305,6 +306,12 @@ constructor(
         requiresNetwork = false
       )
 
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
+        requiresNetwork = false
+      )
+
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
       /* // Schedule job for generating measure report in the background
        MeasureReportWorker.scheduleMeasureReportWorker(workManager)
@@ -321,7 +328,7 @@ constructor(
           else -> Task.TaskStatus.COMPLETED
         }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.updateTaskDetailsById(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
       }
     }
   }
