@@ -994,7 +994,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       val patient = planDefinitionResources.patient
       val questionnaireResponses = planDefinitionResources.questionnaireResponses
       val resourcesSlot = planDefinitionResources.resourcesSlot
-
+      assertTrue(questionnaireResponses.firstOrNull()?.item?.firstOrNull()?.answer?.firstOrNull()?.value.toString() == "672805")
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
