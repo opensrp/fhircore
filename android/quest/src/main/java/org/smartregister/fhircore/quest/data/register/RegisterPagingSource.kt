@@ -53,6 +53,39 @@ class RegisterPagingSource(
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
     Timber.e("RegisterPagingSource.load called")
+    //return loadProfileDataSlowly(params)
+    return loadProfileDataFast(params)
+  }
+
+  private suspend fun loadProfileDataFast(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
+    return try {
+      val currentPage = params.key ?: _registerPagingSourceState.currentPage
+      val registerData =
+        registerRepository.loadRegisterData2(
+          currentPage = currentPage,
+          registerId = _registerPagingSourceState.registerId
+        )
+
+      val prevKey =
+        when {
+          _registerPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
+          else -> null
+        }
+      val nextKey =
+        when {
+          _registerPagingSourceState.loadAll ->
+            if (registerData.isNotEmpty()) currentPage + 1 else null
+          else -> null
+        }
+
+      LoadResult.Page(data = registerData, prevKey = prevKey, nextKey = nextKey)
+    } catch (exception: SQLException) {
+      Timber.e(exception)
+      LoadResult.Error(exception)
+    }
+  }
+
+  private suspend fun loadProfileDataSlowly(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
     return try {
       val currentPage = params.key ?: _registerPagingSourceState.currentPage
       val registerData =
@@ -84,10 +117,10 @@ class RegisterPagingSource(
           )
         }
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
-    } catch (exception: SQLException) {
+      } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)
-    }
+      }
   }
 
   fun setPatientPagingSourceState(registerPagingSourceState: RegisterPagingSourceState) {

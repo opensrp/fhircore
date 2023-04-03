@@ -20,9 +20,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData2
+import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.ResourceData2
 
 /** This class provides common functionalities used in the register */
 interface Repository {
@@ -75,7 +74,7 @@ interface Repository {
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray(),
-    relatedResourceData: RepositoryResourceData2
+    relatedResourceData: ObservedRepositoryResourceData
   )
 
   /**

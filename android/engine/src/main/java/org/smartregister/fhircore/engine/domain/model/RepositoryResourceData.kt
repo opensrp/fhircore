@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
@@ -35,7 +34,7 @@ data class RepositoryResourceData(
 
 
 @Stable
-data class RepositoryResourceData2(
+data class ObservedRepositoryResourceData(
   val configId: String? = null,
   val resource: Resource,
   val relatedResources: MutableLiveData<LinkedList<RepositoryResourceData>> = MutableLiveData()

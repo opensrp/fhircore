@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import android.database.Cursor
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -40,30 +38,20 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
-import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
-import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
-import org.smartregister.fhircore.engine.configuration.view.RowProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData2
+import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.ResourceData2
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.performance.Timer
-import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -72,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RegisterRepository
@@ -100,15 +87,15 @@ constructor(
 
     val resourceData = mutableListOf<ResourceData>()
 
-    val searchQuery = SearchQuery("""
+    val searchQuery =
+      SearchQuery(
+        """
       SELECT * FROM RegisterFamilies ORDER BY lastUpdated DESC LIMIT 25 OFFSET ${currentPage.times(25)}
     """.trimIndent(),
-      emptyList()
-    )
+        emptyList()
+      )
 
-    val cursor = withContext(dispatcherProvider.io()) {
-      fhirEngine.getCursorAll(searchQuery)
-    }
+    val cursor = withContext(dispatcherProvider.io()) { fhirEngine.getCursorAll(searchQuery) }
 
     while (cursor.moveToNext()) {
       /*
@@ -127,23 +114,25 @@ constructor(
 
       val childrenCount = cursor.getInt("childCount")
       val pregnantWomenCount = cursor.getInt("pregnantWomenCount")
-      val totalIcons = MutableList(childrenCount) {"CHILD"}
-      totalIcons.addAll(MutableList(pregnantWomenCount) {"PREGNANT_WOMAN"})
+      val totalIcons = MutableList(childrenCount) { "CHILD" }
+      totalIcons.addAll(MutableList(pregnantWomenCount) { "PREGNANT_WOMAN" })
 
-      val computedValuesMap = mutableMapOf<String, Any>(
-        "familyName" to cursor.getString("familyName"),
-        "familyId" to cursor.getString("householdNo"),
-        "familyVillage" to cursor.getString("householdLocation"),
-        "taskCount" to cursor.getInt("taskCount"),
-        "serviceStatus" to cursor.getString("taskStatus"),
-        "serviceMemberIcons" to totalIcons.joinToString(","),
-      )
-      val singleResourceData = ResourceData(
-        cursor.getString("resourceId"),
-        ResourceType.Group,
-        computedValuesMap,
-        mutableMapOf()
-      )
+      val computedValuesMap =
+        mutableMapOf<String, Any>(
+          "familyName" to cursor.getString("familyName"),
+          "familyId" to cursor.getString("householdNo"),
+          "familyVillage" to cursor.getString("householdLocation"),
+          "taskCount" to cursor.getInt("taskCount"),
+          "serviceStatus" to cursor.getString("taskStatus"),
+          "serviceMemberIcons" to totalIcons.joinToString(","),
+        )
+      val singleResourceData =
+        ResourceData(
+          cursor.getString("resourceId"),
+          ResourceType.Group,
+          computedValuesMap,
+          mutableMapOf()
+        )
 
       resourceData.add(singleResourceData)
     }
@@ -152,7 +141,7 @@ constructor(
     return resourceData
   }
 
-  fun Cursor.getString(fieldName: String) : String {
+  fun Cursor.getString(fieldName: String): String {
     val index = getColumnIndex(fieldName)
     return if (index != -1) {
       getString(index) ?: ""
@@ -161,8 +150,7 @@ constructor(
     }
   }
 
-
-  fun Cursor.getInt(fieldName: String) : Int {
+  fun Cursor.getInt(fieldName: String): Int {
     val index = getColumnIndex(fieldName)
     return if (index != -1) {
       getInt(index)
@@ -172,9 +160,9 @@ constructor(
   }
 
   override suspend fun loadRegisterData(
-                                        currentPage: Int,
-                                        registerId: String,
-                                        paramsMap: Map<String, String>?
+    currentPage: Int,
+    registerId: String,
+    paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
@@ -225,13 +213,13 @@ constructor(
         currentRelatedResources.addAll(relatedResources)
       }
 
-
       // Include secondary resourceData in each row if secondaryResources are configured
-      val repoData = RepositoryResourceData(
-        configId = baseResourceConfig.id ?: baseResourceType.name,
-        resource = baseResource,
-        relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
-      )
+      val repoData =
+        RepositoryResourceData(
+          configId = baseResourceConfig.id ?: baseResourceType.name,
+          resource = baseResource,
+          relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
+        )
 
       timer2.stop()
 
@@ -278,7 +266,9 @@ constructor(
     resourceConfig: ResourceConfig,
     baseResourceType: ResourceType,
     baseResource: Resource,
-    fhirPathExpression: String?
+    fhirPathExpression: String?,
+    updateImmediately: Boolean = false,
+    relatedResourceData: ObservedRepositoryResourceData? = null
   ): LinkedList<RepositoryResourceData> {
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
@@ -288,6 +278,7 @@ constructor(
     Timber.e(
       "Starting searchRelatedResources $baseResourceType | $resourceConfig | $fhirPathExpression"
     )
+    val relatedResources = LinkedList<RepositoryResourceData>()
 
     if (fhirPathExpression.isNullOrEmpty()) {
 
@@ -334,38 +325,45 @@ constructor(
 
         postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
       }
-      //}
+      // }
     } else {
       fhirPathDataExtractor
         .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
-        .pmap {
+        .map {
           try {
-            fhirEngine.get(
-              resourceConfig.resource.resourceClassType().newInstance().resourceType,
-              (it as Reference).extractId()
-            )
-          } catch (exception: ResourceNotFoundException) {
-            Timber.e(exception)
-            null
-          }
-        }
-        .forEach { resource ->
-          resource?.let {
+            val resource =
+              fhirEngine.get(
+                resourceConfig.resource.resourceClassType().newInstance().resourceType,
+                (it as Reference).extractId()
+              )
             relatedResourcesData.addLast(
               RepositoryResourceData(
                 configId = resourceConfig.id ?: resource.resourceType.name,
                 resource = resource
               )
             )
+            postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
+
+            relatedResources.addAll(relatedResourcesData)
+            if (updateImmediately && relatedResourceData != null) {
+              Timber.e("Finished fetching and processing data for relatedResource")
+              relatedResourceData.relatedResources.postValue(relatedResources)
+            } else {
+
+            }
+          } catch (exception: ResourceNotFoundException) {
+            Timber.e(exception)
+            null
           }
-          postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
         }
     }
 
     val stopTime = System.currentTimeMillis()
     val timeTaken = stopTime - startTime
-    Timber.e("Finished searchRelatedResources -> $timeTaken ms | ${timeTaken/1000} s  for $baseResourceType | $resourceConfig")
+    Timber.e(
+      "Finished searchRelatedResources -> $timeTaken ms | ${timeTaken/1000} s  for $baseResourceType | $resourceConfig"
+    )
 
     return relatedResourcesData
   }
@@ -377,7 +375,7 @@ constructor(
 
     if (relatedResourcesData.size < 1) return
 
-    relatedResources.forEach {
+    relatedResources.forEachIndexed { index, it ->
       val searchRelatedResources =
         searchRelatedResources(
           resourceConfig = it,
@@ -386,6 +384,7 @@ constructor(
           fhirPathExpression = it.fhirPathExpression
         )
 
+      Timber.e("Finished processing related resource $index")
       relatedResourcesData.last.relatedResources.addAll(searchRelatedResources)
     }
   }
@@ -473,7 +472,12 @@ constructor(
     val baseResourceType = baseResourceClass.newInstance().resourceType
     val secondaryResourceConfig = profileConfiguration.secondaryResources
 
-    val timer = Timer(methodName = "loadProfileData()", startString = "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig")
+    val timer =
+      Timer(
+        methodName = "loadProfileData()",
+        startString =
+          "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig"
+      )
 
     val timer2 = Timer(methodName = "loadProfileData.fetchBaseResource $baseResourceType")
     val baseResource: Resource =
@@ -483,7 +487,7 @@ constructor(
 
     timer2.stop()
     val relatedResources = LinkedList<RepositoryResourceData>()
-/*
+    /*
     relatedResourcesConfig.forEach { config: ResourceConfig ->
       val resources =
         withContext(dispatcherProvider.io()) {
@@ -501,11 +505,12 @@ constructor(
       relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
 
-    val res = RepositoryResourceData(
-      configId = baseResourceConfig.id ?: baseResourceType.name,
-      resource = baseResource,
-      relatedResources = relatedResources
-    )
+    val res =
+      RepositoryResourceData(
+        configId = baseResourceConfig.id ?: baseResourceType.name,
+        resource = baseResource,
+        relatedResources = relatedResources
+      )
 
     timer.stop()
     return res
@@ -517,7 +522,7 @@ constructor(
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
     paramsList: Array<ActionParameter>?,
-    relatedResourceData: RepositoryResourceData2
+    observedRelatedResourceData: ObservedRepositoryResourceData
   ) {
     val paramsMap: Map<String, String> =
       paramsList
@@ -537,7 +542,12 @@ constructor(
     val baseResourceType = baseResourceClass.newInstance().resourceType
     val secondaryResourceConfig = profileConfiguration.secondaryResources
 
-    val timer = Timer(methodName = "loadOtherProfileData()", startString = "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig")
+    val timer =
+      Timer(
+        methodName = "loadOtherProfileData()",
+        startString =
+          "Args Profile Id = $profileId | resource id = $resourceId |  Fhir resource config = $fhirResourceConfig"
+      )
 
     val relatedResources = LinkedList<RepositoryResourceData>()
 
@@ -548,17 +558,19 @@ constructor(
             resourceConfig = config,
             baseResourceType = baseResourceType,
             baseResource = baseResource,
-            fhirPathExpression = config.fhirPathExpression
+            fhirPathExpression = config.fhirPathExpression,
+            true,
+            observedRelatedResourceData
           )
         }
       relatedResources.addAll(resources)
-      relatedResourceData.relatedResources.postValue(relatedResources)
+      observedRelatedResourceData.relatedResources.postValue(relatedResources)
     }
 
     if (!secondaryResourceConfig.isNullOrEmpty()) {
       relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
     }
-/*
+    /*
     val res = RepositoryResourceData(
       configId = baseResourceConfig.id ?: baseResourceType.name,
       resource = baseResource,
@@ -566,7 +578,7 @@ constructor(
     )*/
 
     timer.stop()
-    //return res
+    // return res
   }
 
   private suspend fun retrieveSecondaryResources(

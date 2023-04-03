@@ -184,30 +184,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       offset += 25*/
       // } while (tasks.isNotEmpty())
 
-      // Add index for DateTimeIndexEntity (index_from)
-      /*try {
-        val addDateTimeIndexEntityIndexFromIndexQuery =
-          SearchQuery(
-            "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
-            emptyList()
-          )
-        fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
-      } catch (ex: SQLException) {
-        Timber.e(ex)
-      }
 
-      // Add index for ResourceEntity (resourceId)
-      try {
-        val addDateTimeIndexEntityIndexFromIndexQuery =
-          SearchQuery(
-            "CREATE INDEX `index_ResourceEntity_resourceId` ON `ResourceEntity` (`resourceId`)",
-            emptyList()
-          )
-        fhirEngine.search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
-      } catch (ex: SQLException) {
-        Timber.e(ex)
-      }*/
-      runQuery<Task>(
+      /*runQuery<Task>(
         """
         DROP INDEX IF EXISTS index_DateTimeIndexEntity_index_from
       """.trimIndent(),
@@ -218,11 +196,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         DROP INDEX IF EXISTS index_ResourceEntity_resourceId
       """.trimIndent(),
         emptyList()
-      )
+      )*/
 
       //
 
-      // createAndUpdateRelationalTable()
+      createAndUpdateRelationalTable()
 
     }
 
@@ -318,6 +296,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   suspend fun createAndUpdateRelationalTable() {
     val timer = Timer(methodName = "createAndUpdateRelationalTable")
+
+      // Add index for DateTimeIndexEntity (index_from)
+      runQuery<Task>("CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+            emptyList()
+          )
+
+      // Add index for ResourceEntity (resourceId)
+      runQuery<Task>("CREATE INDEX `index_ResourceEntity_resourceId` ON `ResourceEntity` (`resourceId`)",
+            emptyList()
+      )
 
     runQuery<Task>(
       """

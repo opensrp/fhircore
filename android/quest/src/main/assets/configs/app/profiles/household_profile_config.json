@@ -497,12 +497,6 @@
                       {
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
-                      },
-                      {
-                        "paramType": "PARAMDATA",
-                        "dataType": "STRING",
-                        "key": "practitionerId",
-                        "value": "@{practitionerId}"
                       }
                     ]
                   }
@@ -530,7 +524,13 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{familyLogicalId}"
+            "resourceIdentifier": "@{familyLogicalId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
+            ]
           }
         }
       ]
@@ -553,6 +553,19 @@
             "noMembersErrorMessage": "{{ no.members.error.message }}",
             "managingEntityReassignedMessage": "Household head reassigned successfully"
           }
+        }
+      ]
+    },
+    {
+      "title": "View past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "householdpastencountersProfile"
         }
       ]
     },
