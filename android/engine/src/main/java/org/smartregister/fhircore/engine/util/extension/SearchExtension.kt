@@ -61,6 +61,7 @@ fun Search.filterBy(dataQuery: DataQuery) {
                   of(DateTimeType(filterCriterion.valueDateTime))
                 else -> null
               }
+            this.prefix = filterCriterion.prefix
           },
           operation = dataQuery.operation,
         )
