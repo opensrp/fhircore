@@ -28,7 +28,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
 import java.util.LinkedList
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
@@ -45,9 +44,9 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SortConfig
@@ -317,21 +316,32 @@ constructor(
           sort(resourceConfig.sortConfigs)
         }
       fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-        relatedResourcesData.addLast(
-          RepositoryResourceData(
-            configId = resourceConfig.id ?: resource.resourceType.name,
-            resource = resource
+        if (observedRelatedResourceData == null) {
+          relatedResourcesData.addLast(
+            RepositoryResourceData(
+              configId = resourceConfig.id ?: resource.resourceType.name,
+              resource = resource
+            )
           )
-        )
 
-        postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
+          postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
+        } else {
+          observedRelatedResourceData!!.relatedResources.value!!.addLast(
+            RepositoryResourceData(
+              configId = resourceConfig.id ?: resource.resourceType.name,
+              resource = resource
+            )
+          )
+          postProcessRelatedResourcesData(
+            resourceConfig.relatedResources,
+            observedRelatedResourceData!!.relatedResources.value!!
+          )
+        }
         if (updateImmediately && observedRelatedResourceData != null) {
           Timber.e("Finished fetching and processing data for relatedResource")
-          //observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
-          observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
-        } else {
-
-        }
+          // observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
+          observedRelatedResourceData.relatedResources.postValue(observedRelatedResourceData.relatedResources.value)
+        } else {}
       }
       // }
     } else {
@@ -345,22 +355,36 @@ constructor(
                 resourceConfig.resource.resourceClassType().newInstance().resourceType,
                 (it as Reference).extractId()
               )
-            relatedResourcesData.addLast(
-              RepositoryResourceData(
-                configId = resourceConfig.id ?: resource.resourceType.name,
-                resource = resource
-              )
-            )
-            postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
 
-            //relatedResources.addAll(relatedResourcesData)
+            if (observedRelatedResourceData != null) {
+              observedRelatedResourceData!!.relatedResources.value!!.addLast(
+                RepositoryResourceData(
+                  configId = resourceConfig.id ?: resource.resourceType.name,
+                  resource = resource
+                )
+              )
+
+              postProcessRelatedResourcesData(
+                resourceConfig.relatedResources,
+                observedRelatedResourceData!!.relatedResources.value!!
+              )
+            } else {
+              relatedResourcesData.addLast(
+                RepositoryResourceData(
+                  configId = resourceConfig.id ?: resource.resourceType.name,
+                  resource = resource
+                )
+              )
+              postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
+            }
+
+            // relatedResources.addAll(relatedResourcesData)
             if (updateImmediately && observedRelatedResourceData != null) {
               Timber.e("Finished fetching and processing data for relatedResource")
-              //observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
-              observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
-            } else {
+              // observedRelatedResourceData.relatedResources.postValue(relatedResourcesData)
+              observedRelatedResourceData.relatedResources.postValue(observedRelatedResourceData.relatedResources.value)
 
-            }
+            } else {}
           } catch (exception: ResourceNotFoundException) {
             Timber.e(exception)
             null

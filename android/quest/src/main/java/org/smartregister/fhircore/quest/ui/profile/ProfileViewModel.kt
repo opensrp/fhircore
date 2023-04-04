@@ -28,6 +28,7 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -45,8 +46,8 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
@@ -65,7 +66,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
 import timber.log.Timber
-import kotlin.system.measureTimeMillis
 
 @HiltViewModel
 class ProfileViewModel
@@ -95,7 +95,7 @@ constructor(
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>?
   ) {
-    //workingProfileFetch(resourceId, paramsList, profileId, fhirResourceConfig)
+    // workingProfileFetch(resourceId, paramsList, profileId, fhirResourceConfig)
     experimentalProfileFetch(resourceId, paramsList, profileId, fhirResourceConfig)
   }
 
@@ -150,53 +150,55 @@ constructor(
       var nextPos = 0
 
       /*observedRepositoryResourceData.relatedResources.observeForever {
-        Timber.e("Received repository resource data with nextPos $nextPos")
-        Timber.e("Repository resource data size is ${it.size}")
-*//*
-          if (it.size <= nextPos) {
-            return@observeForever
-          }*//*
+              Timber.e("Received repository resource data with nextPos $nextPos")
+              Timber.e("Repository resource data size is ${it.size}")
+      */
+      /*
+      if (it.size <= nextPos) {
+        return@observeForever
+      }*/
+      /*
 
-          val repoDataList = LinkedList<RepositoryResourceData>(it)//.apply { add(it[nextPos]) }
+        val repoDataList = LinkedList<RepositoryResourceData>(it)//.apply { add(it[nextPos]) }
 
-          nextPos++
+        nextPos++
 
-          viewModelScope.launch(dispatcherProvider.io()) {
-            val resourceDataSingle =
-              rulesExecutor.processResourceData(
-                observedRepositoryResourceData.resource,
-                repoDataList,
-                ruleConfigs = profileConfigs.rules,
-                ruleConfigsKey = profileConfigs::class.java.canonicalName,
-                paramsMap
-              )
+        viewModelScope.launch(dispatcherProvider.io()) {
+          val resourceDataSingle =
+            rulesExecutor.processResourceData(
+              observedRepositoryResourceData.resource,
+              repoDataList,
+              ruleConfigs = profileConfigs.rules,
+              ruleConfigsKey = profileConfigs::class.java.canonicalName,
+              paramsMap
+            )
 
-            profileConfigs.views.retrieveListProperties().forEach {
-              val listResourceData = mutableListOf<ResourceData>()
-              //listResourceDataMapState[it.id] = listResourceData
-              // val listResourceData =
-              rulesExecutor.processListResourceData(
-                listProperties = it,
-                listResourceData,
-                listResourceDataMapState,
-                relatedRepositoryResourceData = repoDataList,
-                computedValuesMap =
-                  resourceDataSingle.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
-              )
-              listResourceDataMapState[it.id] = listResourceData
-              Timber.e("Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData")
-            }
-
-            Timber.e("Finished loading a related resource item list size (${repoDataList.size}) $repoDataList")
-            Timber.e("Finished loading a related resource item list ${resourceData.listResourceDataMap.size}")
-
-            resourceData.listResourceDataMap.putAll(resourceDataSingle.listResourceDataMap)
-
-            resourceDataState.postValue(resourceData)
+          profileConfigs.views.retrieveListProperties().forEach {
+            val listResourceData = mutableListOf<ResourceData>()
+            //listResourceDataMapState[it.id] = listResourceData
+            // val listResourceData =
+            rulesExecutor.processListResourceData(
+              listProperties = it,
+              listResourceData,
+              listResourceDataMapState,
+              relatedRepositoryResourceData = repoDataList,
+              computedValuesMap =
+                resourceDataSingle.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+            )
+            listResourceDataMapState[it.id] = listResourceData
+            Timber.e("Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData")
           }
-        }
 
-        viewModelScope.launch(dispatcherProvider.io()) {*/
+          Timber.e("Finished loading a related resource item list size (${repoDataList.size}) $repoDataList")
+          Timber.e("Finished loading a related resource item list ${resourceData.listResourceDataMap.size}")
+
+          resourceData.listResourceDataMap.putAll(resourceDataSingle.listResourceDataMap)
+
+          resourceDataState.postValue(resourceData)
+        }
+      }
+
+      viewModelScope.launch(dispatcherProvider.io()) {*/
       registerRepository.loadOtherProfileData(
         repoResourceData.resource,
         profileId,
@@ -205,7 +207,7 @@ constructor(
         paramsList,
         observedRepositoryResourceData
       )
-      //}
+      // }
 
       /*val resourceData2 =
       rulesExecutor
@@ -231,16 +233,16 @@ constructor(
         profileConfigs.views.retrieveListProperties().forEach {
           val listResourceData = mutableListOf<ResourceData>()
           listResourceDataMapState[it.id] = listResourceData
-          //val listResourceData =
+          // val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
             listResourceData,
             listResourceDataMapState,
             relatedRepositoryResourceData = observedRepositoryResourceData.relatedResources.value!!,
             computedValuesMap =
-            resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
+              resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )
-          //listResourceDataMapState[it.id] = listResourceData
+          // listResourceDataMapState[it.id] = listResourceData
         }
       }
 
@@ -263,10 +265,10 @@ constructor(
         baseResource = resourceData.baseResource
       )*/
 
-      Timber.e("Done loading everything and the listResourceDataMapState ${listResourceDataMapState.size}")
-      listResourceDataMapState.forEach {
-        Timber.e("${it.key} -> ${it.value}")
-      }
+      Timber.e(
+        "Done loading everything and the listResourceDataMapState ${listResourceDataMapState.size}"
+      )
+      listResourceDataMapState.forEach { Timber.e("${it.key} -> ${it.value}") }
 
       /*Timber.e("About to invoke the profileUiState again")
       // resourceDataState.postValue(resourceData2)
@@ -297,8 +299,8 @@ constructor(
         listResourceDataMap = resourceData.listResourceDataMap,
         baseResource = resourceData.baseResource
       )*/
-      //profileUiState.value = ProfileUiState()
-      }
+      // profileUiState.value = ProfileUiState()
+    }
   }
 
   private suspend fun experimentalProfileFetch(
@@ -345,10 +347,9 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
-    val relatedResources = MutableLiveData<LinkedList<RepositoryResourceData>>().apply {
-      postValue(LinkedList<RepositoryResourceData>())
-    }
+    val relatedResources = MutableLiveData(LinkedList<RepositoryResourceData>())
 
+    // This is an extension of RepositoryResourceData that when computed becomes ResourceData
     val observedRepositoryResourceData =
       ObservedRepositoryResourceData(
         configId = baseResourceConfig.id ?: baseResourceType.name,
@@ -357,17 +358,26 @@ constructor(
       )
     var nextPos = 0
 
+    var runningObserver = false
+
     // Observe any related resources data that is generated
     observedRepositoryResourceData.relatedResources.observeForever {
       Timber.e("Received repository resource data with nextPos $nextPos")
       Timber.e("Repository resource data size is ${it.size}")
 
-      if (it.size <= nextPos) {
+      /*if (it.size <= nextPos) {
+        return@observeForever
+      }*/
+
+      if (runningObserver) {
         return@observeForever
       }
 
-      val repoDataList = LinkedList<RepositoryResourceData>(it)//.apply { add(it[nextPos]) }
-      Timber.e("Finished loading a related resource item list size (${repoDataList.size}) $repoDataList")
+      runningObserver = true
+
+      val repoDataList = LinkedList<RepositoryResourceData>() // .apply { add(it[nextPos]) }
+      it.forEach { item -> repoDataList.add(item) }
+      Timber.e("Observer: RepoDataList (${repoDataList.size}) $repoDataList")
 
       nextPos++
 
@@ -376,7 +386,7 @@ constructor(
           rulesExecutor
             .processResourceData(
               baseResource = repoResourceData.resource,
-              relatedRepositoryResourceData = observedRepositoryResourceData.relatedResources.value!!,
+              relatedRepositoryResourceData = repoDataList!!,
               ruleConfigs = profileConfigs.rules,
               ruleConfigsKey = profileConfigs::class.java.canonicalName,
               paramsMap
@@ -384,13 +394,18 @@ constructor(
             .copy(listResourceDataMap = listResourceDataMapState)
 
         // Check if the computed values map has changed and update it
-        profileUiState.value.resourceData!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
+        profileUiState.value.resourceData!!.computedValuesMap.putAll(
+          resourceDataUpdated.computedValuesMap
+        )
         profileUiState.value = profileUiState.value
 
-        // This fixes a render bug on sick child profile demographic because the main values are loaded from the
+        // This fixes a render bug on sick child profile demographic because the main values are
+        // loaded from the
         // related resources
-        resourceDataState.value!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
-        resourceDataState.postValue(resourceDataUpdated)
+        if (resourceDataState.value != null) {
+          resourceDataState.value!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
+          resourceDataState.postValue(resourceDataUpdated)
+        }
 
         profileConfigs.views.retrieveListProperties().forEach {
           val listResourceData = mutableListOf<ResourceData>()
@@ -404,10 +419,17 @@ constructor(
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )
-          Timber.e("Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData")
+          Timber.e(
+            "Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData"
+          )
         }
 
-        Timber.e("Finished loading a related resource item list ${resourceData.listResourceDataMap.size}")
+        Timber.e("Observer: RepoDataList (${repoDataList.size}) $repoDataList")
+        Timber.e(
+          "Finished loading a related resource item list ${resourceData.listResourceDataMap.size}"
+        )
+
+        runningObserver = false
       }
     }
 

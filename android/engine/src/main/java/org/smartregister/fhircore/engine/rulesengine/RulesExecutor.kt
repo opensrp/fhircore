@@ -220,16 +220,20 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
  * s in the map.
  */
 fun LinkedList<RepositoryResourceData>.createRelatedResourcesMap():
-  MutableMap<String, MutableList<Resource>> {
+        MutableMap<String, MutableList<Resource>> {
   val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
-  while (this.isNotEmpty()) {
-    val relatedResourceData = this.removeFirst()
+
+  val queue = LinkedList<RepositoryResourceData>()
+  queue.addAll(this)
+
+  while (queue.isNotEmpty()) {
+    val relatedResourceData = queue.removeFirst()
     relatedResourcesMap
       .getOrPut(relatedResourceData.configId ?: relatedResourceData.resource.resourceType.name) {
         mutableListOf()
       }
       .add(relatedResourceData.resource)
-    relatedResourceData.relatedResources.forEach { this.addLast(it) }
+    relatedResourceData.relatedResources.forEach { queue.addLast(it) }
   }
   return relatedResourcesMap
 }
