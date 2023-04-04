@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
 import android.content.Context
+import androidx.navigation.NavHostController
 
 sealed class TracingProfileEvent {
 
@@ -28,12 +29,21 @@ sealed class TracingProfileEvent {
   data class OpenTaskForm(val context: Context, val taskFormId: String, val taskId: String) :
     TracingProfileEvent()
 
+  data class OpenTracingOutcomeScreen(
+    val navController: NavHostController,
+    val context: Context,
+    val historyId: String
+  ) : TracingProfileEvent()
+
   data class OverflowMenuClick(
-    //    val navController: NavHostController,
+    val navController: NavHostController,
     val context: Context,
     val menuId: Int
   ) : TracingProfileEvent()
 
-  //  data class OpenGuardianProfile(val patientId: String, val navController: NavHostController) :
-  //    TracingProfileEvent()
+  data class CallPhoneNumber(
+    val navController: NavHostController,
+    val context: Context,
+    val phoneNumber: String,
+  ) : TracingProfileEvent()
 }

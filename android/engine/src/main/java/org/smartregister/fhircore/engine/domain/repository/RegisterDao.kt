@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.smartregister.fhircore.engine.data.local.RegisterFilter
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
@@ -33,6 +34,19 @@ interface RegisterDao {
     appFeatureName: String?
   ): List<RegisterData> {
     TODO()
+  }
+
+  suspend fun loadRegisterFiltered(
+    currentPage: Int,
+    loadAll: Boolean = false,
+    appFeatureName: String? = null,
+    filters: RegisterFilter
+  ): List<RegisterData> {
+    TODO("default")
+  }
+
+  suspend fun countRegisterFiltered(appFeatureName: String? = null, filters: RegisterFilter): Long {
+    TODO("default")
   }
 
   suspend fun countRegisterData(appFeatureName: String?): Long = 0
