@@ -6,12 +6,11 @@ uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
-            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.resource) as questionnaireResponse,
-            //evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
             evaluate(src, $this.parameter.where(name='version').value) as version,
             evaluate(questionnaireResponse, $this.descendants().where(linkId='123456').answer.value.toString()) as taskId
-            then ExtractTask(period, version, subject, definition, tgt,taskId) "r_careplan";
+            then ExtractTask(period, version, subject, definition, tgt, taskId) "r_careplan";
 }
 
 group ExtractTask(
@@ -21,7 +20,8 @@ group ExtractTask(
     source definition: ActivityDefinition,
     target careplan: CarePlan, source taskId:String){
 
-    // fill task into careplan contained and add reference in activity.outcome task.execution.start = task.restriction.start
+    // fill task into careplan contained and add reference in activity.outcome
+
     subject -> create('Task') as task then {
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
@@ -38,6 +38,15 @@ group ExtractTask(
                task.owner = evaluate(subject, $this.generalPractitioner.first()),
                task.code = evaluate(definition, code),
                task.reasonCode = evaluate(definition, product) "r_task_data";
+        //this is not working need some clarification on this
+        subject -> task.restriction = create('Task_Restriction') as restriction then {
+                               restriction.period = create('Period') as r_period then {
+                                   r_period.start = task.execution.start,
+                                   r_period.end = task.execution.start.plus(5)
+                               }"r_restriction_period";
+                           }"r_restriction";
+
+
         // task groupIdentifier
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
                subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {

@@ -81,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -987,88 +988,65 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate child immunization schedule with pre-req def and expiry timing`() =
-    runTest {
-      val planDefinitionResources =
-        loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
-      val planDefinition = planDefinitionResources.planDefinition
-      val patient = planDefinitionResources.patient
-      val questionnaireResponses = planDefinitionResources.questionnaireResponses
-      val resourcesSlot = planDefinitionResources.resourcesSlot
-      assertTrue(questionnaireResponses.firstOrNull()?.item?.firstOrNull()?.answer?.firstOrNull()?.value.toString() == "Task/672805")
-      fhirCarePlanGenerator.generateOrUpdateCarePlan(
+      runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-      )!!
-        .also { println(it.encodeResourceToString()) }
-        .also { carePlan ->
-          assertCarePlan(
-            carePlan,
-            planDefinition,
-            patient,
-            patient.birthDate,
-            patient.birthDate.plusDays(4017),
-            20
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
           )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(
+          carePlan,
+          planDefinition,
+          patient,
+          patient.birthDate,
+          patient.birthDate.plusDays(4017),
+          20
+        )
 
-          resourcesSlot
-            .filter { res -> res.resourceType == ResourceType.Task }
-            .map {
-              println(it.encodeResourceToString())
-              it as Task
-            }
-            .also { tasks ->
-              assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
-              assertTrue(
-                tasks.all {
-                  it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
-                }
-              )
-              assertTrue(
-                tasks.all {
-                  it.code.codingFirstRep.display ==
-                    "Administration of vaccine to produce active immunity (procedure)" &&
-                    it.code.codingFirstRep.code == "33879002"
-                }
-              )
-              assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
-              assertTrue(
-                tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
-              )
-              assertTrue(
-                tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
-              )
-            }
-            .also { tasks ->
-              val vaccines =
-                mutableMapOf<String, Date>(
-                  "BCG" to patient.birthDate,
-                  "OPV 0" to patient.birthDate,
-                  "PENTA 1" to patient.birthDate.plusDays(42),
-                  "OPV 1" to patient.birthDate.plusDays(42),
-                  "PCV 1" to patient.birthDate.plusDays(42),
-                  "ROTA 1" to patient.birthDate.plusDays(42),
-                  "PENTA 2" to patient.birthDate.plusDays(70),
-                  "OPV 2" to patient.birthDate.plusDays(70),
-                  "PCV 2" to patient.birthDate.plusDays(70),
-                  "ROTA 2" to patient.birthDate.plusDays(70),
-                  "PENTA 3" to patient.birthDate.plusDays(98),
-                  "OPV 3" to patient.birthDate.plusDays(98),
-                  "PCV 3" to patient.birthDate.plusDays(98),
-                  "IPV" to patient.birthDate.plusDays(98),
-                  "MEASLES 1" to patient.birthDate.plusMonths(9),
-                  "MEASLES 2" to patient.birthDate.plusMonths(15),
-                  "YELLOW FEVER" to patient.birthDate.plusMonths(9),
-                  "TYPHOID" to patient.birthDate.plusMonths(9),
-                  "HPV 1" to patient.birthDate.plusDays(3285),
-                  "HPV 2" to patient.birthDate.plusDays(3467),
-                )
-              vaccines.forEach { vaccine ->
-                println(vaccine)
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
+            assertTrue(
+              tasks.all {
+                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
               }
-            }
-        }
-    }
+            )
+            assertTrue(
+              tasks.all {
+                it.code.codingFirstRep.display ==
+                  "Administration of vaccine to produce active immunity (procedure)" &&
+                  it.code.codingFirstRep.code == "33879002"
+              }
+            )
+            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+            assertTrue(
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+            )
+            assertTrue(
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+            )
+            assertTrue(tasks.all { it.partOf.firstOrNull()?.reference.equals("Task/672805") })
+            assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
+          }
+      }
+  }
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate disease followup schedule`() = runTest {
