@@ -372,6 +372,26 @@ constructor(
       nextPos++
 
       viewModelScope.launch(dispatcherProvider.io()) {
+        val resourceDataUpdated =
+          rulesExecutor
+            .processResourceData(
+              baseResource = repoResourceData.resource,
+              relatedRepositoryResourceData = observedRepositoryResourceData.relatedResources.value!!,
+              ruleConfigs = profileConfigs.rules,
+              ruleConfigsKey = profileConfigs::class.java.canonicalName,
+              paramsMap
+            )
+            .copy(listResourceDataMap = listResourceDataMapState)
+
+        // Check if the computed values map has changed and update it
+        profileUiState.value.resourceData!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
+        profileUiState.value = profileUiState.value
+
+        // This fixes a render bug on sick child profile demographic because the main values are loaded from the
+        // related resources
+        resourceDataState.value!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
+        resourceDataState.postValue(resourceDataUpdated)
+
         profileConfigs.views.retrieveListProperties().forEach {
           val listResourceData = mutableListOf<ResourceData>()
           listResourceDataMapState[it.id] = listResourceData

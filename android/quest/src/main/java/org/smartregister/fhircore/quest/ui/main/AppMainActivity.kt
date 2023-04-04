@@ -27,9 +27,12 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.SearchQuery
+import com.google.android.fhir.search.filter.TokenFilterValue
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
