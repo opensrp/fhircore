@@ -28,7 +28,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 
 class SearchExtensionTest {
 
@@ -52,7 +52,7 @@ class SearchExtensionTest {
   fun testFilterStringExtensionForStringType() {
     val dataQuery =
       """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"STRING","valueString":"Value"}""".decodeJson<
-        DataQuery>()
+        FilterCriterionConfig>()
     val search = spyk(Search(ResourceType.Patient))
     search.filterString(dataQuery)
     val stringClientParamSlot = slot<StringClientParam>()
@@ -64,7 +64,7 @@ class SearchExtensionTest {
   fun testFilterStringExtensionForBooleanType() {
     val dataQuery =
       """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"BOOLEAN","valueBoolean":"true"}""".decodeJson<
-        DataQuery>()
+        FilterCriterionConfig>()
     val search = spyk(Search(ResourceType.Patient))
     search.filterString(dataQuery)
     val stringClientParamSlot = slot<StringClientParam>()
@@ -76,7 +76,7 @@ class SearchExtensionTest {
   fun testUnknownTypeFilterThrowsException() {
     val dataQuery =
       """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"AGE","valueBoolean":"true"}""".decodeJson<
-        DataQuery>()
+        FilterCriterionConfig>()
     val search = spyk(Search(ResourceType.Patient))
     search.filterString(dataQuery)
   }
@@ -92,7 +92,7 @@ class SearchExtensionTest {
           "valueDate": "2017-03-14",
           "paramPrefix": "GREATERTHAN_OR_EQUALS"
         }""".decodeJson<
-        DataQuery>()
+        FilterCriterionConfig>()
     val search = spyk(Search(ResourceType.Patient))
     search.filterDate(dataQuery)
     val dateClientParamSlot = slot<DateClientParam>()
