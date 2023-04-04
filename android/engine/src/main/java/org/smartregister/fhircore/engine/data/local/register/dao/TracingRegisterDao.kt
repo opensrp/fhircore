@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import timber.log.Timber
 
@@ -192,11 +193,16 @@ constructor(
     appFeatureName: String?,
     filters: RegisterFilter
   ): List<RegisterData> {
-    return searchRegister(filters, loadAll, page = currentPage)
-      .map { it.toTracingRegisterData() }
-      .filter { it.reasons.any() }
-    // TODO("fix sorting across all")
-    //      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+    val sortedData =
+      searchRegister(filters, loadAll = true)
+        .map { it.toTracingRegisterData() }
+        .filter { it.reasons.any() }
+        .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+    return if (!loadAll) {
+      val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+      sortedData.safeSubList(from until to)
+    } else sortedData
   }
 
   override suspend fun loadRegisterData(
@@ -206,17 +212,19 @@ constructor(
   ): List<RegisterData> {
 
     val tracingPatients =
-      fhirEngine.search<Patient> {
-        has<Task>(Task.SUBJECT) { validTasksFilters() }
-        count =
-          if (loadAll) countRegisterData(appFeatureName).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-      }
+      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }
 
-    return tracingPatients.map { it.toTracingRegisterData() }.filter { it.reasons.any() }
-    // TODO("fix sorting across all")
-    //      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+    return tracingPatients
+      .map { it.toTracingRegisterData() }
+      .filter { it.reasons.any() }
+      .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
+      .let {
+        if (!loadAll) {
+          val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+          val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+          it.safeSubList(from..to)
+        } else it
+      }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
@@ -258,8 +266,7 @@ constructor(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons =
-              validTasks(patient).mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
+            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
           ),
       )
     }
@@ -353,9 +360,7 @@ constructor(
     val attempt =
       tracingRepository
         .getTracingAttempt(this)
-        .copy(
-          reasons = validTasks(this).mapNotNull { task -> task.reasonCode?.codingFirstRep?.code }
-        )
+        .copy(reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.code })
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,
