@@ -40,24 +40,22 @@ import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 import timber.log.Timber
-import java.time.Instant
-import java.time.LocalDate
-import java.time.Period
 import java.util.*
 import kotlin.random.Random
 
@@ -300,12 +298,18 @@ constructor(
         viewModelScope.launch {
             Toast.makeText(context, "Adding users", Toast.LENGTH_SHORT).show()
             val isHomeTracing = Random.nextBoolean()
-            val random = Random.nextInt(1, 5)
 
             val lists = fhirEngine.search<Patient> {
+                filter(Patient.ACTIVE, { value = of(true)})
                 sort(Patient.NAME, if (Random.nextBoolean()) Order.ASCENDING else Order.DESCENDING)
-                count = 100
-            }
+            }.filter { patient ->
+                patient.active
+                        && !patient.hasDeceased()
+                        && patient.hasName()
+                        && patient.hasGender()
+                        && patient.meta.tag.none{it.code.equals(HivRegisterDao.HAPI_MDM_TAG, true)}
+            }.take(120)
+
             lists.forEach { patient ->
                 if (!patient.hasGender()) {
                     patient.gender = Enumerations.AdministrativeGender.MALE
@@ -315,9 +319,11 @@ constructor(
                 }
                 fhirEngine.update(patient)
                 val task = generateTracingTask(patient.logicalId, isHomeTracing)
+                task.id = generateUniqueId()
                 val list: MutableList<DomainResource> = mutableListOf()
+                val random = Random.nextInt(1, 5)
                 for (numberOfOutcomes in 0..random) {
-                    val create = createEncounter(patient, task, numberOfOutcomes == random, isHomeTracing)
+                    val create = createEncounter(patient, task, numberOfOutcomes == random, isHomeTracing, numberOfOutcomes)
                     list.addAll(create)
                 }
                 fhirEngine.create(task, *list.toTypedArray())
@@ -326,7 +332,7 @@ constructor(
         }
     }
 
-    private fun createEncounter(patient: Patient, task: Task, isCurrent: Boolean, isHomeTracing: Boolean): Array<DomainResource> {
+    private fun createEncounter(patient: Patient, task: Task, isCurrent: Boolean, isHomeTracing: Boolean, numberOfAttempts: Int): Array<DomainResource> {
         val encounterData = """
             {
               "resourceType": "Encounter",
@@ -393,13 +399,14 @@ constructor(
 
         """.trimIndent()
         val encounter = jsonParser.parseResource(Encounter::class.java, encounterData)
+        encounter.id = generateUniqueId()
         val listItem = """
             {
               "resourceType": "List",
-              "title": "Tracing Encounter List_1",
+              "title": "Tracing Encounter List_${numberOfAttempts}",
               "orderedBy": {
-                "coding": [{ "system": "https://d-tree.org", "code": "1" }],
-                "text": "1"
+                "coding": [{ "system": "https://d-tree.org", "code": "$numberOfAttempts" }],
+                "text": "$numberOfAttempts"
               },
               "subject": {
                 "reference": "Patient/${patient.logicalId}"
@@ -410,16 +417,16 @@ constructor(
                 {
                   "flag": {
                     "coding": [{ "system": "https://d-tree.org", "code": "tracing-task" }],
-                    "text": "${task.asReference()}"
+                    "text": "${task.referenceValue()}"
                   },
-                  "item": { "reference": "${task.asReference()}" }
+                  "item": { "reference": "${task.referenceValue()}" }
                 },
                 {
                   "flag": {
                     "coding": [{ "system": "https://d-tree.org", "code": "tracing-enc" }]
                   },
                   "item": {
-                    "reference": "${encounter.asReference()}"
+                    "reference": "${encounter.referenceValue()}"
                   }
                 }
               ]
