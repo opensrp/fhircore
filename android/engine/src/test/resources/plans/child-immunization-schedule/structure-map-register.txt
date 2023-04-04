@@ -9,8 +9,9 @@ group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.resource) as questionnaireResponse,
             //evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
-            evaluate(src, $this.parameter.where(name='version').value) as version
-            then ExtractTask(period, version, subject, definition, tgt,questionnaireResponse) "r_careplan";
+            evaluate(src, $this.parameter.where(name='version').value) as version,
+            evaluate(questionnaireResponse, $this.descendants().where(linkId='123456').answer.value.toString()) as taskId
+            then ExtractTask(period, version, subject, definition, tgt,taskId) "r_careplan";
 }
 
 group ExtractTask(
@@ -18,7 +19,7 @@ group ExtractTask(
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
-    target careplan: CarePlan, source questionnaireResponse:QuestionnaireResponse){
+    target careplan: CarePlan, source taskId:String){
 
     // fill task into careplan contained and add reference in activity.outcome task.execution.start = task.restriction.start
     subject -> create('Task') as task then {
@@ -46,11 +47,8 @@ group ExtractTask(
         } "rule_group_identifier";
 
          subject -> task.partOf = create('Reference') as ref then {
-                subject -> evaluate(questionnaireResponse, $this.descendants().where(linkId='123456').answer.value.toString()) as taskId then{
-                            subject -> ref.reference = taskId "r_task_ref_id";
-                }"r_ref_id";
+                    subject -> ref.reference = taskId "r_task_ref_id";
          } "r_task_part_of";
-
 
          //add task.input for task dependencies
          subject -> task.input = create('Task_Input') as input then{
@@ -61,6 +59,15 @@ group ExtractTask(
                      }"r_codeable_concept";
                      subject -> input.value = 28 "r_input_value";
          }"r_task_input";
+
+          subject -> task.input = create('Task_Input') as input then{
+                              subject -> input.type = create("CodeableConcept") as concept then{
+                                      subject-> concept.coding = c("http://snomed.info/sct","900000000000457003") as coding then{
+                                              subject -> coding.display = "Reference set attribute (foundation metadata concept)" "r_coding_display";
+                                      } "r_task_concept_coding";
+                              }"r_codeable_concept";
+                              subject -> input.value = taskId "r_input_value";
+          }"r_task_input";
 
 
         // form to be filled
