@@ -266,8 +266,7 @@ constructor(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons =
-              validTasks(patient).mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
+            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
           ),
       )
     }
@@ -361,9 +360,7 @@ constructor(
     val attempt =
       tracingRepository
         .getTracingAttempt(this)
-        .copy(
-          reasons = validTasks(this).mapNotNull { task -> task.reasonCode?.codingFirstRep?.code }
-        )
+        .copy(reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.code })
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,
