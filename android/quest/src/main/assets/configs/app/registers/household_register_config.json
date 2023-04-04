@@ -49,8 +49,40 @@
             "searchParameter": "subject"
           },
           {
+            "id": "overdueTasks",
             "resource": "Task",
-            "searchParameter": "subject"
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "id": "overdueTaskQuery",
+                "filterType": "TOKEN",
+                "key": "status",
+                "valueType": "CODING",
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "failed"
+                }
+              }
+            ]
+          },
+          {
+            "id": "dueTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "id": "dueTaskQuery",
+                "filterType": "TOKEN",
+                "key": "status",
+                "valueType": "CODING",
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "ready"
+                }
+              }
+            ]
           },
           {
             "id": "filterPractitioners",
@@ -72,6 +104,13 @@
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "familyLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
       {
         "name": "familyName",
         "condition": "true",
@@ -101,17 +140,33 @@
         ]
       },
       {
-        "name": "taskCount",
+        "name": "dueTaskCount",
         "condition": "true",
         "actions": [
-          "data.put('taskCount', size(service.filterResources(Task, \"Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'\")))"
+          "data.put('dueTaskCount', service.computeTotalCount(dueTasks))"
+        ]
+      },
+      {
+        "name": "overDueTaskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('overDueTaskCount', service.computeTotalCount(overdueTasks))"
+        ]
+      },
+      {
+        "name": "totalTaskCount",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "var sum = data.get('dueTaskCount') + data.get('overDueTaskCount'); data.put('totalTaskCount', sum == 0 ? '' : sum)"
         ]
       },
       {
         "name": "serviceStatus",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' :'UPCOMING')"
+          "data.put('serviceStatus', data.get('dueTaskCount') > 0 ? 'DUE' : data.get('overDueTaskCount') > 0 ? 'OVERDUE' : 'UPCOMING' )"
         ]
       },
       {
@@ -145,7 +200,7 @@
             "serviceMemberIcons": "@{serviceMemberIcons}",
             "serviceButton": {
               "visible": true,
-              "text": "@{taskCount}",
+              "text": "@{totalTaskCount}",
               "status": "@{serviceStatus}",
               "fontSize": 14.0,
               "smallSized": false,
@@ -156,13 +211,9 @@
                   "id": "householdProfile",
                   "params": [
                     {
-                      "key": "familyId",
-                      "value": "@{familyId}"
-                    },
-                    {
                       "paramType": "PARAMDATA",
-                      "key": "practitionerId",
-                      "value": "@{practitionerId}"
+                      "key": "familyLogicalId",
+                      "value": "@{familyLogicalId}"
                     }
                   ]
                 }
@@ -175,13 +226,9 @@
                 "id": "householdProfile",
                 "params": [
                   {
-                    "key": "familyId",
-                    "value": "@{familyId}"
-                  },
-                  {
                     "paramType": "PARAMDATA",
-                    "key": "practitionerId",
-                    "value": "@{practitionerId}"
+                    "key": "familyLogicalId",
+                    "value": "@{familyLogicalId}"
                   }
                 ]
               }
