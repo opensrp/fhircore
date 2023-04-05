@@ -47,7 +47,8 @@ data class CompoundTextProperties(
   val secondaryTextActions: List<ActionConfig> = emptyList(),
   val maxLines: Int = Int.MAX_VALUE,
   val colorOpacity: Float = 1f,
-  val textCase: TextCase? = null
+  val textCase: TextCase? = null,
+  val overflow: TextOverFlow? = null
 ) : ViewProperties()
 
 enum class TextFontWeight(val fontWeight: FontWeight) {
@@ -66,4 +67,10 @@ enum class TextCase {
   UPPER_CASE,
   LOWER_CASE,
   CAMEL_CASE,
+}
+
+enum class TextOverFlow {
+  CLIP,
+  ELLIPSIS,
+  VISIBLE
 }

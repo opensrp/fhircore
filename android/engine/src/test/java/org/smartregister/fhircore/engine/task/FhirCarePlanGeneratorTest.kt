@@ -52,6 +52,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -97,6 +98,7 @@ import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -898,11 +900,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             // first visit is lmp plus 1 month and subsequent visit are every month after
             // that until
             // delivery
-            val pregnancyStart = lmp.clone() as Date
-            this.forEachIndexed { index, task ->
+            var pregnancyStart: BaseDateTimeType = DateTimeType(lmp.clone() as Date)
+            this.forEach { task ->
+              fhirPathEngine
+                .evaluate(pregnancyStart, "\$this + 1 'month'")
+                .firstOrNull()
+                ?.dateTimeValue()
+                ?.let { result -> pregnancyStart = result }
               assertEquals(
-                pregnancyStart.plusMonths(index + 1).asYyyyMmDd(),
-                task.executionPeriod.start.asYyyyMmDd()
+                pregnancyStart.valueToString(),
+                DateTimeType(task.executionPeriod.start).valueToString()
               )
             }
           }
@@ -1323,7 +1330,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, "12345") } returns Task().apply { id = "12345" }
     coEvery { defaultRepository.addOrUpdate(any(), any()) } just Runs
 
-    fhirCarePlanGenerator.updateTaskDetailsById("12345", TaskStatus.COMPLETED)
+    fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", TaskStatus.COMPLETED)
 
     val task = slot<Task>()
     coVerify { defaultRepository.addOrUpdate(any(), capture(task)) }
@@ -1883,11 +1890,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
       immunizationResource
 
+    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) } just runs
     runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository) }
     assertEquals(
       Date.from(Instant.parse("2021-11-07T00:00:00Z")),
       dependentTask.executionPeriod.start
     )
+    coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) }
   }
 }
 

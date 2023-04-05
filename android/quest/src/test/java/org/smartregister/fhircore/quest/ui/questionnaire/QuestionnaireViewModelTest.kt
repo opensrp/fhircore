@@ -977,6 +977,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testPerformExtractionOnNullBundle() {
+    runTest {
+      val bundle = null
+      val questionnaire = Questionnaire()
+      val questionnaireResponse = QuestionnaireResponse()
+      val questionnaireConfig = questionnaireConfig
+      questionnaireViewModel.performExtraction(
+        questionnaireResponse,
+        questionnaireConfig,
+        questionnaire,
+        bundle
+      )
+      coVerifyOrder(inverse = true) {
+        questionnaireViewModel.extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        questionnaireViewModel.extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+      }
+    }
+  }
+
+  @Test
   fun testPerformExtractionOnSuccessReturnsABundleAndShowsSuccessToast() {
     val context = mockk<Context>(relaxed = true)
     val bundle = Bundle()
