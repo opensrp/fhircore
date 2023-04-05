@@ -26,7 +26,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 16-08-2022. */
 typealias Coordinate = Pair<Double, Double>
 
 val Location.boundaryGeoJsonExtAttachment: Attachment?
@@ -41,10 +40,10 @@ val Location.boundaryGeoJsonExtAttachment: Attachment?
 val Location.hasBoundaryGeoJsonExt
   get(): Boolean {
     if (hasExtension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)) {
-      val boundaryGeojsonFeature =
+      val boundaryGeoJsonFeature =
         getExtensionByUrl(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)
-      if (boundaryGeojsonFeature != null && boundaryGeojsonFeature.value is Attachment) {
-        val attachment = boundaryGeojsonFeature.value as Attachment
+      if (boundaryGeoJsonFeature.value is Attachment) {
+        val attachment = boundaryGeoJsonFeature.value as Attachment
 
         if (attachment.contentType != null && attachment.contentType.equals("application/geo+json")
         ) {
@@ -63,7 +62,7 @@ fun Location.updateBoundaryGeoJsonProperties(feature: JSONObject) {
     // Copy over the properties
     val extFeatureProperties = featureFromExt.optJSONObject("properties")
     extFeatureProperties?.keys()?.forEach { key ->
-      if (!feature.getJSONObject("properties").has(key)) {
+      if (!feature.optJSONObject("properties").has(key)) {
         feature.getJSONObject("properties").put(key, extFeatureProperties.get(key))
       }
     }

@@ -54,6 +54,11 @@ const config = {
         },
         items: [
           {
+            href: 'https://fhircore.smartregister.org/dokka',
+            label: 'Code Docs',
+            position: 'right',
+          },
+          {
             href: 'https://github.com/opensrp/fhircore',
             label: 'GitHub',
             position: 'right',
