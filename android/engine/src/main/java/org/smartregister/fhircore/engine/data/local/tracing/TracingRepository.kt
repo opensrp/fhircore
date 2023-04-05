@@ -210,16 +210,32 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
     )
   }
 
-  suspend fun getTracingAttempt(patient: Patient): TracingAttempt {
-    val list =
-      fhirEngine.search<ListResource> {
+  suspend fun getPatientListResource(patient: Patient): ListResource? {
+    return fhirEngine
+      .search<ListResource> {
         filter(ListResource.SUBJECT, { value = patient.referenceValue() })
         filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
         sort(ListResource.TITLE, Order.DESCENDING)
         count = 1
         from = 0
       }
-    return list.firstOrNull()?.let { toTracingAttempt(it) }
+      .firstOrNull()
+  }
+
+  suspend fun getTracingAttempt(patient: Patient): TracingAttempt {
+    val list = getPatientListResource(patient)
+    return list?.let { toTracingAttempt(it) }
+      ?: TracingAttempt(
+        historyId = null,
+        lastAttempt = null,
+        numberOfAttempts = 0,
+        outcome = "",
+        reasons = listOf()
+      )
+  }
+
+  suspend fun getTracingAttempt(list: ListResource?): TracingAttempt {
+    return list?.let { toTracingAttempt(it) }
       ?: TracingAttempt(
         historyId = null,
         lastAttempt = null,
@@ -230,20 +246,20 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
   }
 
   private suspend fun toTracingAttempt(list: ListResource): TracingAttempt {
-    val lastAttempt =
-      list
-        .entry
-        .map { it.item }
-        .filter { it.referenceElement.resourceType == ResourceType.Encounter.name }
-        .map { ref ->
-          val resourceId = IdType(ref.reference).idPart
-          kotlin.runCatching { fhirEngine.get<Encounter>(resourceId) }.onFailure {
-            it.printStackTrace()
+    var lastAttempt: Encounter? = null
+    list
+      .entry
+      .map { it.item }
+      .filter { it.referenceElement.resourceType == ResourceType.Encounter.name }
+      .forEach { ref ->
+        val resourceId = IdType(ref.reference).idPart
+        kotlin
+          .runCatching { fhirEngine.get<Encounter>(resourceId) }
+          .onSuccess { enc ->
+            lastAttempt = maxOf(lastAttempt, enc, nullsFirst(compareBy { it.period?.start?.time }))
           }
-        }
-        .filter { result -> result.isSuccess }
-        .map { result -> result.getOrThrow() }
-        .maxWithOrNull(nullsFirst(compareBy { it.period?.start?.time }))
+          .onFailure { it.printStackTrace() }
+      }
 
     val obs =
       lastAttempt?.let {

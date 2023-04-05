@@ -130,17 +130,19 @@ constructor(
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
     val registerFilterFlow =
-      _filtersMutableStateFlow.map {
-        val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
-        val ageFilter = transformToTracingAgeFilterEnum(it)
-        val reasonCode = transformTracingUiReasonToCode(it.reason.selected)
-        TracingRegisterFilter(
-          patientCategory = categories,
-          isAssignedToMe = it.patientAssignment.selected.assignedToMe(),
-          age = ageFilter,
-          reasonCode = reasonCode
-        )
-      }
+      _filtersMutableStateFlow
+        .map {
+          val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
+          val ageFilter = transformToTracingAgeFilterEnum(it)
+          val reasonCode = transformTracingUiReasonToCode(it.reason.selected)
+          TracingRegisterFilter(
+            patientCategory = categories,
+            isAssignedToMe = it.patientAssignment.selected.assignedToMe(),
+            age = ageFilter,
+            reasonCode = reasonCode
+          )
+        }
+        .onEach { resetPage() }
     viewModelScope.launch {
       combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
         Triple(s, p, f)
@@ -180,6 +182,10 @@ constructor(
         }
       }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
+  }
+
+  private fun resetPage() {
+    _currentPage.value = 0
   }
 
   override fun refresh() {
