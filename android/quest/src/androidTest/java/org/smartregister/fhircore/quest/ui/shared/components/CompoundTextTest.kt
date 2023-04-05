@@ -34,7 +34,7 @@ class CompoundTextTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun testWhenMaxLinesExceededThenTextEllipsized() {
+  fun testWhenMaxLinesIsExceededThenTextIsEllipsized() {
     val temp =
       """
             Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
@@ -58,7 +58,7 @@ class CompoundTextTest {
     composeTestRule.onNodeWithText(temp, useUnmergedTree = true).assertDoesNotExist()
   }
   @Test
-  fun testWhenMaxLinesNotExceededThenTextNotEllipsized() {
+  fun testWhenMaxLinesIsNotExceededThenTextIsNotEllipsized() {
     val temp = """
             Lorem Ipsum
     """.trimIndent()
