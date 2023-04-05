@@ -5,8 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-rc1] - 2022-xx-xx
+## [0.2.2] - 2023-xx-xx
 ### Added
+### Fixed
+### Changed
+
+## [0.2.1] - 2023-03-27
+### Added
+- Complete/Cancel CarePlans depending on status of linked Tasks
+- Closing/Revoking CarePlans and associated Tasks using configured PlanDefinitions
+- Catch all exceptions and return an error message to the user
 - Initial Sync progress as a percentage
 - Adds internationalization(MLS) for App configs
 - Adds register, navigation menus and profile configurations using JSON files
@@ -16,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implements resource tagging
 
 ### Fixed
-
+- Perform configurable reverse chaining on search
 - Geowidget | Fixed a bug disabling the link between registered families and their location
 - Geowidget | Fixed a crash when a family location is not found
 
