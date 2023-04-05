@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.di.FhirEngineModule.Companion.GROUP_ACTIVE_SEARCH_PARAM
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -257,7 +258,7 @@ constructor(
         // For Group return only active
         if (resourceType == ResourceType.Group) {
           filter(
-            TokenClientParam("activeGroup"),
+            TokenClientParam(GROUP_ACTIVE_SEARCH_PARAM),
             {
               value = of(true)
             }

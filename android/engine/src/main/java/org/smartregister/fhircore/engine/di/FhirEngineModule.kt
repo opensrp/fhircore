@@ -84,8 +84,8 @@ class FhirEngineModule {
       SearchParameter().apply {
         url = "http://example.com/SearchParameter/group-active"
         addBase("Group")
-        name = "activeGroup"
-        code = "activeGroup"
+        name = GROUP_ACTIVE_SEARCH_PARAM
+        code = GROUP_ACTIVE_SEARCH_PARAM
         type = Enumerations.SearchParamType.TOKEN
         expression = "Group.active"
         description = "Search the active field"
@@ -96,5 +96,6 @@ class FhirEngineModule {
 
   companion object {
     private const val QUEST_OKHTTP_CLIENT_TAG = "QuestOkHttpClient"
+    const val GROUP_ACTIVE_SEARCH_PARAM = "activeGroup"
   }
 }
