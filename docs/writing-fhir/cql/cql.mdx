@@ -1,0 +1,86 @@
+# CQL
+
+This Documentation on CQL is to give some insights on
+1. How to author the CQL script
+2. How to load and execute CQL scripts
+3. Some sample use cases where we have used CQL
+
+## What is CQL
+
+CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS).
+
+CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019.
+
+CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.
+
+CQL allows for a more modular, flexible, and robust expression of the logic. It allows logic to be shared between measures and with clinical decision support.
+
+## CQL Logic/Decision Library
+
+The Clinical Quality Language (`CQL`) Specification provides a way to define, data querying, processing and logical expressions in a simplified and user-friendly way. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on `CQL`. Some example `CQL` scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
+
+Since `CQL` itself is a user-friendly script rather than a parseable configuration or program, it needs a `JSON` or `XML` form that can be lexically parsed and understood by the parser.For this it is needs to be transformed into a JSON form called Expression Logical Model(ELM) aka `json+elm`. An XML form `xml+elm` can also used. In most cases, we shall be using `json+elm` for parsing FHIR Core Decision or Reporting Logic.
+
+The translated `elm` and `cql` is then added to FHIR [Library](http://hl7.org/fhir/R4/library.html) resource as Base64 encoded data to allow the code to get the calculation for each variable to be used by FHIR compatible software.
+
+Some resources to get details on CQL writing are below:
+
+- CQL brief authoring guide https://cql.hl7.org/02-authorsguide.html
+- CQL operators and functions https://cql.hl7.org/04-logicalspecification.html and https://cql.hl7.org/09-b-cqlreference.html
+- FHIRPath mapping in CQL https://cql.hl7.org/16-i-fhirpathtranslation.html
+    - Examples [Time Interval](https://cql.hl7.org/15-h-timeintervalcalculations.html) and [Detail on Queries](https://cql.hl7.org/03-developersguide.html#conditional-expressions)
+- CQL Sandbox [here](https://sandbox.cqlab.io/)
+- CQL Android editor app [here](https://github.com/Path-Check/cql-editor-app/)
+
+Here is a working example of CQL for a [Measure](http://hl7.org/fhir/measure.html)
+
+````
+library HOUSEHOLDIND01 version '1'
+
+using FHIR version '4.0.1'
+
+include "FHIRHelpers" version '4.0.1' called FHIRHelpers
+include "COMMON" version '1' called COMMON
+
+parameter "Measurement Period" Interval<DateTime>
+
+context Patient
+
+// to ensure that Measure Period with a closed boundary can be handled
+define "Filter Period": Interval("Measurement Period".low - 1 day , "Measurement Period".high + 1 day)
+
+define "All Groups": [Group] G
+    where G.type = 'person'
+    and First(G.identifier).period.start during "Filter Period"
+
+define "All Group Members": flatten("All Groups" G return (G.member M return M.entity))
+
+define "Group": "All Groups" G
+    return G.id
+
+define "Group Member": "All Group Members" G
+    where COMMON."IdPart"(Patient.id) = Split(G.reference, '/')[1]
+
+define "Patients": {Patient}
+
+define "Males": Patient.gender='male'
+define "Females": Patient.gender='female'
+
+define "Age": CalculateAgeInYearsAt(Patient.birthDate, ToDate("Measurement Period".high))
+
+define "Age Stratifier":
+  case
+    when "Age" < 1 then 'P0Y'
+    when "Age" in Interval[1,5] then 'P1-5Y'
+    when "Age" in Interval[6, 14] then 'P6-14Y'
+    when "Age" in Interval[15, 49] then 'P15-49Y'
+    when "Age" >= 50 then 'P50Y'
+    else 'Unspecified'
+  end
+````
+
+The variables in CQL can be referenced into a [Measure](http://hl7.org/fhir/measure.html) and/or [PlanDefinition](http://hl7.org/fhir/plandefinition.html) after adding the `Library` containing CQL as referenced library.
+
+## Common challenges with CQL
+
+CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup. To solve this pre-load the libraries.

@@ -25,6 +25,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.util.Date
+import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
