@@ -1448,4 +1448,73 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
+  @Test
+  fun testLoadQuestionnaireShouldUReturnCorrectItemsWithUpdateOnEdit() {
+
+    val prePopulationParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age-1",
+          dataType = DataType.INTEGER,
+          key = "patientAge-one",
+          value = "10"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age-2",
+          dataType = DataType.INTEGER,
+          key = "patientAge-two",
+          value = "15"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-3",
+          dataType = DataType.INTEGER,
+          key = "patientAge-three",
+          value = "20"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-4",
+          dataType = DataType.INTEGER,
+          key = "patientAge-four",
+          value = "25"
+        )
+      )
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    val resultingQuestionnaire = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+
+    Assert.assertEquals("12345", resultingQuestionnaire!!.logicalId)
+    Assert.assertEquals("100", resultingQuestionnaire.item[1].initial[0].value.valueToString())
+    Assert.assertEquals(2, resultingQuestionnaire.item.get(0).linkId.length)
+  }
 }

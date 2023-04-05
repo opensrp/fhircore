@@ -37,6 +37,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -71,6 +72,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.plusDays
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -556,5 +558,40 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { defaultRepository.delete(relatedPerson) }
     coVerify { defaultRepository.addOrUpdate(resource = group) }
+  }
+  @Test
+  fun addOrUpdateShouldUpdateLastUpdatedToNow() {
+    val patientId = "15672-9234"
+    val patient: Patient =
+      Patient().apply {
+        meta.lastUpdated= Date().plusDays(-20)
+        id = "15672-9234"
+        active = true
+        birthDate = LocalDate.parse("1996-08-17").toDate()
+        gender = Enumerations.AdministrativeGender.MALE
+        address =
+          listOf(
+            Address().apply {
+              city = "Lahore"
+              country = "Pakistan"
+            }
+          )
+        name =
+          listOf(
+            HumanName().apply {
+              given = mutableListOf(StringType("Salman"))
+              family = "Ali"
+            }
+          )
+        telecom = listOf(ContactPoint().apply { value = "12345" })
+      }
+    val savedPatientSlot = slot<Patient>()
+    coEvery { fhirEngine.get(any(), any()) } answers { patient }
+    coEvery { fhirEngine.update(any()) } just runs
+    runBlocking { defaultRepository.addOrUpdate(resource = patient) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
+    coVerify { fhirEngine.update(capture(savedPatientSlot)) }
+    coVerify { defaultRepository.addOrUpdate(resource = patient) }
+    Assert.assertEquals(Date(),patient.meta.lastUpdated)
   }
 }
