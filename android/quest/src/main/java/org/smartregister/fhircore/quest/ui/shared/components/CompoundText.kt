@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperti
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextCase
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.TextOverFlow
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -101,7 +102,8 @@ fun CompoundText(
         clickable = compoundTextProperties.clickable,
         actions = compoundTextProperties.primaryTextActions,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
+        overflow = compoundTextProperties.overflow
       )
     }
     // Separate the primary and secondary text
@@ -131,6 +133,7 @@ fun CompoundText(
         actions = compoundTextProperties.secondaryTextActions,
         navController = navController,
         resourceData = resourceData,
+        overflow = compoundTextProperties.overflow
       )
     }
   }
@@ -152,7 +155,8 @@ private fun CompoundTextPart(
   clickable: String,
   actions: List<ActionConfig>,
   navController: NavController,
-  resourceData: ResourceData
+  resourceData: ResourceData,
+  overflow: TextOverFlow?
 ) {
   Text(
     text =
@@ -188,7 +192,12 @@ private fun CompoundTextPart(
         else -> TextAlign.Start
       },
     maxLines = maxLines,
-    overflow = TextOverflow.Ellipsis
+    overflow =
+      when (overflow) {
+        TextOverFlow.CLIP -> TextOverflow.Clip
+        TextOverFlow.VISIBLE -> TextOverflow.Visible
+        else -> TextOverflow.Ellipsis
+      }
   )
 }
 
@@ -203,7 +212,6 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
           primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
-          textCase = TextCase.UPPER_CASE
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = navController
