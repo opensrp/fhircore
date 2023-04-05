@@ -67,7 +67,7 @@ jobs:
       run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
       working-directory: android
       env:
-        KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }
+        KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
     
     - name: Build application using script
       run: ./gradlew :quest:clean && ./gradlew :quest:assembleQuest
