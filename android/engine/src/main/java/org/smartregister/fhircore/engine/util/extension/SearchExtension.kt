@@ -115,7 +115,8 @@ fun Search.filterBy(dataQuery: DataQuery) {
       is FilterCriterionConfig.UriFilterCriterionConfig ->
         filter(
           uriParam = UriClientParam(dataQuery.paramName),
-          { this.value = filterCriterion.value }
+          { this.value = filterCriterion.value },
+          operation = dataQuery.operation
         )
     }
   }

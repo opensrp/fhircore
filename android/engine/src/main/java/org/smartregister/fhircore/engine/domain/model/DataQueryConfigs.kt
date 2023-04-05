@@ -31,7 +31,7 @@ import org.smartregister.fhircore.engine.util.serializers.FilterCriterionSeriali
 @Parcelize
 data class DataQuery(
   val paramName: String,
-  val operation: Operation = Operation.OR,
+  val operation: Operation = Operation.AND,
   val filterCriteria: List<FilterCriterionConfig>
 ) : Parcelable
 
