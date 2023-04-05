@@ -32,7 +32,6 @@ data class RegisterConfiguration(
   val secondaryResources: List<FhirResourceConfig>? = null,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
-  val registerSearch: RegisterSearchConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
