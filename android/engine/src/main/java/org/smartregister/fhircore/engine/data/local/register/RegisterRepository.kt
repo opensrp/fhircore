@@ -253,6 +253,17 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+
+        // For Group return only active
+        if (resourceType == ResourceType.Group) {
+          filter(
+            TokenClientParam("activeGroup"),
+            {
+              value = of(true)
+            }
+          )
+        }
+
         applyNestedSearchFilters(nestedSearchResources)
         sort(sortConfigs)
         if (currentPage != null && pageSize != null) {
