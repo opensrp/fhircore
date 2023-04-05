@@ -44,7 +44,6 @@ import javax.inject.Inject
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -97,6 +96,8 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
@@ -1011,6 +1012,68 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate child immunization schedule with pre-req def and expiry timing`() =
+      runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(
+          carePlan,
+          planDefinition,
+          patient,
+          patient.birthDate,
+          patient.birthDate.plusDays(4017),
+          20
+        )
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
+            assertTrue(
+              tasks.all {
+                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+              }
+            )
+            assertTrue(
+              tasks.all {
+                it.code.codingFirstRep.display ==
+                  "Administration of vaccine to produce active immunity (procedure)" &&
+                  it.code.codingFirstRep.code == "33879002"
+              }
+            )
+            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+            assertTrue(
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+            )
+            assertTrue(
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+            )
+            assertTrue(tasks.all { it.partOf.firstOrNull()?.reference.equals("Task/672805") })
+            assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
+          }
+      }
+  }
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate disease followup schedule`() = runTest {
