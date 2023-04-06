@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonNames
 
 /** Represents different types of views that can be rendered via compose */
 @ExperimentalSerializationApi
-@kotlinx.serialization.Serializable
+@Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ViewType {
   /** Represent a vertical layout that arranges views one on top of the other */
   @JsonNames("column", "Column") COLUMN,
