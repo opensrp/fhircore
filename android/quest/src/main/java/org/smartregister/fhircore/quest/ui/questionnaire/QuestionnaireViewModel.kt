@@ -121,9 +121,8 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
-        actionParameterList = nonEmptyParams.filter {
-          it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT
-        }
+        actionParameterList =
+          nonEmptyParams.filter { it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams)
       }
 

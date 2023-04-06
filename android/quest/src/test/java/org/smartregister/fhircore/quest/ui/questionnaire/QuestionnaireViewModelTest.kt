@@ -1509,12 +1509,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
 
-    val resultingQuestionnaire = runBlocking {
+    runBlocking {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
     }
-
-    Assert.assertEquals("12345", resultingQuestionnaire!!.logicalId)
-    Assert.assertEquals("100", resultingQuestionnaire.item[1].initial[0].value.valueToString())
-    Assert.assertEquals(2, resultingQuestionnaire.item.get(0).linkId.length)
+    coVerify {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
   }
 }

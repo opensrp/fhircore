@@ -143,15 +143,17 @@ constructor(
       if (resource.hasMeta() && resource.meta.hasLastUpdated()) {
         resource.updateLastUpdated()
       }
-      kotlin.runCatching {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
+      kotlin
+        .runCatching {
+          fhirEngine.get(resource.resourceType, resource.logicalId).run {
+            fhirEngine.update(updateFrom(resource))
+          }
         }
-      }.onFailure {
-        if (it is ResourceNotFoundException) {
-          create(addMandatoryTags, resource)
+        .onFailure {
+          if (it is ResourceNotFoundException) {
+            create(addMandatoryTags, resource)
+          }
         }
-      }
     }
   }
 
