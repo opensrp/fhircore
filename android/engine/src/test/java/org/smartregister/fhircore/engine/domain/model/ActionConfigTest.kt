@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
