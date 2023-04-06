@@ -422,11 +422,10 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
     editQuestionnaireResourceParams?.forEach { param ->
+      val resourceType =
+        param.value.substringBefore("/").resourceClassType().newInstance().resourceType
       val resource =
-        defaultRepository.loadResource(
-          param.value.extractLogicalIdUuid(),
-          param.value.substringBefore("/").resourceClassType().newInstance().resourceType
-        )
+        defaultRepository.loadResource(param.value.extractLogicalIdUuid(), resourceType)
       resource.let { defaultRepository.addOrUpdate(resource = it) }
     }
   }
