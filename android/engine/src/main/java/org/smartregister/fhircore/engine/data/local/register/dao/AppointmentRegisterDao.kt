@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toHealthStatus
 
 @Singleton
@@ -229,7 +230,23 @@ constructor(
     appFeatureName: String?,
     filters: RegisterFilter
   ): List<RegisterData> =
-    searchAppointments(filters, loadAll, page = currentPage).map { transformAppointment(it) }
+    searchAppointments(filters, loadAll = true)
+      .map { transformAppointment(it) }
+      .sortedWith(
+        nullsFirst(
+          compareBy {
+            it as RegisterData.AppointmentRegisterData
+            it.identifier
+          }
+        )
+      )
+      .let {
+        if (!loadAll) {
+          val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+          val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+          it.safeSubList(from..to)
+        } else it
+      }
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -240,8 +257,6 @@ constructor(
       fhirEngine.search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
-        if (!loadAll) count = PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
     return appointments
@@ -252,6 +267,21 @@ constructor(
           it.practitionerRef() != null
       }
       .map { transformAppointment(it) }
+      .sortedWith(
+        nullsFirst(
+          compareBy {
+            it as RegisterData.AppointmentRegisterData
+            it.identifier
+          }
+        )
+      )
+      .let {
+        if (!loadAll) {
+          val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+          val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+          it.safeSubList(from..to)
+        } else it
+      }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {

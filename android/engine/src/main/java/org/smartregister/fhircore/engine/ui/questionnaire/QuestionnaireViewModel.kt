@@ -587,7 +587,7 @@ constructor(
       fhirEngine.search<ListResource> {
         filter(ListResource.SUBJECT, { value = "Patient/$patient" })
         filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
-        sort(ListResource.DATE, Order.ASCENDING)
+        sort(ListResource.TITLE, Order.DESCENDING)
         count = 1
         from = 0
       }
