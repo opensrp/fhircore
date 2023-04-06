@@ -70,6 +70,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -561,10 +562,11 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
   @Test
   fun addOrUpdateShouldUpdateLastUpdatedToNow() {
+    val date = Date()
     val patientId = "15672-9234"
     val patient: Patient =
       Patient().apply {
-        meta.lastUpdated = Date().plusDays(-20)
+        meta.lastUpdated = date.plusDays(-20)
         id = "15672-9234"
         active = true
       }
@@ -574,6 +576,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.addOrUpdate(resource = patient) }
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
-    Assert.assertEquals(Date().toLocaleString(), patient.meta.lastUpdated.toLocaleString())
+    Assert.assertEquals(
+      date.formatDate("mm-dd-yyyy"),
+      patient.meta.lastUpdated.formatDate("mm-dd-yyyy")
+    )
   }
 }
