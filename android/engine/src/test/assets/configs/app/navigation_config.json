@@ -32,7 +32,8 @@
           "id": "navigateToMapsScreen"
         }
       ]
-    },{
+    },
+    {
       "id": "reports",
       "visible": true,
       "display": "Reports",
@@ -87,26 +88,6 @@
         {
           "trigger": "ON_COUNT",
           "id": "patientRegister"
-        }
-      ]
-    },
-    {
-      "id": "taskRegister",
-      "display": "Tasks",
-      "menuIconConfig": {
-        "type": "remote",
-        "reference": "Binary/144177"
-      },
-      "showCount": true,
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "taskRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "taskRegister"
         }
       ]
     }
