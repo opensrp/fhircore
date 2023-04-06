@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 import org.smartregister.fhircore.engine.R
 
-@ExperimentalSerializationApi
 @Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ServiceMemberIcon(val icon: Int) {
   @JsonNames("child", "Child") CHILD(R.drawable.ic_kids),
