@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 
 /** Represents different types of views that can be rendered via compose */
+@ExperimentalSerializationApi
+@kotlinx.serialization.Serializable
 enum class ViewType {
   /** Represent a vertical layout that arranges views one on top of the other */
   @JsonNames("column", "Column") COLUMN,

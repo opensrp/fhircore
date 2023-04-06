@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 
 /** Represents different types of parameters that can be defined within the config actions */
+@ExperimentalSerializationApi
+@kotlinx.serialization.Serializable
 enum class ActionParameterType {
   /** Represents parameters that are used to pre-populate Questionnaire items with initial values */
   @JsonNames("pre_populate", "PrePopulate") PREPOPULATE,
