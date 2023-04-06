@@ -108,7 +108,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
-  private var actionParameterList: List<ActionParameter>? = emptyList()
+  private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -121,7 +121,7 @@ constructor(
       }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
-        actionParameterList =
+        editQuestionnaireResourceParams =
           nonEmptyParams.filter { it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT }
         item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams)
       }
@@ -404,8 +404,8 @@ constructor(
 
   /**
    * Add or update the [questionnaireResponse] resource with the passed content, and if an
-   * [actionParameterList] is set also update the resource it refers to by extracting its
-   * logicalIdUuid.
+   * [editQuestionnaireResourceParams] represents the IDs of the resources to be updated on
+   * Questionnaire edit.
    *
    * @param questionnaire the [Questionnaire] this response is related to
    * @param questionnaireResponse the questionnaireResponse resource to save
@@ -421,7 +421,7 @@ constructor(
       return
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
-    actionParameterList?.forEach { param ->
+    editQuestionnaireResourceParams?.forEach { param ->
       val resource =
         defaultRepository.loadResource(
           param.value.extractLogicalIdUuid(),

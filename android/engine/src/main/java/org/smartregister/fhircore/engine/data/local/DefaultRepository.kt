@@ -140,20 +140,14 @@ constructor(
 
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
-      if (resource.hasMeta() && resource.meta.hasLastUpdated()) {
-        resource.updateLastUpdated()
+      resource.updateLastUpdated()
+      try {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        create(addMandatoryTags, resource)
       }
-      kotlin
-        .runCatching {
-          fhirEngine.get(resource.resourceType, resource.logicalId).run {
-            fhirEngine.update(updateFrom(resource))
-          }
-        }
-        .onFailure {
-          if (it is ResourceNotFoundException) {
-            create(addMandatoryTags, resource)
-          }
-        }
     }
   }
 

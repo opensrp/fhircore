@@ -45,6 +45,7 @@ import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -1450,6 +1451,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
   @Test
   fun testLoadQuestionnaireShouldUReturnCorrectItemsWithUpdateOnEdit() {
+    val updateResourcesIdsParams =
+      questionnaireViewModel::class.java.getDeclaredField("editQuestionnaireResourceParams")
+    updateResourcesIdsParams.isAccessible = true
+    val expected =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-3",
+          dataType = DataType.INTEGER,
+          key = "patientAge-three",
+          value = "20"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-4",
+          dataType = DataType.INTEGER,
+          key = "patientAge-four",
+          value = "25"
+        )
+      )
 
     val prePopulationParams =
       listOf(
@@ -1515,5 +1536,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
     }
+    assertEquals(expected, updateResourcesIdsParams.get(questionnaireViewModel))
   }
 }
