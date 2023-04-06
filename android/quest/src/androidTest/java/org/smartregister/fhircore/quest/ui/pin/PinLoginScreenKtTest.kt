@@ -97,4 +97,29 @@ class PinLoginScreenKtTest {
     composeRule.onNodeWithText("CANCEL").assertIsDisplayed().assertHasClickAction()
     composeRule.onNodeWithText("DIAL NUMBER").assertIsDisplayed().assertHasClickAction()
   }
+
+  @Test
+  fun testThatErrorMessageIsDisplayedOnPinLogin() {
+    val errorMessage = "Incorrect PIN. Please try again."
+    composeRule.setContent {
+      PinLoginPage(
+        onSetPin = {},
+        showError = true,
+        onMenuLoginClicked = {},
+        forgotPin = {},
+        pinUiState =
+          PinUiState(
+            currentUserPin = "",
+            message = errorMessage,
+            appName = "MOH eCBIS",
+            setupPin = false,
+            pinLength = 4,
+            showLogo = true
+          ),
+        onPinVerified = {},
+        onShowPinError = {}
+      )
+    }
+    composeRule.onNodeWithText(errorMessage, ignoreCase = true).assertExists().assertIsDisplayed()
+  }
 }
