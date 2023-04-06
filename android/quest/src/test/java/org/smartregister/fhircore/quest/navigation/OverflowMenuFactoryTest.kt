@@ -50,7 +50,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileAlreadyOnART =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE)
     Assert.assertNotNull(uiProfileAlreadyOnART)
-    Assert.assertEquals(9, uiProfileAlreadyOnART.size)
+    Assert.assertEquals(8, uiProfileAlreadyOnART.size)
 
     val uiProfileExposedInfant =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.EXPOSED_INFANT_PROFILE)
