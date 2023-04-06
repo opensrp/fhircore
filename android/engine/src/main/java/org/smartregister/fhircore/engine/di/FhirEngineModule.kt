@@ -71,8 +71,7 @@ class FhirEngineModule {
               )
             ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }
         ),
-          customSearchParameters = getCustomSearchParameters()
-
+        customSearchParameters = getCustomSearchParameters()
       )
     )
     Timber.e("Fhirengine module custom params set +++++++++++++++++++")
