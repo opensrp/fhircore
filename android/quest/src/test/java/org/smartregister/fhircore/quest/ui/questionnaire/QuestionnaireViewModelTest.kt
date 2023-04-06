@@ -1459,14 +1459,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ActionParameter(
           paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
           linkId = "patient-age-3",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-three",
           value = "20"
         ),
         ActionParameter(
           paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
           linkId = "patient-age-4",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-four",
           value = "25"
         )
@@ -1477,28 +1477,28 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "patient-age-1",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-one",
           value = "10"
         ),
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "patient-age-2",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-two",
           value = "15"
         ),
         ActionParameter(
           paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
           linkId = "patient-age-3",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-three",
           value = "20"
         ),
         ActionParameter(
           paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
           linkId = "patient-age-4",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge-four",
           value = "25"
         )
