@@ -54,6 +54,7 @@ fun Search.filterBy(dataQuery: DataQuery) {
         filter(
           dateParameter = DateClientParam(dataQuery.paramName),
           {
+            this.prefix = filterCriterion.prefix
             this.value =
               when {
                 filterCriterion.valueDate != null -> of(DateType(filterCriterion.valueDate))
@@ -61,7 +62,6 @@ fun Search.filterBy(dataQuery: DataQuery) {
                   of(DateTimeType(filterCriterion.valueDateTime))
                 else -> null
               }
-            this.prefix = filterCriterion.prefix
           },
           operation = dataQuery.operation,
         )
