@@ -118,16 +118,18 @@ constructor(
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
     val registerFilterFlow =
-      _filtersMutableStateFlow.map {
-        val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
-        val reason = transformAppointmentUiReasonToCode(it.reason.selected)
-        AppointmentRegisterFilter(
-          dateOfAppointment = it.date.value,
-          myPatients = it.patients.selected == PatientAssignment.MY_PATIENTS,
-          patientCategory = categories,
-          reasonCode = reason
-        )
-      }
+      _filtersMutableStateFlow
+        .map {
+          val categories = transformPatientCategoryToHealthStatus(it.patientCategory.selected)
+          val reason = transformAppointmentUiReasonToCode(it.reason.selected)
+          AppointmentRegisterFilter(
+            dateOfAppointment = it.date.value,
+            myPatients = it.patients.selected == PatientAssignment.MY_PATIENTS,
+            patientCategory = categories,
+            reasonCode = reason
+          )
+        }
+        .onEach { resetPage() }
     val refreshCounterFlow = refreshCounter
 
     viewModelScope.launch {
@@ -175,6 +177,10 @@ constructor(
   override fun refresh() {
     _isRefreshing.value = true
     _refreshCounter.value += 1
+  }
+
+  private fun resetPage() {
+    _currentPage.value = 0
   }
 
   private fun paginateRegisterDataFlow(filters: AppointmentRegisterFilter, page: Int) =
