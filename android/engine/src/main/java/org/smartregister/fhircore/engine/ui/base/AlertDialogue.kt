@@ -21,7 +21,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.res.Resources
-import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
