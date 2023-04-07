@@ -1151,7 +1151,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
 
     // Update the value of the expression
-    expressionValue?.let { it.expression = Expression().apply { expression = "new value" } }
+    expressionValue?.let { it.expression = Expression().apply { expression = "dummyExpression" } }
 
     // call the method under test and get the result
     val result = fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, data)
