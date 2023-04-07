@@ -102,6 +102,7 @@ class AppMainViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
 
@@ -199,7 +200,10 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
       resourceConfig,
-      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+      bundleSlot.captured.getParcelable(
+        NavigationArg.RESOURCE_CONFIG,
+        FhirResourceConfig::class.java
+      )
     )
   }
 
@@ -246,6 +250,7 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
     coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
@@ -262,6 +267,7 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
       runTest {
     coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
@@ -282,6 +288,7 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
       runTest {
     coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
@@ -301,6 +308,7 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
       runTest {
     coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs

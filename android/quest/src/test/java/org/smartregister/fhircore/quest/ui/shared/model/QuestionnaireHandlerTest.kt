@@ -40,7 +40,9 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 @HiltAndroidTest
 class QuestionnaireHandlerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   // private val startForResult = mockk<ActivityResultLauncher<Intent>>()
   private val context =
     mockk<Context>(
@@ -48,8 +50,6 @@ class QuestionnaireHandlerTest : RobolectricTest() {
       relaxUnitFun = true,
       relaxed = true
     )
-  // private val questionnaireHandler = mockk<QuestionnaireHandler>(relaxUnitFun = true, relaxed =
-  // true)
 
   @Before
   fun setUp() {
