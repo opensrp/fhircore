@@ -58,6 +58,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -1140,29 +1141,17 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
       runBlocking {
-    // mock the FhirPathEngine object to always return null for any FHIRPath expression evaluation
-    val fhirPathEngine = mockk<FHIRPathEngine>()
-
-    // mock the search method call with a response
-    val searchResponse = listOf(CarePlan())
-    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns searchResponse
-
-    coEvery {
-        fhirPathEngine.evaluate(
-          null,
-          any<Bundle>(),
-          any<PlanDefinition>(),
-          any<Resource>(),
-          any<String>()
-        )
-      }
-      .returns(null)
-
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
     val planDefinition = planDefinitionResources.planDefinition
     val patient = planDefinitionResources.patient
     val data = Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+
+    val dynamicValue = planDefinition.action.first().dynamicValue
+    val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
+
+    // Update the value of the expression
+    expressionValue?.let { it.expression = Expression().apply { expression = "new value" } }
 
     // call the method under test and get the result
     val result = fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, data)
