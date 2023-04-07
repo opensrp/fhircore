@@ -20,6 +20,7 @@ import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 
 /**
@@ -65,7 +66,7 @@ data class ResourceConfig(
 @Parcelize
 data class SortConfig(
   val paramName: String,
-  val dataType: DataType,
+  val dataType: Enumerations.DataType,
   val order: Order = Order.ASCENDING
 ) : Parcelable
 
