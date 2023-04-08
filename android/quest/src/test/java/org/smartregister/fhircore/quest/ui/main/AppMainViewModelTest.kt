@@ -200,10 +200,7 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
       resourceConfig,
-      bundleSlot.captured.getParcelable(
-        NavigationArg.RESOURCE_CONFIG,
-        FhirResourceConfig::class.java
-      )
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
     )
   }
 
