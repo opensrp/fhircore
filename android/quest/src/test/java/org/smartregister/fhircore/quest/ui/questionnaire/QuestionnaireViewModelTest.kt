@@ -109,7 +109,7 @@ import org.smartregister.model.practitioner.PractitionerDetails
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
+  @ExperimentalCoroutinesApi @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var jsonParser: IParser
@@ -124,6 +124,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @Before
+  @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
 
@@ -297,15 +298,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals("12345", result!!.logicalId)
-    Assert.assertTrue(result!!.item[0].readOnly)
-    Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertFalse(result!!.item[2].readOnly)
-    Assert.assertEquals(0, result!!.item[2].extension.size)
-    Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertFalse(result!!.item[2].item[1].readOnly)
-    Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
+    Assert.assertTrue(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+    Assert.assertFalse(result.item[2].readOnly)
+    Assert.assertEquals(0, result.item[2].extension.size)
+    Assert.assertTrue(result.item[2].item[0].readOnly)
+    Assert.assertFalse(result.item[2].item[1].readOnly)
+    Assert.assertTrue(result.item[2].item[1].item[0].readOnly)
   }
 
   @Test
@@ -461,6 +462,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
     val patient = samplePatient()
@@ -485,7 +487,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    coroutineRule.runBlockingTest {
+    runTest {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
@@ -848,19 +850,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "12345"
         item =
           listOf(
-            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            QuestionnaireResponseItemComponent().apply {
               linkId = "q1-grp"
               item =
                 listOf(
-                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-                    linkId =
-                      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-                        .QUESTIONNAIRE_AGE
+                  QuestionnaireResponseItemComponent().apply {
+                    linkId = QuestionnaireActivity.QUESTIONNAIRE_AGE
                     answer =
                       listOf(
-                        QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-                          value = DecimalType(25)
-                        }
+                        QuestionnaireResponseItemAnswerComponent().apply { value = DecimalType(25) }
                       )
                   }
                 )
@@ -978,6 +976,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testPerformExtractionOnNullBundle() {
     runTest {
       val bundle = null
@@ -1051,6 +1050,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testPerformExtractionOnFailureShowsErrorToast() = runTest {
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
@@ -1330,6 +1330,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
     coroutineRule.runBlockingTest {
       val patient = samplePatient()
@@ -1353,7 +1354,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testRemoveGroupCallsDefaultRepositoryRemoveGroup() {
     val groupId = "group-1"
-    var deactivateMembers = false
+    val deactivateMembers = false
     Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
     questionnaireViewModel.removeGroup(
       groupId = groupId,

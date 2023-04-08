@@ -41,22 +41,22 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class RegisterContentTest : RobolectricTest() {
 
-  val context = ApplicationProvider.getApplicationContext<Context>()
-  val worker =
+  val context = ApplicationProvider.getApplicationContext<Context>()!!
+  private val worker =
     SimpleWorkerContext().apply {
       this.setExpansionProfile(Parameters())
       this.isCanRunWithoutTerminology = true
     }
-  val transformSupportServices = TransformSupportServices(worker)
+  private val transformSupportServices = TransformSupportServices(worker)
 
-  fun buildStructureMapExtractionContext(
+  private fun buildStructureMapExtractionContext(
     structureMapString: String,
     sourceGroup: String
   ): StructureMapExtractionContext {
     return StructureMapExtractionContext(
       context = context,
       transformSupportServices = transformSupportServices,
-      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+      structureMapProvider = { _: String, _: IWorkerContext ->
         StructureMapUtilities(worker, transformSupportServices)
           .parse(structureMapString, sourceGroup)
       }
@@ -64,7 +64,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testG6pdTestResultsExtraction() = runTest {
     val structureMap = "test-results-questionnaire/structure-map.txt".readFile()
     val response = "test-results-questionnaire/questionnaire-response.json".readFile()
@@ -116,14 +116,11 @@ class RegisterContentTest : RobolectricTest() {
     val expectedStr = expected.convertToString(true)
     val actualStr = actual.convertToString(true)
 
-    System.out.println(expectedStr)
-    System.out.println(actualStr)
-
     Assert.assertEquals(expectedStr, actualStr)
   }
 
   @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testG6pdPatientRegistrationExtraction() = runTest {
     val structureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
     val response = "patient-registration-questionnaire/questionnaire-response.json".readFile()
