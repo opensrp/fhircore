@@ -1139,7 +1139,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  @ExperimentalCoroutinesAp
+  @ExperimentalCoroutinesApi
   fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
       runBlocking {
     val planDefinitionResources =
