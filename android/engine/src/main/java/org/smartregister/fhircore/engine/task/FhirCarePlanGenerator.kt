@@ -151,7 +151,7 @@ constructor(
                 .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
-                  // Todo handle cases where we explicitly need to set previous value as null, when
+                  // TODO handle cases where we explicitly need to set previous value as null, when
                   // passing null to Terser, it gives error NPE
                   Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
                   TerserUtil.setFieldByFhirPath(
