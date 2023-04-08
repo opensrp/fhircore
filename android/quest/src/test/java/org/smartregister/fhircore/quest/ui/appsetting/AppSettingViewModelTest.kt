@@ -33,7 +33,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.net.UnknownHostException
 import java.util.Base64
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.ResponseBody
@@ -75,6 +74,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     )
 
   private val configService = mockk<ConfigService>()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   private val appSettingViewModel =
     spyk(
       AppSettingViewModel(
@@ -89,6 +89,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnApplicationIdChanged() {
     appSettingViewModel.onApplicationIdChanged("appId")
     Assert.assertNotNull(appSettingViewModel.appId.value)
@@ -96,7 +97,8 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadConfigurations() = runBlockingTest {
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testLoadConfigurations() = runTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
@@ -111,7 +113,8 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   @Ignore("Fix failing test")
-  fun testFetchConfigurations() = runBlockingTest {
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchConfigurations() = runTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
         addEntry().resource =
@@ -128,8 +131,9 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
-      runBlockingTest {
+      runTest {
     coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
       Composition().apply {
         addSection().apply {
@@ -190,6 +194,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = HttpException::class)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
@@ -216,7 +221,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = UnknownHostException::class)
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsUnknownHostException() = runTest {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
@@ -235,7 +240,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = Exception::class)
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsException() = runTest {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
@@ -255,7 +260,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
@@ -283,24 +288,28 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
     appSettingViewModel.appId.value = "app/debug"
     Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
     appSettingViewModel.appId.value = "app"
     Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
     appSettingViewModel.appId.value = null
     Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)

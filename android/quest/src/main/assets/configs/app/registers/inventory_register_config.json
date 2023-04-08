@@ -7,14 +7,16 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "commoditiesQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "386452003"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODEABLECONCEPT",
+              "value": {
+                "system": "http://snomed.info/sct",
+                "code": "386452003"
+              }
+            }
+          ]
         }
       ],
       "sortConfigs": [

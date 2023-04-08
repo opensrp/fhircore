@@ -7,24 +7,28 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
         },
         {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
         }
       ],
       "sortConfigs": [
@@ -55,14 +59,16 @@
             "resultAsCount": true,
             "dataQueries": [
               {
-                "id": "overdueTaskQuery",
-                "filterType": "TOKEN",
-                "key": "status",
-                "valueType": "CODING",
-                "valueCoding": {
-                  "system": "http://hl7.org/fhir/task-status",
-                  "code": "failed"
-                }
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "failed"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -73,14 +79,16 @@
             "resultAsCount": true,
             "dataQueries": [
               {
-                "id": "dueTaskQuery",
-                "filterType": "TOKEN",
-                "key": "status",
-                "valueType": "CODING",
-                "valueCoding": {
-                  "system": "http://hl7.org/fhir/task-status",
-                  "code": "ready"
-                }
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "ready"
+                    }
+                  }
+                ]
               }
             ]
           },

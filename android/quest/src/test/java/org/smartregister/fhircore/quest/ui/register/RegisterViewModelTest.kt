@@ -45,24 +45,17 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @Inject lateinit var rulesExecutor: RulesExecutor
-
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private lateinit var registerViewModel: RegisterViewModel
-
   private lateinit var registerRepository: RegisterRepository
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   private val registerId = "register101"
-
   private val screenTitle = "Register 101"
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     registerRepository = mockk()
@@ -102,6 +95,7 @@ class RegisterViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveRegisterUiState() = runTest {
     every { registerViewModel.paginateRegisterData(any(), any()) } just runs
     coEvery { registerRepository.countRegisterData(any()) } returns 200

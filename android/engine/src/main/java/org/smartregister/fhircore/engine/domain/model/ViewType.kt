@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package org.smartregister.fhircore.engine.domain.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 
 /** Represents different types of views that can be rendered via compose */
+@Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ViewType {
   /** Represent a vertical layout that arranges views one on top of the other */
   @JsonNames("column", "Column") COLUMN,
