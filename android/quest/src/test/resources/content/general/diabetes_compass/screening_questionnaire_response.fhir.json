@@ -1,0 +1,195 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "page-1",
+      "item": [
+        {
+          "linkId": "screening-instructions-title",
+          "text": "Health Screening"
+        }
+      ]
+    },
+    {
+      "linkId": "page-2",
+      "item": [
+        {
+          "linkId": "age-title",
+          "text": "Age"
+        },
+        {
+          "linkId": "age-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "abf3ab40-b326-4141-99-e09315f21dba11",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": "35-40",
+                "display": "35-40 yrs"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-3",
+      "item": [
+        {
+          "linkId": "gender-title",
+          "text": "Birth Sex"
+        },
+        {
+          "linkId": "gender-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df22",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-4",
+      "item": [
+        {
+          "linkId": "diet-title",
+          "text": "Diet"
+        },
+        {
+          "linkId": "diet-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "abf3ab40-b326-4141-9c69-e09315f21dba112",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-5",
+      "item": [
+        {
+          "linkId": "family-history-title",
+          "text": "Family History"
+        },
+        {
+          "linkId": "family-history-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df22333",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": "2nd",
+                "display": "2nd Degree relative"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-6",
+      "item": [
+        {
+          "linkId": "physical-activity-title",
+          "text": "Physical Activity"
+        },
+        {
+          "linkId": "physical-activity-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "abf3ab40-b326-4141-9c69-e09315f21dba113338",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-7",
+      "item": [
+        {
+          "linkId": "waist-bmi-title",
+          "text": "Waist/BMI"
+        },
+        {
+          "linkId": "waist-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df22333870",
+                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
+                "code": ">88",
+                "display": "> 88 cm"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "weight-bmi",
+          "text": "Enter Weight (kgs)",
+          "answer": [
+            {
+              "valueDecimal": 80.0
+            }
+          ]
+        },
+        {
+          "linkId": "height-bmi",
+          "text": "Enter Height (cms)",
+          "answer": [
+            {
+              "valueDecimal": 150.0
+            }
+          ]
+        },
+        {
+          "linkId": "bmi",
+          "text": "* BMI",
+          "answer": [
+            {
+              "valueDecimal": 35.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-8",
+      "item": [
+        {
+          "linkId": "results-title",
+          "text": "Results"
+        },
+        {
+          "linkId": "results-text",
+          "text": "Very High Risk \\n > 50% 10 year risk of developing Type II Diabetes We recommend seeing a doctor for further screening"
+        },
+        {
+          "linkId": "score-calculations",
+          "text": "Risk Score",
+          "answer": [
+            {
+              "valueDecimal": 4.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

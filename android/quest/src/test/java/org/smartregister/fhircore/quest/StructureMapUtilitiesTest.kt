@@ -420,6 +420,35 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   }
 
   @Test
+  fun `perform diabetes screening extraction`() {
+    val screeningQuestionnaireResponseString: String =
+            "content/general/diabetes_compass/screening_questionnaire_response.fhir.json".readFile()
+    val screeningStructureMap = "content/general/diabetes_compass/diabetes_screening.map".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val smUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = smUtilities.parse(screeningStructureMap, "Diabetes Screening")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, screeningQuestionnaireResponseString)
+
+    smUtilities.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
   fun `perform supply chain snapshot observation`() {
     val physicalInventoryCountQuestionnaireResponseString: String =
       "content/general/supply-chain/questionnaire-response-standard.json".readFile()

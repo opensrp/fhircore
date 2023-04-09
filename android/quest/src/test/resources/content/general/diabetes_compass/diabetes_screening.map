@@ -1,0 +1,149 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/8bfafa04-cbc4-4a53-a1f0-ba0906595b4d" = "Diabetes Compass Diabetes Screening"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+
+
+group DiabetesScreening(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.id = uuid(),
+    bundle.type = "collection" then
+        ExtractEncounter(src, bundle) "r_bundle_data";
+}
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle){
+    src ->bundle.entry as entry,
+    entry.resource = create("Encounter") as encounter then {
+        src->encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
+            encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "252","Screening") "r_enc_data";
+        src ->encounter.subject = evaluate(src, $this.subject) "r_enc_subject";
+        src -> encounter.priority = create("CodeableConcept") as concept then {
+            src -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                src -> coding.display = "Elective" "r_enc_cod_disp";
+            } "r_enc_cc_cod";
+            src -> concept.text = "Elective" "r_enc_prio_text";
+        } "r_en_prio";
+        src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
+    } "r_encounter";
+}
+group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src then
+    ExtractWaist(src, bundle, encounter),
+    ExtractWeight(src, bundle, encounter),
+    ExtractHeight(src, bundle, encounter), 
+    ExtractBMI(src, bundle, encounter),
+    ExtractRiskAssessment(src, bundle, encounter)
+    "r_enc_obs";
+
+}
+
+group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item as page where(linkId = "page-7") then {
+        page.item as item where(linkId = "waist-choice" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","445396007", "Measurement of circumference of waist"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src -> obs.subject = create("Reference") as ref then {
+                        src -> ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
+                    } "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src -> obs.value = create("CodeableConcept") as codeableConcept then {
+                        src -> codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_waist";
+                        src -> codeableConcept.coding = evaluate(item, $this.answer.value) "r_obs_value_c_waist";
+                    } "r_obs_value";
+                } "r_obs_waist_item";
+        } "r_obs_waist";
+    } "r_obs_waist_pg";
+}
+
+group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item as page where(linkId = "page-7") then {
+        page.item as item where(linkId = "weight-bmi" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","363808001", "Body weight measure"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src -> obs.subject = create("Reference") as ref then {
+                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
+                    } "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
+                } "r_obs_weight_item";
+        } "r_obs_weight";
+    } "r_obs_weight_pg";
+}
+
+group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item as page where(linkId = "page-7") then {
+        page.item as item where(linkId = "height-bmi" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","50373000", "Body height measure"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src->obs.subject = create("Reference") as ref then {
+                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
+                    } "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
+                } "r_obs_height_item";
+        } "r_obs_height";
+    } "r_obs_height_pg";
+}
+
+group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){ 
+    src.item as page where(linkId = "page-7") then {
+        page.item as item where(linkId = "bmi" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","162859006", "Body mass index"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src -> obs.subject = create("Reference") as ref then {
+                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
+                    } "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
+                } "r_obs_bmi_item";
+        } "r_obs_bmi";
+    } "r_obs_bmi_pg";
+
+}
+
+group ExtractRiskAssessment(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){ 
+    src.item as page where(linkId = "page-8") then {
+        page.item as item where(linkId = "score-calculations" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("RiskAssessment") as rsk then {
+                    src -> rsk.id = uuid(),
+                        rsk.status = "preliminary",
+                        rsk.code = cc("http://snomed.info/sct","772788006", "Assessment of risk of type 2 diabetes mellitus"),
+                        rsk.encounter = reference(encounter),
+                    src -> rsk.subject = create("Reference") as ref then {
+                        src -> ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
+                    } "r_obs_subject";
+                    src -> rsk.method = create("CodeableConcept") as codeableConcept then {
+                        src -> codeableConcept.coding = cc("http:/smartregister.org", "draft-algorithm-risk-method", "Draft Algorithm Risk Calculation Method") "r_rsk_method_coding";
+                    } "r_rsk_method";
+                    src -> rsk.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                } "r_rsk_item";
+        } "r_obs_bmi";
+    } "r_rsk_pg";
+}
