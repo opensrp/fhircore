@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package org.smartregister.fhircore.engine.domain.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 
 /** Represents different types of parameters that can be defined within the config actions */
+@Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ActionParameterType {
   /** Represents parameters that are used to pre-populate Questionnaire items with initial values */
   @JsonNames("pre_populate", "PrePopulate") PREPOPULATE,

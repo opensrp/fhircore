@@ -79,7 +79,9 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutinesTestRule = CoroutineTestRule()
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
@@ -88,7 +90,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   var fhirEngine: FhirEngine = mockk()
   var fhirOperator: FhirOperator = mockk()
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-  val measureReportRepository = mockk<MeasureReportRepository>()
+  private val measureReportRepository = mockk<MeasureReportRepository>()
   private lateinit var measureReportViewModel: MeasureReportViewModel
   private val navController: NavController = mockk(relaxUnitFun = true)
   private val invalidReportId = "invalidSupplyChainMeasureReport"
@@ -184,8 +186,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
         url = "http://nourl.com",
         module = "Module1"
       )
-    val dateRange =
-      Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
     val samplePatientViewData =
       MeasureReportPatientViewData(
         logicalId = "member1",
@@ -267,6 +267,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFormatPopulationMeasureReport() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
@@ -323,6 +324,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFormatMeasureReportsForPatient() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     measureReport.contained.clear()
@@ -359,6 +361,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFormatMeasureReportsStock() = runTest {
     measureReport.type = MeasureReportType.INDIVIDUAL
     measureReport.contained.clear()
@@ -415,11 +418,12 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Test
   fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
     assertFailsWith<java.util.NoSuchElementException> {
-      val pager = measureReportViewModel.reportMeasuresList(invalidReportId)
+      measureReportViewModel.reportMeasuresList(invalidReportId)
     }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun reportMeasuresListShouldReturnReportList() = runTest {
     assertNotNull(measureReportViewModel.reportMeasuresList(reportId).first())
   }

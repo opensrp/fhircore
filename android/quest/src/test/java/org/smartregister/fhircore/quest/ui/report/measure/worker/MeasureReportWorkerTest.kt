@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.report.measure.worker
 
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
@@ -30,14 +29,11 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @HiltAndroidTest
 class MeasureReportWorkerTest {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
-
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutinesTestRule = CoroutineTestRule()
   @Inject lateinit var workManager: WorkManager
-
   var fhirEngine: FhirEngine = mockk()
-
-  var fhirOperator: FhirOperator = mockk()
 
   @Before
   fun setUp() {

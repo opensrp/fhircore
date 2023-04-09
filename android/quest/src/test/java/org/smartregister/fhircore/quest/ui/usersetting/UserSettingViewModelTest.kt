@@ -82,6 +82,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     accountAuthenticator = mockk()
@@ -249,6 +250,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResetAppDataShouldClearEverything() = runTest {
     userSettingViewModel.resetAppData(context)
 
