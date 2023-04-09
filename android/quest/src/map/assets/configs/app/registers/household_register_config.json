@@ -7,24 +7,28 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
         },
         {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
         }
       ],
       "sortConfigs": [
@@ -47,36 +51,52 @@
           {
             "resource": "CarePlan",
             "searchParameter": "subject"
-          }
-        ]
-      },
-      {
-        "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
+          },
           {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
+            "id": "overdueTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "failed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dueTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "ready"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
+            "searchParameter": "subject"
           }
-        ]
-      }
-    ]
-  },
-  "filter": {
-    "visible": true,
-    "display": "{{ show.overdue }}",
-    "rules": [
-      {
-        "name": "filter",
-        "condition": "",
-        "actions": [
-          ""
         ]
       }
     ]
@@ -86,11 +106,19 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId"
+      "familyId",
+      "practitionerId"
     ]
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "familyLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
       {
         "name": "familyName",
         "condition": "true",
@@ -104,6 +132,57 @@
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
         ]
+      },
+      {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
+        ]
+      },
+      {
+        "name": "familyVillage",
+        "condition": "true",
+        "actions": [
+          "data.put('familyVillage', fhirPath.extractValue(Group, 'Group.characteristic[0].code.text'))"
+        ]
+      },
+      {
+        "name": "dueTaskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('dueTaskCount', service.computeTotalCount(dueTasks))"
+        ]
+      },
+      {
+        "name": "overDueTaskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('overDueTaskCount', service.computeTotalCount(overdueTasks))"
+        ]
+      },
+      {
+        "name": "totalTaskCount",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "var sum = data.get('dueTaskCount') + data.get('overDueTaskCount'); data.put('totalTaskCount', sum == 0 ? '' : sum)"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('serviceStatus', data.get('dueTaskCount') > 0 ? 'DUE' : data.get('overDueTaskCount') > 0 ? 'OVERDUE' : 'UPCOMING' )"
+        ]
+      },
+      {
+        "name": "serviceMemberIcons",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+        ]
       }
     ],
     "views": [
@@ -115,40 +194,36 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ family.name.family }}",
+                "primaryText": "@{familyName} Family",
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ id.family.id }}",
+                "primaryText": "@{familyVillage} - HH No: @{familyId}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ village.or.address }}",
-                "fontSize": 14.0,
-                "primaryTextColor": "#5A5A5A"
               }
             ],
             "showVerticalDivider": true,
-            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceMemberIcons": "@{serviceMemberIcons}",
             "serviceButton": {
               "visible": true,
-              "text": "1",
-              "status": "OVERDUE",
+              "text": "@{totalTaskCount}",
+              "status": "@{serviceStatus}",
+              "fontSize": 14.0,
               "smallSized": false,
               "actions": [
                 {
                   "trigger": "ON_CLICK",
-                  "workflow": "LAUNCH_QUESTIONNAIRE",
-                  "questionnaire": {
-                    "id": "82952",
-                    "title": "Add Family",
-                    "saveButtonText": "ADD FAMILY",
-                    "setPractitionerDetails": true,
-                    "setOrganizationDetails": true
-                  }
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "householdProfile",
+                  "params": [
+                    {
+                      "paramType": "PARAMDATA",
+                      "key": "familyLogicalId",
+                      "value": "@{familyLogicalId}"
+                    }
+                  ]
                 }
               ]
             },
@@ -159,8 +234,9 @@
                 "id": "householdProfile",
                 "params": [
                   {
-                    "key": "familyId",
-                    "value": "@{familyId}"
+                    "paramType": "PARAMDATA",
+                    "key": "familyLogicalId",
+                    "value": "@{familyLogicalId}"
                   }
                 ]
               }
@@ -169,5 +245,28 @@
         ]
       }
     ]
+  },
+  "noResults": {
+    "title": "No households added",
+    "message": "Sorry, you haven't added any households to your register",
+    "actionButton": {
+      "id": "noResultsButton",
+      "visible": true,
+      "display": "Add household",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "id": "householdRegister",
+          "questionnaire": {
+            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "title": "Add household",
+            "saveButtonText": "Add Household",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true
+          }
+        }
+      ]
+    }
   }
 }
