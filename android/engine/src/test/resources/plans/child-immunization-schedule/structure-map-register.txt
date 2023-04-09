@@ -9,7 +9,7 @@ group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
             evaluate(src, $this.parameter.where(name='version').value) as version,
-            evaluate(questionnaireResponse, $this.descendants().where(linkId='123456').answer.value.toString()) as taskId
+            evaluate(questionnaireResponse, $this.descendants().where(linkId='bb342c7f-39a1-4ff7-bc13-28efdc733333').answer.value.toString()) as taskId
             then ExtractTask(period, version, subject, definition, tgt, taskId) "r_careplan";
 }
 
@@ -38,14 +38,6 @@ group ExtractTask(
                task.owner = evaluate(subject, $this.generalPractitioner.first()),
                task.code = evaluate(definition, code),
                task.reasonCode = evaluate(definition, product) "r_task_data";
-        //this is not working need some clarification on this
-        subject -> task.restriction = create('Task_Restriction') as restriction then {
-                               restriction.period = create('Period') as r_period then {
-                                   r_period.start = task.execution.start,
-                                   r_period.end = task.execution.start.plus(5)
-                               }"r_restriction_period";
-                           }"r_restriction";
-
 
         // task groupIdentifier
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
@@ -54,10 +46,21 @@ group ExtractTask(
                subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
 
         } "rule_group_identifier";
-
+        //partof
          subject -> task.partOf = create('Reference') as ref then {
                     subject -> ref.reference = taskId "r_task_ref_id";
          } "r_task_part_of";
+
+        //restriction
+        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then{
+                subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
+                                   subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
+                                   //this is not working need to fix this
+                                            subject->taskRestrictionPeriod.start = period.start,
+                                                taskRestrictionPeriod.end = period.end.addYears(5) "r_cp_period";
+                                }"r_task_restriction_period";
+                        }"r_task_restriction";
+        }"r_birth_date";
 
          //add task.input for task dependencies
          subject -> task.input = create('Task_Input') as input then{
@@ -97,4 +100,18 @@ group ExtractTask(
                  subject -> careplan.contained = task  "r_add_task";
         } "r_cp_task";
     } "r_task";
+
+}
+
+group ExtractPncPeriod(source offset: DateType, target period: Period){
+    offset -> offset as start,
+              evaluate(offset, $this + '28 \'days\''.toQuantity()) as end then
+              ExtractPeriod(start, end, period) "r_period";
+}
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
 }
