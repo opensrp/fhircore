@@ -21,7 +21,6 @@ group ExtractTask(
     target careplan: CarePlan, source taskId:String){
 
     // fill task into careplan contained and add reference in activity.outcome
-
     subject -> create('Task') as task then {
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
@@ -46,41 +45,42 @@ group ExtractTask(
                subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
 
         } "rule_group_identifier";
-        //partof
+
+        // partof
          subject -> task.partOf = create('Reference') as ref then {
                     subject -> ref.reference = taskId "r_task_ref_id";
          } "r_task_part_of";
 
         //restriction
-        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then{
+        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
                 subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
                                    subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
                                             subject -> evaluate(subject, $this.birthDate + '60 \'months\''.toQuantity()) as evaluatedBirthDate then {
                                             subject -> taskRestrictionPeriod.start = create('dateTime') as dt, dt.value = evaluate(patientBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z') ,
                                                         taskRestrictionPeriod.end   = create('dateTime') as dt, dt.value   = evaluate(evaluatedBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_taskRestrictionPeriod";
-                                            }"r_evaluated_birth_date";
-                                }"r_task_restriction_period";
-                        }"r_task_restriction";
-        }"r_birth_date";
+                                            } "r_evaluated_birth_date";
+                                } "r_task_restriction_period";
+                        } "r_task_restriction";
+        } "r_birth_date";
 
          //add task.input for task dependencies
-         subject -> task.input = create('Task_Input') as input then{
-                     subject -> input.type = create("CodeableConcept") as concept then{
-                             subject-> concept.coding = c("http://snomed.info/sct","371154000") as coding then{
+         subject -> task.input = create('Task_Input') as input then {
+                     subject -> input.type = create("CodeableConcept") as concept then {
+                             subject-> concept.coding = c("http://snomed.info/sct","371154000") as coding then {
                                      subject -> coding.display = "Dependent (qualifier value)" "r_coding_display";
                              } "r_task_concept_coding";
-                     }"r_codeable_concept";
+                     } "r_codeable_concept";
                      subject -> input.value = 28 "r_input_value";
-         }"r_task_input";
+         } "r_task_input";
 
           subject -> task.input = create('Task_Input') as input then{
                               subject -> input.type = create("CodeableConcept") as concept then{
                                       subject-> concept.coding = c("http://snomed.info/sct","900000000000457003") as coding then{
                                               subject -> coding.display = "Reference set attribute (foundation metadata concept)" "r_coding_display";
                                       } "r_task_concept_coding";
-                              }"r_codeable_concept";
+                              } "r_codeable_concept";
                               subject -> input.value = taskId "r_input_value";
-          }"r_task_input";
+          } "r_task_input";
 
 
         // form to be filled
@@ -101,5 +101,4 @@ group ExtractTask(
                  subject -> careplan.contained = task  "r_add_task";
         } "r_cp_task";
     } "r_task";
-
 }
