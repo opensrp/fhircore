@@ -296,9 +296,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .filter { it.hasValueCodeableConcept() }
         .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
 
-      //
-      // addItem(this@QuestionnaireActivity.questionnaire.item.last().createQuestionnaireResponseItem())
-
       this.questionnaire =
         this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
       // important to set response subject so that structure map can handle subject for all entities
