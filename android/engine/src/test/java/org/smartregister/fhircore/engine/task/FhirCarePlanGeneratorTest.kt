@@ -1332,8 +1332,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             )
             assertTrue(tasks.all { it.partOf.firstOrNull()?.reference.equals("Task/672805") })
             assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
-          }
-      }
+            assertTrue(
+              tasks.all {
+                it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
+              }
+            )
+            assertTrue(
+              tasks.all {
+                it.restriction.period.end.asYyyyMmDd() ==
+                  patient.birthDate.plusYears(5).asYyyyMmDd()
+              }
+            )
+          } // Fri Oct 01 05:00:00 PKT 2021
+      } // Fri Oct 01 00:00:00 PKT 2021
   }
   @Test
   @ExperimentalCoroutinesApi
