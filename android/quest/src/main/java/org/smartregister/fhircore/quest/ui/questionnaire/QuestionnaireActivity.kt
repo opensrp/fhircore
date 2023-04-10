@@ -32,7 +32,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
@@ -111,7 +110,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
-
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
 
@@ -130,7 +128,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
             finish()
           } else {
-            if (questionnaireConfig.taskId !=null){
+            if (questionnaireConfig.taskId != null) {
               setTaskId(thisQuestionnaire, questionnaireConfig.taskId!!)
             }
             questionnaire = thisQuestionnaire
@@ -215,29 +213,35 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
     }
 
-
     return questionnaireResponse?.encodeResourceToString()
   }
 
   private fun setTaskId(questionnaire: Questionnaire, taskId: String) {
     questionnaire.apply {
-      val item = Questionnaire.QuestionnaireItemComponent().apply {
-        text = "TaskId"
-        answerOption.addAll(mutableListOf( Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
-          value = StringType(taskId)
-        }))
-        initial =
-          mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(taskId)))
-        linkId = "bb342c7f-39a1-4ff7-bc13-28efdc733333"
-        readOnly = true
-        type = Questionnaire.QuestionnaireItemType.STRING
-        addExtension(
-          Extension(
-            "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            BooleanType(true)
+      val item =
+        Questionnaire.QuestionnaireItemComponent().apply {
+          text = "TaskId"
+          answerOption.addAll(
+            mutableListOf(
+              Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
+                value = StringType(taskId)
+              }
+            )
           )
-        )
-      }
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(taskId))
+            )
+          linkId = "bb342c7f-39a1-4ff7-bc13-28efdc733333"
+          readOnly = true
+          type = Questionnaire.QuestionnaireItemType.STRING
+          addExtension(
+            Extension(
+              "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              BooleanType(true)
+            )
+          )
+        }
       addItem(item)
     }
   }
@@ -292,7 +296,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .filter { it.hasValueCodeableConcept() }
         .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
 
-//      addItem(this@QuestionnaireActivity.questionnaire.item.last().createQuestionnaireResponseItem())
+      //
+      // addItem(this@QuestionnaireActivity.questionnaire.item.last().createQuestionnaireResponseItem())
 
       this.questionnaire =
         this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
