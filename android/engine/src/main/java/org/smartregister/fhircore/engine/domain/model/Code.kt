@@ -18,27 +18,8 @@ package org.smartregister.fhircore.engine.domain.model
 
 import android.os.Parcelable
 import androidx.compose.runtime.Stable
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
-import com.google.android.fhir.search.Operation
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Enumerations
-
-@Serializable
-@Parcelize
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class DataQuery(
-  val id: String = "",
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueBoolean: Boolean? = null,
-  val valueCoding: Code? = null,
-  val valueString: String? = null,
-  val valueDate: String? = null,
-  val paramPrefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS,
-  val operation: Operation = Operation.OR
-) : Parcelable
 
 @Stable
 @Serializable

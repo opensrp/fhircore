@@ -45,6 +45,7 @@ import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -57,6 +58,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
@@ -86,7 +88,6 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -108,7 +109,7 @@ import org.smartregister.model.practitioner.PractitionerDetails
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
+  @ExperimentalCoroutinesApi @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var jsonParser: IParser
@@ -123,6 +124,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @Before
+  @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
 
@@ -296,15 +298,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals("12345", result!!.logicalId)
-    Assert.assertTrue(result!!.item[0].readOnly)
-    Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertFalse(result!!.item[2].readOnly)
-    Assert.assertEquals(0, result!!.item[2].extension.size)
-    Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertFalse(result!!.item[2].item[1].readOnly)
-    Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
+    Assert.assertTrue(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+    Assert.assertFalse(result.item[2].readOnly)
+    Assert.assertEquals(0, result.item[2].extension.size)
+    Assert.assertTrue(result.item[2].item[0].readOnly)
+    Assert.assertFalse(result.item[2].item[1].readOnly)
+    Assert.assertTrue(result.item[2].item[1].item[0].readOnly)
   }
 
   @Test
@@ -419,7 +421,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "patient-age",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "patientAge",
           value = "100"
         )
@@ -460,6 +462,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
     val patient = samplePatient()
@@ -484,7 +487,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    coroutineRule.runBlockingTest {
+    runTest {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
@@ -847,19 +850,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "12345"
         item =
           listOf(
-            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            QuestionnaireResponseItemComponent().apply {
               linkId = "q1-grp"
               item =
                 listOf(
-                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-                    linkId =
-                      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-                        .QUESTIONNAIRE_AGE
+                  QuestionnaireResponseItemComponent().apply {
+                    linkId = QuestionnaireActivity.QUESTIONNAIRE_AGE
                     answer =
                       listOf(
-                        QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-                          value = DecimalType(25)
-                        }
+                        QuestionnaireResponseItemAnswerComponent().apply { value = DecimalType(25) }
                       )
                   }
                 )
@@ -977,6 +976,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testPerformExtractionOnNullBundle() {
     runTest {
       val bundle = null
@@ -1050,6 +1050,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testPerformExtractionOnFailureShowsErrorToast() = runTest {
     val context = mockk<Context>(relaxed = true)
     val questionnaire = Questionnaire()
@@ -1329,6 +1330,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
   fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
     coroutineRule.runBlockingTest {
       val patient = samplePatient()
@@ -1352,7 +1354,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testRemoveGroupCallsDefaultRepositoryRemoveGroup() {
     val groupId = "group-1"
-    var deactivateMembers = false
+    val deactivateMembers = false
     Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
     questionnaireViewModel.removeGroup(
       groupId = groupId,
@@ -1447,5 +1449,94 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireResponse.generateMissingItems(questionnaire)
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
+  }
+  @Test
+  fun testLoadQuestionnaireShouldUReturnCorrectItemsWithUpdateOnEdit() {
+    val updateResourcesIdsParams =
+      questionnaireViewModel::class.java.getDeclaredField("editQuestionnaireResourceParams")
+    updateResourcesIdsParams.isAccessible = true
+    val expected =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-3",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-three",
+          value = "20"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-4",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-four",
+          value = "25"
+        )
+      )
+
+    val prePopulationParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age-1",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-one",
+          value = "10"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = "patient-age-2",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-two",
+          value = "15"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-3",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-three",
+          value = "20"
+        ),
+        ActionParameter(
+          paramType = ActionParameterType.UPDATE_DATE_ON_EDIT,
+          linkId = "patient-age-4",
+          dataType = Enumerations.DataType.INTEGER,
+          key = "patientAge-four",
+          value = "25"
+        )
+      )
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+              readOnly = true
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
+
+    runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+    coVerify {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
+    }
+    assertEquals(expected, updateResourcesIdsParams.get(questionnaireViewModel))
   }
 }

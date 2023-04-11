@@ -25,7 +25,6 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
@@ -62,27 +61,18 @@ fun Activity.refresh() {
   finishAffinity()
 }
 
-fun Context.setAppLocale(languageTag: String): Configuration? {
+fun Context.setAppLocale(languageTag: String): Configuration {
   val res: Resources = this.resources
   val configuration: Configuration = res.configuration
   try {
     val locale = Locale.forLanguageTag(languageTag)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      configuration.setLocale(locale)
-      val localeList = LocaleList(locale)
-      LocaleList.setDefault(localeList)
-      configuration.setLocales(localeList)
-      this.createConfigurationContext(configuration)
-    } else {
-      configuration.locale = locale
-      res.updateConfiguration(configuration, res.displayMetrics)
-    }
+    configuration.setLocale(locale)
+    val localeList = LocaleList(locale)
+    LocaleList.setDefault(localeList)
+    configuration.setLocales(localeList)
+    this.createConfigurationContext(configuration)
   } catch (e: Exception) {
     Timber.e(e)
-  }
-
-  if (Build.VERSION.SDK_INT <= 23) {
-    Locale.setDefault(Locale(languageTag))
   }
 
   return configuration
@@ -175,21 +165,17 @@ inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
 fun Context.isDeviceOnline(): Boolean {
   val connectivityManager =
     this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-    val network = connectivityManager.activeNetwork ?: return false
-    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+  val network = connectivityManager.activeNetwork ?: return false
+  val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
 
-    // Device can be connected to the internet through any of these NetworkCapabilities
-    val transports: List<Int> =
-      listOf(
-        NetworkCapabilities.TRANSPORT_ETHERNET,
-        NetworkCapabilities.TRANSPORT_CELLULAR,
-        NetworkCapabilities.TRANSPORT_WIFI,
-        NetworkCapabilities.TRANSPORT_VPN
-      )
-    return transports.any { capabilities.hasTransport(it) }
-  } else {
-    val networkInfo = connectivityManager.activeNetworkInfo ?: return false
-    return networkInfo.isConnected
-  }
+  // Device can be connected to the internet through any of these NetworkCapabilities
+  val transports: List<Int> =
+    listOf(
+      NetworkCapabilities.TRANSPORT_ETHERNET,
+      NetworkCapabilities.TRANSPORT_CELLULAR,
+      NetworkCapabilities.TRANSPORT_WIFI,
+      NetworkCapabilities.TRANSPORT_VPN
+    )
+
+  return transports.any { capabilities.hasTransport(it) }
 }

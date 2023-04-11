@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.2] - 2023-xx-xx
 ### Added
+
 ### Fixed
+- Order the Registers after every form interaction tied to it
+- Refactor register search to use SDK Search API to perform database query
+
 ### Changed
 
 ## [0.2.1] - 2023-03-27

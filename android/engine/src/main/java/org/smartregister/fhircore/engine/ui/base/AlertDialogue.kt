@@ -21,7 +21,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.res.Resources
-import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
@@ -202,9 +201,7 @@ object AlertDialogue {
     title: String?,
     dangerActionColor: Boolean = true,
   ): DatePickerDialog {
-    val dateDialog =
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
-      else DatePickerDialog(context, null, default.year, default.month, default.date)
+    val dateDialog = DatePickerDialog(context)
 
     dateDialog.apply {
       max?.let { this.datePicker.maxDate = it.time }

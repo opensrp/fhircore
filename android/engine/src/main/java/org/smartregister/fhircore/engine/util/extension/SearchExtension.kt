@@ -17,18 +17,19 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.NumberClientParam
+import ca.uhn.fhir.rest.gclient.QuantityClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.gclient.UriClientParam
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.StringFilterModifier
-import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
@@ -47,81 +48,76 @@ fun Search.filterByResourceTypeId(
 }
 
 fun Search.filterBy(dataQuery: DataQuery) {
-  when (dataQuery.filterType) {
-    Enumerations.SearchParamType.TOKEN -> filterToken(dataQuery)
-    Enumerations.SearchParamType.STRING -> filterString(dataQuery)
-    Enumerations.SearchParamType.DATE -> filterDate(dataQuery)
-    else ->
-      throw UnsupportedOperationException("Can not apply ${dataQuery.filterType} as search filter")
+  dataQuery.filterCriteria.forEach { filterCriterion: FilterCriterionConfig ->
+    when (filterCriterion) {
+      is FilterCriterionConfig.DateFilterCriterionConfig ->
+        filter(
+          dateParameter = DateClientParam(dataQuery.paramName),
+          {
+            this.prefix = filterCriterion.prefix
+            this.value =
+              when {
+                filterCriterion.valueDate != null -> of(DateType(filterCriterion.valueDate))
+                filterCriterion.valueDateTime != null ->
+                  of(DateTimeType(filterCriterion.valueDateTime))
+                else -> null
+              }
+          },
+          operation = dataQuery.operation,
+        )
+      is FilterCriterionConfig.NumberFilterCriterionConfig ->
+        filter(
+          numberParameter = NumberClientParam(dataQuery.paramName),
+          {
+            this.prefix = filterCriterion.prefix
+            this.value = filterCriterion.value
+          },
+          operation = dataQuery.operation
+        )
+      is FilterCriterionConfig.QuantityFilterCriterionConfig ->
+        filter(
+          quantityParameter = QuantityClientParam(dataQuery.paramName),
+          {
+            this.prefix = filterCriterion.prefix
+            this.value = filterCriterion.value
+            this.system = filterCriterion.system
+            this.unit = filterCriterion.unit
+          },
+          operation = dataQuery.operation
+        )
+      is FilterCriterionConfig.ReferenceFilterCriterionConfig ->
+        filter(
+          referenceParameter = ReferenceClientParam(dataQuery.paramName),
+          { this.value = filterCriterion.value },
+          operation = dataQuery.operation
+        )
+      is FilterCriterionConfig.StringFilterCriterionConfig ->
+        filter(
+          stringParameter = StringClientParam(dataQuery.paramName),
+          {
+            this.value = filterCriterion.value
+            this.modifier = filterCriterion.modifier
+          },
+          operation = dataQuery.operation
+        )
+      is FilterCriterionConfig.TokenFilterCriterionConfig ->
+        filter(
+          tokenParameter = TokenClientParam(dataQuery.paramName),
+          {
+            val configuredCode = filterCriterion.value
+            if (configuredCode?.code != null) {
+              this.value =
+                of(Coding(configuredCode.system, configuredCode.code, configuredCode.display))
+            }
+          },
+          operation = dataQuery.operation
+        )
+      is FilterCriterionConfig.UriFilterCriterionConfig ->
+        filter(
+          uriParam = UriClientParam(dataQuery.paramName),
+          { this.value = filterCriterion.value },
+          operation = dataQuery.operation
+        )
+    }
   }
 }
-
-fun Search.filterToken(dataQuery: DataQuery) {
-  // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
-  when (dataQuery.valueType) {
-    Enumerations.DataType.CODING ->
-      filter(
-        TokenClientParam(dataQuery.key),
-        { value = of(dataQuery.valueCoding!!.asCoding()) },
-        operation = dataQuery.operation
-      )
-    Enumerations.DataType.CODEABLECONCEPT ->
-      filter(
-        TokenClientParam(dataQuery.key),
-        { value = of(dataQuery.valueCoding!!.asCodeableConcept()) },
-        operation = dataQuery.operation
-      )
-    else ->
-      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
-  }
-}
-
-fun Search.filterString(dataQuery: DataQuery) {
-  // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
-  when (dataQuery.valueType) {
-    Enumerations.DataType.STRING ->
-      filter(
-        StringClientParam(dataQuery.key),
-        {
-          this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = dataQuery.valueString!!
-        },
-        operation = dataQuery.operation
-      )
-    Enumerations.DataType.BOOLEAN ->
-      filter(
-        StringClientParam(dataQuery.key),
-        {
-          this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = dataQuery.valueBoolean.toString()
-        },
-        operation = dataQuery.operation
-      )
-    else ->
-      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
-  }
-}
-
-fun Search.filterDate(dataQuery: DataQuery) {
-  when (dataQuery.valueType) {
-    Enumerations.DataType.DATE ->
-      filter(
-        DateClientParam(dataQuery.key),
-        {
-          this.prefix = dataQuery.paramPrefix
-          this.value = of(DateType(dataQuery.valueDate))
-        },
-        operation = dataQuery.operation
-      )
-    else ->
-      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
-  }
-}
-
-fun Code.asCoding() = Coding(this.system, this.code, this.display)
-
-fun Code.asCodeableConcept() =
-  CodeableConcept().apply {
-    addCoding(this@asCodeableConcept.asCoding())
-    text = this@asCodeableConcept.display
-  }

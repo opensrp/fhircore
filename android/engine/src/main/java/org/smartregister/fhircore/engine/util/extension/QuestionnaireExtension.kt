@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Quantity
@@ -36,7 +37,6 @@ import org.hl7.fhir.r4.model.TimeType
 import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.model.UriType
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
   if (this.linkId != null) {
@@ -181,5 +181,6 @@ fun String.castToType(type: DataType): Type? {
     DataType.URI -> UriType(this)
     DataType.CODING -> this.tryDecodeJson<Coding>()
     DataType.QUANTITY -> this.tryDecodeJson<Quantity>()
+    else -> null /*TODO cast the (several) remaining Enumeration.DataTypes*/
   }
 }
