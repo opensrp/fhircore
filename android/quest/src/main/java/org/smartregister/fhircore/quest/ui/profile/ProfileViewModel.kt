@@ -122,6 +122,7 @@ constructor(
             ruleConfigsKey = profileConfigs::class.java.canonicalName,
             paramsMap
           )
+                // TODO: Try to comment this out
           .copy(listResourceDataMap = listResourceDataMapState)
 
       resourceDataState.postValue(resourceData)

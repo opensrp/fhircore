@@ -60,7 +60,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     )
   }
 
-
   suspend fun processResourceData2(
     baseResource: Resource,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
@@ -220,7 +219,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
  * s in the map.
  */
 fun LinkedList<RepositoryResourceData>.createRelatedResourcesMap():
-        MutableMap<String, MutableList<Resource>> {
+  MutableMap<String, MutableList<Resource>> {
   val relatedResourcesMap = mutableMapOf<String, MutableList<Resource>>()
 
   val queue = LinkedList<RepositoryResourceData>()
