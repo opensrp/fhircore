@@ -77,6 +77,5 @@ class FhirEngineModule {
 
   companion object {
     private const val QUEST_OKHTTP_CLIENT_TAG = "QuestOkHttpClient"
-    const val GROUP_ACTIVE_SEARCH_PARAM = "activeGroup"
   }
 }

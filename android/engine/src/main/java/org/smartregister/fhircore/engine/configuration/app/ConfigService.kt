@@ -20,7 +20,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.di.FhirEngineModule
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -76,13 +75,17 @@ interface ConfigService {
       SearchParameter().apply {
         url = "http://example.com/SearchParameter/group-active"
         addBase("Group")
-        name = FhirEngineModule.GROUP_ACTIVE_SEARCH_PARAM
-        code = FhirEngineModule.GROUP_ACTIVE_SEARCH_PARAM
+        name = GROUP_ACTIVE_SEARCH_PARAM
+        code = GROUP_ACTIVE_SEARCH_PARAM
         type = Enumerations.SearchParamType.TOKEN
         expression = "Group.active"
         description = "Search the active field"
       }
 
     return listOf(activeGroupSearchParameter)
+  }
+
+  companion object {
+    const val GROUP_ACTIVE_SEARCH_PARAM = "activeGroup"
   }
 }
