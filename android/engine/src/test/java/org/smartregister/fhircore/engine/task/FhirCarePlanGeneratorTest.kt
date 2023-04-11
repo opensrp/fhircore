@@ -1062,7 +1062,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1144,9 +1148,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       runBlocking {
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val planDefinition = planDefinitionResources.planDefinition
     val patient = planDefinitionResources.patient
-    val data = Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+    val data =
+      Bundle()
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
 
     val dynamicValue = planDefinition.action.first().dynamicValue
     val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
@@ -1175,7 +1183,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
