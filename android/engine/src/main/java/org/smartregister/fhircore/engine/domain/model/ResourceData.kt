@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -37,7 +38,7 @@ data class ResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
   val computedValuesMap: MutableMap<String, Any>,
-  val listResourceDataMap: MutableMap<String, List<ResourceData>>,
+  val listResourceDataMap: MutableMap<String, SnapshotStateList<ResourceData>>,
   val baseResource: Resource? = null
 )
 

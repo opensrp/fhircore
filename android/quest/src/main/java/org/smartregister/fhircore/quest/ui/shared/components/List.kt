@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -126,6 +128,7 @@ fun List(
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ListWithHorizontalOrientationPreview() {
@@ -189,7 +192,7 @@ private fun ListWithHorizontalOrientationPreview() {
           listResourceDataMap =
           mutableMapOf(
               "listId" to
-                listOf(
+                mutableStateListOf(
                   ResourceData(
                     baseResourceId = "carePlan1",
                     baseResourceType = ResourceType.CarePlan,
@@ -203,6 +206,7 @@ private fun ListWithHorizontalOrientationPreview() {
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun ListWithVerticalOrientationPreview() {
@@ -252,7 +256,7 @@ private fun ListWithVerticalOrientationPreview() {
           listResourceDataMap =
           mutableMapOf(
               "listId" to
-                listOf(
+                mutableStateListOf(
                   ResourceData(
                     baseResourceId = "carePlan1",
                     baseResourceType = ResourceType.CarePlan,

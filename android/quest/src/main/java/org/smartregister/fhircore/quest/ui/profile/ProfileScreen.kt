@@ -165,6 +165,7 @@ fun ProfileScreen(
       val viewPropertiesList = profileUiState.value.profileConfiguration?.views
       if (viewPropertiesList != null && resourceData2 != null) {
         viewPropertiesList.forEach { viewProperties ->
+          Timber.e("Re-rendering the view-properties-list")
           if (viewProperties.isVisible(resourceData2!!.computedValuesMap) &&
               viewProperties.viewType == ViewType.LIST
           ) {
@@ -185,6 +186,7 @@ fun ProfileScreen(
             val currentListResourceData = resourceData2!!.listResourceDataMap[viewProperties.id]
             LazyColumn(state = lazyListState) {
               currentListResourceData!!.forEachIndexed { index, listResourceData ->
+                Timber.e("Rendering item list item with ID ${listResourceData.baseResource!!.id}")
                 item (key = listResourceData.baseResource!!.id) {
                   Spacer(modifier = modifier.height(6.dp))
                   Column(

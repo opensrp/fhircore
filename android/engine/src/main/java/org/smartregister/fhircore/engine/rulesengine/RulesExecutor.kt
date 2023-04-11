@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.logicalId
 import java.util.LinkedList
@@ -33,6 +35,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import timber.log.Timber
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
@@ -91,7 +94,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   suspend fun processListResourceData(
     listProperties: ListProperties,
     listResourceData: MutableList<ResourceData>,
-    listResourceDataMapState: SnapshotStateMap<String, List<ResourceData>>,
+    listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
@@ -127,7 +130,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   private suspend fun List<Resource>.mapToResourceData(
     itemId: String,
     listResourceData: MutableList<ResourceData>,
-    listResourceDataMapState: SnapshotStateMap<String, List<ResourceData>>,
+    listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
     ruleConfigsKey: String,
@@ -157,16 +160,38 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         )
 
       // LIST view should reuse the previously computed values
-      val res = ResourceData(
-        baseResourceId = resource.logicalId.extractLogicalIdUuid(),
-        baseResourceType = resource.resourceType,
-        computedValuesMap = computedValuesMap.plus(listComputedValuesMap).toMutableMap(),
-        mutableMapOf(),
-        baseResource = resource
-      )
+      val res =
+        ResourceData(
+          baseResourceId = resource.logicalId.extractLogicalIdUuid(),
+          baseResourceType = resource.resourceType,
+          computedValuesMap = computedValuesMap.plus(listComputedValuesMap).toMutableMap(),
+          mutableMapOf(),
+          baseResource = resource
+        )
 
-      listResourceDataMapState[itemId] = listResourceData.plus(res)
-      listResourceData.add(res)
+      if (listResourceDataMapState.containsKey(itemId)) {
+
+        val resourceDataListFromMap = listResourceDataMapState[itemId]
+        var found = false
+
+        resourceDataListFromMap?.forEach {
+          if (it.baseResourceId.equals(res.baseResourceId)) {
+            found = true
+            return@forEach
+          }
+        }
+
+        if (!found) {
+          listResourceDataMapState[itemId]?.add(res)
+          // listResourceData.add(res)
+        }
+      } else {
+
+        listResourceData.add(res)
+        val myList = mutableStateListOf<ResourceData>().apply { addAll(listResourceData) }
+        Timber.e("Size of list is ${myList.size}")
+        listResourceDataMapState[itemId] = myList
+      }
 
       res
     }

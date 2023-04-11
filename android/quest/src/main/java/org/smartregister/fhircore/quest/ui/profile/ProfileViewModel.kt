@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -87,7 +89,8 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
-  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
+  private val listResourceDataMapState =
+    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -122,7 +125,7 @@ constructor(
             ruleConfigsKey = profileConfigs::class.java.canonicalName,
             paramsMap
           )
-                // TODO: Try to comment this out
+          // TODO: Try to comment this out
           .copy(listResourceDataMap = listResourceDataMapState)
 
       resourceDataState.postValue(resourceData)
@@ -232,7 +235,7 @@ constructor(
       // Working before
       val timeToFireRules = measureTimeMillis {
         profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData = mutableListOf<ResourceData>()
+          val listResourceData = mutableStateListOf<ResourceData>()
           listResourceDataMapState[it.id] = listResourceData
           // val listResourceData =
           rulesExecutor.processListResourceData(
@@ -409,8 +412,13 @@ constructor(
         }
 
         profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData = mutableListOf<ResourceData>()
-          listResourceDataMapState[it.id] = listResourceData
+          val listResourceData = mutableStateListOf<ResourceData>()
+
+          if (listResourceDataMapState.containsKey(it.id)) {
+            //listResourceDataMapState[it.id].add()
+          } else {
+            listResourceDataMapState[it.id] = listResourceData
+          }
           // val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
