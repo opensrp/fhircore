@@ -30,8 +30,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
@@ -71,26 +69,10 @@ class FhirEngineModule {
               )
             ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }
         ),
-        customSearchParameters = getCustomSearchParameters()
+        customSearchParameters = configService.provideCustomSearchParameters()
       )
     )
-    Timber.e("Fhirengine module custom params set +++++++++++++++++++")
     return FhirEngineProvider.getInstance(context)
-  }
-
-  fun getCustomSearchParameters(): List<SearchParameter> {
-    val activeGroupSearchParameter =
-      SearchParameter().apply {
-        url = "http://example.com/SearchParameter/group-active"
-        addBase("Group")
-        name = GROUP_ACTIVE_SEARCH_PARAM
-        code = GROUP_ACTIVE_SEARCH_PARAM
-        type = Enumerations.SearchParamType.TOKEN
-        expression = "Group.active"
-        description = "Search the active field"
-      }
-
-    return listOf(activeGroupSearchParameter)
   }
 
   companion object {
