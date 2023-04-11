@@ -108,7 +108,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
     val questionnaireActivity = this@QuestionnaireActivity
-    questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
+    questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
+      Timber.e("Finish qn activity without setting result remove operation +++++++")
+      if (it) {
+        setResult(
+          Activity.RESULT_OK,
+          Intent().apply {
+            putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
+          }
+        )
+        finish()
+      }  }
 
     val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 
@@ -123,6 +133,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             questionnaireActivity.showToast(
               questionnaireActivity.getString(R.string.questionnaire_missing)
             )
+            Timber.e("Finish qn activity without setting result loadQn +++++++")
             finish()
           } else {
             questionnaire = thisQuestionnaire
@@ -182,6 +193,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (this.getQuestionnaireConfig().type.isReadOnly() ||
           this.getQuestionnaireObject().experimental
       ) { // Experimental questionnaires should not be submitted
+        Timber.e("Finish qn activity without setting result renderFragment +++++++")
         this.finish()
       } else {
         this.handleQuestionnaireSubmit()
@@ -281,6 +293,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     if (questionnaireViewModel.partialQuestionnaireResponseHasValues(questionnaireResponse)) {
       handlePartialQuestionnaireResponse(questionnaireResponse)
     }
+    Timber.e("Finish qn activity without setting result handleSaveDraftQuestionnaire +++++++")
     finish()
   }
 
@@ -341,6 +354,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
       }
     )
+    Timber.e("Finish qn activity with result set +++++++")
     finish()
   }
 

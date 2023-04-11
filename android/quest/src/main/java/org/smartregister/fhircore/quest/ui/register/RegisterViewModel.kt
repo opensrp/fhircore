@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
+import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel
@@ -89,6 +90,7 @@ constructor(
       pagesDataCache.clear()
       allPatientRegisterData = null
     }
+    Timber.e("Register viewmodel paginateRegisterData callled with clearcache = $clearCache ++++++++++")
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
@@ -175,7 +177,8 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    params: Array<ActionParameter>? = emptyArray()
+    params: Array<ActionParameter>? = emptyArray(),
+    clearCache: Boolean
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
@@ -183,7 +186,7 @@ constructor(
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
         _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
-        paginateRegisterData(registerId, loadAll = false)
+        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
           RegisterUiState(

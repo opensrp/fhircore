@@ -84,7 +84,10 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
+        registerViewModel.retrieveRegisterUiState(
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params, clearCache = false)
       }
     }
     return ComposeView(requireContext()).apply {
@@ -234,13 +237,36 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle, params)
+        retrieveRegisterUiState(
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params,
+          clearCache = false
+        )
       }
     }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+
+    appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner){
+      Timber.e("Register fragment appMainViewModel.dataRefreshLivedata observed  ____________")
+      if (it == true){
+        Timber.e("Register fragment appMainViewModel.dataRefreshLivedata observed value is true ____________")
+        with(registerFragmentArgs) {
+            registerViewModel.retrieveRegisterUiState(
+              registerId = registerId,
+              screenTitle = screenTitle,
+              params = params,
+              clearCache = true
+            )
+        }
+        //reset value
+        appMainViewModel.dataRefreshLivedata.value = false
+      }
+    }
+
   }
 
   /**

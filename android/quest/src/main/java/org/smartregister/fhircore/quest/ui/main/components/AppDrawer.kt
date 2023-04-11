@@ -74,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.MenuIcon
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
@@ -322,6 +323,7 @@ private fun MenuActionButton(
           .fillMaxWidth()
           .clickable {
             navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
+            Timber.e("Appdrawer handle click launch form ++++++++++")
           }
           .padding(16.dp)
           .testTag(MENU_BUTTON_TEST_TAG),

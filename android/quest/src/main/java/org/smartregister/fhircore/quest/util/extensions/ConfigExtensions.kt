@@ -37,6 +37,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
@@ -67,6 +68,7 @@ fun List<ActionConfig>.handleClickEvent(
             }
 
           if (navController.context is QuestionnaireHandler) {
+            Timber.e("Config extension launch form ++++++++++")
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
               intentBundle = intentBundle,

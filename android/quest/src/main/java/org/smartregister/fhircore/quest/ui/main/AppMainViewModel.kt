@@ -79,6 +79,7 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -98,6 +99,8 @@ constructor(
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
+  val dataRefreshLivedata: MutableLiveData<Boolean?> = MutableLiveData()
+
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -107,6 +110,7 @@ constructor(
           )
       )
     )
+  // livedata to be observed
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -177,12 +181,15 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow ->
+      is AppMainEvent.TriggerWorkflow -> {
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
+        Timber.e("AppmainviewModel triggerworkflow launch form +++++++++++")
+      }
+
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
@@ -226,6 +233,7 @@ constructor(
   ) {
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
+      Timber.e("launchFamilyRegistrationWithLocationId launch form")
       if (context is QuestionnaireHandler)
         context.launchQuestionnaire<Any>(
           context = context,
@@ -320,6 +328,7 @@ constructor(
   }
 
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    Timber.e("Appmainviewmodel calling onSubmitQuestionnaire form closing +++++++++++")
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {

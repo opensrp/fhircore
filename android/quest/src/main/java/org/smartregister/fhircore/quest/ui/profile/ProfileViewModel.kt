@@ -242,6 +242,7 @@ constructor(
               resourceData = event.resourceData,
               questionnaireResponse = questionnaireResponse
             )
+            Timber.e("profileviewmodel handle click launch form ++++++++++")
           }
         }
       }
