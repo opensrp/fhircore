@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -66,4 +68,28 @@ interface ConfigService {
   }
 
   fun provideConfigurationSyncPageSize(): String
+
+  /**
+   * Provide a list of custom search parameters.
+   *
+   * @return list of predefined custom group search parameters.
+   */
+  fun provideCustomSearchParameters(): List<SearchParameter> {
+    val activeGroupSearchParameter =
+      SearchParameter().apply {
+        url = "http://smartregister.org/SearchParameter/group-active"
+        addBase("Group")
+        name = ACTIVE_SEARCH_PARAM
+        code = ACTIVE_SEARCH_PARAM
+        type = Enumerations.SearchParamType.TOKEN
+        expression = "Group.active"
+        description = "Search the active field"
+      }
+
+    return listOf(activeGroupSearchParameter)
+  }
+
+  companion object {
+    const val ACTIVE_SEARCH_PARAM = "active"
+  }
 }
