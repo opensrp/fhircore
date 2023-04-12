@@ -73,10 +73,10 @@ interface ConfigService {
   fun provideCustomSearchParameters(): List<SearchParameter> {
     val activeGroupSearchParameter =
       SearchParameter().apply {
-        url = "http://example.com/SearchParameter/group-active"
+        url = "http://smartregister.org/SearchParameter/group-active"
         addBase("Group")
-        name = GROUP_ACTIVE_SEARCH_PARAM
-        code = GROUP_ACTIVE_SEARCH_PARAM
+        name = ACTIVE_SEARCH_PARAM
+        code = ACTIVE_SEARCH_PARAM
         type = Enumerations.SearchParamType.TOKEN
         expression = "Group.active"
         description = "Search the active field"
@@ -86,6 +86,6 @@ interface ConfigService {
   }
 
   companion object {
-    const val GROUP_ACTIVE_SEARCH_PARAM = "activeGroup"
+    const val ACTIVE_SEARCH_PARAM = "active"
   }
 }
