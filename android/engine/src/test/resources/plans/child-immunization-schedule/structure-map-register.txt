@@ -52,13 +52,18 @@ group ExtractTask(
          } "r_task_part_of";
 
         //restriction
+        subject ->evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.duration.toInteger())) as duration then{
+                    subject -> task.description=evaluate(subject,$this.birthDate) "r_hhisdf";
+        } "r_duration";
+      //  subject -> task.description = duration as evaluatedBirthDateeee "e_rt";
+
         subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
                 subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
-                                   subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
-                                            subject -> evaluate(subject, $this.birthDate + '60 \'months\''.toQuantity()) as evaluatedBirthDate then {
-                                            subject -> taskRestrictionPeriod.start = create('dateTime') as dt, dt.value = evaluate(patientBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z') ,
-                                                        taskRestrictionPeriod.end   = create('dateTime') as dt, dt.value   = evaluate(evaluatedBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_taskRestrictionPeriod";
-                                            } "r_evaluated_birth_date";
+                            subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
+                                     subject ->evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.duration.toInteger())) as duration then{
+                                               subject -> taskRestrictionPeriod.start = create('dateTime') as dt, dt.value = evaluate(patientBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z'),
+                                                          taskRestrictionPeriod.end = create('dateTime') as dt, dt.value = evaluate(subject,(($this.birthDate + (((duration).toString()+' \'days\'')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "r_taskRestrictionPeriod";
+                                     } "r_duration";
                                 } "r_task_restriction_period";
                         } "r_task_restriction";
         } "r_birth_date";
