@@ -51,12 +51,6 @@ group ExtractTask(
                     subject -> ref.reference = taskId "r_task_ref_id";
          } "r_task_part_of";
 
-        //restriction
-        subject ->evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.duration.toInteger())) as duration then{
-                    subject -> task.description=evaluate(subject,$this.birthDate) "r_hhisdf";
-        } "r_duration";
-      //  subject -> task.description = duration as evaluatedBirthDateeee "e_rt";
-
         subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
                 subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
                             subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
