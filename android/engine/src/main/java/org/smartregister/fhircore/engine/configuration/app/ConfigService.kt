@@ -69,7 +69,7 @@ interface ConfigService {
 
   fun provideConfigurationSyncPageSize(): String
 
-  /** 
+  /**
    * Provide a list of custom search parameters.
    *
    * @return list of predefined custom group search parameters.
