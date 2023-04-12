@@ -632,14 +632,14 @@
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient",
-              "removeGroup": true,
-              "refreshContent": true
+              "removeGroup": true
             },
             "confirmationDialog": {
               "title": "Remove household",
               "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
               "actionButtonText": "Remove household"
-            }
+            },
+            "refreshContent": true
           }
         }
       ]

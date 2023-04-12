@@ -1726,7 +1726,8 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Update registration",
+            "refreshContent": true
           }
         }
       ]

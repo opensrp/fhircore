@@ -2939,7 +2939,8 @@
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
-            ]
+            ],
+            "refreshContent": true
           }
         }
       ]
