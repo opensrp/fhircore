@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Order the Registers after every form interaction tied to it
 - Refactor register search to use SDK Search API to perform database query
+- Filter out inactive families using custom search parameters
 
 ### Changed
 
