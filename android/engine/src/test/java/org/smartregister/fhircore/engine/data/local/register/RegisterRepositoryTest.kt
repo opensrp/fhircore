@@ -34,6 +34,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
@@ -48,7 +49,6 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -94,6 +94,9 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
+    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
+    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+      listOf(Observation())
     coEvery {
       fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
@@ -173,6 +176,9 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   fun loadProfileDataIsNotSupportedYet() {
+    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
+    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+      listOf(Observation())
     coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
     runBlocking {
       val profileData =
@@ -207,7 +213,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
 
-    runBlocking { registerRepository.loadRegisterData(1, "patientRegisterSecondary") }
+    runBlocking { registerRepository.loadRegisterData(1, "patientRegister") }
 
     coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
 
@@ -233,7 +239,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     runBlocking {
       val profileData =
         registerRepository.loadProfileData(
-          profileId = "patientProfileSecondary",
+          profileId = "patientProfile",
           resourceId = "12345",
           paramsList = emptyArray()
         )
@@ -304,8 +310,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
     } returns listOf(patient)
 
-    val result =
-      registerRepository.loadRegisterData(1, "patientRegisterSecondary", paramsMap = paramsMap)
+    val result = registerRepository.loadRegisterData(1, "patientRegister", paramsMap = paramsMap)
 
     coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
 

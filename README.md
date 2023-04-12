@@ -26,6 +26,9 @@ FHIRcore also interoperates well with:
 <img align=center width=400 src="docs/assets/fhircore.png">
 
 ## Getting Started
+
+Due to it's dependency on the Android FHIR SDK's workflow library, OpenSRP FHIR Core requires a minimum Android SDK version of Android 8.0 (API level 26).
+
 This repository contains the folders
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
