@@ -86,12 +86,6 @@ fun Base?.valueToString(): String {
   }
 }
 
-fun Coding.asCodeableConcept() =
-  CodeableConcept().apply {
-    addCoding(this@asCodeableConcept)
-    text = this@asCodeableConcept.display
-  }
-
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
@@ -221,11 +215,6 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
   }
 }
 
-fun QuestionnaireResponse.assertSubject() {
-  if (!this.hasSubject() || !this.subject.hasReference())
-    throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
-}
-
 fun QuestionnaireResponse.getEncounterId(): String? {
   return this.contained
     ?.find { it.resourceType == ResourceType.Encounter }
@@ -270,8 +259,6 @@ fun Resource.referenceParamForObservation(): ReferenceClientParam =
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
-
-fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {

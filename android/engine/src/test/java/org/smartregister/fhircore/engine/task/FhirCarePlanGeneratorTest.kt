@@ -41,9 +41,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
-import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -61,6 +58,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -77,6 +75,9 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -1135,6 +1136,29 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             }
           }
       }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
+      runBlocking {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val data = Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+
+    val dynamicValue = planDefinition.action.first().dynamicValue
+    val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
+
+    // Update the value of the expression
+    expressionValue?.let { it.expression = Expression().apply { expression = "dummyExpression" } }
+
+    // call the method under test and get the result
+    val result = fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, data)
+
+    // assert that the result is not null
+    assertNotNull(result)
   }
 
   @Test

@@ -69,6 +69,7 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testThatDoWorkCallsDownloadNonWorkflowConfigs() {
     coEvery { configurationRegistry.fetchNonWorkflowConfigResources() } just runs
     runTest {
