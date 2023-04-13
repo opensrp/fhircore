@@ -87,7 +87,9 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         registerViewModel.retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
-          params = params, clearCache = false)
+          params = params,
+          clearCache = false
+        )
       }
     }
     return ComposeView(requireContext()).apply {
@@ -250,21 +252,20 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
 
-    appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner){
-      if (it == true){
+    appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner) {
+      if (it == true) {
         with(registerFragmentArgs) {
-            registerViewModel.retrieveRegisterUiState(
-              registerId = registerId,
-              screenTitle = screenTitle,
-              params = params,
-              clearCache = true
-            )
+          registerViewModel.retrieveRegisterUiState(
+            registerId = registerId,
+            screenTitle = screenTitle,
+            params = params,
+            clearCache = true
+          )
         }
-        //reset value
+        // reset value
         appMainViewModel.dataRefreshLivedata.value = false
       }
     }
-
   }
 
   /**

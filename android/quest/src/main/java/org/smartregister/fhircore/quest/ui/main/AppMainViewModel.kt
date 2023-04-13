@@ -187,7 +187,6 @@ constructor(
           navMenu = event.navMenu
         )
       }
-
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(

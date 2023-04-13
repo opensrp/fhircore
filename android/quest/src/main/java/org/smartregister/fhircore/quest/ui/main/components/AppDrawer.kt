@@ -74,7 +74,6 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.MenuIcon
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)

@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
-import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel

@@ -191,5 +191,4 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
     }
   }
-
 }

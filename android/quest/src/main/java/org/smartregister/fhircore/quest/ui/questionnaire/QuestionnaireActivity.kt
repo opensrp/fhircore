@@ -112,12 +112,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (it) {
         setResult(
           Activity.RESULT_OK,
-          Intent().apply {
-            putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
-          }
+          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig) }
         )
         finish()
-      }  }
+      }
+    }
 
     val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 
