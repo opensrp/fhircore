@@ -422,11 +422,17 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
     editQuestionnaireResourceParams?.forEach { param ->
-      val resourceType =
-        param.value.substringBefore("/").resourceClassType().newInstance().resourceType
-      val resource =
-        defaultRepository.loadResource(param.value.extractLogicalIdUuid(), resourceType)
-      resource.let { defaultRepository.addOrUpdate(resource = it) }
+      kotlin
+        .runCatching {
+          val resource =
+            param.value.let {
+              val resourceType =
+                it.substringBefore("/").resourceClassType().newInstance().resourceType
+              defaultRepository.loadResource(it.extractLogicalIdUuid(), resourceType)
+            }
+          resource.let { defaultRepository.addOrUpdate(resource = it) }
+        }
+        .onFailure { e -> Timber.e(e) }
     }
   }
 
