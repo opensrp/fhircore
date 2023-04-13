@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -430,7 +431,7 @@ constructor(
             defaultRepository.loadResource(it.extractLogicalIdUuid(), resourceType)
           }
         resource.let { defaultRepository.addOrUpdate(resource = it) }
-      } catch (e: Exception) {
+      } catch (e: ResourceNotFoundException) {
         Timber.e(e)
       }
     }
