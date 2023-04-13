@@ -11,24 +11,28 @@
           "referenceParam": "subject",
           "dataQueries": [
             {
-              "id": "pncQueryByCode",
-              "filterType": "TOKEN",
-              "key": "code",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://snomed.info/sct",
-                "code": "234234234"
-              }
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "234234234"
+                  }
+                }
+              ]
             },
             {
-              "id": "pncQueryByClinicalStatus",
-              "filterType": "TOKEN",
-              "key": "clinical-status",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                "code": "active"
-              }
+              "paramName": "clinical-status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                }
+              ]
             }
           ]
         }

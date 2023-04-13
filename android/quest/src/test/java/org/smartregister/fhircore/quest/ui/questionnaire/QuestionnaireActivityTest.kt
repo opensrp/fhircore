@@ -44,11 +44,10 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -70,7 +69,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -86,7 +84,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) var coroutinesTestRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  var coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -491,7 +491,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnClickEditButtonShouldSetEditModeToTrue() = runBlockingTest {
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testOnClickEditButtonShouldSetEditModeToTrue() = runTest {
     val questionnaire = Questionnaire().apply { experimental = false }
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     Assert.assertFalse(questionnaireConfig.type.isEditMode())

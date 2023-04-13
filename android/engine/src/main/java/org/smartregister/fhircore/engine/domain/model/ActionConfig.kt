@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -71,7 +72,7 @@ data class ActionConfig(
 data class ActionParameter(
   val key: String,
   val paramType: ActionParameterType? = null,
-  val dataType: DataType? = null,
+  val dataType: Enumerations.DataType? = null,
   val value: String,
   val linkId: String? = null
 ) : Parcelable

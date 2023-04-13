@@ -145,14 +145,20 @@ constructor(
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
-              dynamicValue.expression.expression
+              dynamicValue
+                .expression
+                .expression
                 .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+                ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
+                  // TODO handle cases where we explicitly need to set previous value as null, when
+                  // passing null to Terser, it gives error NPE
+                  Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
                   TerserUtil.setFieldByFhirPath(
                     FhirContext.forR4Cached(),
                     dynamicValue.path.removePrefix("${definition.kind.display}."),
                     output,
-                    evaluatedValue.firstOrNull()
+                    evaluatedValue.first()
                   )
                 }
             else throw UnsupportedOperationException("${definition.kind} not supported")
