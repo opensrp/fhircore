@@ -110,7 +110,6 @@ constructor(
           )
       )
     )
-  // livedata to be observed
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 

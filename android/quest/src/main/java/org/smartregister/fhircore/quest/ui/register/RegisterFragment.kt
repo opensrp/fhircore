@@ -251,9 +251,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
 
     appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner){
-      Timber.e("Register fragment appMainViewModel.dataRefreshLivedata observed  ____________")
       if (it == true){
-        Timber.e("Register fragment appMainViewModel.dataRefreshLivedata observed value is true ____________")
         with(registerFragmentArgs) {
             registerViewModel.retrieveRegisterUiState(
               registerId = registerId,
