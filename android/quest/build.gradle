@@ -149,8 +149,15 @@ android {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
-            versionCode 15
-            versionName "0.1.5"
+            versionCode 16
+            versionName "0.1.6"
+        }
+        mwcoreDev {
+            dimension "apps"
+            applicationIdSuffix ".mwcoreDev"
+            versionNameSuffix "-mwcoreDev"
+            versionCode 16
+            versionName "0.1.6"
         }
         afyayangu {
             dimension "apps"
