@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.res.Resources
-import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import java.util.Calendar
 import java.util.Date
@@ -46,11 +46,11 @@ object AlertDialogue {
 
   fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
 
-  fun AlertDialog.getSingleChoiceSelectedItem() =
+  private fun AlertDialog.getSingleChoiceSelectedItem() =
     if (this.listView.checkedItemCount != 1) null
     else getListItems()!![this.listView.checkedItemPosition]
 
-  fun AlertDialog.getListItems() =
+  private fun AlertDialog.getListItems() =
     this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
 
   fun showAlert(
@@ -66,7 +66,7 @@ object AlertDialogue {
     options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     val dialog =
-      AlertDialog.Builder(context)
+      AlertDialog.Builder(context, R.style.AlertDialogTheme)
         .apply {
           val view = context.layoutInflater.inflate(R.layout.alert_dialog, null)
           setView(view)
@@ -82,6 +82,9 @@ object AlertDialogue {
         }
         .show()
 
+    dialog
+      .getButton(AlertDialog.BUTTON_NEUTRAL)
+      .setTextColor(ContextCompat.getColor(context, R.color.grey_text_color))
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
         this.show()
@@ -198,9 +201,7 @@ object AlertDialogue {
     title: String?,
     dangerActionColor: Boolean = true,
   ): DatePickerDialog {
-    val dateDialog =
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
-      else DatePickerDialog(context, null, default.year, default.month, default.date)
+    val dateDialog = DatePickerDialog(context)
 
     dateDialog.apply {
       max?.let { this.datePicker.maxDate = it.time }

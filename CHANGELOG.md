@@ -1,18 +1,37 @@
-# Changelog
+# Change Log
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2022-xx-xx
+## [0.2.2] - 2023-xx-xx
 ### Added
+
+### Fixed
+- Order the Registers after every form interaction tied to it
+- Refactor register search to use SDK Search API to perform database query
+- Filter out inactive families using custom search parameters
+
+### Changed
+
+## [0.2.1] - 2023-03-27
+### Added
+- Complete/Cancel CarePlans depending on status of linked Tasks
+- Closing/Revoking CarePlans and associated Tasks using configured PlanDefinitions
+- Catch all exceptions and return an error message to the user
+- Initial Sync progress as a percentage
 - Adds internationalization(MLS) for App configs
 - Adds register, navigation menus and profile configurations using JSON files
 - Implements Practitioner Details
 - Integrates Geo Widget
 - Implements configurable side menu icons
 - Implements resource tagging
+
+### Fixed
+- Perform configurable reverse chaining on search
+- Geowidget | Fixed a bug disabling the link between registered families and their location
+- Geowidget | Fixed a crash when a family location is not found
 
 ## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added
@@ -51,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
 - Quest | Add tasking list
 - Quest | Added ability to reference Related Persons and Patients to the Groups representing families
+- Quest | Populate family-registration response from DB
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -61,10 +81,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Implement language switcher on profile page
 - Engine | Add tasking abstraction
 - Engine | Integrate Group resource for family representation
-- Engine | Performance improvement when openning questionnaires and saving QRs
+- Engine | Performance improvement when opening questionnaires and saving QRs
 - Engine | Add debug mode to optionally load local config
 - Engine | Add support for Group.Characteristic model in StructureMap extraction
-- Engine | Make the list of resources to be synced via P2P configurable 
+- Engine | Make the list of resources to be synced via P2P configurable
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected
@@ -98,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
-- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update. 
+- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update.
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27

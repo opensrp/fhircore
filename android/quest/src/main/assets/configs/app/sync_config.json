@@ -17,76 +17,25 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "managing-entity.patient.organization",
-        "base": [
-          "Group"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "subject.organization",
+        "name": "_id",
+        "code": "_id",
         "base": [
           "Encounter",
           "Observation",
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
-          "Task"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "patient.organization",
-        "base": [
-          "RelatedPerson"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Practitioner"
-        ]
-      },
-      "type": "token",
-      "expression": "130845,94398"
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "publisher",
-        "code": "publisher",
-        "base": [
-          "Questionnaire"
-        ],
-        "type": "token",
-        "expression": "#publisher"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
+          "Questionnaire",
           "StructureMap",
-          "PlanDefinition"
+          "Task",
+          "Group",
+          "PlanDefinition",
+          "RelatedPerson",
+          "Library",
+          "Measure",
+          "MeasureReport",
+          "Flag",
+          "List"
         ]
       }
     },
@@ -130,10 +79,13 @@
           "StructureMap",
           "Task",
           "Group",
-          "Practitioner",
           "PlanDefinition",
+          "RelatedPerson",
           "Library",
-          "Measure"
+          "Measure",
+          "MeasureReport",
+          "Flag",
+          "List"
         ],
         "type": "token",
         "expression": "#count"

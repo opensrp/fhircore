@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
 import java.io.File
-import java.io.FileReader
 import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.apache.commons.io.FileUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -50,7 +50,8 @@ import org.junit.runner.RunWith
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -59,8 +60,10 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
 
-  @get:Rule(order = 10) val coroutineTestRule = CoroutineTestRule()
-
+  @get:Rule(order = 1) val workManagerRule = WorkManagerRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 10)
+  val coroutineTestRule = CoroutineTestRule()
   @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
@@ -70,15 +73,15 @@ abstract class RobolectricTest {
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
       object : Observer<T> {
-        override fun onChanged(o: T?) {
-          data[0] = o
+        override fun onChanged(value: T) {
+          data[0] = value
           latch.countDown()
           liveData.removeObserver(this)
         }
       }
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
-    return data[0] as T?
+    return data[0] as? T
   }
 
   fun String.readFileToBase64Encoded(): String {
@@ -96,7 +99,7 @@ abstract class RobolectricTest {
 
   fun sanitizeSampleResourceContent(content: String): IBaseResource =
     content
-      .replace("#TODAY", Date().asYyyyMmDd())
+      .replace("#TODAY", Date().formatDate(SDF_YYYY_MM_DD))
       .replace("#NOW", DateTimeType.now().valueAsString)
       .let { FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().parseResource(it) }
 
@@ -168,11 +171,11 @@ abstract class RobolectricTest {
 
     fun String.readFile(systemPath: String = ASSET_BASE_PATH): String {
       val file = File("$systemPath/$this")
-      val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-      return String(charArray)
+      return FileUtils.readFileToString(file, "UTF-8")
     }
 
-    fun String.readDir(): List<File> = File("$ASSET_BASE_PATH/$this").listFiles().toList()
+    fun String.readDir(): List<File> =
+      File("$ASSET_BASE_PATH/$this").listFiles()?.toList() ?: emptyList()
 
     @JvmStatic
     @BeforeClass

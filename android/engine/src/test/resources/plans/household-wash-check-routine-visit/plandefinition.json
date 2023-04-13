@@ -1,0 +1,102 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "703886d3-f70a-4d33-8f4e-87bce414fd88",
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "wash-activity",
+      "title": "Household Routine WASH Check",
+      "status": "active",
+      "description": "This action will be performed every time the VHT visits a household",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "countMax": 1,
+          "duration": 1,
+          "durationMax": 2,
+          "durationUnit": "h",
+          "frequency": 1,
+          "frequencyMax": 1,
+          "period": 1,
+          "periodMax": 1,
+          "periodUnit": "mo"
+        }
+      }
+    }
+  ],
+  "name": "Household Routine WASH Check Plan",
+  "title": "Household Routine WASH Check Plan",
+  "status": "active",
+  "description": "This defines the schedule of service for WASH Check on households",
+  "goal": [
+    {
+      "category": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-category.html",
+            "code": "safety",
+            "display": "Safety"
+          }
+        ]
+      },
+      "priority": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-priority.html",
+            "code": "medium-priority",
+            "display": "Medium Priority"
+          }
+        ]
+      },
+      "start": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "710562003",
+            "display": "Assessment of sanitation"
+          }
+        ]
+      }
+    }
+  ],
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Group and %resource.entry.first().resource is Encounter and %resource.entry.first().resource.status = 'finished'"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system":"https://terminology.hl7.org/5.0.0/ValueSet-activity-definition-category.html",
+            "code": "assessment",
+            "display": "Assessment"
+          }
+        ]
+      },
+      "definitionCanonical": "#wash-activity",
+      "transform": "http://hl7.org/fhir/StructureMap/hh"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,17 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class ApplicationConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.Application.name,
-  val theme: String = "",
   val appTitle: String = "",
   val remoteSyncPageSize: Int = 100,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 30,
+  val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
-  val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
+  val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
+  val reportRepeatTime: String = "",
+  val taskExpireJobDuration: String = "PT01H",
+  val taskCompleteCarePlanJobDuration: String = "PT01H",
+  val showLogo: Boolean = true
 ) : Configuration()

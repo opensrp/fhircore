@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package org.smartregister.fhircore.engine.domain.model
 
 enum class QuestionnaireType {
-  READ_ONLY,
+  DEFAULT,
   EDIT,
-  DEFAULT;
+  READ_ONLY;
 
+  fun isDefault() = this == DEFAULT
   fun isEditMode() = this == EDIT
   fun isReadOnly() = this == READ_ONLY
 }

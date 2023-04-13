@@ -4,40 +4,55 @@
   "id": "pncRegister",
   "fhirResource": {
     "baseResource": {
-      "resource": "Condition",
-      "dataQueries": [
+      "resource": "Patient",
+      "nestedSearchResources": [
         {
-          "id": "pncQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "234234234"
-          }
-        },
+          "resourceType": "Condition",
+          "referenceParam": "subject",
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "234234234"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "clinical-status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sortConfigs": [
         {
-          "id": "pncQueryByClinicalStatus",
-          "filterType": "TOKEN",
-          "key": "clinical-status",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-            "code": "active"
-          }
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
         }
       ]
     },
     "relatedResources": [
       {
-        "resource": "Patient",
-        "fhirPathExpression": "Condition.subject",
-        "relatedResources": [
-          {
-            "resource": "CarePlan",
-            "searchParameter": "subject"
-          }
-        ]
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
       }
     ]
   },
@@ -55,35 +70,35 @@
         "name": "patientFirstName",
         "condition": "true",
         "actions": [
-          "data.put('patientFirstName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(given[0])\"))"
+          "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
         ]
       },
       {
         "name": "patientMiddleName",
         "condition": "true",
         "actions": [
-          "data.put('patientMiddleName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(text)\"))"
+          "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
         ]
       },
       {
         "name": "patientLastName",
         "condition": "true",
         "actions": [
-          "data.put('patientLastName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(family)\"))"
+          "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
         ]
       },
       {
         "name": "patientAge",
         "condition": "true",
         "actions": [
-          "data.put('patientAge', service.extractAge(Patient.get(0)))"
+          "data.put('patientAge', service.extractAge(Patient))"
         ]
       },
       {
         "name": "patientGender",
         "condition": "true",
         "actions": [
-          "data.put('patientGender', service.extractGender(Patient.get(0)))"
+          "data.put('patientGender', service.extractGender(Patient))"
         ]
       },
       {
@@ -97,7 +112,49 @@
         "name": "patientId",
         "condition": "true",
         "actions": [
-          "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "showMemberTasks",
+        "condition": "true",
+        "actions": [
+          "data.put('showMemberTasks', size(Task) > 0)"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+        ]
+      },
+      {
+        "name": "taskDescription",
+        "condition": "true",
+        "actions": [
+          "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+        ]
+      },
+      {
+        "name": "taskFor",
+        "condition": "true",
+        "actions": [
+          "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+        ]
+      },
+      {
+        "name": "taskQuestionnaireId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
         ]
       }
     ],
@@ -121,6 +178,25 @@
               }
             ],
             "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": "@{showMemberTasks}",
+              "text": "@{taskDescription}",
+              "status": "@{serviceStatus}",
+              "smallSized": true,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "@{taskQuestionnaireId}",
+                    "title": "@{taskDescription}",
+                    "saveButtonText": "Save",
+                    "taskId": "@{taskId}",
+                    "resourceIdentifier": "@{taskFor}"
+                  }
+                }
+              ]
+            },
             "actions": [
               {
                 "trigger": "ON_CLICK",

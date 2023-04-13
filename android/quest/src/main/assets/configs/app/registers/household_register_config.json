@@ -7,24 +7,35 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
         },
         {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
+        }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
         }
       ]
     },
@@ -42,7 +53,48 @@
             "searchParameter": "subject"
           },
           {
+            "id": "overdueTasks",
             "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "failed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dueTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "resultAsCount": true,
+            "dataQueries": [
+              {
+                "paramName": "status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODE",
+                    "value": {
+                      "system": "http://hl7.org/fhir/task-status",
+                      "code": "ready"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "filterPractitioners",
+            "resource": "Practitioner",
             "searchParameter": "subject"
           }
         ]
@@ -54,11 +106,19 @@
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId"
+      "familyId",
+      "practitionerId"
     ]
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "familyLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+        ]
+      },
       {
         "name": "familyName",
         "condition": "true",
@@ -74,6 +134,13 @@
         ]
       },
       {
+        "name": "practitionerId",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
+        ]
+      },
+      {
         "name": "familyVillage",
         "condition": "true",
         "actions": [
@@ -81,17 +148,33 @@
         ]
       },
       {
-        "name": "taskCount",
+        "name": "dueTaskCount",
         "condition": "true",
         "actions": [
-          "data.put('taskCount', size(Task) == 0 ? '' : size(Task))"
+          "data.put('dueTaskCount', service.computeTotalCount(dueTasks))"
+        ]
+      },
+      {
+        "name": "overDueTaskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('overDueTaskCount', service.computeTotalCount(overdueTasks))"
+        ]
+      },
+      {
+        "name": "totalTaskCount",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "var sum = data.get('dueTaskCount') + data.get('overDueTaskCount'); data.put('totalTaskCount', sum == 0 ? '' : sum)"
         ]
       },
       {
         "name": "serviceStatus",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', data.get('dueTaskCount') > 0 ? 'DUE' : data.get('overDueTaskCount') > 0 ? 'OVERDUE' : 'UPCOMING' )"
         ]
       },
       {
@@ -125,7 +208,7 @@
             "serviceMemberIcons": "@{serviceMemberIcons}",
             "serviceButton": {
               "visible": true,
-              "text": "@{taskCount}",
+              "text": "@{totalTaskCount}",
               "status": "@{serviceStatus}",
               "fontSize": 14.0,
               "smallSized": false,
@@ -136,8 +219,9 @@
                   "id": "householdProfile",
                   "params": [
                     {
-                      "key": "familyId",
-                      "value": "@{familyId}"
+                      "paramType": "PARAMDATA",
+                      "key": "familyLogicalId",
+                      "value": "@{familyLogicalId}"
                     }
                   ]
                 }
@@ -150,8 +234,9 @@
                 "id": "householdProfile",
                 "params": [
                   {
-                    "key": "familyId",
-                    "value": "@{familyId}"
+                    "paramType": "PARAMDATA",
+                    "key": "familyLogicalId",
+                    "value": "@{familyLogicalId}"
                   }
                 ]
               }

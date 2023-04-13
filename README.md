@@ -1,6 +1,7 @@
-[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml)
+[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee9b6f38b7294fa3aa668e42e52fdf21)](https://www.codacy.com/gh/opensrp/fhircore/dashboard)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.fhir.org/#narrow/stream/370552-OpenSRP)
 
 # OpenSRP FHIR Core
 
@@ -25,11 +26,14 @@ FHIRcore also interoperates well with:
 <img align=center width=400 src="docs/assets/fhircore.png">
 
 ## Getting Started
+
+Due to it's dependency on the Android FHIR SDK's workflow library, OpenSRP FHIR Core requires a minimum Android SDK version of Android 8.0 (API level 26).
+
 This repository contains the folders
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
-We recommend reviewing the [docs](docs) before setting up the Android Studio Project in the [android](android) folder.
+We recommend reviewing the [docs](https://fhircore.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
 
 For starter resources on the FHIR specification:
 
@@ -41,5 +45,3 @@ For starter resources on the Android FHIR SDK and this repo:
 1. Android FHIR SDK Demo - [Link](https://drive.google.com/file/d/1ORjk3pNOKjGyZlbayAViPy4xkI8p-aFB/view?usp=sharing)
 1. Android FHIR SDK Intro Slide deck - [Link](https://docs.google.com/presentation/d/1oc6EBJAcXsBwyBgtnra61xoM7naBF0aj8WbfrUT7Y2A)
 1. FHIR Core Intro slide deck - [Link](https://docs.google.com/presentation/d/1eFsf9a5dcNqKXlfsEWyNZyoVooIbK3jq6694xarARr8)
-1. General FHIR Modelling for LMIC resource mapping- [Link](https://docs.google.com/drawings/d/1mRESJI_YywQG-YjhBy4zvVik28gBj2n_YscWKZZ_wOc)
-1. List of commonly used [acronyms](https://docs.google.com/document/d/13FG5QLCcNZEaQGX_9IYcIJc_UbbmllrwQwcp3TMG9Tk/edit?usp=sharing)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -37,12 +39,16 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 
 @HiltViewModel
 class RegisterViewModel
@@ -51,27 +57,38 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+  val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
-
   val currentPage: MutableState<Int> = mutableStateOf(0)
-
   val searchText = mutableStateOf("")
-
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
-
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
-
   private val _totalRecordsCount = mutableStateOf(0L)
-
   private lateinit var registerConfiguration: RegisterConfiguration
+  private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
+  private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
-  private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
-
-  fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
+  /**
+   * This function paginates the register data. An optional [clearCache] resets the data in the
+   * cache (this is necessary after a questionnaire has been submitted to refresh the register with
+   * new/updated data).
+   */
+  fun paginateRegisterData(
+    registerId: String,
+    loadAll: Boolean = false,
+    clearCache: Boolean = false
+  ) {
+    if (clearCache) {
+      pagesDataCache.clear()
+      allPatientRegisterData = null
+    }
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
@@ -79,13 +96,14 @@ constructor(
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
-    // Get the configured page size from RegisterConfiguration default is 20
-    val pageSize = retrieveRegisterConfiguration(registerId).pageSize
+    val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
+    val ruleConfigs = currentRegisterConfigs.registerCard.rules
+    val pageSize = currentRegisterConfigs.pageSize // Default 10
 
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository).apply {
+        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
           setPatientPagingSourceState(
             RegisterPagingSourceState(
               registerId = registerId,
@@ -98,21 +116,24 @@ constructor(
     )
   }
 
-  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+  fun retrieveRegisterConfiguration(
+    registerId: String,
+    paramMap: Map<String, String>? = emptyMap()
+  ): RegisterConfiguration {
     // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramMap)
     }
     return registerConfiguration
   }
 
   private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
     // Ensure that we only initialize this flow once
-    if (!::allPatientRegisterData.isInitialized) {
+    if (allPatientRegisterData == null) {
       allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
-    return allPatientRegisterData
+    return allPatientRegisterData!!
   }
 
   fun onEvent(event: RegisterEvent) =
@@ -151,18 +172,22 @@ constructor(
     }
   }
 
-  fun retrieveRegisterUiState(registerId: String, screenTitle: String) {
+  fun retrieveRegisterUiState(
+    registerId: String,
+    screenTitle: String,
+    params: Array<ActionParameter>? = emptyArray()
+  ) {
     if (registerId.isNotEmpty()) {
-
+      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
       viewModelScope.launch(dispatcherProvider.io()) {
-        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId)
+        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
-        _totalRecordsCount.value = registerRepository.countRegisterData(registerId)
+        _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
         paginateRegisterData(registerId, loadAll = false)
 
         registerUiState.value =
           RegisterUiState(
-            screenTitle = screenTitle,
+            screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -177,9 +202,19 @@ constructor(
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
-                .toInt()
+                .toInt(),
+            progressPercentage = _percentageProgress,
+            isSyncUpload = _isUploadSync
           )
       }
     }
+  }
+
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
+    _percentageProgress.emit(progress)
+    _isUploadSync.emit(isUploadSync)
   }
 }

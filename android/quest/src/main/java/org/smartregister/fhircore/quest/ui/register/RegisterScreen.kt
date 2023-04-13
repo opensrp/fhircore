@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -29,14 +31,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -44,10 +44,10 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
-import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -69,8 +69,10 @@ fun RegisterScreen(
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
-  navController: NavController
+  navController: NavController,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
+  val lazyListState: LazyListState = rememberLazyListState()
 
   Scaffold(
     topBar = {
@@ -80,44 +82,50 @@ fun RegisterScreen(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           }
-        ) { openDrawer(true) }
+        ) {
+          when (toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+            ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+          }
+        }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
-      }
-    },
-    bottomBar = {
-      // Bottom section has a pagination footer
-      Column {
-        if (searchText.value.isEmpty() && pagingItems.itemCount > 0) {
-          RegisterFooter(
-            resultCount = pagingItems.itemCount,
-            currentPage = currentPage.value.plus(1),
-            pagesCount = registerUiState.pagesCount,
-            previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
-            nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
-          )
-        }
       }
     },
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-        ExtendedFab(fabActions = fabActions, navController = navController)
+        ExtendedFab(
+          fabActions = fabActions,
+          navController = navController,
+          lazyListState = lazyListState
+        )
       }
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync) LoaderDialog(modifier = modifier)
+      if (registerUiState.isFirstTimeSync)
+        LoaderDialog(
+          modifier = modifier,
+          percentageProgressFlow = registerUiState.progressPercentage,
+          isSyncUploadFlow = registerUiState.isSyncUpload
+        )
       if (registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {
         RegisterCardList(
           registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
-          navController = navController
+          navController = navController,
+          lazyListState = lazyListState,
+          onEvent = onEvent,
+          registerUiState = registerUiState,
+          currentPage = currentPage,
+          showPagination = searchText.value.isEmpty()
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
@@ -155,25 +163,26 @@ fun NoRegisterDataView(
       fontSize = 15.sp,
       color = Color.Gray
     )
-    Button(
-      modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-      onClick = onClick
-    ) {
-      Icon(
-        imageVector = Icons.Filled.Add,
-        contentDescription = null,
-        modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
-      )
-      Text(
-        text = noResults.actionButton?.display?.uppercase().toString(),
-        modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
-      )
+    if (noResults.actionButton != null) {
+      Button(
+        modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+        onClick = onClick
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          contentDescription = null,
+          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+        )
+        Text(
+          text = noResults.actionButton?.display?.uppercase().toString(),
+          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
+        )
+      }
     }
   }
 }
 
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
+@PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewNoRegistersView() {
   NoRegisterDataView(

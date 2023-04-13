@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,11 +108,11 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
     val expectedPatient = populateTestPatient()
     val jsonArray = populateTestJsonArray()
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
     p2PReceiverTransferDao.receiveJson(patientDataType, jsonArray)
 
     val resourceSlot = slot<Resource>()
-    coVerify { defaultRepository.addOrUpdate(capture(resourceSlot)) }
+    coVerify { defaultRepository.addOrUpdate(resource = capture(resourceSlot)) }
     val actualPatient = resourceSlot.captured as Patient
     Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
     Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)

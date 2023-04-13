@@ -59,5 +59,21 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
+        <item name="questionnaireSubmitButtonStyle">@style/Quest.Questionnaire.SubmitButtonStyle
+        </item>
     </style>
+    <style name="Quest.Questionnaire.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
+        <item name="android:text">@string/str_save</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginVertical">15dp</item>
+        <item name="android:layout_marginHorizontal">15dp</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_gravity">bottom|start</item>
+    </style>
+
 </resources>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val DEFAULT_MAX_PAGE_COUNT = 20
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
@@ -108,30 +107,26 @@ fun RegisterFooter(
     }
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
   RegisterFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
   RegisterFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
   RegisterFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
+@PreviewWithBackgroundExcludeGenerated
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
   RegisterFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }

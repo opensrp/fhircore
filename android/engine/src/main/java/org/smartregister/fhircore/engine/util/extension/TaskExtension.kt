@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,47 @@ package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.util.DateUtils
-import org.smartregister.fhircore.engine.util.DateUtils.isToday
-import org.smartregister.fhircore.engine.util.DateUtils.today
 
 fun Task.hasPastEnd() =
   this.hasExecutionPeriod() &&
     this.executionPeriod.hasEnd() &&
-    this.executionPeriod.end.before(DateUtils.yesterday())
+    this.executionPeriod.end.before(yesterday())
 
 fun Task.hasStarted() =
+  this.hasExecutionPeriod() && this.executionPeriod.hasStart() && executionStartIsBeforeOrToday()
+
+fun Task.isReady() =
   this.hasExecutionPeriod() &&
-    this.executionPeriod.hasStart() &&
+    ((executionStartIsBeforeOrToday() && executionEndIsAfterOrToday()) ||
+      (executionStartIsBeforeOrToday() && !this.executionPeriod.hasEnd()))
+
+fun Task.executionStartIsBeforeOrToday() =
+  this.executionPeriod.hasStart() &&
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
+fun Task.executionEndIsAfterOrToday() =
+  this.executionPeriod.hasEnd() &&
+    with(this.executionPeriod.end) { this.after(today()) || this.isToday() }
+
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
+
+fun Task.isPastExpiry() =
+  this.hasRestriction() &&
+    this.restriction.hasPeriod() &&
+    this.restriction.period.hasEnd() &&
+    !this.restriction.period.end.after(today())
+
+fun Task.isUpcoming() =
+  this.hasStatus() &&
+    this.status == Task.TaskStatus.REQUESTED &&
+    this.hasExecutionPeriod() &&
+    this.executionPeriod.hasStart() &&
+    this.executionPeriod.start.after(today())
+
+fun Task.isOverDue() =
+  (this.hasStatus() &&
+    (this.status == Task.TaskStatus.INPROGRESS || this.status == Task.TaskStatus.READY)) &&
+    this.executionPeriod.hasEnd() &&
+    this.executionPeriod.end.before(today())
+
+fun Task.isDue() = this.hasStatus() && this.status == Task.TaskStatus.READY

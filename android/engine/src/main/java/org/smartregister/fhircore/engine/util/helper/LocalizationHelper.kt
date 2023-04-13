@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
    *
    * @return The locale specific filename, in this case will be: strings_fr
    */
-  fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
+  private fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
     "${baseBundle}_${locale.toLanguageTag()}"
 
   companion object {

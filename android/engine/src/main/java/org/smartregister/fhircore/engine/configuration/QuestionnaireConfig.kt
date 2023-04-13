@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -28,6 +30,7 @@ data class QuestionnaireConfig(
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = true,
   val setOrganizationDetails: Boolean = true,
+  val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
@@ -35,7 +38,9 @@ data class QuestionnaireConfig(
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
-  val saveDraft: Boolean = false
+  val saveDraft: Boolean = false,
+  val snackBarMessage: SnackBarMessageConfig? = null,
+  val carePlanConfigs: List<CarePlanConfig> = emptyList()
 ) : java.io.Serializable
 
 @Serializable
@@ -70,5 +75,6 @@ fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
         title = confirmationDialog.title.interpolate(computedValuesMap),
         message = confirmationDialog.message.interpolate(computedValuesMap),
         actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
-      )
+      ),
+    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) }
   )

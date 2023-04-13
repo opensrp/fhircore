@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,22 +58,13 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
-
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
-
   val geoWidgetActivityArgs by navArgs<GeoWidgetFragmentArgs>()
-
   val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
-
   lateinit var kujakuMapView: KujakuMapView
-
   var geoJsonSource: GeoJsonSource? = null
-
   var featureCollection: FeatureCollection? = null
-
-  var registerFamilyMode = false
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -214,6 +205,10 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
       if (geometry is Point) {
         points.add(geometry)
       }
+    }
+
+    if ((featureCollection.features()?.size ?: 0) == 0) {
+      return
     }
 
     val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))

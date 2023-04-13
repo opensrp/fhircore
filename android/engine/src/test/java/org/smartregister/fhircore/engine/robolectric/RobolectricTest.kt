@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,12 +49,12 @@ abstract class RobolectricTest {
       }
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
-    return data[0] as T?
+    @Suppress("UNCHECKED_CAST") return data[0] as T?
   }
 
   companion object {
     private val SYSTEM_PATH =
-      (System.getProperty("user.dir") +
+      (System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +

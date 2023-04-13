@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
@@ -61,6 +60,40 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "eCBIS Family Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        immunizationQuestionnaireResponseString
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `perform disease extraction`() {
+    val immunizationQuestionnaireResponseString: String =
+      "content/general/disease-registration-resources/questionnaire_response.json".readFile()
+    val immunizationStructureMap =
+      "content/general/disease-registration-resources/structure-map.txt".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(immunizationStructureMap, "eCBIS Disease Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
@@ -148,7 +181,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -184,7 +216,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -233,7 +264,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -271,7 +301,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -306,7 +335,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -341,7 +369,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -397,7 +424,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val physicalInventoryCountQuestionnaireResponseString: String =
       "content/general/supply-chain/questionnaire-response-standard.json".readFile()
     val physicalInventoryCountStructureMap =
-      "content/general/supply-chain/physical _inventory _count_and_stock.map".readFile()
+      "content/general/supply-chain/physical_inventory_count_and_stock.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -426,11 +453,11 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     System.out.println(iParser.encodeResourceToString(targetResource))
 
-    // for some weird reason, the `entry` has 9 resources instead of 8. The 1st resource is blank.
-    Assert.assertTrue(targetResource.entry.size == 9)
+    // for some weird reason, the `entry` has 8 resources instead of 7. The 1st resource is blank.
+    Assert.assertTrue(targetResource.entry.size == 8)
     Assert.assertTrue(targetResource.entry[2].resource is Observation)
 
-    val observation = targetResource.entry[8].resource as Observation
+    val observation = targetResource.entry[7].resource as Observation
     Assert.assertTrue(observation.code.text == "under-reporting")
   }
 }

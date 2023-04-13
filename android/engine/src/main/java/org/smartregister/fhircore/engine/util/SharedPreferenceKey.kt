@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ enum class SharedPreferenceKey {
   APP_ID,
   LAST_SYNC_TIMESTAMP,
   LANG,
-  MEASURE_RESOURCES_LOADED,
   PRACTITIONER_ID,
   PRACTITIONER_DETAILS,
   PRACTITIONER_LOCATION_HIERARCHIES,
   THEME,
-  REMOTE_SYNC_RESOURCES
+  REMOTE_SYNC_RESOURCES,
+  OVERDUE_TASK_LAST_AUTHORED_ON_DATE,
+  LOGIN_CREDENTIAL_KEY,
+  LOGIN_PIN_KEY
 }

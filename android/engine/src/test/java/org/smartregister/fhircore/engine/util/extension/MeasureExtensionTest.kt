@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -23,11 +30,21 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  private var fhirEngine = mockk<FhirEngine>()
+
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
 
   @Test
   fun `findPopulation should return correct population component for group with given type`() {
@@ -206,4 +223,19 @@ class MeasureExtensionTest : RobolectricTest() {
         }
       }
     }
+
+  @Test
+  fun testAlreadyGeneratedMeasureReports() {
+    coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns emptyList()
+    runBlocking {
+      val result =
+        retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+          fhirEngine = fhirEngine,
+          "2022-02-02",
+          "2022-04-04",
+          "http://nourl.com"
+        )
+      assertTrue(result.isNullOrEmpty())
+    }
+  }
 }

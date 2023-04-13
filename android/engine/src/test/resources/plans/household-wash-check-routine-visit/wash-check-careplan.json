@@ -1,0 +1,306 @@
+{
+  "resourceType": "CarePlan",
+  "id": "fda6a471-9c8b-409f-aea2-008628ac99ae",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "4ff70722-85ac-49fc-9cb2-0472dd049389"
+    }
+  ],
+  "instantiatesCanonical": [
+    "PlanDefinition/703886d3-f70a-4d33-8f4e-87bce414fd88"
+  ],
+  "status": "active",
+  "intent": "plan",
+  "title": "Household Routine WASH Check Plan",
+  "description": "This defines the schedule of service for WASH Check on households",
+  "subject": {
+    "reference": "Group/TEST_GROUP"
+  },
+  "period": {
+    "start": "2022-12-20T00:00:00",
+    "end": "2027-12-20T00:00:00"
+  },
+  "created": "2022-03-14",
+  "activity": [
+    {
+      "outcomeReference": [
+        {
+          "reference": "Task/2b535616-4fc1-4cb6-986b-ffd421fc2c76"
+        },
+        {
+          "reference": "Task/6fdca23b-3305-4156-9cac-e700a9cdfd65"
+        },
+        {
+          "reference": "Task/7d9553dc-ece6-4834-a737-6f2147fb62dc"
+        },
+        {
+          "reference": "Task/cbf3755b-22b4-4819-9bec-db3282b1685c"
+        },
+        {
+          "reference": "Task/2213ed5a-cf8e-4dd9-9f39-e1b6e67ebaa4"
+        },
+        {
+          "reference": "Task/f38a34e8-d155-4843-b5a8-90b99cedfce4"
+        },
+        {
+          "reference": "Task/9f6a3035-0251-47e6-8351-8731b06977d1"
+        },
+        {
+          "reference": "Task/12279c58-3ddf-4a7b-be79-e2543006af30"
+        },
+        {
+          "reference": "Task/ff198b78-cf8b-445c-bbc1-ed5f06a29c94"
+        },
+        {
+          "reference": "Task/25338af9-7d32-4cbf-9cc3-056e1e4f651d"
+        },
+        {
+          "reference": "Task/65af1365-c8a5-4d1d-beaa-bbef546454c3"
+        },
+        {
+          "reference": "Task/de0e4f95-0db8-4bba-9162-a9e7b1e7a5c3"
+        },
+        {
+          "reference": "Task/7e3e4f75-8e1b-4593-a420-20dc07c17b78"
+        },
+        {
+          "reference": "Task/49693e25-81fe-42e1-a6a8-555c3ff228a5"
+        },
+        {
+          "reference": "Task/80e84d9c-298c-4d60-9cbe-56c0fa8fb9e9"
+        },
+        {
+          "reference": "Task/ca3a6a65-fb23-41aa-a690-1c21607b3dc6"
+        },
+        {
+          "reference": "Task/f8b6a614-b51d-4db6-95f5-82662e77b128"
+        },
+        {
+          "reference": "Task/ac074d6f-c9d1-40f5-911d-5257737a58f9"
+        },
+        {
+          "reference": "Task/f3866d74-f099-46d2-9af8-294f1612eeaa"
+        },
+        {
+          "reference": "Task/5cc958d9-7b74-4cae-8355-97d9e9ee9b8e"
+        },
+        {
+          "reference": "Task/2a61980c-1b27-46e1-8e3f-b47b70ea2e17"
+        },
+        {
+          "reference": "Task/b741556f-9598-4034-b221-70638cf07927"
+        },
+        {
+          "reference": "Task/49c2e597-2082-4439-88bc-07b7747e326f"
+        },
+        {
+          "reference": "Task/fde195aa-4b77-4025-98e5-79ec3d6dbde9"
+        },
+        {
+          "reference": "Task/4b222296-5965-4c77-901a-0efb91d60068"
+        },
+        {
+          "reference": "Task/42cffe57-2a76-4841-99f1-7509c3b9f280"
+        },
+        {
+          "reference": "Task/9f68c48c-27c5-451c-975e-62c85d696ff5"
+        },
+        {
+          "reference": "Task/d97f6b8f-0799-46c2-9b37-88609bc3b76f"
+        },
+        {
+          "reference": "Task/55ee52d8-b346-4634-90a2-acd64b365c06"
+        },
+        {
+          "reference": "Task/ed21fb36-ccd5-475d-8670-8f07283f239a"
+        },
+        {
+          "reference": "Task/c2e8624d-effc-4ce2-be35-710911f662a5"
+        },
+        {
+          "reference": "Task/0d678696-a83c-4654-86e2-435fa6ce09a0"
+        },
+        {
+          "reference": "Task/0594165d-6b6a-4aca-8db1-e61b5556f1ee"
+        },
+        {
+          "reference": "Task/f4e84f6c-8998-4785-8187-ae79791b406b"
+        },
+        {
+          "reference": "Task/4093101f-a8b0-43b0-9a34-55c05a83b9f5"
+        },
+        {
+          "reference": "Task/7fc62355-b651-4e24-9944-e17a11b27240"
+        },
+        {
+          "reference": "Task/7c9bccf2-591c-4e3c-a552-0049ad7ddd20"
+        },
+        {
+          "reference": "Task/66c7485e-06fd-4e55-a3da-37e026c59443"
+        },
+        {
+          "reference": "Task/9f2b1f6e-3296-4f72-9ebc-e1d6d50f8302"
+        },
+        {
+          "reference": "Task/923bc8f1-35ed-492e-a497-bdd86529a32b"
+        },
+        {
+          "reference": "Task/34533078-c1b1-4bb3-b37a-8cec9cba7aac"
+        },
+        {
+          "reference": "Task/780797e6-61be-4caf-9d1a-5723485c56fe"
+        },
+        {
+          "reference": "Task/339da00e-4e55-46f3-98a8-8c7a64b3e0fe"
+        },
+        {
+          "reference": "Task/40ce4186-6cbe-43a0-9580-9533d2a4b51d"
+        },
+        {
+          "reference": "Task/58a76603-2689-4385-8122-d88749977201"
+        },
+        {
+          "reference": "Task/2bdb04da-0798-43db-8211-ca275d31d4f0"
+        },
+        {
+          "reference": "Task/393f35ca-6213-447c-9e3c-f91f3e4ce227"
+        },
+        {
+          "reference": "Task/15a7a907-d890-4133-bf53-e0f30bbbf9dc"
+        },
+        {
+          "reference": "Task/634721ae-2bea-4961-9c35-3f91193bf86f"
+        },
+        {
+          "reference": "Task/f43feceb-640c-4982-b09b-f8bf45d4a73f"
+        },
+        {
+          "reference": "Task/3903cec9-2e70-4a8d-a150-dae937e5e090"
+        },
+        {
+          "reference": "Task/e052c5fc-c627-4396-b423-ead61a7de031"
+        },
+        {
+          "reference": "Task/90d188b5-61ee-4481-97bd-f38ad58f2b8e"
+        },
+        {
+          "reference": "Task/90000491-9ff2-452b-a271-66aa6e19a847"
+        },
+        {
+          "reference": "Task/84e7da6e-5494-448e-9bb1-89408c57d6de"
+        },
+        {
+          "reference": "Task/7b06fc06-a861-4214-a213-99e96cf6d331"
+        },
+        {
+          "reference": "Task/e5939a76-51f9-484d-b075-6016a544bb8f"
+        },
+        {
+          "reference": "Task/016160ed-f39f-4380-b16f-82609bf1a341"
+        },
+        {
+          "reference": "Task/3459c215-b06a-4a30-ba7f-d230b4165cec"
+        },
+        {
+          "reference": "Task/872ec318-5932-4b42-94d2-9ac2d6842077"
+        },
+        {
+          "reference": "Task/16fb33e4-c514-47d7-ac8e-8d411bc628cc"
+        }
+      ],
+      "detail": {
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "system": "http://www.snomed.org/",
+              "code": "710562003",
+              "display": "Assessment of sanitation"
+            }
+          ],
+          "text": "Assessment of sanitation"
+        },
+        "status": "in-progress",
+        "scheduledTiming": {
+          "event": [
+            "2022-12-01T00:00:00",
+            "2023-01-01T00:00:00",
+            "2023-02-01T00:00:00",
+            "2023-03-01T00:00:00",
+            "2023-04-01T00:00:00",
+            "2023-05-01T00:00:00",
+            "2023-06-01T00:00:00",
+            "2023-07-01T00:00:00",
+            "2023-08-01T00:00:00",
+            "2023-09-01T00:00:00",
+            "2023-10-01T00:00:00",
+            "2023-11-01T00:00:00",
+            "2023-12-01T00:00:00",
+            "2024-01-01T00:00:00",
+            "2024-02-01T00:00:00",
+            "2024-03-01T00:00:00",
+            "2024-04-01T00:00:00",
+            "2024-05-01T00:00:00",
+            "2024-06-01T00:00:00",
+            "2024-07-01T00:00:00",
+            "2024-08-01T00:00:00",
+            "2024-09-01T00:00:00",
+            "2024-10-01T00:00:00",
+            "2024-11-01T00:00:00",
+            "2024-12-01T00:00:00",
+            "2025-01-01T00:00:00",
+            "2025-02-01T00:00:00",
+            "2025-03-01T00:00:00",
+            "2025-04-01T00:00:00",
+            "2025-05-01T00:00:00",
+            "2025-06-01T00:00:00",
+            "2025-07-01T00:00:00",
+            "2025-08-01T00:00:00",
+            "2025-09-01T00:00:00",
+            "2025-10-01T00:00:00",
+            "2025-11-01T00:00:00",
+            "2025-12-01T00:00:00",
+            "2026-01-01T00:00:00",
+            "2026-02-01T00:00:00",
+            "2026-03-01T00:00:00",
+            "2026-04-01T00:00:00",
+            "2026-05-01T00:00:00",
+            "2026-06-01T00:00:00",
+            "2026-07-01T00:00:00",
+            "2026-08-01T00:00:00",
+            "2026-09-01T00:00:00",
+            "2026-10-01T00:00:00",
+            "2026-11-01T00:00:00",
+            "2026-12-01T00:00:00",
+            "2027-01-01T00:00:00",
+            "2027-02-01T00:00:00",
+            "2027-03-01T00:00:00",
+            "2027-04-01T00:00:00",
+            "2027-05-01T00:00:00",
+            "2027-06-01T00:00:00",
+            "2027-07-01T00:00:00",
+            "2027-08-01T00:00:00",
+            "2027-09-01T00:00:00",
+            "2027-10-01T00:00:00",
+            "2027-11-01T00:00:00",
+            "2027-12-01T00:00:00"
+          ],
+          "repeat": {
+            "count": 1,
+            "countMax": 1,
+            "duration": 1,
+            "durationMax": 2,
+            "durationUnit": "h",
+            "frequency": 1,
+            "frequencyMax": 1,
+            "period": 1,
+            "periodMax": 1,
+            "periodUnit": "mo"
+          }
+        },
+        "description": "Household Routine WASH Check"
+      }
+    }
+  ]
+}

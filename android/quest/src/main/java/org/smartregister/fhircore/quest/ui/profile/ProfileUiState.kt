@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 data class ProfileUiState(
-  var resourceData: ResourceData? = null,
-  val profileConfiguration: ProfileConfiguration? = null
+  val resourceData: ResourceData? = null,
+  val profileConfiguration: ProfileConfiguration? = null,
+  val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
+  val showDataLoadProgressIndicator: Boolean = true
 )

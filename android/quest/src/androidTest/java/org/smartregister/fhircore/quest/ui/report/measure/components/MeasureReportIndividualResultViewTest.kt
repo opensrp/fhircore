@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -40,12 +41,17 @@ class MeasureReportIndividualResultViewTest {
       name = "Jacky Coughlin",
       gender = "F",
       age = "27",
-      logicalId = "12444"
+      logicalId = "12444",
     )
 
   @Before
   fun setup() {
     scenario = ActivityScenario.launch(ComponentActivity::class.java)
+  }
+
+  @After
+  fun tearDown() {
+    scenario.close()
   }
 
   @Test
@@ -80,6 +86,15 @@ class MeasureReportIndividualResultViewTest {
     composeTestRule.onNodeWithTag(RESULT_VIEW_STALLED_ICON).assertExists().assertIsDisplayed()
   }
 
+  @Test
+  fun testResultViewRendersIndicatorDescriptionCorrectly() {
+    initComposable(isMatchedIndicator = true)
+    composeTestRule.onNodeWithTag(RESULT_VIEW_INDICATOR_DESCRIPTION).assertExists()
+    composeTestRule
+      .onNodeWithText(useUnmergedTree = true, text = "Indicator description")
+      .assertExists()
+      .assertIsDisplayed()
+  }
   private fun initComposable(isMatchedIndicator: Boolean) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -88,7 +103,7 @@ class MeasureReportIndividualResultViewTest {
             patientViewData = patientViewData,
             isMatchedIndicator = isMatchedIndicator,
             indicatorStatus = "True",
-            indicatorDescription = ""
+            indicatorDescription = "Indicator description"
           )
         }
       }

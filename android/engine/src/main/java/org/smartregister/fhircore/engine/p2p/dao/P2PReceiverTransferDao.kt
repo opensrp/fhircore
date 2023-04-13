@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.google.android.fhir.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -45,16 +44,15 @@ constructor(
 
   override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {
     var maxLastUpdated = 0L
-    Timber.e("saving resources from base dai")
-    val resourceTypes = ResourceType.values()
+    Timber.i("saving resources from base dai ${type.name} -> ${jsonArray.length()}")
     (0 until jsonArray.length()).forEach {
       runBlocking {
         val resource =
           jsonParser.parseResource(type.name.resourceClassType(), jsonArray.get(it).toString())
+        val recordLastUpdated = resource.meta.lastUpdated.time
         defaultRepository.addOrUpdate(resource = resource)
         maxLastUpdated =
-          (if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time
-          else maxLastUpdated)
+          (if (recordLastUpdated > maxLastUpdated) recordLastUpdated else maxLastUpdated)
         Timber.e("Received ${resource.resourceType} with id = ${resource.logicalId}")
       }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,31 +19,39 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import androidx.work.WorkManager
+import com.google.android.fhir.sync.SyncJobStatus
 import com.google.gson.Gson
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkClass
+import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -53,28 +61,31 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
-@OptIn(ExperimentalMaterialApi::class)
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var gson: Gson
 
-  private val accountAuthenticator: AccountAuthenticator = mockk(relaxed = true)
+  @Inject lateinit var workManager: WorkManager
 
-  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   private val secureSharedPreference: SecureSharedPreference = mockk()
 
@@ -84,11 +95,14 @@ class AppMainViewModelTest : RobolectricTest() {
 
   private val application: Context = ApplicationProvider.getApplicationContext()
 
+  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+
   private lateinit var appMainViewModel: AppMainViewModel
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
 
@@ -99,26 +113,17 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel =
       spyk(
         AppMainViewModel(
-          accountAuthenticator = accountAuthenticator,
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          workManager = workManager,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
       )
-
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
-  }
-
-  @Test
-  fun testOnEventLogout() {
-    val appMainEvent = AppMainEvent.Logout
-
-    appMainViewModel.onEvent(appMainEvent)
-
-    verify { accountAuthenticator.logout() }
   }
 
   @Test
@@ -135,26 +140,35 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventSyncData() {
-    val appMainEvent = AppMainEvent.SyncData
+  fun testOnEventSyncDataWhenDeviceIsOnline() {
+    val appMainEvent = AppMainEvent.SyncData(application)
     appMainViewModel.onEvent(appMainEvent)
 
-    verify { syncBroadcaster.runSync() }
-    verify { appMainViewModel.retrieveAppMainUiState() }
+    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+  }
+
+  @Test
+  fun testOnEventDoNotSyncDataWhenDeviceIsOffline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+    val appMainEvent = AppMainEvent.SyncData(context)
+    appMainViewModel.onEvent(appMainEvent)
+
+    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
   }
 
   @Test
   fun testOnEventUpdateSyncStates() {
-    val stateInProgress = mockk<State.InProgress>()
+    val stateInProgress = mockk<SyncJobStatus.InProgress>()
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateInProgress, "Some timestamp"))
     Assert.assertEquals("Some timestamp", appMainViewModel.appMainUiState.value.lastSyncTime)
 
     // Simulate sync state Finished
     val timestamp = OffsetDateTime.now()
-    val success = spyk(Result.Success())
-    every { success.timestamp } returns timestamp
-    val stateFinished = mockk<State.Finished>()
-    every { stateFinished.result } returns success
+
+    val stateFinished = mockk<SyncJobStatus.Finished>()
+    every { stateFinished.timestamp } returns timestamp
 
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
     Assert.assertEquals(
@@ -197,7 +211,7 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_REPORT
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS
           )
         )
       )
@@ -208,7 +222,7 @@ class AppMainViewModelTest : RobolectricTest() {
     // We have triggered workflow for launching report
     val intSlot = slot<Int>()
     verify { navController.navigate(capture(intSlot)) }
-    Assert.assertEquals(MainNavigationScreen.Reports.route, intSlot.captured)
+    Assert.assertEquals(MainNavigationScreen.Settings.route, intSlot.captured)
   }
 
   @Test
@@ -233,9 +247,76 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun onRefreshAuthToken() {
-    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
-    verify { accountAuthenticator.loadRefreshedSessionAccount(any()) }
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse = QuestionnaireResponse()
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.INPROGRESS)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+          }
+      )
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
+      runTest {
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+
+    appMainViewModel.onQuestionnaireSubmission(
+      QuestionnaireSubmission(
+        questionnaireResponse = QuestionnaireResponse(),
+        questionnaireConfig = QuestionnaireConfig(taskId = null, id = "qId")
+      )
+    )
+
+    coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) }
   }
 }

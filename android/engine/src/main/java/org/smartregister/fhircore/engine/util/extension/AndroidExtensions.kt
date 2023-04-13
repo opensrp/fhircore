@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,18 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
-import android.os.Build
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
-import ca.uhn.fhir.context.FhirContext
-import com.google.gson.Gson
+import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import java.util.Locale
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -58,27 +61,18 @@ fun Activity.refresh() {
   finishAffinity()
 }
 
-fun Context.setAppLocale(languageTag: String): Configuration? {
+fun Context.setAppLocale(languageTag: String): Configuration {
   val res: Resources = this.resources
   val configuration: Configuration = res.configuration
   try {
     val locale = Locale.forLanguageTag(languageTag)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      configuration.setLocale(locale)
-      val localeList = LocaleList(locale)
-      LocaleList.setDefault(localeList)
-      configuration.setLocales(localeList)
-      this.createConfigurationContext(configuration)
-    } else {
-      configuration.locale = locale
-      res.updateConfiguration(configuration, res.displayMetrics)
-    }
+    configuration.setLocale(locale)
+    val localeList = LocaleList(locale)
+    LocaleList.setDefault(localeList)
+    configuration.setLocales(localeList)
+    this.createConfigurationContext(configuration)
   } catch (e: Exception) {
     Timber.e(e)
-  }
-
-  if (Build.VERSION.SDK_INT <= 23) {
-    Locale.setDefault(Locale(languageTag))
   }
 
   return configuration
@@ -91,24 +85,15 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 /** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */
 fun Context.appVersion(): Pair<Int, String> =
   Pair(
-    this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
-    this.packageManager.getPackageInfo(this.packageName, 0).versionName.substringBefore("-")
+    this.packageManager.getPackageInfo(this.packageName, 0)?.versionCode ?: 1,
+    this.packageManager.getPackageInfo(this.packageName, 0).versionName?.substringBefore("-")
+      ?: "0.0.1"
   )
 
 fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {
   if (resourceName.isNullOrEmpty()) return null
   val resourceId = this.resources.getIdentifier(resourceName, resourceType, this.packageName)
   return if (resourceId != 0) resourceId else null
-}
-
-fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
-  var json = assets.open(id).bufferedReader().use { it.readText() }
-
-  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
-
-  return if (Resource::class.java.isAssignableFrom(clazz))
-    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
-  else Gson().fromJson(json, clazz)
 }
 
 /**
@@ -142,3 +127,55 @@ fun Context.getActivity(): AppCompatActivity? =
     is ContextWrapper -> baseContext.getActivity()
     else -> null
   }
+
+/**
+ * This is required to fix keyboard overlapping content in a Composable screen. This functionality
+ * is applied after the setContent function of the activity is called.
+ */
+fun Activity.applyWindowInsetListener() {
+  ViewCompat.setOnApplyWindowInsetsListener(this.findViewById(android.R.id.content)) { view, insets
+    ->
+    val bottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+    view.updatePadding(bottom = bottom)
+    insets
+  }
+}
+
+/**
+ * This function launches another [Activity] on top of the current. The current [Activity] is
+ * cleared from the back stack for launching the next activity then the current [Activity] is
+ * finished based on [finishLauncherActivity] condition.
+ */
+inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
+  finishLauncherActivity: Boolean = true,
+  bundle: Bundle = bundleOf()
+) {
+  startActivity(
+    Intent(this, A::class.java).apply {
+      addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+      addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+      putExtras(bundle)
+    }
+  )
+  if (finishLauncherActivity) finish()
+}
+
+/** This function checks if the device is online */
+fun Context.isDeviceOnline(): Boolean {
+  val connectivityManager =
+    this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+  val network = connectivityManager.activeNetwork ?: return false
+  val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+  // Device can be connected to the internet through any of these NetworkCapabilities
+  val transports: List<Int> =
+    listOf(
+      NetworkCapabilities.TRANSPORT_ETHERNET,
+      NetworkCapabilities.TRANSPORT_CELLULAR,
+      NetworkCapabilities.TRANSPORT_WIFI,
+      NetworkCapabilities.TRANSPORT_VPN
+    )
+
+  return transports.any { capabilities.hasTransport(it) }
+}

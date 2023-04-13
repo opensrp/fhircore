@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class MeasureReportConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.MeasureReport.name,
+  val id: String,
   val registerId: String,
+  val registerDate: String? = null,
+  val showFixedRangeSelection: Boolean? = null,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()

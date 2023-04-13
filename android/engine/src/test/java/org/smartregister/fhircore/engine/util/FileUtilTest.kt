@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import android.content.res.AssetManager
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
 import org.junit.Assert
 import org.junit.Before
@@ -65,7 +67,7 @@ class FileUtilTest {
   @Test
   fun recurseFoldersTest() {
     val baseTestPathMeasureAssets =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -77,10 +79,18 @@ class FileUtilTest {
   }
 
   @Test
+  fun recurseFoldersTestCatchesThrow() {
+    val fileDir = mockk<File>()
+    every { fileDir.listFiles() }.throws(IOException())
+    val fileListString = FileUtil.recurseFolders(fileDir)
+    Assert.assertEquals(mutableListOf<String>(), fileListString)
+  }
+
+  @Test
   fun testWriteFileOnInternalStorage() {
     val exampleFileName = "example.json"
     val baseDir =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -98,7 +108,7 @@ class FileUtilTest {
     f1.delete()
 
     val baseDir2 =
-      System.getProperty("user.dir") +
+      System.getProperty("user.dir")!! +
         File.separator +
         "src" +
         File.separator +
@@ -112,17 +122,39 @@ class FileUtilTest {
 
     FileUtil.writeFileOnInternalStorage(context, exampleFileName, "hello", "")
 
-    val file = File(completeFile2)
-    Assert.assertNotNull(file)
-    file.delete()
+    val f2 = File(completeFile2)
+    Assert.assertNotNull(f2)
+    f2.delete()
     fileBaseDir2.delete()
+  }
+
+  @Test
+  fun testWriteFileOnInternalStorageWithEmptyBody() {
+    val exampleFileName = "example.json"
+    val baseDir =
+      System.getProperty("user.dir")!! +
+        File.separator +
+        "src" +
+        File.separator +
+        File.separator +
+        "test/resources/cql/libraryevaluator/"
+
+    val completeFile = baseDir + File.separator + exampleFileName
+
+    every { context.filesDir } returns File(baseDir)
+
+    FileUtil.writeFileOnInternalStorage(context, exampleFileName, dirName = "")
+
+    val f1 = File(completeFile)
+    Assert.assertNotNull(f1)
+    f1.delete()
   }
 
   @Test
   fun testReadFileFromInternalStorage() {
     every { context.filesDir } returns
       File(
-        System.getProperty("user.dir") +
+        System.getProperty("user.dir")!! +
           File.separator +
           "src" +
           File.separator +

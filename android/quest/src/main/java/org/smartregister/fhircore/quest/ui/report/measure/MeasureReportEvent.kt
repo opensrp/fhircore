@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 sealed class MeasureReportEvent {
   data class OnSelectMeasure(
-    val measureReportConfig: MeasureReportConfig,
+    val measureReportConfig: List<MeasureReportConfig>? = emptyList(),
     val navController: NavController
   ) : MeasureReportEvent()
   data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long, Long>) :
@@ -37,5 +37,6 @@ sealed class MeasureReportEvent {
   ) : MeasureReportEvent()
   data class OnPatientSelected(val patientViewData: MeasureReportPatientViewData) :
     MeasureReportEvent()
-  data class OnSearchTextChanged(val searchText: String) : MeasureReportEvent()
+  data class OnSearchTextChanged(val reportId: String, val searchText: String) :
+    MeasureReportEvent()
 }

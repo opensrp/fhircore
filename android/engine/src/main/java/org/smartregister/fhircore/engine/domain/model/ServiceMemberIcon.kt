@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package org.smartregister.fhircore.engine.domain.model
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonNames
 import org.smartregister.fhircore.engine.R
 
+@Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ServiceMemberIcon(val icon: Int) {
   @JsonNames("child", "Child") CHILD(R.drawable.ic_kids),
   @JsonNames("pregnant_woman", "PregnantWoman") PREGNANT_WOMAN(R.drawable.ic_pregnant)

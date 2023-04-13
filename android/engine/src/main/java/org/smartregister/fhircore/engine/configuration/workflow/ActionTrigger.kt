@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ enum class ActionTrigger {
    * An action that is performed when user presses a button or any actionable component in the UI
    */
   ON_CLICK,
-
-  /** An action triggered when the user exits their current screen */
-  ON_CLOSE,
 
   /** Action that is triggered to count register items */
   ON_COUNT

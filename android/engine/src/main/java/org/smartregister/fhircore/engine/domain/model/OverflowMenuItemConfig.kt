@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,5 +27,6 @@ data class OverflowMenuItemConfig(
   val backgroundColor: String? = null,
   val visible: String,
   val showSeparator: Boolean = false,
+  val enabled: String = "true",
   val actions: List<ActionConfig> = emptyList()
 )

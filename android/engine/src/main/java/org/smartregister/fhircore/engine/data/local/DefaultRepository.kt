@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -38,10 +37,10 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -68,13 +67,12 @@ constructor(
   open val configService: ConfigService
 ) {
 
-  val appConfig: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
-  }
-
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
+
+  suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
+    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
 
   suspend fun loadResource(reference: Reference) =
     withContext(dispatcherProvider.io()) {
@@ -89,9 +87,11 @@ constructor(
     subjectParam: ReferenceClientParam,
     filters: List<DataQuery>? = null
   ): List<T> =
-    fhirEngine.search {
-      filterByResourceTypeId(subjectParam, subjectType, subjectId)
-      filters?.forEach { filterBy(it) }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByResourceTypeId(subjectParam, subjectType, subjectId)
+        filters?.forEach { filterBy(it) }
+      }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
@@ -119,12 +119,12 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun create(addMandatoryTags: Boolean = true, vararg resource: Resource): List<String> {
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        if (addMandatoryTags) {
-          it.addTags(configService.provideMandatorySyncTags(sharedPreferencesHelper))
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
         }
       }
 
@@ -138,7 +138,7 @@ constructor(
     }
   }
 
-  suspend fun <R : Resource> addOrUpdate(resource: R, addMandatoryTags: Boolean = true) {
+  suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -169,33 +169,48 @@ constructor(
         }
     }
 
-  suspend fun changeManagingEntity(newManagingEntityId: String, groupId: String) {
+  suspend fun changeManagingEntity(
+    newManagingEntityId: String,
+    groupId: String,
+    managingEntityConfig: ManagingEntityConfig?
+  ) {
+    val group = fhirEngine.get<Group>(groupId)
+    if (managingEntityConfig?.resourceType == ResourceType.Patient) {
+      val relatedPerson =
+        if (group.managingEntity.id != null) {
+          fhirEngine.get<RelatedPerson>(group.managingEntity.id)
+        } else {
+          RelatedPerson().apply { id = UUID.randomUUID().toString() }
+        }
+      val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
 
-    val patient = fhirEngine.get<Patient>(newManagingEntityId)
+      updateRelatedPersonDetails(relatedPerson, newPatient, managingEntityConfig.relationshipCode)
 
-    val relatedPerson =
-      RelatedPerson().apply {
-        this.active = true
-        this.name = patient.name
-        this.birthDate = patient.birthDate
-        this.telecom = patient.telecom
-        this.address = patient.address
-        this.gender = patient.gender
-        this.relationshipFirstRep.codingFirstRep.system =
-          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
-        this.relationshipFirstRep.codingFirstRep.code = "99990006"
-        this.relationshipFirstRep.codingFirstRep.display = "Family Head"
-        this.patient = patient.asReference()
-        this.id = UUID.randomUUID().toString()
-      }
+      addOrUpdate(resource = relatedPerson)
 
-    create(true, relatedPerson)
-    val group =
-      fhirEngine.get<Group>(groupId).apply {
-        managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.first().family
-      }
-    fhirEngine.update(group)
+      group.managingEntity = relatedPerson.asReference()
+      group.managingEntity.id = relatedPerson.id
+      fhirEngine.update(group)
+    }
+  }
+
+  private fun updateRelatedPersonDetails(
+    existingPerson: RelatedPerson,
+    newPatient: Patient,
+    relationshipCode: Code?
+  ) {
+    existingPerson.apply {
+      active = true
+      name = newPatient.name
+      birthDate = newPatient.birthDate
+      telecom = newPatient.telecom
+      address = newPatient.address
+      gender = newPatient.gender
+      patient = newPatient.asReference()
+      relationshipFirstRep.codingFirstRep.system = relationshipCode?.system
+      relationshipFirstRep.codingFirstRep.code = relationshipCode?.code
+      relationshipFirstRep.codingFirstRep.display = relationshipCode?.display
+    }
   }
 
   suspend fun removeGroup(groupId: String, isDeactivateMembers: Boolean?) {
@@ -220,7 +235,7 @@ constructor(
             member.map { thisMember ->
               loadResource<Patient>(thisMember.entity.extractId())?.let { patient ->
                 patient.active = false
-                addOrUpdate(patient)
+                addOrUpdate(resource = patient)
               }
             }
           }
@@ -228,7 +243,7 @@ constructor(
         member.clear()
         active = false
       }
-      addOrUpdate(group)
+      addOrUpdate(resource = group)
     }
   }
 
@@ -257,11 +272,6 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group.member.run {
-            remove(
-              this.find { it.entity.reference == "${resource.resourceType}/${resource.logicalId}" }
-            )
-          }
           group
             .managingEntity
             ?.let { reference ->
@@ -280,10 +290,10 @@ constructor(
             }
 
           // Update this group resource
-          addOrUpdate(group)
+          addOrUpdate(resource = group)
         }
       }
-      addOrUpdate(resource)
+      addOrUpdate(resource = resource)
     }
   }
 

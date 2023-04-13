@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,18 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
+import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
+import java.time.Duration
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -32,8 +38,10 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
@@ -44,6 +52,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
@@ -76,12 +85,6 @@ fun Base?.valueToString(): String {
     else -> this.toString()
   }
 }
-
-fun Coding.asCodeableConcept() =
-  CodeableConcept().apply {
-    addCoding(this@asCodeableConcept)
-    text = this@asCodeableConcept.display
-  }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
@@ -162,9 +165,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
-    if (qrItems.isEmpty() || qItem.linkId != qrItems[index].linkId) {
+    if (qrItems.isEmpty() || (index < qrItems.size && qItem.linkId != qrItems[index].linkId)) {
       qrItems.add(index, qItem.createQuestionnaireResponseItem())
-    } else qItem.item.generateMissingItems(qrItems[index].item)
+    } else if (index < qrItems.size) {
+      qItem.item.generateMissingItems(qrItems[index].item)
+    }
   }
 }
 /**
@@ -178,7 +183,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly
+      item.readOnly = readOnly || item.readOnly
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
@@ -208,11 +213,6 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
     lastUpdated = Date()
     setVersionId(versionId.toString())
   }
-}
-
-fun QuestionnaireResponse.assertSubject() {
-  if (!this.hasSubject() || !this.subject.hasReference())
-    throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
 }
 
 fun QuestionnaireResponse.getEncounterId(): String? {
@@ -260,8 +260,6 @@ fun Resource.referenceParamForObservation(): ReferenceClientParam =
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
 
-fun generateUniqueId() = UUID.randomUUID().toString()
-
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {
     ResourceType.fromCode(resourceCode)
@@ -296,7 +294,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 }
 
 fun String.resourceClassType(): Class<out Resource> =
-  Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+  FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
 
 /**
  * A function that extracts only the UUID part of a resource logicalId.
@@ -313,3 +311,94 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
 }
+
+/**
+ * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
+ * tasks based on the date of a related immunization. The function takes a [defaultRepository]
+ * parameter that is an instance of [DefaultRepository]. It then loops through all the tasks that
+ * this task is a part of, loads the dependent tasks and their related immunization resources from
+ * the repository, and updates the start date of the dependent task if it's scheduled to start
+ * before the immunization date plus the required number of days.
+ *
+ * We may potentially extend this function to consider the attributes of resources other than
+ * immunizations.
+ *
+ * @param defaultRepository An instance of DefaultRepository
+ */
+suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
+  return apply {
+    if (hasPartOf()) {
+      partOf.forEach { task ->
+        val dependentTask =
+          defaultRepository.loadResource<Task>(task.reference.extractLogicalIdUuid())
+        if (dependentTask != null &&
+            dependentTask.hasOutput() &&
+            dependentTask.executionPeriod.hasStart() &&
+            dependentTask.hasInput() &&
+            (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming())
+        ) {
+          dependentTask.output?.forEach { dependentTaskOutputValue ->
+            if (dependentTaskOutputValue.hasValue()) {
+              val dependentTaskReference =
+                Reference(
+                  Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
+                      REFERENCE]
+                    ?.jsonPrimitive
+                    ?.content
+                )
+              val encounterResource =
+                defaultRepository.loadResource<Encounter>(
+                  dependentTaskReference.reference.extractLogicalIdUuid()
+                )
+              encounterResource?.partOf?.reference?.let { partOfReference ->
+                try {
+                  val immunizationResource =
+                    defaultRepository.loadResource<Immunization>(
+                      partOfReference.extractLogicalIdUuid()
+                    )
+                  immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
+                    ?.valueAsCalendar
+                    ?.let { immunizationDate ->
+                      val dependentTaskStartDate = dependentTask.executionPeriod.start
+                      dependentTask.input.forEach {
+                        val dependentTaskInputDate = it.value.toString().toInt()
+                        val difference =
+                          abs(
+                            Duration.between(
+                                immunizationDate.toInstant(),
+                                dependentTaskStartDate.toInstant()
+                              )
+                              .toDays()
+                          )
+                        if (difference < dependentTaskInputDate &&
+                            dependentTask.executionPeriod.hasStart()
+                        ) {
+                          dependentTask
+                            .apply {
+                              executionPeriod.start =
+                                Date.from(immunizationDate.toInstant())
+                                  .plusDays(dependentTaskInputDate)
+                            }
+                            .run {
+                              defaultRepository.addOrUpdate(
+                                addMandatoryTags = true,
+                                resource = dependentTask
+                              )
+                            }
+                        }
+                      }
+                    }
+                } catch (e: ClassCastException) {
+                  Timber.e(e)
+                  return@forEach
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+const val REFERENCE = "reference"

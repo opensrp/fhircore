@@ -1,0 +1,509 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "practitionerProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Practitioner"
+    },
+    "relatedResources": [
+      {
+        "resource": "PractitionerRole",
+        "searchParameter": "practitioner",
+        "relatedResources": [
+          {
+            "resource": "Organization",
+            "fhirPathExpression": "PractitionerRole.organization",
+            "relatedResources": [
+              {
+                "resource": "OrganizationAffiliation",
+                "searchParameter": "primary-organization",
+                "relatedResources": [
+                  {
+                    "resource": "Location",
+                    "fhirPathExpression": "OrganizationAffiliation.location"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "practitionerFirstName",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerFirstName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(given[0])\"))"
+      ]
+    },
+    {
+      "name": "practitionerLastName",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerLastName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(family)\"))"
+      ]
+    },
+    {
+      "name": "practitionerName",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerName', data.get('practitionerFirstName') + ' ' + data.get('practitionerLastName'))"
+      ]
+    },
+    {
+      "name": "assignedLocation",
+      "condition": "true",
+      "actions": [
+        "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
+      ]
+    },
+    {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.replace(\"Practitioner/","\").split(\"/\").get(0)\")"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{practitionerName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Village: @{assignedLocation}",
+                  "fontSize": 13.0,
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "SPACER",
+                  "height": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 8
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "header": {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "PATIENTS",
+            "primaryTextColor": "#6F7274",
+            "fontSize": 16.0,
+            "padding": 16
+          },
+          "content": [
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "HHs",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "householdRegister",
+                          "display": "@{practitionerName} - Household Register",
+                          "params": [
+                            {
+                              "paramType": "PARAMDATA",
+                              "key": "practitionerId",
+                              "value": "@{practitionerId}"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Children",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "childRegister",
+                          "display": "@{practitionerName} - Children Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Sick Child",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "sickChildRegister",
+                          "display": "@{practitionerName} - Sick Child Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "ANC",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "ancRegister",
+                          "display": "@{practitionerName} - ANC Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "PNC",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "pncRegister",
+                          "display": "@{practitionerName} - PNC Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "FP",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "fpRegister",
+                          "display": "@{practitionerName} - FP Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Mental Health",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "mentalHealthRegister",
+                          "display": "@{practitionerName} - Mental Health Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "HIV",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "hivRegister",
+                          "display": "@{practitionerName} - HIV Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "TB",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "tbRegister",
+                          "display": "@{practitionerName} - TB Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.3,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "CM-NTD",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 14.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "weight": 0.7,
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "VIEW ALL",
+                      "primaryTextColor": "#006EB8",
+                      "clickable": true,
+                      "fontSize": 14.0,
+                      "primaryTextActions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "cmntdRegister",
+                          "display": "@{practitionerName} - CM-NTD Register"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": []
+}
