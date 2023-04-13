@@ -68,7 +68,6 @@ fun List<ActionConfig>.handleClickEvent(
             }
 
           if (navController.context is QuestionnaireHandler) {
-            Timber.e("Config extension launch form ++++++++++")
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
               intentBundle = intentBundle,

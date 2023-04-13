@@ -187,7 +187,6 @@ constructor(
           resourceData = null,
           navMenu = event.navMenu
         )
-        Timber.e("AppmainviewModel triggerworkflow launch form +++++++++++")
       }
 
       is AppMainEvent.OpenProfile -> {
@@ -328,7 +327,6 @@ constructor(
   }
 
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    Timber.e("Appmainviewmodel calling onSubmitQuestionnaire form closing +++++++++++")
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {

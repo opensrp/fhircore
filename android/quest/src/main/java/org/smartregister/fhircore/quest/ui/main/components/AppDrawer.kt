@@ -323,7 +323,6 @@ private fun MenuActionButton(
           .fillMaxWidth()
           .clickable {
             navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
-            Timber.e("Appdrawer handle click launch form ++++++++++")
           }
           .padding(16.dp)
           .testTag(MENU_BUTTON_TEST_TAG),

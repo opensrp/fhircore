@@ -69,9 +69,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      Timber.e("Appmainactivity calling startActivity activity result code is ${activityResult.resultCode} +++++++++++")
       if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
-      Timber.e("Appmainactivity calling startActivity for result form openning +++++++++++")
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,7 +132,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
-    Timber.e("Appmainactivity calling onSubmitQuestionnaire form closing +++++++++++")
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
@@ -143,15 +140,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      Timber.e("Appmainactivity calling onSubmitQuestionnaire form closing with questionnaireConfig.refreshContent = ${questionnaireConfig?.refreshContent}+++++++++++")
-
       if (questionnaireConfig != null && questionnaireResponse != null) {
         appMainViewModel.questionnaireSubmissionLiveData.postValue(
           QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
         )
       }
       if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        Timber.e("Appmainactivity appMainViewModel.dataRefreshLivedata fired ++++++++++")
         appMainViewModel.dataRefreshLivedata.postValue(true)
       }
     }

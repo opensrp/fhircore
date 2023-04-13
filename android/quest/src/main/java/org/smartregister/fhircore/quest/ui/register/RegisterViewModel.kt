@@ -90,7 +90,6 @@ constructor(
       pagesDataCache.clear()
       allPatientRegisterData = null
     }
-    Timber.e("Register viewmodel paginateRegisterData callled with clearcache = $clearCache ++++++++++")
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)

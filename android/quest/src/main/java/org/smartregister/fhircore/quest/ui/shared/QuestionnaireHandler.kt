@@ -37,7 +37,6 @@ interface QuestionnaireHandler {
     questionnaireConfig: QuestionnaireConfig? = null,
     actionParams: List<ActionParameter> = emptyList()
   ) {
-    Timber.e("QuestionnaireHandler launch form +++++++++")
     startForResult.launch(
       Intent(context, QuestionnaireActivity::class.java)
         .putExtras(
