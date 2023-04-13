@@ -141,7 +141,11 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (firstTimeSync) LoaderDialog(modifier = modifier)
+      if (firstTimeSync)
+        LoaderDialog(
+          modifier = modifier,
+          syncProgressStateFlow = patientRegisterViewModel.syncProgressStateFlow
+        )
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
       if (searchText.isNotEmpty()) {

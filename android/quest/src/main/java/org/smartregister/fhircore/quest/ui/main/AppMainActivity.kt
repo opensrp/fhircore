@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
@@ -93,7 +94,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         )
       }
       is SyncJobStatus.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        Timber.d(
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+        )
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
         )

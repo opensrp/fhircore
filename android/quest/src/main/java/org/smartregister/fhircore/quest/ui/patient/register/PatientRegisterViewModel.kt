@@ -28,11 +28,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -43,9 +43,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
@@ -110,6 +110,9 @@ constructor(
   val firstTimeSyncState: StateFlow<Boolean>
     get() = _firstTimeSyncState.asStateFlow()
 
+  private val _syncProgressMutableStateFlow = MutableStateFlow("")
+  val syncProgressStateFlow = _syncProgressMutableStateFlow.asStateFlow()
+
   private val _totalRecordsCount = MutableLiveData(1L)
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
@@ -127,7 +130,7 @@ constructor(
 
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
-    val refreshCounterFlow = _refreshCounter
+    val refreshCounterFlow = refreshCounter
     viewModelScope.launch {
       combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
         .mapLatest {
@@ -154,14 +157,29 @@ constructor(
     val syncStateListener =
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
-          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
-          if (isStateCompleted) {
-            refresh()
-            _firstTimeSyncState.value = false
-          } else _firstTimeSyncState.value = isFirstTimeSync()
+          when (state) {
+            is SyncJobStatus.Failed, is SyncJobStatus.Finished -> {
+              refresh()
+              _firstTimeSyncState.value = false
+            }
+            is SyncJobStatus.InProgress -> {
+              updateSyncProgress(state)
+              _firstTimeSyncState.value = isFirstTimeSync()
+            }
+            else -> _firstTimeSyncState.value = isFirstTimeSync()
+          }
         }
       }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
+  }
+
+  private fun updateSyncProgress(state: SyncJobStatus.InProgress) {
+    val percentage = state.completed.div(max(state.total, 1).toDouble()).times(100).toInt()
+    if (percentage > 0) {
+      _syncProgressMutableStateFlow.update {
+        "$percentage% ${state.syncOperation.name.lowercase()}ed"
+      }
+    }
   }
 
   fun refresh() {

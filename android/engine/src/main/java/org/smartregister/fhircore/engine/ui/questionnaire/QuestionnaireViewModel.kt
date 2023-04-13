@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -97,9 +96,6 @@ constructor(
   val extractionProgress = MutableLiveData<ExtractionProgress>()
   val questionnaireResponseLiveData = MutableLiveData<QuestionnaireResponse?>(null)
 
-  private val saveButtonEnabledMutableLiveData = MutableLiveData<Boolean>()
-  val saveButtonEnabledLiveData: LiveData<Boolean> = saveButtonEnabledMutableLiveData
-
   val extractionProgressMessage = MutableLiveData<String>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
@@ -120,9 +116,6 @@ constructor(
       decodeFhirResource = true
     )
   }
-
-  fun updateSaveButtonEnableState(enabled: Boolean) =
-    saveButtonEnabledMutableLiveData.postValue(enabled)
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {

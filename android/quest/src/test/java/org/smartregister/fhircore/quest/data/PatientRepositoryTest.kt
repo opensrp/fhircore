@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.data
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -142,7 +143,7 @@ class PatientRepositoryTest : RobolectricTest() {
     coroutineTestRule.runBlockingTest {
       mockkStatic(::loadAdditionalData)
       coEvery { loadAdditionalData(any(), any(), any()) } returns listOf()
-      coEvery { fhirEngine.search<Patient>(any()) } returns
+      coEvery { fhirEngine.search<Patient>(any<Search>()) } returns
         listOf(buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE))
       coEvery { fhirEngine.count(any()) } returns 1
 
@@ -153,7 +154,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("F", data[0].gender)
       Assert.assertEquals("Female", data[0].genderFull())
 
-      coVerify { fhirEngine.search<Patient>(any()) }
+      coVerify { fhirEngine.search<Patient>(any<Search>()) }
       unmockkStatic(::loadAdditionalData)
     }
 
@@ -262,7 +263,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestFormShouldReturnListOfQuestionnaireConfig() =
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+      coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
           Questionnaire().apply {
             name = "g6pd-test"
@@ -281,7 +282,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestFormShouldHandleNullNameAndTitle() =
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+      coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(Questionnaire().apply { id = "1234" })
 
       val results = repository.fetchTestForms(searchFilter())
@@ -295,7 +296,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestFormShouldHandleNullTitle() =
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+      coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
           Questionnaire().apply {
             id = "1234"
@@ -313,7 +314,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestFormShouldHandleNullName() =
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+      coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
           Questionnaire().apply {
             id = "1234"
@@ -522,7 +523,8 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
-    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(Condition().apply { id = "c1" })
+    coEvery { fhirEngine.search<Condition>(any<Search>()) } returns
+      listOf(Condition().apply { id = "c1" })
 
     val result =
       repository.getCondition(
@@ -530,14 +532,14 @@ class PatientRepositoryTest : RobolectricTest() {
         filterOf("code", "Code", Properties())
       )
 
-    coVerify { fhirEngine.search<Condition>(any()) }
+    coVerify { fhirEngine.search<Condition>(any<Search>()) }
 
     Assert.assertEquals("c1", result!!.first().logicalId)
   }
 
   @Test
   fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
-    coEvery { fhirEngine.search<Observation>(any()) } returns
+    coEvery { fhirEngine.search<Observation>(any<Search>()) } returns
       listOf(Observation().apply { id = "o1" })
 
     val result =
@@ -546,14 +548,14 @@ class PatientRepositoryTest : RobolectricTest() {
         filterOf("code", "Code", Properties())
       )
 
-    coVerify { fhirEngine.search<Observation>(any()) }
+    coVerify { fhirEngine.search<Observation>(any<Search>()) }
 
     Assert.assertEquals("o1", result.first().logicalId)
   }
 
   @Test
   fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
-    coEvery { fhirEngine.search<MedicationRequest>(any()) } returns
+    coEvery { fhirEngine.search<MedicationRequest>(any<Search>()) } returns
       listOf(MedicationRequest().apply { id = "mr1" })
 
     val result =
@@ -562,7 +564,7 @@ class PatientRepositoryTest : RobolectricTest() {
         filterOf("code", "Code", Properties())
       )
 
-    coVerify { fhirEngine.search<MedicationRequest>(any()) }
+    coVerify { fhirEngine.search<MedicationRequest>(any<Search>()) }
 
     Assert.assertEquals("mr1", result.first().logicalId)
   }
