@@ -20,6 +20,8 @@ group ExtractTask(
     source definition: ActivityDefinition,
     target careplan: CarePlan, source taskId:String){
 
+
+
     // fill task into careplan contained and add reference in activity.outcome
     subject -> create('Task') as task then {
         subject -> task.id = uuid(),
@@ -46,6 +48,9 @@ group ExtractTask(
 
         } "rule_group_identifier";
 
+        subject->task.description = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_bhf";
+      //  subject -> task.description = evaluate(careplan,$this.contained.last().id) as dex "r_des";
+
         // partof
          subject -> task.partOf = create('Reference') as ref then {
                     subject -> ref.reference = taskId "r_task_ref_id";
@@ -69,7 +74,7 @@ group ExtractTask(
                                      subject -> coding.display = "Dependent (qualifier value)" "r_coding_display";
                              } "r_task_concept_coding";
                      } "r_codeable_concept";
-                     subject -> input.value = 28 "r_input_value";
+                     subject -> input.value = 28 "r_input_value";//TODO discuss implementation on how we can make this dynamic for each dosage
          } "r_task_input";
 
           subject -> task.input = create('Task_Input') as input then{
