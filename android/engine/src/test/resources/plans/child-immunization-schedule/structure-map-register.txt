@@ -8,8 +8,8 @@ group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
-            evaluate(src, $this.parameter.where(name='version').value) as version,
-            then ExtractTask(period, version, subject, definition, tgt, taskId) "r_careplan";
+            evaluate(src, $this.parameter.where(name='version').value) as version
+            then ExtractTask(period, version, subject, definition, tgt) "r_careplan";
 }
 
 group ExtractTask(
@@ -46,21 +46,10 @@ group ExtractTask(
         } "rule_group_identifier";
 
        // subject->task.description = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_bhf";
-        //subject -> task.description = evaluate(careplan,$this.contained.last().id) as dex "r_des";
-//careplan.activity.where(detail.input.exists(input.value='OPV 1')).detail
 
 
 
-        subject-> evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) as preReqDosage then{// OPV 1
-                    subject ->evaluate(careplan,$this.outcomeReference.where(input.last().value = "OPV 1")) as preReqTask then{
-                                       // partof
-                                       subject -> task.partOf = create('Reference') as ref then {
-                                                  subject -> ref.reference = evaluate(preReqTask,$this.id) "r_task_ref_id";
-                                       } "r_task_part_of";
-                         }"r_abc";
-
-       } "r_des";
-
+        //careplan.activity.where(detail.input.exists(input.value='OPV 1')).detail
 
 
         subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
@@ -84,14 +73,7 @@ group ExtractTask(
                      subject -> input.value = 28 "r_input_value";//TODO discuss implementation on how we can make this dynamic for each dosage
          } "r_task_input";
 
-          subject -> task.input = create('Task_Input') as input then{
-                              subject -> input.type = create("CodeableConcept") as concept then{
-                                      subject-> concept.coding = c("http://snomed.info/sct","900000000000457003") as coding then{
-                                              subject -> coding.display = "Reference set attribute (foundation metadata concept)" "r_coding_display";
-                                      } "r_task_concept_coding";
-                              } "r_codeable_concept";
-                              subject -> input.value = taskId "r_input_value";
-          } "r_task_input";
+
            subject -> task.input = create('Task_Input') as input then{
                                         subject -> input.type = create("CodeableConcept") as concept "r_concept";
                                         subject -> input.value = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_input_value";
@@ -113,11 +95,15 @@ group ExtractTask(
         subject then {
                  subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
                             activity.outcomeReference = reference(task) "r_cp_task_ref";
-                 subject -> careplan.contained = task
-                             "r_add_task";
+                 subject -> careplan.contained = task "r_add_task";
         } "r_cp_task";
 
-
+        // partof
+         subject-> evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) as preReqDosage then{// OPV 1
+                   subject -> task.partOf = create('Reference') as ref then {
+                              subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value =preReqDosage).first().id) "r_task_ref_id";
+                   } "r_task_part_of";
+        } "r_des";
     } "r_task";
 }
 
