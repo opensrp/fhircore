@@ -14,7 +14,7 @@ apply from: '../jacoco.gradle'
 apply from: '../properties.gradle'
 
 android {
-    compileSdkVersion sdk_versions.compile_sdk
+    compileSdkVersion 33
 
     dataBinding {
         enabled true
@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId "org.smartregister.fhircore"
-        minSdkVersion sdk_versions.min_sdk
-        targetSdkVersion sdk_versions.target_sdk
+        minSdkVersion 26
+        targetSdkVersion 33
         versionCode 1
         versionName "0.2.1"
         multiDexEnabled true
@@ -34,7 +34,6 @@ android {
         buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
-        buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
@@ -216,7 +215,7 @@ android {
             reset()
 
             // A list of ABIs for Gradle to create APKs for.
-            include "armeabi-v7a","x86","arm64-v8a","x86_64"
+            include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
 
             universalApk false
         }
@@ -267,66 +266,59 @@ configurations {
 }
 
 dependencies {
-    coreLibraryDesugaring deps.desugar
+    coreLibraryDesugaring(libs.core.desugar)
+
+    //Application dependencies
     implementation(project(":engine"))
     implementation(project(":geowidget")) {
         transitive = true
     }
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'androidx.work:work-runtime-ktx:2.7.1'
-    implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
-    implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.6.5-SNAPSHOT')
-    implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.measure:2.4.0'){
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.hilt.work)
+    implementation(libs.cql.measure.evaluator) {
         exclude group: 'xpp3'
     }
-    implementation 'com.github.bumptech.glide:glide:4.13.0'
 
-    //Hilt - Dependency Injection
-    implementation "com.google.dagger:hilt-android:$hiltVersion"
-    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
-    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
-    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+    //Annotation processors
+    kapt(libs.hilt.compiler)
+    kapt(libs.dagger.hilt.compiler)
 
-    implementation 'androidx.work:work-testing:2.7.1'
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.vintage.engine)
 
-    testImplementation deps.junit5_api
-    testRuntimeOnly deps.junit5_engine
-    testRuntimeOnly deps.junit5_engine_vintage
-    testImplementation deps.robolectric
-    testImplementation deps.atsl.ext_junit
-    testImplementation deps.atsl.ext_junit_ktx
-    testImplementation deps.coroutines.test
-    testImplementation deps.androidx.core_test
-    debugImplementation deps.fragment_testing
-    releaseImplementation deps.fragment_testing
-    testImplementation deps.mockk
-    testImplementation deps.kotlin.test
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
+    // Unit test dependencies
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.core.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.navigation.testing)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.work.testing)
 
-    // Hilt test dependencies
-    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
-    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
-    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    // To run only on debug builds
+    debugImplementation(libs.ui.test.manifest)
+    debugImplementation(libs.fragment.testing)
+//    debugImplementation(libs.leakcanary.android)
 
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
+    //Annotation processors for test
+    kaptTest(libs.hilt.android.compiler)
+    kaptAndroidTest(libs.hilt.android.compiler)
 
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    androidTestUtil 'androidx.test:orchestrator:1.4.2'
+    androidTestUtil(libs.orchestrator)
 
-    androidTestImplementation deps.mockk_android
-    androidTestImplementation "androidx.test:core-ktx:$versions.atsl_core"
-
-   // debugImplementation because LeakCanary should only run in debug builds.
-   // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-
-    testImplementation 'info.cqframework:cql-to-elm:2.4.0'
+    //Android test dependencies
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.junit.ktx)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.core.ktx.test)
 }

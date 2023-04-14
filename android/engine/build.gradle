@@ -11,19 +11,18 @@ plugins {
 }
 
 apply from: '../jacoco.gradle'
-apply from: '../configs.gradle'
 
 android {
 
-    compileSdkVersion sdk_versions.compile_sdk
+    compileSdkVersion 33
 
     dataBinding {
         enabled true
     }
 
     defaultConfig {
-        minSdkVersion sdk_versions.min_sdk
-        targetSdkVersion sdk_versions.target_sdk
+        minSdkVersion 26
+        targetSdkVersion 33
         testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -92,7 +91,7 @@ android {
 // Test Logging
 tasks.withType(Test) {
     testLogging {
-        events  "failed"
+        events "failed"
     }
 }
 
@@ -106,107 +105,94 @@ configurations {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.core.desugar)
 
-    implementation 'androidx.preference:preference-ktx:1.2.0'
-    implementation 'androidx.work:work-testing:2.7.1'
-    coreLibraryDesugaring deps.desugar
-
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-    implementation 'androidx.fragment:fragment-ktx:1.5.5'
-    implementation 'androidx.security:security-crypto:1.1.0-alpha04'
-    implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-    implementation "androidx.cardview:cardview:1.0.0"
-    implementation 'joda-time:joda-time:2.10.14'
-    implementation 'androidx.paging:paging-runtime-ktx:3.1.1'
-    implementation 'com.github.bumptech.glide:glide:4.13.0'
-    implementation 'id.zelory:compressor:3.0.1'
-
-    // CQL
-    implementation group: 'xerces', name: 'xercesImpl', version: '2.12.2'
-    implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
-
-    def cqlEngineVersion = '2.4.0'
-    implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
-    implementation "org.opencds.cqf.cql:engine.jackson:$cqlEngineVersion"
-
-    def cqlEvaluatorVersion = '2.4.0'
-    implementation("org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"){
+    //Library dependencies
+    implementation(libs.preference.ktx)
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.constraintlayout)
+    implementation(libs.constraintlayout.compose)
+    implementation(libs.fragment.ktx)
+    implementation(libs.security.crypto)
+    implementation(libs.cardview)
+    implementation(libs.joda.time)
+    implementation(libs.paging.runtime.ktx)
+    implementation(libs.compressor)
+    implementation(libs.xercesImpl)
+    implementation(libs.msg.simple)
+    implementation(libs.cqf.cql.engine)
+    implementation(libs.cql.engine.jackson)
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.hilt.work)
+    implementation(libs.slf4j.nop)
+    implementation(libs.cqf.cql.evaluator) {
         exclude group: 'com.github.ben-manes.caffeine'
         exclude group: 'ca.uhn.hapi.fhir'
     }
-    implementation("org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"){
+    implementation(libs.cql.evaluator.builder) {
         exclude group: 'com.github.ben-manes.caffeine'
         exclude group: 'ca.uhn.hapi.fhir'
     }
-    implementation("org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"){
+    implementation(libs.cql.evaluator.plandefinition) {
         exclude group: 'com.github.ben-manes.caffeine'
         exclude group: 'ca.uhn.hapi.fhir'
     }
-    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion"){
+    implementation(libs.cql.evaluator.dagger) {
         exclude group: 'com.github.ben-manes.caffeine'
         exclude group: 'ca.uhn.hapi.fhir'
     }
 
-    // Hilt - Dependency Injection
-    implementation "com.google.dagger:hilt-android:$hiltVersion"
-    implementation "androidx.hilt:hilt-work:$hiltWorkerVersion"
-    kapt "androidx.hilt:hilt-compiler:$hiltWorkerVersion"
-    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
-
-    api 'io.jsonwebtoken:jjwt:0.9.1'
-
-    def lifecycleKtxVersion = '2.5.1'
-    api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleKtxVersion"
-    api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
-
-    // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.6.3-SNAPSHOT')
-    implementation("org.slf4j:slf4j-nop:1.7.36")
-
-    //Configure Jetpack Compose and navigation
-    api("androidx.compose.ui:ui:$composeVersion")
-    api("androidx.compose.ui:ui-tooling:$composeVersion")
-    api("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    api ("androidx.navigation:navigation-fragment-ktx:$navigationVersion")
-    api ("androidx.navigation:navigation-ui-ktx:$navigationVersion")
-    api("androidx.navigation:navigation-compose:$navigationVersion")
-    api("androidx.navigation:navigation-testing:$navigationVersion")
-    api("androidx.compose.material:material-icons-extended:1.3.1")
-    api("androidx.compose.material:material-icons-core:1.3.1")
-    api("androidx.compose.material3:material3:1.0.1")
-    api("androidx.compose.foundation:foundation:1.3.1")
-    api("androidx.hilt:hilt-navigation-compose:1.0.0")
-    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
-    api("androidx.paging:paging-compose:1.0.0-alpha17")
-    api("androidx.activity:activity-compose:1.6.1")
-    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2'
-    api ("com.google.accompanist:accompanist-flowlayout:0.23.1")
-    api ("com.google.accompanist:accompanist-placeholder:0.23.1")
-    api("androidx.work:work-runtime-ktx:2.7.1")
-    testImplementation 'androidx.work:work-runtime-ktx:2.7.1'
-    api("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
-
-    def coroutineVersion = '1.6.2'
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
-
-    api('javax.xml.stream:stax-api:1.0')
-    api('com.github.ben-manes.caffeine:caffeine:2.9.1')
-
-    api("org.smartregister:data-capture:1.0.0-preview2-SNAPSHOT") {
+    //Shared dependencies
+    api(libs.glide)
+    api(libs.p2p.lib)
+    api(libs.jjwt)
+    api(libs.fhir.common.utils)
+    api(libs.lifecycle.livedata.ktx)
+    api(libs.lifecycle.viewmodel.ktx)
+    api(libs.ui)
+    api(libs.ui.tooling)
+    api(libs.runtime.livedata)
+    api(libs.navigation.fragment.ktx)
+    api(libs.navigation.ui.ktx)
+    api(libs.navigation.compose)
+    api(libs.navigation.testing)
+    api(libs.material.icons.extended)
+    api(libs.material.icons.core)
+    api(libs.material3)
+    api(libs.foundation)
+    api(libs.hilt.navigation.compose)
+    api(libs.lifecycle.viewmodel.compose)
+    api(libs.paging.compose)
+    api(libs.activity.compose)
+    api(libs.kotlinx.serialization.json)
+    api(libs.accompanist.flowlayout)
+    api(libs.accompanist.placeholder)
+    api(libs.work.runtime.ktx)
+    api(libs.prettytime)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.android)
+    api(libs.kotlin.reflect)
+    api(libs.stax.api)
+    api(libs.caffeine)
+    api(libs.gson)
+    api(libs.timber)
+    api(libs.retrofit)
+    api(libs.converter.gson)
+    api(libs.retrofit.mock)
+    api(libs.retrofit2.kotlinx.serialization.converter)
+    api(libs.okhttp)
+    api(libs.okhttp.logging.interceptor)
+    api(libs.easy.rules.jexl) {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+    api(libs.data.capture) {
         transitive = true
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-
-    api('org.smartregister:workflow:0.1.0-alpha02-preview9-SNAPSHOT') {
+    api(libs.workflow) {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -216,70 +202,54 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
         exclude group: 'com.github.ben-manes.caffeine'
     }
-
-    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview4-SNAPSHOT') {
+    api(libs.contrib.barcode) {
         transitive = true
         exclude group: 'org.smartregister', module: 'data-capture'
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-
-    api('org.smartregister:engine:0.1.0-beta02-preview14.1-SNAPSHOT') {
+    api(libs.fhir.engine) {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.github.ben-manes.caffeine'
     }
 
-    api 'com.google.code.gson:gson:2.9.1'
-    api 'com.jakewharton.timber:timber:5.0.1'
+    //Annotation processors
+    kapt(libs.hilt.compiler)
+    kapt(libs.dagger.hilt.compiler)
 
-    def retrofitVersion = '2.9.0'
+    //Annotation processors for test
+    kaptTest(libs.hilt.android.compiler)
+    kaptAndroidTest(libs.hilt.android.compiler)
 
-    api "com.squareup.retrofit2:retrofit:$retrofitVersion"
-    api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
-    api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
-    api "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.vintage.engine)
 
-    def okhttpVersion = '4.10.0'
-    api "com.squareup.okhttp3:okhttp:$okhttpVersion"
-    api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+    //Test dependencies
+    testImplementation(libs.work.runtime.ktx)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.ktx)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.core.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.json)
+    testImplementation(libs.kotlinx.coroutines.debug)
+    testImplementation(libs.navigation.testing)
+    testImplementation(libs.work.testing)
 
-    // JEXL
-    api ('org.jeasy:easy-rules-jexl:4.1.0') {
-        exclude group: 'commons-logging', module: 'commons-logging'
-    }
+    //To run only on debug builds
+    debugImplementation(libs.ui.test.manifest)
+    debugImplementation(libs.fragment.testing)
 
-    // Hilt test dependencies
-    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
-
-    testImplementation deps.junit5_api
-    testRuntimeOnly deps.junit5_engine
-    testRuntimeOnly deps.junit5_engine_vintage
-    testImplementation deps.robolectric
-    testImplementation deps.atsl.ext_junit
-    testImplementation deps.atsl.ext_junit_ktx
-    testImplementation deps.coroutines.test
-    testImplementation deps.androidx.core_test
-    debugImplementation deps.fragment_testing
-    releaseImplementation deps.fragment_testing
-    testImplementation deps.mockk
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
-    implementation deps.work.runtime
-    testImplementation group: 'org.json', name: 'json', version: '20220320'
-
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
-    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
-
-    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutineVersion")
-    testImplementation "androidx.work:work-testing:2.7.1"
-    androidTestImplementation deps.mockk_android
+    //Android test dependencies
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.mockk.android)
 }
