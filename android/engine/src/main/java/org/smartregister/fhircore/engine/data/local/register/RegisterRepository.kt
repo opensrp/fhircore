@@ -308,7 +308,7 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
-        // For Group return only active families count
+        // Filter active Groups
         if (resourceType == ResourceType.Group) {
           filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
         }
