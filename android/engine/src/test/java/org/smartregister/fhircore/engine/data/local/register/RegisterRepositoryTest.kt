@@ -21,12 +21,14 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.getQuery
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
@@ -349,5 +351,61 @@ class RegisterRepositoryTest : RobolectricTest() {
 
       Assert.assertEquals(20, recordsCount)
     }
+  }
+
+  @Test
+  fun loadProfileDataSqlContainsFilterForActiveGroups() {
+    val group =
+      Group().apply {
+        id = "1234567"
+        name = "Paracetamol"
+        active = true
+      }
+
+    val expectedSql =
+      "SELECT a.serializedResource\n" +
+        "FROM ResourceEntity a\n" +
+        "WHERE a.resourceType = ?\n" +
+        "AND a.resourceUuid IN (\n" +
+        "SELECT resourceUuid FROM TokenIndexEntity\n" +
+        "WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)\n" +
+        ")\n" +
+        "AND a.resourceUuid IN (\n" +
+        "SELECT resourceUuid FROM TokenIndexEntity\n" +
+        "WHERE resourceType = ? AND index_name = ? AND index_value = ?\n" +
+        ")"
+
+    val expectedArgs =
+      listOf(
+        "Group",
+        "Group",
+        "code",
+        "386452003",
+        "http://snomed.info/sct",
+        "Group",
+        "active",
+        "true"
+      )
+
+    val groupSlot = slot<Search>()
+    coEvery { fhirEngine.search<Group>(capture(groupSlot)) } returns listOf(group)
+
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
+
+    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+      listOf(Observation())
+
+    runBlocking {
+      val profileData =
+        registerRepository.loadProfileData(
+          profileId = "patientProfile",
+          resourceId = "12345",
+          paramsList = emptyArray()
+        )
+      Assert.assertNotNull(profileData)
+    }
+
+    Assert.assertEquals(expectedSql, groupSlot.captured.getQuery().query)
+    Assert.assertEquals(expectedArgs, groupSlot.captured.getQuery().args)
   }
 }
