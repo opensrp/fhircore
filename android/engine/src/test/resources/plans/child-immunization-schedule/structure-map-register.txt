@@ -69,7 +69,7 @@ group ExtractTask(
 
            subject -> task.input = create('Task_Input') as input then{
                                         subject -> input.type = create("CodeableConcept") as concept "r_concept";
-                                        subject -> input.value = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_input_value";
+                                        subject -> input.value = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence).toString())) "r_input_value";
            } "r_task_input";
 
 
@@ -94,7 +94,7 @@ group ExtractTask(
         // partof
          subject-> evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) as preReqDosage then{// OPV 1
                    subject -> task.partOf = create('Reference') as ref then {
-                              subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value =preReqDosage).first().id) "r_task_ref_id";
+                              subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value = preReqDosage).last().id) "r_task_ref_id";
                    } "r_task_part_of";
         } "r_des";
     } "r_task";
