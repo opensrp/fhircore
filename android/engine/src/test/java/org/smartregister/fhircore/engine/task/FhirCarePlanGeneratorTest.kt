@@ -1328,7 +1328,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                 it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
               }
             )
-
           }
       }
   }
