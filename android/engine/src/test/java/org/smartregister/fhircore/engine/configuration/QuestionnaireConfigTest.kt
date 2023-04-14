@@ -53,7 +53,8 @@ class QuestionnaireConfigTest : RobolectricTest() {
           ),
         taskId = "@{taskId}",
         saveDraft = true,
-        carePlanConfigs = listOf(CarePlanConfig())
+        carePlanConfigs = listOf(CarePlanConfig()),
+        planDefinitions = listOf("@{planDef1}")
       )
 
     val map = mutableMapOf<String, String>()
@@ -65,6 +66,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
     map["dialogTitle"] = "Alert"
     map["dialogMessage"] = "Are you sure?"
     map["dialogActionButtonText"] = "Yes"
+    map["planDef1"] = "97c5f33b-389c-4ecb-abd3-46c5a3ac4026"
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
 
@@ -76,6 +78,10 @@ class QuestionnaireConfigTest : RobolectricTest() {
     Assert.assertEquals("Alert", interpolatedConfig.confirmationDialog?.title)
     Assert.assertEquals("Are you sure?", interpolatedConfig.confirmationDialog?.message)
     Assert.assertEquals("Yes", interpolatedConfig.confirmationDialog?.actionButtonText)
+    Assert.assertEquals(
+      "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
+      interpolatedConfig.planDefinitions?.firstOrNull()
+    )
   }
 
   @Test
