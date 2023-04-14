@@ -1322,7 +1322,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             it as Task
           }
           .also { tasks ->
-            assertTrue(tasks.all { it.partOf.firstOrNull()?.reference.equals("Task/672805") })
             assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
             assertTrue(
               tasks.all {

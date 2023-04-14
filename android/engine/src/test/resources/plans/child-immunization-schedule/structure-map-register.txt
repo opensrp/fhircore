@@ -9,7 +9,6 @@ group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
             evaluate(src, $this.parameter.where(name='version').value) as version,
-            evaluate(questionnaireResponse, $this.descendants().where(linkId='bb342c7f-39a1-4ff7-bc13-28efdc733333').answer.value.toString()) as taskId
             then ExtractTask(period, version, subject, definition, tgt, taskId) "r_careplan";
 }
 
@@ -18,9 +17,7 @@ group ExtractTask(
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
-    target careplan: CarePlan, source taskId:String){
-
-
+    target careplan: CarePlan){
 
     // fill task into careplan contained and add reference in activity.outcome
     subject -> create('Task') as task then {
@@ -48,13 +45,23 @@ group ExtractTask(
 
         } "rule_group_identifier";
 
-        subject->task.description = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_bhf";
-      //  subject -> task.description = evaluate(careplan,$this.contained.last().id) as dex "r_des";
+       // subject->task.description = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_bhf";
+        //subject -> task.description = evaluate(careplan,$this.contained.last().id) as dex "r_des";
+//careplan.activity.where(detail.input.exists(input.value='OPV 1')).detail
 
-        // partof
-         subject -> task.partOf = create('Reference') as ref then {
-                    subject -> ref.reference = taskId "r_task_ref_id";
-         } "r_task_part_of";
+
+
+        subject-> evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) as preReqDosage then{// OPV 1
+                    subject ->evaluate(careplan,$this.outcomeReference.where(input.last().value = "OPV 1")) as preReqTask then{
+                                       // partof
+                                       subject -> task.partOf = create('Reference') as ref then {
+                                                  subject -> ref.reference = evaluate(preReqTask,$this.id) "r_task_ref_id";
+                                       } "r_task_part_of";
+                         }"r_abc";
+
+       } "r_des";
+
+
 
         subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
                 subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
@@ -85,6 +92,10 @@ group ExtractTask(
                               } "r_codeable_concept";
                               subject -> input.value = taskId "r_input_value";
           } "r_task_input";
+           subject -> task.input = create('Task_Input') as input then{
+                                        subject -> input.type = create("CodeableConcept") as concept "r_concept";
+                                        subject -> input.value = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_input_value";
+           } "r_task_input";
 
 
         // form to be filled
@@ -102,7 +113,14 @@ group ExtractTask(
         subject then {
                  subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
                             activity.outcomeReference = reference(task) "r_cp_task_ref";
-                 subject -> careplan.contained = task  "r_add_task";
+                 subject -> careplan.contained = task
+                             "r_add_task";
         } "r_cp_task";
+
+
     } "r_task";
 }
+
+
+
+
