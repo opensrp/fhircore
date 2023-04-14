@@ -19,8 +19,6 @@ package org.smartregister.fhircore.quest.util.mappers
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import java.time.LocalDate
-import java.time.Period
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
@@ -68,8 +66,8 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
   private fun getTestPatientAge(): String {
     // Update this according to value in patient-registration-questionnaire/sample/patient.json file
-    val dob: LocalDate = LocalDate.of(1998, 12, 14)
-    val period: Period = Period.between(dob, LocalDate.now())
+    // val dob: LocalDate = LocalDate.of(1998, 12, 14)
+    // val period: Period = Period.between(dob, LocalDate.now())
     // TODO Update expected values once refactors in
     //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
     // return "${period.years}y"

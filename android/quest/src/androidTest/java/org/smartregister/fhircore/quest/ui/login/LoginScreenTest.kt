@@ -81,7 +81,7 @@ class LoginScreenTest {
 
   @Test
   fun testOnDoneKeyboardActionPerformsLoginButtonClicked() {
-    val onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() }
+    listenerObjectSpy.attemptRemoteLogin()
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,

@@ -11,44 +11,43 @@
           "referenceParam": "subject",
           "dataQueries": [
             {
-              "id": "cmntdBuruliUlcerQueryByCode",
-              "filterType": "TOKEN",
-              "key": "code",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://snomed.info/sct",
-                "code": "99990000"
-              }
+              "paramName": "code",
+              "operation": "OR",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "99990000"
+                  }
+                },
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "99990001"
+                  }
+                },
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "99990002"
+                  }
+                }
+              ]
             },
             {
-              "id": "cmntdLeprosyQueryByCode",
-              "filterType": "TOKEN",
-              "key": "code",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://snomed.info/sct",
-                "code": "99990001"
-              }
-            },
-            {
-              "id": "cmntdLymphaticFamiliarisesQueryByCode",
-              "filterType": "TOKEN",
-              "key": "code",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://snomed.info/sct",
-                "code": "99990002"
-              }
-            },
-            {
-              "id": "cmntdQueryByClinicalStatus",
-              "filterType": "TOKEN",
-              "key": "clinical-status",
-              "valueType": "CODEABLECONCEPT",
-              "valueCoding": {
-                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                "code": "active"
-              }
+              "paramName": "clinical-status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                }
+              ]
             }
           ]
         }

@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -108,7 +109,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
-  private var actionParamUpdatableId: ActionParameter? = null
+  private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -120,12 +121,10 @@ constructor(
         item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
       }
       // prepopulate questionnaireItems with initial values
-      if (prePopulationParams?.isNotEmpty() == true) {
-        actionParamUpdatableId =
-          prePopulationParams.firstOrNull {
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT
-          }
-        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, prePopulationParams)
+      prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
+        editQuestionnaireResourceParams =
+          nonEmptyParams.filter { it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT }
+        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -406,8 +405,8 @@ constructor(
 
   /**
    * Add or update the [questionnaireResponse] resource with the passed content, and if an
-   * [actionParamUpdatableId] is set also update the resource it refers to by extracting its
-   * logicalIdUuid.
+   * [editQuestionnaireResourceParams] represents the IDs of the resources to be updated on
+   * Questionnaire edit.
    *
    * @param questionnaire the [Questionnaire] this response is related to
    * @param questionnaireResponse the questionnaireResponse resource to save
@@ -423,15 +422,18 @@ constructor(
       return
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
-    if (actionParamUpdatableId != null) {
-      val resource =
-        actionParamUpdatableId!!.value.let {
-          defaultRepository.loadResource(
-            it.extractLogicalIdUuid(),
-            it.substringBefore("/").resourceClassType().newInstance().resourceType
-          )
-        }
-      defaultRepository.addOrUpdate(resource = resource)
+    editQuestionnaireResourceParams?.forEach { param ->
+      try {
+        val resource =
+          param.value.let {
+            val resourceType =
+              it.substringBefore("/").resourceClassType().newInstance().resourceType
+            defaultRepository.loadResource(it.extractLogicalIdUuid(), resourceType)
+          }
+        resource.let { defaultRepository.addOrUpdate(resource = it) }
+      } catch (e: ResourceNotFoundException) {
+        Timber.e(e)
+      }
     }
   }
 
