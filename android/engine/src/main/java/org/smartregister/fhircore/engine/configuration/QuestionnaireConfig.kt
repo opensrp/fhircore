@@ -76,5 +76,6 @@ fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
         title = confirmationDialog.title.interpolate(computedValuesMap),
         message = confirmationDialog.message.interpolate(computedValuesMap),
         actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
-      )
+      ),
+    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) }
   )
