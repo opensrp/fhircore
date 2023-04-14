@@ -45,13 +45,6 @@ group ExtractTask(
 
         } "rule_group_identifier";
 
-       // subject->task.description = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) "r_bhf";
-
-
-
-        //careplan.activity.where(detail.input.exists(input.value='OPV 1')).detail
-
-
         subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
                 subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
                             subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
