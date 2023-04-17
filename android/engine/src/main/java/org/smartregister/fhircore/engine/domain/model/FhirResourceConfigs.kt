@@ -20,6 +20,8 @@ import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
@@ -55,13 +57,23 @@ data class ResourceConfig(
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
-  val sortConfigs: List<SortConfig> = emptyList()
+  val sortConfigs: List<SortConfig> = emptyList(),
+  val resultAsCount: Boolean = false,
+  val nestedSearchResources: List<NestedSearchConfig>? = null
 ) : Parcelable
 
 @Serializable
 @Parcelize
 data class SortConfig(
   val paramName: String,
-  val dataType: DataType,
+  val dataType: Enumerations.DataType,
   val order: Order = Order.ASCENDING
+) : Parcelable
+
+@Serializable
+@Parcelize
+data class NestedSearchConfig(
+  val resourceType: ResourceType,
+  val referenceParam: String,
+  val dataQueries: List<DataQuery>? = null
 ) : Parcelable

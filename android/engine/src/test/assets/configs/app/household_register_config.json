@@ -7,24 +7,35 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
         },
         {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
+        }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
         }
       ]
     },
@@ -41,35 +52,6 @@
             "resource": "CarePlan",
             "searchParameter": "subject"
           }
-        ]
-      },
-      {
-        "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "filter": {
-    "visible": true,
-    "display": "Show overdue",
-    "rules": [
-      {
-        "name": "filter",
-        "condition": "",
-        "actions": [
-          ""
         ]
       }
     ]

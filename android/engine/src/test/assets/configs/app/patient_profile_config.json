@@ -13,6 +13,48 @@
       }
     ]
   },
+  "secondaryResources": [
+    {
+      "baseResource": {
+        "id": "commodities",
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODEABLECONCEPT",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "relatedResources": [
+        {
+          "id": "latestObservations",
+          "resource": "Observation",
+          "searchParameter": "subject",
+          "dataQueries": [
+            {
+              "paramName": "_tag",
+              "filterCriteria": [
+                {
+                  "dataType": "CODING",
+                  "value": {
+                    "code": "latest"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "rules": [
     {
       "name": "patientName",

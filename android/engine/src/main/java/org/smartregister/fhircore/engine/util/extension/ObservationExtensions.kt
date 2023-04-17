@@ -20,7 +20,5 @@ import org.hl7.fhir.r4.model.Observation
 
 fun Observation.codingOf(code: String) = this.code.coding.find { it.code == code }
 
-fun Observation.defaultCode() = this.code.codingFirstRep.code
-
 fun Observation.valueCode() =
   if (this.hasValueCodeableConcept()) this.valueCodeableConcept.codingFirstRep.code else null

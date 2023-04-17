@@ -17,22 +17,16 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.SearchQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
-import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
@@ -45,16 +39,16 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
-import org.smartregister.fhircore.engine.performance.Timer
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
-import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -87,7 +81,6 @@ constructor(
       .create()
 
   private var facts: Facts = Facts()
-  private val ruleConfigsCache = mutableMapOf<String, Rules>()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -129,186 +122,66 @@ constructor(
    * [relatedResourcesMap] and the [baseResource].
    */
   @Suppress("UNCHECKED_CAST")
-  suspend fun fireRules(
+  fun fireRules(
     rules: Rules,
     baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
-    fhirEngine: FhirEngine? = null
-  ): MutableMap<String, Any> {
-    return withContext(dispatcherProvider.io()) {
-      // Initialize new facts and fire rules in background
-      facts =
-        Facts().apply {
-          put(FHIR_PATH, fhirPathDataExtractor)
-          put(DATA, mutableMapOf<String, Any>())
-          put(SERVICE, rulesEngineService)
-          if (baseResource != null) {
-            put(baseResource.resourceType.name, baseResource)
-          }
-          relatedResourcesMap.forEach { put(it.key, it.value) }
+    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
+  ): Map<String, Any> {
+
+    // Initialize new facts and fire rules in background
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
         }
-
-
-      val timer = Timer(methodName = "fireRule")
-
-      // Fetch the resourceUUIDs of the members
-      /*val memberUUIDs = mutableListOf<String>()
-      var groupUUID = ""
-      if (fhirEngine != null) {
-        val timer2 = Timer(methodName = "fireRule.executeFetchMembersQuery")
-        var searchQuery =
-          SearchQuery(
-            """
-            SELECT resourceUuid FROM ResourceEntity WHERE resourceType = "Patient" AND resourceId IN (
-            SELECT SUBSTR(index_value, 9) FROM ReferenceIndexEntity WHERE index_name = "member"
-            AND resourceUuid = (SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?)
-            )
-          """.trimIndent(),
-            listOf(baseResource.logicalId)
-          )
-
-        memberUUIDs.addAll(fhirEngine.getUUIDs(searchQuery))
-        Timber.e("Member UUIDs -> $memberUUIDs")
-
-        searchQuery =
-          SearchQuery(
-            """
-            SELECT resourceUuid FROM ResourceEntity WHERE resourceId = ?
-          """.trimIndent(),
-            listOf(baseResource.logicalId)
-          )
-
-        groupUUID = fhirEngine.getUUIDs(searchQuery).first()
-
-        timer2.stop()
-      }
-
-
-      val memberSelector = genMemberUuidsSelector(memberUUIDs)
-      val birthDate = LocalDate.now()
-        .minusYears(5)
-        .toEpochDay()*/
-
-      if (BuildConfig.DEBUG) {
-        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-      } else {
-        rulesEngine.fire(rules, facts)
-
-        // Alternative firing of rules
-        /*ruleConfigs.forEach { ruleConfig ->
-
-
-      ruleConfig.actions.forEach {
-        if (fhirEngine == null) {
-          return@forEach
-        }
-
-        if (ruleConfig.name == "taskCount") {
-          val timer3 = Timer(methodName = "fireRule.taskCountQuery")
-          val searchQuery =
-            SearchQuery(
-              """
-            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Task" AND index_name = "status"
-            AND resourceUuid IN (
-            SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Task" AND index_name = "subject"
-            AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE resourceUuid = x'$groupUUID' AND index_name = "member")
-            )
-            AND (index_value = "failed" OR index_value = "completed" OR index_value = "cancelled")
-
-          """.trimIndent(),
-              emptyList()
-            )
-
-          val taskCount = fhirEngine.count(searchQuery)
-          computedValuesMap.put("taskCount", taskCount)
-
-          timer3.stop()
-        } else if (ruleConfig.name == "serviceMemberIcons") {
-          val timer4 = Timer(methodName = "fireRule.executePregnantWomenCountQuery")
-
-          var searchQuery =
-            SearchQuery(
-              """
-            SELECT COUNT(*) FROM TokenIndexEntity WHERE resourceType = "Condition"
-            AND index_name = "code" AND index_system = "http://snomed.info/sct" AND index_value = "77386006"
-            AND resourceUuid IN (SELECT resourceUuid FROM ReferenceIndexEntity WHERE resourceType = "Condition"
-            AND index_name = "subject" AND index_value IN (SELECT index_value FROM ReferenceIndexEntity WHERE index_name = "member" AND resourceUuid = x'$groupUUID') )
-          """.trimIndent(),
-              emptyList()
-            )
-
-          val pregnantWomenCount = fhirEngine.count(searchQuery)
-          timer4.stop()
-
-          val timer5 = Timer(methodName = "fireRule.executeChildrenCountQuery")
-          searchQuery = SearchQuery("""
-            SELECT COUNT(*) FROM TokenIndexEntity a JOIN DateIndexEntity b ON a.resourceUuid = b.resourceUuid
-            WHERE a.resourceUuid IN ($memberSelector) AND a.index_name = "active" AND a.index_value = "true"
-            AND b.index_name = "birthdate" AND b.index_from >= ?
-          """.trimIndent(),
-            listOf(birthDate)
-          )
-          val childrenCount = fhirEngine.count(searchQuery)
-
-          timer5.stop()
-
-          val totalIcons = MutableList(childrenCount.toInt()) {"CHILD"}
-          totalIcons.addAll(MutableList(pregnantWomenCount.toInt()) {"PREGNANT_WOMAN"})
-          Timber.e("Children $childrenCount | Pregnant women $pregnantWomenCount")
-
-          computedValuesMap.put("serviceMemberIcons", totalIcons.joinToString(","))
-        }
-      }
-    }*/
-
-        val computedValuesMap = facts.get<Map<String, Any>>(DATA)
-        computedValuesMap.forEach {
-          Timber.e("computedValuesMap for ${baseResource!!.logicalId} -> ${it.key} = ${it.value}")
-        }
-
-        timer.stop()
-      }
-      facts.get(DATA) as MutableMap<String, Any>
-    }
-  }
-
-  fun generateRules(ruleConfigsKey: String, ruleConfigs: List<RuleConfig>): Rules {
-    val jexlRules =
-      ruleConfigsCache.getOrDefault(
-        ruleConfigsKey,
-        Rules(
-            runBlocking(Dispatchers.Default) {
-                ruleConfigs.map { ruleConfig ->
-                  val customRule: JexlRule =
-                    JexlRule(jexlEngine)
-                      .name(ruleConfig.name)
-                      .description(ruleConfig.description)
-                      .priority(ruleConfig.priority)
-                      .`when`(ruleConfig.condition.ifEmpty { TRUE })
-
-                  ruleConfig.actions.forEach { customRule.then(it) }
-                  customRule
-                }
+        relatedResourcesMap.forEach {
+          val actualValue =
+            it.value.map { queryResult ->
+              when (queryResult) {
+                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
+                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
               }
-              .toSet()
-          )
-          .also { ruleConfigsCache[ruleConfigsKey] = it }
+            }
+          put(it.key, actualValue)
+        }
+      }
+
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
+
+    return facts.get(DATA) as Map<String, Any>
+  }
+
+  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
+    withContext(dispatcherProvider.io()) {
+      Rules(
+        ruleConfigs
+          .map { ruleConfig ->
+            val customRule: JexlRule =
+              JexlRule(jexlEngine)
+                .name(ruleConfig.name)
+                .description(ruleConfig.description)
+                .priority(ruleConfig.priority)
+                .`when`(ruleConfig.condition.ifEmpty { TRUE })
+
+            for (action in ruleConfig.actions) {
+              try {
+                customRule.then(action)
+              } catch (jexlException: JexlException) {
+                Timber.e(jexlException)
+                continue // Skip action when an error occurs to avoid app force close
+              }
+            }
+            customRule
+          }
+          .toSet()
       )
-
-    return jexlRules
-  }
-
-  fun genQuestionMarks(N: Int) : String {
-    return CharArray(N, {i -> '?'}).joinToString(separator=",")
-  }
-
-
-  fun genMemberUuidsSelector(memberUuids: MutableList<String>) : String {
-    return memberUuids.map { "x'$it'" } .joinToString(separator=",")
-  }
-
-
+    }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
@@ -420,7 +293,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String
-    ): String? =
+    ): String =
       resources
         ?.mapNotNull {
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
@@ -443,7 +316,7 @@ constructor(
       resource: Resource,
       fhirPathExpression: String,
       label: String
-    ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+    ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)
@@ -533,6 +406,18 @@ constructor(
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
     }
+
+    fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
+      relatedResourceCounts?.sumOf { it.count } ?: 0
+
+    fun retrieveCount(
+      parentResourceId: String,
+      relatedResourceCounts: List<RelatedResourceCount>?
+    ): Long =
+      relatedResourceCounts
+        ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
+        ?.count
+        ?: 0
   }
 
   companion object {

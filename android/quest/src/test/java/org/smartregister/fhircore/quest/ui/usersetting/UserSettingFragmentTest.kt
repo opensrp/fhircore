@@ -47,7 +47,6 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class UserSettingFragmentTest : RobolectricTest() {
-
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   lateinit var userSettingViewModel: UserSettingViewModel
@@ -69,6 +68,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   }
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     accountAuthenticator = mockk()

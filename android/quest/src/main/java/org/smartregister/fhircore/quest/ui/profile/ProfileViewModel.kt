@@ -16,39 +16,42 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import androidx.compose.runtime.mutableStateListOf
+import android.content.Context
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.interpolate
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -57,16 +60,16 @@ import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
 @HiltViewModel
@@ -77,58 +80,39 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val parser: IParser,
   val rulesExecutor: RulesExecutor
 ) : ViewModel() {
 
   val profileUiState = mutableStateOf(ProfileUiState())
-  val resourceDataState = MutableLiveData<ResourceData?>(null)
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
-  private val listResourceDataMapState =
-    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>?
-  ) {
-    // workingProfileFetch(resourceId, paramsList, profileId, fhirResourceConfig)
-    experimentalProfileFetch(resourceId, paramsList, profileId, fhirResourceConfig)
-  }
-
-  private suspend fun workingProfileFetch(
-    resourceId: String,
-    paramsList: Array<ActionParameter>?,
-    profileId: String,
-    fhirResourceConfig: FhirResourceConfig?
+    paramsList: Array<ActionParameter>? = emptyArray()
   ) {
     if (resourceId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
-      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-
-      // Load the base resource and fire the rules
       val repoResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
+      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+      val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
       val resourceData =
         rulesExecutor
           .processResourceData(
-            baseResource = repoResourceData.resource,
-            relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
+            baseResource = queryResult.resource,
+            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
             ruleConfigs = profileConfigs.rules,
-            ruleConfigsKey = profileConfigs::class.java.canonicalName,
             paramsMap
           )
-          // TODO: Try to comment this out
           .copy(listResourceDataMap = listResourceDataMapState)
-
-      resourceDataState.postValue(resourceData)
 
       profileUiState.value =
         ProfileUiState(
@@ -138,321 +122,16 @@ constructor(
           showDataLoadProgressIndicator = false
         )
 
-      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-      val baseResourceConfig = resourceConfig.baseResource
-      val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-      val baseResourceType = baseResourceClass.newInstance().resourceType
-
-      val relatedResources = MutableLiveData<LinkedList<RepositoryResourceData>>()
-
-      val observedRepositoryResourceData =
-        ObservedRepositoryResourceData(
-          configId = baseResourceConfig.id ?: baseResourceType.name,
-          resource = repoResourceData.resource,
-          relatedResources = relatedResources
-        )
-      var nextPos = 0
-
-      /*observedRepositoryResourceData.relatedResources.observeForever {
-              Timber.e("Received repository resource data with nextPos $nextPos")
-              Timber.e("Repository resource data size is ${it.size}")
-      */
-      /*
-      if (it.size <= nextPos) {
-        return@observeForever
-      }*/
-      /*
-
-        val repoDataList = LinkedList<RepositoryResourceData>(it)//.apply { add(it[nextPos]) }
-
-        nextPos++
-
-        viewModelScope.launch(dispatcherProvider.io()) {
-          val resourceDataSingle =
-            rulesExecutor.processResourceData(
-              observedRepositoryResourceData.resource,
-              repoDataList,
-              ruleConfigs = profileConfigs.rules,
-              ruleConfigsKey = profileConfigs::class.java.canonicalName,
-              paramsMap
-            )
-
-          profileConfigs.views.retrieveListProperties().forEach {
-            val listResourceData = mutableListOf<ResourceData>()
-            //listResourceDataMapState[it.id] = listResourceData
-            // val listResourceData =
-            rulesExecutor.processListResourceData(
-              listProperties = it,
-              listResourceData,
-              listResourceDataMapState,
-              relatedRepositoryResourceData = repoDataList,
-              computedValuesMap =
-                resourceDataSingle.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
-            )
-            listResourceDataMapState[it.id] = listResourceData
-            Timber.e("Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData")
-          }
-
-          Timber.e("Finished loading a related resource item list size (${repoDataList.size}) $repoDataList")
-          Timber.e("Finished loading a related resource item list ${resourceData.listResourceDataMap.size}")
-
-          resourceData.listResourceDataMap.putAll(resourceDataSingle.listResourceDataMap)
-
-          resourceDataState.postValue(resourceData)
-        }
-      }
-
-      viewModelScope.launch(dispatcherProvider.io()) {*/
-      registerRepository.loadOtherProfileData(
-        repoResourceData.resource,
-        profileId,
-        resourceId,
-        fhirResourceConfig,
-        paramsList,
-        observedRepositoryResourceData
-      )
-      // }
-
-      /*val resourceData2 =
-      rulesExecutor
-        .processResourceData(
-          baseResource = repoResourceData2.resource,
-          relatedRepositoryResourceData = LinkedList(repoResourceData2.relatedResources),
-          ruleConfigs = profileConfigs.rules,ss
-          ruleConfigsKey = profileConfigs::class.java.canonicalName,
-          paramsMap
-        )
-        .copy(listResourceDataMap = listResourceDataMapState)*/
-
-      /*profileUiState.value =
-      ProfileUiState(
-        resourceData = resourceData2,
-        profileConfiguration = profileConfigs,
-        snackBarTheme = applicationConfiguration.snackBarTheme,
-        showDataLoadProgressIndicator = false
-      )*/
-
-      // Working before
-      val timeToFireRules = measureTimeMillis {
-        profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData = mutableStateListOf<ResourceData>()
-          listResourceDataMapState[it.id] = listResourceData
-          // val listResourceData =
+      profileConfigs.views.retrieveListProperties().forEach {
+        val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
-            listResourceData,
-            listResourceDataMapState,
-            relatedRepositoryResourceData = observedRepositoryResourceData.relatedResources.value!!,
+            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )
-          // listResourceDataMapState[it.id] = listResourceData
-        }
+        listResourceDataMapState[it.id] = listResourceData
       }
-
-      /*profileUiState.value = ProfileUiState(
-        resourceData = ResourceData(
-          baseResourceId = resourceData.baseResourceId,
-          baseResourceType = resourceData.baseResourceType,
-          computedValuesMap = resourceData.computedValuesMap,
-          listResourceDataMap = resourceData.listResourceDataMap,
-          baseResource = resourceData.baseResource
-        ),
-        profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap),
-        snackBarTheme = applicationConfiguration.snackBarTheme
-      )
-      resourceDataState.value = ResourceData(
-        baseResourceId = resourceData.baseResourceId,
-        baseResourceType = resourceData.baseResourceType,
-        computedValuesMap = resourceData.computedValuesMap,
-        listResourceDataMap = resourceData.listResourceDataMap,
-        baseResource = resourceData.baseResource
-      )*/
-
-      Timber.e(
-        "Done loading everything and the listResourceDataMapState ${listResourceDataMapState.size}"
-      )
-      listResourceDataMapState.forEach { Timber.e("${it.key} -> ${it.value}") }
-
-      /*Timber.e("About to invoke the profileUiState again")
-      // resourceDataState.postValue(resourceData2)
-      Timber.e("Computed values map ${resourceData.computedValuesMap}")
-      Timber.e("List resource data map ${resourceData.listResourceDataMap}")
-
-      // Update other computed values slowly
-      // Once done update the ProfileUIState
-      //registerRepository.loadOtherProfileData(repoResourceData.resource, profileId, resourceId, fhirResourceConfig, resourceData.baseResource!!, resourceData)
-
-      Timber.e("Computed values map ${resourceData.computedValuesMap}")
-      Timber.e("List resource data map ${resourceData.listResourceDataMap}")
-      profileUiState.value = ProfileUiState(
-        resourceData = ResourceData(
-          baseResourceId = resourceData.baseResourceId,
-          baseResourceType = resourceData.baseResourceType,
-          computedValuesMap = resourceData.computedValuesMap,
-          listResourceDataMap = resourceData.listResourceDataMap,
-          baseResource = resourceData.baseResource
-        ),
-        profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap),
-        snackBarTheme = applicationConfiguration.snackBarTheme
-      )
-      resourceDataState.value = ResourceData(
-        baseResourceId = resourceData.baseResourceId,
-        baseResourceType = resourceData.baseResourceType,
-        computedValuesMap = resourceData.computedValuesMap,
-        listResourceDataMap = resourceData.listResourceDataMap,
-        baseResource = resourceData.baseResource
-      )*/
-      // profileUiState.value = ProfileUiState()
-    }
-  }
-
-  private suspend fun experimentalProfileFetch(
-    resourceId: String,
-    paramsList: Array<ActionParameter>?,
-    profileId: String,
-    fhirResourceConfig: FhirResourceConfig?
-  ) {
-    if (resourceId.isEmpty()) {
-      return
-    }
-
-    val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
-    val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-
-    // Load the base resource and fire the rules
-    val repoResourceData =
-      registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-
-    // Generate the computed values map for profile demographic from the base profile
-    val resourceData =
-      rulesExecutor
-        .processResourceData(
-          baseResource = repoResourceData.resource,
-          relatedRepositoryResourceData = LinkedList(repoResourceData.relatedResources),
-          ruleConfigs = profileConfigs.rules,
-          ruleConfigsKey = profileConfigs::class.java.canonicalName,
-          paramsMap
-        )
-        .copy(listResourceDataMap = listResourceDataMapState)
-
-    resourceDataState.postValue(resourceData)
-
-    profileUiState.value =
-      ProfileUiState(
-        resourceData = resourceData,
-        profileConfiguration = profileConfigs,
-        snackBarTheme = applicationConfiguration.snackBarTheme,
-        showDataLoadProgressIndicator = false
-      )
-
-    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-    val baseResourceConfig = resourceConfig.baseResource
-    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-    val baseResourceType = baseResourceClass.newInstance().resourceType
-
-    val relatedResources = MutableLiveData(LinkedList<RepositoryResourceData>())
-
-    // This is an extension of RepositoryResourceData that when computed becomes ResourceData
-    val observedRepositoryResourceData =
-      ObservedRepositoryResourceData(
-        configId = baseResourceConfig.id ?: baseResourceType.name,
-        resource = repoResourceData.resource,
-        relatedResources = relatedResources
-      )
-    var nextPos = 0
-
-    var runningObserver = false
-
-    // Observe any related resources data that is generated
-    observedRepositoryResourceData.relatedResources.observeForever {
-      Timber.e("Received repository resource data with nextPos $nextPos")
-      Timber.e("Repository resource data size is ${it.size}")
-
-      /*if (it.size <= nextPos) {
-        return@observeForever
-      }*/
-
-      if (runningObserver) {
-        return@observeForever
-      }
-
-      runningObserver = true
-
-      val repoDataList = LinkedList<RepositoryResourceData>() // .apply { add(it[nextPos]) }
-      // Might cause a ConcurrentModificationException error
-      repoDataList.addAll(it)
-      Timber.e("Observer: RepoDataList (${repoDataList.size}) $repoDataList")
-
-      nextPos++
-
-      viewModelScope.launch(dispatcherProvider.io()) {
-        val resourceDataUpdated =
-          rulesExecutor
-            .processResourceData(
-              baseResource = repoResourceData.resource,
-              relatedRepositoryResourceData = repoDataList!!,
-              ruleConfigs = profileConfigs.rules,
-              ruleConfigsKey = profileConfigs::class.java.canonicalName,
-              paramsMap
-            )
-            .copy(listResourceDataMap = listResourceDataMapState)
-
-        // Check if the computed values map has changed and update it
-        profileUiState.value.resourceData!!.computedValuesMap.putAll(
-          resourceDataUpdated.computedValuesMap
-        )
-        profileUiState.value = profileUiState.value
-
-        // This fixes a render bug on sick child profile demographic because the main values are
-        // loaded from the
-        // related resources
-        if (resourceDataState.value != null) {
-          resourceDataState.value!!.computedValuesMap.putAll(resourceDataUpdated.computedValuesMap)
-          resourceDataState.postValue(resourceDataUpdated)
-        }
-
-        profileConfigs.views.retrieveListProperties().forEach {
-          val listResourceData = mutableStateListOf<ResourceData>()
-
-          if (listResourceDataMapState.containsKey(it.id)) {
-            //listResourceDataMapState[it.id].add()
-          } else {
-            listResourceDataMapState[it.id] = listResourceData
-          }
-          // val listResourceData =
-          rulesExecutor.processListResourceData(
-            listProperties = it,
-            listResourceData,
-            listResourceDataMapState,
-            relatedRepositoryResourceData = repoDataList,
-            computedValuesMap =
-              resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
-          )
-          Timber.e(
-            "Finished loading a related resource [listResourceData] - (${listResourceData.size}) $listResourceData"
-          )
-        }
-
-        Timber.e("Observer: RepoDataList (${repoDataList.size}) $repoDataList")
-        Timber.e(
-          "Finished loading a related resource item list ${resourceData.listResourceDataMap.size}"
-        )
-
-        runningObserver = false
-      }
-    }
-
-    // Load the related resources data for the profile
-    viewModelScope.launch(dispatcherProvider.io()) {
-      registerRepository.loadOtherProfileData(
-        repoResourceData.resource,
-        profileId,
-        resourceId,
-        fhirResourceConfig,
-        paramsList,
-        observedRepositoryResourceData
-      )
     }
   }
 
@@ -468,70 +147,101 @@ constructor(
     return profileConfiguration
   }
 
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+
   fun onEvent(event: ProfileEvent) {
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
-        event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
-          when (actionConfig.workflow) {
-            ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-              actionConfig.questionnaire?.let { questionnaireConfig ->
-                if (event.navController.context is QuestionnaireHandler) {
-                  viewModelScope.launch {
-                    var questionnaireResponse: String? = null
-
-                    val questionnaireConfigInterpolated =
-                      questionnaireConfig.interpolate(
-                        event.resourceData?.computedValuesMap ?: emptyMap()
-                      )
-                    val params =
-                      actionConfig
-                        .params
-                        .map {
-                          ActionParameter(
-                            key = it.key,
-                            paramType = it.paramType,
-                            dataType = it.dataType,
-                            linkId = it.linkId,
-                            value =
-                              it.value.interpolate(
-                                event.resourceData?.computedValuesMap ?: emptyMap()
-                              )
-                          )
-                        }
-                        .toTypedArray()
-
-                    if (event.resourceData != null) {
-                      questionnaireResponse =
-                        searchQuestionnaireResponses(
-                          subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                          subjectType = event.resourceData.baseResourceType,
-                          questionnaireId = questionnaireConfigInterpolated.id
-                        )
-                          .maxByOrNull { it.authored } // Get latest version
-                          ?.let { parser.encodeResourceToString(it) }
-                    }
-
-                    val intentBundle =
-                      actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
-                        .apply {
-                          putString(
-                            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                            questionnaireResponse
-                          )
-                        }
-
-                    (event.navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
-                      context = event.navController.context,
-                      intentBundle = intentBundle,
-                      questionnaireConfig = questionnaireConfigInterpolated,
-                      actionParams = params.toList()
+        val context = event.navController.context
+        val actions = event.overflowMenuItemConfig?.actions
+        viewModelScope.launch {
+          val questionnaireResponse =
+            actions
+              ?.find {
+                it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE &&
+                  it.trigger == ActionTrigger.ON_CLICK
+              }
+              ?.questionnaire
+              .let { questionnaireConfig ->
+                if (questionnaireConfig == null) {
+                  emitSnackBarState(
+                    SnackBarMessageConfig(
+                      context.getString(R.string.error_msg_questionnaire_config_is_not_found)
                     )
+                  )
+                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
+                    .d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
+                  return@launch
+                } else {
+                  questionnaireConfig.interpolate(
+                    event.resourceData?.computedValuesMap ?: emptyMap()
+                  )
+                  val questionnaire = loadQuestionnaire(questionnaireConfig.id)
+                  if (questionnaire == null) {
+                    emitSnackBarState(
+                      SnackBarMessageConfig(
+                        context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
+                      )
+                    )
+                    Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
+                      .d(
+                        context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
+                      )
+                    return@launch
                   }
+                  questionnaire.apply {
+                    this.url = this.url ?: this.referenceValue()
+                    if (questionnaireConfig.type.isReadOnly() ||
+                        questionnaireConfig.type.isEditMode()
+                    ) {
+                      item.prepareQuestionsForReadingOrEditing(
+                        "QuestionnaireResponse.item",
+                        questionnaireConfig.type.isReadOnly()
+                      )
+                    }
+                  }
+
+                  var questionnaireResponse: QuestionnaireResponse? = null
+                  if (event.resourceData == null) return@let null
+
+                  if (!questionnaireConfig.type.isDefault()) {
+                    questionnaireResponse =
+                      getQuestionnaireResponseFromDbOrPopulation(
+                        questionnaire = questionnaire,
+                        subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
+                        subjectType = event.resourceData.baseResourceType
+                      )
+                    questionnaireResponse.apply { generateMissingItems(questionnaire) }
+
+                    if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
+                    ) {
+                      emitSnackBarState(
+                        SnackBarMessageConfig(
+                          context.getString(R.string.error_msg_questionnaire_response_is_broken)
+                        )
+                      )
+                      return@launch
+                    }
+                  }
+                  questionnaireResponse
                 }
               }
+
+          actions?.run {
+            find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }?.let {
+              changeManagingEntity(
+                event = event,
+                managingEntity =
+                  it.interpolateManagingEntity(event.resourceData?.computedValuesMap ?: emptyMap())
+              )
             }
-            ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> changeManagingEntity(event = event)
-            else -> {}
+            handleClickEvent(
+              navController = event.navController,
+              resourceData = event.resourceData,
+              questionnaireResponse = questionnaireResponse
+            )
           }
         }
       }
@@ -539,7 +249,8 @@ constructor(
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(
             event.eligibleManagingEntity.logicalId,
-            event.eligibleManagingEntity.groupId
+            event.eligibleManagingEntity.groupId,
+            event.managingEntityConfig
           )
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
@@ -557,82 +268,113 @@ constructor(
   }
 
   /**
-   * This function launches a configurable dialog for selecting new managing entity from the list of
-   * [Group] resource members. This function only works when [Group] resource is the used as the
-   * main resource.
+   * Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator].
+   *
+   * @param questionnaire Questionnaire to use in validation
+   * @param questionnaireResponse QuestionnaireResponse to validate
+   * @param context Context to use in validation
    */
-  private fun changeManagingEntity(event: ProfileEvent.OverflowMenuClick) {
-    if (event.managingEntity == null || event.resourceData?.baseResourceType != ResourceType.Group
-    ) {
-      Timber.w("ManagingEntityConfig required. Base resource should be Group")
-      return
+  private fun isQuestionnaireResponseValid(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context
+  ): Boolean {
+    return try {
+      QuestionnaireResponseValidator.checkQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse
+      )
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context
+      )
+      true
+    } catch (e: IllegalArgumentException) {
+      Timber.tag("ProfileViewModel.isQuestionnaireResponseValid").d(e)
+      false
     }
-    viewModelScope.launch {
-      val group = registerRepository.loadResource<Group>(event.resourceData.baseResourceId)
-      val eligibleManagingEntities: List<EligibleManagingEntity> =
-        group
-          ?.member
-          ?.mapNotNull {
-            try {
-              registerRepository.loadResource(
-                it.entity.extractId(),
-                event.managingEntity.resourceType!!
-              )
-            } catch (resourceNotFoundException: ResourceNotFoundException) {
-              null
-            }
-          }
-          ?.filter { managingEntityResource ->
-            fhirPathDataExtractor
-              .extractValue(
-                base = managingEntityResource,
-                expression = event.managingEntity.eligibilityCriteriaFhirPathExpression!!
-              )
-              .toBoolean()
-          }
-          ?.map {
-            EligibleManagingEntity(
-              groupId = event.resourceData.baseResourceId,
-              logicalId = it.logicalId.extractLogicalIdUuid(),
-              memberInfo =
-                fhirPathDataExtractor.extractValue(
-                  it,
-                  event.managingEntity.nameFhirPathExpression!!
-                )
-            )
-          }
-          ?: emptyList()
+  }
 
-      // Show error message when no group members are found
-      if (eligibleManagingEntities.isEmpty()) {
-        emitSnackBarState(
-          SnackBarMessageConfig(message = event.managingEntity.noMembersErrorMessage)
-        )
-      } else {
-        (event.navController.context.getActivity())?.let { activity ->
-          ProfileBottomSheetFragment(
-              eligibleManagingEntities = eligibleManagingEntities,
-              onSaveClick = {
-                onEvent(
-                  ProfileEvent.OnChangeManagingEntity(
-                    context = activity,
-                    eligibleManagingEntity = it,
-                    managingEntityConfig = event.managingEntity
-                  )
-                )
-              },
-              managingEntity = event.managingEntity
-            )
-            .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
-        }
+  /**
+   * Gets a Questionnaire Response from the database if it exists. Generates Questionnaire Response
+   * from population, otherwise.
+   *
+   * @param questionnaire Questionnaire as the basis for how the resources are to be populated
+   * @param subjectId ID of the resource that submitted the Questionnaire Response, and related with
+   * the population resources
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   */
+  private suspend fun getQuestionnaireResponseFromDbOrPopulation(
+    questionnaire: Questionnaire,
+    subjectId: String,
+    subjectType: ResourceType,
+  ): QuestionnaireResponse {
+    var questionnaireResponse =
+      loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
+
+    if (questionnaireResponse == null) {
+      val populationResources = loadPopulationResources(subjectId, subjectType)
+      questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
+    }
+
+    return questionnaireResponse
+  }
+
+  /**
+   * Generates a Questionnaire Response by populating the given resources.
+   *
+   * @param questionnaire Questionnaire as the basis for how the resources are to be populated
+   * @param populationResources resources to be populated
+   */
+  private suspend fun populateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    populationResources: ArrayList<Resource>
+  ): QuestionnaireResponse {
+    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
+      questionnaireResponse ->
+      if (!questionnaireResponse.hasItem()) {
+        Timber.tag("ProfileViewModel.populateQuestionnaireResponse")
+          .d("Questionnaire response has no populated answers")
       }
     }
   }
 
-  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
-    _snackBarStateFlow.emit(snackBarMessageConfig)
+  /**
+   * Loads the latest Questionnaire Response resource that is associated with the given subject ID
+   * and Questionnaire ID.
+   *
+   * @param subjectId ID of the resource that submitted the Questionnaire Response
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
+   */
+  private suspend fun loadQuestionnaireResponse(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): QuestionnaireResponse? {
+    return searchQuestionnaireResponses(
+      subjectId = subjectId,
+      subjectType = subjectType,
+      questionnaireId = questionnaireId
+    )
+      .maxByOrNull { it.meta.lastUpdated }
+      .also { questionnaireResponse ->
+        if (questionnaireResponse == null) {
+          Timber.tag("ProfileViewModel.loadQuestionnaireResponse")
+            .d("Questionnaire response is not found in database")
+        }
+      }
   }
 
+  /**
+   * Search Questionnaire Response resources that are associated with the given subject ID and
+   * Questionnaire ID.
+   *
+   * @param subjectId ID of the resource that submitted the Questionnaire Response
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
+   */
   private suspend fun searchQuestionnaireResponses(
     subjectId: String,
     subjectType: ResourceType,
@@ -645,10 +387,131 @@ constructor(
           QuestionnaireResponse.QUESTIONNAIRE,
           { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
         )
-        filter(
-          QuestionnaireResponse.STATUS,
-          { value = of(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.name) }
-        )
       }
     }
+
+  /** Loads a Questionnaire resource with the given ID. */
+  private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire? {
+    return registerRepository.loadResource(questionnaireId)
+  }
+
+  /**
+   * Loads resources to be populated into a Questionnaire Response.
+   *
+   * @param subjectId can be Patient ID or Group ID
+   * @param subjectType resource type of the ID
+   */
+  private suspend fun loadPopulationResources(
+    subjectId: String,
+    subjectType: ResourceType
+  ): ArrayList<Resource> {
+    val populationResources = arrayListOf<Resource>()
+    when (subjectType) {
+      ResourceType.Patient -> {
+        loadPatient(subjectId)?.run { populationResources.add(this) }
+        loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
+      }
+      ResourceType.Group -> {
+        loadGroup(subjectId)?.run { populationResources.add(this) }
+      }
+      else -> {
+        Timber.tag("ProfileViewModel.loadPopulationResources")
+          .d("$subjectType resource type is not supported to load populated resources!")
+      }
+    }
+    return populationResources
+  }
+
+  /** Loads a Patient resource with the given ID. */
+  private suspend fun loadPatient(patientId: String): Patient? {
+    return registerRepository.loadResource(patientId)
+  }
+
+  /** Loads a Group resource with the given ID. */
+  private suspend fun loadGroup(groupId: String): Group? {
+    return registerRepository.loadResource(groupId)
+  }
+
+  /** Loads a RelatedPerson resource that belongs to the given Patient ID. */
+  private suspend fun loadRelatedPerson(patientId: String): RelatedPerson? {
+    return registerRepository
+      .searchResourceFor<RelatedPerson>(
+        subjectType = ResourceType.Patient,
+        subjectId = patientId,
+        subjectParam = RelatedPerson.PATIENT,
+      )
+      .singleOrNull()
+  }
+
+  /**
+   * This function launches a configurable dialog for selecting new managing entity from the list of
+   * [Group] resource members. This function only works when [Group] resource is the used as the
+   * main resource.
+   */
+  private fun changeManagingEntity(
+    event: ProfileEvent.OverflowMenuClick,
+    managingEntity: ManagingEntityConfig?
+  ) {
+    if (managingEntity == null || event.resourceData?.baseResourceType != ResourceType.Group) {
+      Timber.w("ManagingEntityConfig required. Base resource should be Group")
+      return
+    }
+    viewModelScope.launch {
+      val group = registerRepository.loadResource<Group>(event.resourceData.baseResourceId)
+      val eligibleManagingEntities: List<EligibleManagingEntity> =
+        group
+          ?.member
+          ?.mapNotNull {
+            try {
+              registerRepository.loadResource(it.entity.extractId(), managingEntity.resourceType!!)
+            } catch (resourceNotFoundException: ResourceNotFoundException) {
+              null
+            }
+          }
+          ?.asSequence()
+          ?.filter { managingEntityResource ->
+            fhirPathDataExtractor
+              .extractValue(
+                base = managingEntityResource,
+                expression = managingEntity.eligibilityCriteriaFhirPathExpression!!
+              )
+              .toBoolean()
+          }
+          ?.toList()
+          ?.map {
+            EligibleManagingEntity(
+              groupId = event.resourceData.baseResourceId,
+              logicalId = it.logicalId.extractLogicalIdUuid(),
+              memberInfo =
+                fhirPathDataExtractor.extractValue(
+                  base = it,
+                  expression = managingEntity.nameFhirPathExpression!!
+                )
+            )
+          }
+          ?: emptyList()
+
+      // Show error message when no group members are found
+      if (eligibleManagingEntities.isEmpty()) {
+        emitSnackBarState(SnackBarMessageConfig(message = managingEntity.noMembersErrorMessage))
+      } else {
+        (event.navController.context.getActivity())?.let { activity ->
+          ProfileBottomSheetFragment(
+              eligibleManagingEntities = eligibleManagingEntities,
+              onSaveClick = {
+                onEvent(
+                  ProfileEvent.OnChangeManagingEntity(
+                    context = activity,
+                    eligibleManagingEntity = it,
+                    managingEntityConfig = managingEntity
+                  )
+                )
+              },
+              managingEntity = managingEntity
+            )
+            .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+        }
+      }
+    }
+  }
 }

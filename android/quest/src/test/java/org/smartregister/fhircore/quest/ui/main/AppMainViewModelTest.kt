@@ -102,6 +102,7 @@ class AppMainViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
 
@@ -246,8 +247,9 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnQuestionnaireSubmissionShouldSetTaskStatusCompletedWhenStatusIsNull() = runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
     val questionnaireSubmission =
       QuestionnaireSubmission(
@@ -256,13 +258,16 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+    }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
     val questionnaireSubmission =
       QuestionnaireSubmission(
@@ -274,13 +279,16 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.INPROGRESS) }
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.INPROGRESS)
+    }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
@@ -291,13 +299,16 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify { fhirCarePlanGenerator.transitionTaskTo("12345", Task.TaskStatus.COMPLETED) }
+    coVerify {
+      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+    }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
       runTest {
-    coEvery { fhirCarePlanGenerator.transitionTaskTo(any(), any()) } just runs
+    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
     appMainViewModel.onQuestionnaireSubmission(
       QuestionnaireSubmission(
@@ -306,6 +317,6 @@ class AppMainViewModelTest : RobolectricTest() {
       )
     )
 
-    coVerify(inverse = true) { fhirCarePlanGenerator.transitionTaskTo(any(), any()) }
+    coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) }
   }
 }

@@ -35,6 +35,8 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows
@@ -133,5 +135,41 @@ class AndroidExtensionTest : RobolectricTest() {
 
     val isDeviceOnline = activity.isDeviceOnline()
     Assert.assertFalse(isDeviceOnline)
+  }
+
+  @Test
+  fun testAppVersionShouldReturnCorrectVersion() {
+    val appVersion = context.appVersion()
+    assertEquals(Pair(0, "0.0.1"), appVersion)
+  }
+
+  @Test
+  fun testRetrieveResourceId() {
+    val resourceId = context.retrieveResourceId("colorPrimary", "attr")
+    assertEquals(2130903301, resourceId)
+  }
+
+  @Test
+  fun testRetrieveResourceIdResourceNameNull() {
+    val resourceId = context.retrieveResourceId(null, "attr")
+    assertNull(resourceId)
+  }
+
+  @Test
+  fun testRetrieveResourceIdResourceIdNull() {
+    val resourceId = context.retrieveResourceId("null", "attr")
+    assertNull(resourceId)
+  }
+
+  @Test
+  fun testGetActivity() {
+    val activity = context.getActivity()
+    assertNull(activity)
+  }
+
+  @Test
+  fun testShowToast() {
+    val toast = context.showToast("Test")
+    assertNotNull(toast)
   }
 }

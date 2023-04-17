@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
+import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Locale
@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Quantity
@@ -36,13 +37,14 @@ import org.hl7.fhir.r4.model.TimeType
 import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.model.UriType
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.DataType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
-  this.linkId
-    .replace("_", " ")
-    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
-    .plus(": ")
+  if (this.linkId != null) {
+    this.linkId
+      .replace("_", " ")
+      .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+      .plus(": ")
+  } else ""
 
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
@@ -134,6 +136,9 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
   }
 }
 
+internal const val ITEM_INITIAL_EXPRESSION_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+
 /** Pre-Populate Questionnaire items with initial values */
 // TODO: handle interpolation for null values on rules engine and not where the values are used
 fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
@@ -141,6 +146,8 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
+    if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
+      item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
     prePopulationParams
       .firstOrNull {
         it.linkId == item.linkId &&
@@ -149,7 +156,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
       }
       ?.let { actionParam ->
         item.initial =
-          arrayListOf<Questionnaire.QuestionnaireItemInitialComponent>(
+          arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {
               value = actionParam.dataType?.let { actionParam.value.castToType(it) }
             }
@@ -174,5 +181,6 @@ fun String.castToType(type: DataType): Type? {
     DataType.URI -> UriType(this)
     DataType.CODING -> this.tryDecodeJson<Coding>()
     DataType.QUANTITY -> this.tryDecodeJson<Quantity>()
+    else -> null /*TODO cast the (several) remaining Enumeration.DataTypes*/
   }
 }

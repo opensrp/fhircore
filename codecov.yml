@@ -9,10 +9,6 @@ comment:
   show_carryforward_flags: false
 coverage:
   precision: 1
-  range:
-  - 75.0
-  - 100.0
-  round: down
   status:
     changes: false
     patch:
@@ -26,7 +22,3 @@ coverage:
 flag_management:
   default_rules:
     carryforward: true
-ignore:
-  - "**/androidTest"  # ignore all files in a folder called androidTest
-  - "**/debug"  # ignore all files in a folder called debug
-  - "**/test"  # ignore all files in a folder called test

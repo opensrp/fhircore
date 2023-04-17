@@ -53,7 +53,7 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
    *
    * @return The locale specific filename, in this case will be: strings_fr
    */
-  fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
+  private fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
     "${baseBundle}_${locale.toLanguageTag()}"
 
   companion object {

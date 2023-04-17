@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
@@ -26,17 +27,22 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
-  navMenu: NavigationMenuConfig? = null
+  navMenu: NavigationMenuConfig? = null,
+  questionnaireResponse: QuestionnaireResponse? = null
 ) {
   val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
   onClickAction?.let { actionConfig ->
@@ -46,9 +52,24 @@ fun List<ActionConfig>.handleClickEvent(
           val questionnaireConfigInterpolated =
             questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
 
+          val intentBundle =
+            when (questionnaireConfigInterpolated.type) {
+              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY -> {
+                actionConfig.paramsBundle(resourceData?.computedValuesMap ?: emptyMap()).apply {
+                  putString(
+                    QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+                    questionnaireResponse?.encodeResourceToString()
+                      ?: QuestionnaireResponse().encodeResourceToString()
+                  )
+                }
+              }
+              else -> bundleOf()
+            }
+
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
+              intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
               actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
             )
@@ -76,6 +97,7 @@ fun List<ActionConfig>.handleClickEvent(
               resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
             ),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
           )
 
         // Register is the entry point destination, clear back stack with every register switch
@@ -102,7 +124,7 @@ fun List<ActionConfig>.handleClickEvent(
   }
 }
 
-private fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
+fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig
     .params
     .map {
@@ -127,3 +149,16 @@ fun ViewProperties.clickable(ResourceData: ResourceData) =
 
 fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
   this.visible.interpolate(computedValuesMap).toBoolean()
+
+/**
+ * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
+ * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
+ *
+ * @return Map of the values or emptyMap if [array] is null
+ * @property array The array of ActionParameter elements to convert
+ */
+fun <K, V> Array<ActionParameter>?.toParamDataMap() =
+  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
+    it.key to it.value
+  }
+    ?: emptyMap()

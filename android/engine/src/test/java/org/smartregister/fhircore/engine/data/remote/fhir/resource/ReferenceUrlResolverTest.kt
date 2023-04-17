@@ -24,7 +24,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
@@ -38,7 +38,9 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 class ReferenceUrlResolverTest : RobolectricTest() {
-  @get:Rule val coroutineTestRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule
+  val coroutineTestRule = CoroutineTestRule()
   private lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   private val fhirEngine = mockk<FhirEngine>()
@@ -52,8 +54,9 @@ class ReferenceUrlResolverTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResolveBinaryResourceShouldReturnBinary() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val binary = Binary().apply { id = "bId" }
       coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
       Assert.assertEquals(
@@ -66,16 +69,18 @@ class ReferenceUrlResolverTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResolveImageUrlWithNullBodyShouldReturnNull() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       coEvery { fhirResourceService.fetchImage(any()) } returns null
       Assert.assertNull(referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839"))
     }
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResolveImageUrlShouldReturnBitmap() {
-    coroutineTestRule.runBlockingTest {
+    runTest {
       val mockResponseBody: ResponseBody =
         spyk(
           object : ResponseBody() {

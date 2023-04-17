@@ -7,12 +7,14 @@
       "resource": "Patient",
       "dataQueries": [
         {
-          "id": "childQueryByDate",
-          "filterType": "DATE",
-          "key": "birthdate",
-          "valueType": "DATE",
-          "valueDate": "2017-03-14",
-          "paramPrefix": "GREATERTHAN_OR_EQUALS"
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "valueDate": "2017-03-14",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
         }
       ],
       "sortConfigs": [

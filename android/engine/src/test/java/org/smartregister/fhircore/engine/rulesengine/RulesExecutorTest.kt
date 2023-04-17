@@ -24,7 +24,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -46,13 +45,16 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesExecutor: RulesExecutor
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -68,6 +70,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
@@ -87,7 +90,6 @@ class RulesExecutorTest : RobolectricTest() {
           baseResource,
           relatedRepositoryResourceData,
           ruleConfigs,
-          "",
           emptyMap()
         )
 
@@ -120,6 +122,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndNoExpression() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
@@ -128,7 +131,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
@@ -150,6 +156,7 @@ class RulesExecutorTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndExpression() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
@@ -163,7 +170,10 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
+    val repositoryResourceData =
+      RepositoryResourceData(
+        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
+      )
     val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()

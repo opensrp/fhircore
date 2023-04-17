@@ -20,7 +20,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.ObservedRepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -36,8 +35,6 @@ interface Repository {
     registerId: String,
     paramsMap: Map<String, String>? = emptyMap()
   ): List<RepositoryResourceData>
-
-  suspend fun loadRegisterData2(currentPage: Int, registerId: String): List<ResourceData>
 
   /**
    * This function uses the provided [registerId] to retrieve the register configuration from the
@@ -58,7 +55,7 @@ interface Repository {
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>? = emptyArray()
+    paramsList: Array<ActionParameter>?
   ): RepositoryResourceData?
 
 

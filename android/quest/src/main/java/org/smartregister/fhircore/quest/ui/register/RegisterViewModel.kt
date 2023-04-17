@@ -48,8 +48,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import timber.log.Timber
-import org.smartregister.fhircore.quest.util.convertActionParameterArrayToMap
+import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 
 @HiltViewModel
 class RegisterViewModel
@@ -73,7 +72,8 @@ constructor(
   private val _totalRecordsCount = mutableStateOf(0L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
-  private var fetchDataRunning = false
+  private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
+  private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -89,18 +89,10 @@ constructor(
       pagesDataCache.clear()
       allPatientRegisterData = null
     }
-
-    if (fetchDataRunning) {
-      return
-    }
-
-    fetchDataRunning = true
     paginatedRegisterData.value =
       pagesDataCache.getOrPut(currentPage.value) {
-        Timber.e("paginateRegisterData called()")
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
       }
-    fetchDataRunning = false
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
@@ -108,26 +100,18 @@ constructor(
     val ruleConfigs = currentRegisterConfigs.registerCard.rules
     val pageSize = currentRegisterConfigs.pageSize // Default 10
 
-    Timber.e("getPager() called $registerId | loadAll $loadAll")
-
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(
-            registerRepository,
-            rulesExecutor,
-            ruleConfigs,
-            ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
-          )
-          .apply {
-            setPatientPagingSourceState(
-              RegisterPagingSourceState(
-                registerId = registerId,
-                loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value
-              )
+        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+          setPatientPagingSourceState(
+            RegisterPagingSourceState(
+              registerId = registerId,
+              loadAll = loadAll,
+              currentPage = if (loadAll) 0 else currentPage.value
             )
-          }
+          )
+        }
       }
     )
   }
@@ -147,7 +131,6 @@ constructor(
   private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
     // Ensure that we only initialize this flow once
     if (allPatientRegisterData == null) {
-      Timber.e("retrieveAllPatientRegisterData() Register id -> $registerId")
       allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
     return allPatientRegisterData!!
@@ -158,18 +141,15 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         searchText.value = event.searchText
-        Timber.e("RegisterViewMode.onEvent search register | Search text = ${searchText.value}")
         if (event.searchText.isEmpty()) paginateRegisterData(registerUiState.value.registerId)
         else filterRegisterData(event)
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
-        Timber.e("RegisterViewModel.onEvent MoveToNextPage -> ${currentPage.value} | ${registerUiState.value.registerId}")
         paginateRegisterData(registerUiState.value.registerId)
       }
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
-        Timber.e("RegisterViewModel.onEvent MoveToPreviousPage -> ${currentPage.value} | ${registerUiState.value.registerId}")
         paginateRegisterData(registerUiState.value.registerId)
       }
     }
@@ -195,15 +175,14 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    paramsList: Array<ActionParameter>?
+    params: Array<ActionParameter>? = emptyArray()
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = convertActionParameterArrayToMap(paramsList)
+      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
         _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
-        Timber.e("RegisterViewModel.retrieveRegisterUiState() ")
         paginateRegisterData(registerId, loadAll = false)
 
         registerUiState.value =
@@ -223,7 +202,9 @@ constructor(
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
-                .toInt()
+                .toInt(),
+            progressPercentage = _percentageProgress,
+            isSyncUpload = _isUploadSync
           )
       }
     }
@@ -231,5 +212,9 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
+    _percentageProgress.emit(progress)
+    _isUploadSync.emit(isUploadSync)
   }
 }

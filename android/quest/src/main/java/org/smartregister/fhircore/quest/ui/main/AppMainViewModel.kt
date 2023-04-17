@@ -27,12 +27,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.WorkManager
-import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.SyncDataParams
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -46,11 +40,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -64,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -83,13 +75,10 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import org.smartregister.p2p.P2PLibrary
-import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -103,7 +92,6 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  fhirEngine: FhirEngine
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
@@ -123,47 +111,17 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
 
-  /*val navigationConfiguration: NavigationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
-  }*/
-
   val navigationConfiguration: NavigationConfiguration by lazy {
-    val config22 : NavigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
-    config22.onp2pReset = {
-      Timber.e("Performing p2p reset")
-
-      viewModelScope.launch (dispatcherProvider.io()) {
-        P2PLibrary.getInstance().getDb().clearAllTables()
-        Timber.e("Finished performing p2p reset")
-
-        /*val patients = fhirEngine.search<Patient> {
-          filter(
-            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
-            {
-              value = of(DateTimeType(Date(0)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-            }
-          )
-        }
-
-        Timber.e("Clearing ${patients.size} patients")
-
-        patients.forEach {
-          fhirEngine.delete(ResourceType.Patient, it.logicalId)
-        }
-
-        Timber.e("Finished clearing ${patients.size} patients")*/
-      }
-    }
-
-    config22
+    configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration.clientRegisters
+    navigationConfiguration
+      .clientRegisters
+      .asSequence()
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
@@ -284,7 +242,7 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }.forEach { menuConfig ->
+    this.asSequence().filter { it.showCount }.forEach { menuConfig ->
       val countAction =
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
       if (countAction != null) {
@@ -348,9 +306,16 @@ constructor(
         requiresNetwork = false
       )
 
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
+        requiresNetwork = false
+      )
+
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-       // Schedule job for generating measure report in the background
+      /* // Schedule job for generating measure report in the background
        MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+      */
     }
   }
 
@@ -363,7 +328,7 @@ constructor(
           else -> Task.TaskStatus.COMPLETED
         }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
       }
     }
   }
