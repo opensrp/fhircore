@@ -5,6 +5,11 @@ val keysStoreAlias: String by project.extra
 val keyPassword: String by project.extra
 val keystorePassword: String by project.extra
 
+buildscript {
+  apply(from = "../jacoco.gradle.kts")
+  apply(from = "../properties.gradle.kts")
+}
+
 plugins {
   id("com.android.application")
   id("kotlin-android")
@@ -12,14 +17,8 @@ plugins {
   id("kotlin-parcelize")
   id("de.mannodermaus.android-junit5")
   id("org.jetbrains.kotlin.plugin.serialization")
-  id("jacoco")
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
-}
-
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
 }
 
 android {

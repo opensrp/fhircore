@@ -1,5 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+buildscript { apply(from = "../jacoco.gradle.kts") }
+
 plugins {
   id("com.android.library")
   id("kotlin-android")
@@ -7,12 +9,9 @@ plugins {
   id("kotlin-parcelize")
   id("org.jetbrains.kotlin.plugin.serialization")
   id("de.mannodermaus.android-junit5")
-  id("jacoco")
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
 }
-
-buildscript { apply(from = "../jacoco.gradle.kts") }
 
 android {
   compileSdk = 33

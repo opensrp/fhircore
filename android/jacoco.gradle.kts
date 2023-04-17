@@ -1,5 +1,4 @@
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 
 val module = if (project.name == "quest") "Quest" else ""
 
@@ -108,11 +107,3 @@ tasks.create(name = "jacocoTestReport", type = JacocoReport::class) {
     }
   )
 }
-
-// TODO Fix jacoco task
-// tasks.withType<Test> {
-//    configure<JacocoTaskExtension> {
-//        isIncludeNoLocationClasses = true
-//        excludes = listOf("jdk.internal.*")
-//    }
-// }

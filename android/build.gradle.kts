@@ -14,6 +14,7 @@ buildscript {
     classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:5.11.0")
+    classpath("org.jacoco:org.jacoco.core:0.8.7")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     classpath("com.android.tools.build:gradle:7.1.3")
@@ -36,7 +37,9 @@ subprojects {
   apply {
     plugin("com.diffplug.spotless")
     plugin("org.jetbrains.dokka")
+    plugin(  "jacoco")
   }
+
   configure<SpotlessExtension> {
     val lintVersion = "0.41.0"
     val lintOptions = mapOf("indent_size" to "2", "continuation_indent_size" to "2")
@@ -79,4 +82,12 @@ subprojects {
   }
 
   tasks.dokkaHtml.configure { outputDirectory.set(file("${project.rootProject.projectDir}/docs")) }
+
+
+  tasks.withType<Test> {
+    configure<JacocoTaskExtension> {
+      isIncludeNoLocationClasses = true
+      excludes = listOf("jdk.internal.*")
+    }
+  }
 }

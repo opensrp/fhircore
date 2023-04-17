@@ -1,20 +1,19 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+buildscript {
+  apply(from = "../jacoco.gradle.kts")
+  apply(from = "../properties.gradle.kts")
+}
+
 plugins {
   id("com.android.library")
   id("kotlin-android")
   id("kotlin-kapt")
   id("kotlin-parcelize")
-  id("jacoco")
   id("de.mannodermaus.android-junit5")
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
   id("org.jetbrains.kotlin.plugin.serialization")
-}
-
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
 }
 
 android {
