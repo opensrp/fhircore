@@ -59,22 +59,14 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
 class RegisterRepositoryTest : RobolectricTest() {
-
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-
   var context: Context = ApplicationProvider.getApplicationContext()
-
-  private val fhirEngine: FhirEngine = mockk()
-
   @Inject lateinit var rulesFactory: RulesFactory
-
+  private val fhirEngine: FhirEngine = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
-  private lateinit var registerRepository: RegisterRepository
-
   private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
-
   private val patient = Faker.buildPatient("12345")
+  private lateinit var registerRepository: RegisterRepository
 
   @Before
   fun setUp() {
@@ -95,6 +87,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
     coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
     coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
@@ -126,6 +119,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadRegisterDataGivenRelatedResourceHasFhirPathExpression() {
     val group =
       Group().apply {
@@ -177,6 +171,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadProfileDataIsNotSupportedYet() {
     coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
     coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
@@ -198,6 +193,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadRegisterDataGivenSecondaryResourcesAreConfigured() {
     val group =
       Group().apply {
@@ -223,6 +219,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadProfileDataGivenSecondaryResourcesAreConfigured() {
     val group =
       Group().apply {
@@ -254,6 +251,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun countRegisterDataReturnsCorrectCount() {
     coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
 
@@ -321,6 +319,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun countRegisterDataWithParams() {
     val paramsList =
       arrayListOf(
@@ -354,6 +353,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadProfileDataSqlContainsFilterForActiveGroups() {
     val group =
       Group().apply {
