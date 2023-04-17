@@ -380,7 +380,8 @@ constructor(
       runningObserver = true
 
       val repoDataList = LinkedList<RepositoryResourceData>() // .apply { add(it[nextPos]) }
-      it.forEach { item -> repoDataList.add(item) }
+      // Might cause a ConcurrentModificationException error
+      repoDataList.addAll(it)
       Timber.e("Observer: RepoDataList (${repoDataList.size}) $repoDataList")
 
       nextPos++

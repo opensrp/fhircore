@@ -21,10 +21,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,12 +60,10 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
-import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -78,7 +74,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 import timber.log.Timber
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
@@ -161,65 +156,14 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary
         )
       }
-
-      val viewPropertiesList = profileUiState.value.profileConfiguration?.views
-      if (viewPropertiesList != null && resourceData2 != null) {
-        viewPropertiesList.forEach { viewProperties ->
-          Timber.e("Re-rendering the view-properties-list")
-          if (viewProperties.isVisible(resourceData2!!.computedValuesMap) &&
-              viewProperties.viewType == ViewType.LIST
-          ) {
-            /*org.smartregister.fhircore.quest.ui.shared.components.List(
-              modifier = modifier,
-              viewProperties = properties as ListProperties,
-              resourceData = resourceData,
-              navController = navController,
-            )
-
-            GenerateView(
-              modifier = generateModifier(viewProperties),
-              properties = viewProperties,
-              resourceData = resourceData2!!,
-              navController = navController
-            )*/
-            viewProperties as ListProperties
-            val currentListResourceData = resourceData2!!.listResourceDataMap[viewProperties.id]
-            LazyColumn(state = lazyListState) {
-              currentListResourceData!!.forEachIndexed { index, listResourceData ->
-                Timber.e("Rendering item list item with ID ${listResourceData.baseResource!!.id}")
-                item (key = listResourceData.baseResource!!.id) {
-                  Spacer(modifier = modifier.height(6.dp))
-                  Column(
-                    modifier =
-                    Modifier.padding(
-                      horizontal = viewProperties.padding.dp,
-                      vertical = viewProperties.padding.div(4).dp
-                    )
-                  ) {
-                    ViewRenderer(
-                      viewProperties = viewProperties.registerCard.views,
-                      resourceData = listResourceData,
-                      navController = navController,
-                    )
-                  }
-                  Spacer(modifier = modifier.height(6.dp))
-                  if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
-                    Divider(color = DividerColor, thickness = 0.5.dp)
-                }
-              }
-            }
-          }
-        }
-      } else {
-        LazyColumn(state = lazyListState) {
-          item(key = profileUiState.value.resourceData?.baseResourceId) {
-            ViewRenderer(
-              viewProperties = profileUiState.value.profileConfiguration?.views ?: emptyList(),
-              resourceData = resourceData2
-                  ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
-              navController = navController
-            )
-          }
+      LazyColumn(state = lazyListState) {
+        item(key = profileUiState.value.resourceData?.baseResourceId) {
+          ViewRenderer(
+            viewProperties = profileUiState.value.profileConfiguration?.views ?: emptyList(),
+            resourceData = resourceData2
+              ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+            navController = navController
+          )
         }
       }
     }
@@ -251,7 +195,7 @@ fun CustomProfileTopAppBar(
         ViewRenderer(
           viewProperties = topBarConfig.content,
           resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+            ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
           navController = navController
         )
       }
@@ -338,24 +282,24 @@ private fun ProfileTopAppBarMenuAction(
               resourceData = profileUiState.resourceData,
               overflowMenuItemConfig = it,
               managingEntity =
-                it.actions
-                  .find { actionConfig ->
-                    actionConfig.managingEntity != null &&
-                      actionConfig.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY
-                  }
-                  ?.managingEntity
+              it.actions
+                .find { actionConfig ->
+                  actionConfig.managingEntity != null &&
+                          actionConfig.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+                }
+                ?.managingEntity
             )
           )
         },
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         modifier =
-          modifier
-            .fillMaxWidth()
-            .background(
-              color =
-                if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
-                else Color.Transparent
-            )
+        modifier
+          .fillMaxWidth()
+          .background(
+            color =
+            if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
+            else Color.Transparent
+          )
       ) { Text(text = it.title, color = if (enabled) it.titleColor.parseColor() else DefaultColor) }
     }
   }
