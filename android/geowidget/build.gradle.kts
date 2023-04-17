@@ -94,7 +94,7 @@ android {
   testCoverage { jacocoVersion = "0.8.7" }
 }
 
-tasks.withType<Test>() {
+tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.SKIPPED) }
   jvmArgs("-Xms4608m -Xmx4608m -ea -noverify")
 }

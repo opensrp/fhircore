@@ -243,7 +243,7 @@ androidComponents {
         // Assigns the new version code to versionCodeOverride, which changes the
         // version code for only the output APK, not for the variant itself. Skipping
         // this step causes Gradle to use the value of variant.versionCode for the APK.
-        output.versionCode.set(baseAbiCode * 10000 + (output.versionCode.get() ?: 0))
+        output.versionCode.set(baseAbiCode * 10000 + (output.versionCode.orNull ?: 0))
       }
     }
   }
