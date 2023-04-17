@@ -79,7 +79,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals(2, targetResource.entry.size)
     Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Encounter", targetResource.entry[1].resource.resourceType.toString())
-
   }
 
   @Test
