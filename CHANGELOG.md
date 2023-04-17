@@ -18,9 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.2] - 2023-04-17
 ### Added
 - Filter out inactive families using custom search parameters
+- Adds support for text-overflow configurability
+- Adds Interpolation for planDefinitions property on QuesitonnaireConfig 
 
 ### Fixed
 - Order the Registers after every form interaction tied to it
+- Fixed index already exists exception 
+- Minor bug fixes for care plan generation
+- Fixes app crash when resourceType is not found
 
 ### Changed
 - Refactor register search to use SDK Search API to perform database query
