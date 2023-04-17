@@ -32,6 +32,7 @@ import androidx.navigation.fragment.navArgs
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
@@ -48,6 +49,7 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.util.extensions.coordinates
@@ -69,8 +71,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    // TODO uncomment after fixing setting of build property MAPBOX_SDK_TOKEN
-    //    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
+    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
     geoWidgetConfiguration =
       configurationRegistry.retrieveConfiguration(
         ConfigType.GeoWidget,

@@ -31,7 +31,6 @@ allprojects {
 }
 
 subprojects {
-
   apply {
     plugin("com.diffplug.spotless")
     plugin("org.jetbrains.dokka")
@@ -68,9 +67,9 @@ subprojects {
   }
 
   configurations.all {
-    //TODO fix dokka
-//    tasks.dokkaHtml.configure {
-//      outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
-//    }
+    // TODO fix dokka
+    //    tasks.dokkaHtml.configure {
+    //      outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
+    //    }
   }
 }

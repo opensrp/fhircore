@@ -12,9 +12,10 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-apply(from = "../properties.gradle")
-
-apply(from = "../jacoco.gradle")
+buildscript {
+  apply(from = "../jacoco.gradle.kts")
+  apply(from = "../properties.gradle.kts")
+}
 
 android {
   compileSdk = 33
@@ -22,8 +23,7 @@ android {
   defaultConfig {
     minSdk = 26
     targetSdk = 33
-    // TODO fix mapbox sdk token
-    //        buildConfigField("String", "MAPBOX_SDK_TOKEN", "\"${MAPBOX_SDK_TOKEN}\"")
+    buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
   }
