@@ -253,7 +253,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
-          primaryText = "Stock Status",
+          primaryText = "Stock status",
           primaryTextColor = "#5A5A5A",
           secondaryText = "Overdue",
           secondaryTextColor = "#000000",

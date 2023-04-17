@@ -1,5 +1,5 @@
 {
-  "appId": "cha",
+  "appId": "app",
   "configType": "profile",
   "id": "inventoryProfile",
   "fhirResource": {
