@@ -1,3 +1,5 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   repositories {
@@ -35,7 +37,7 @@ subprojects {
     plugin("com.diffplug.spotless")
     plugin("org.jetbrains.dokka")
   }
-  configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+  configure<SpotlessExtension> {
     val lintVersion = "0.41.0"
     val lintOptions = mapOf("indent_size" to "2", "continuation_indent_size" to "2")
 
@@ -67,9 +69,14 @@ subprojects {
   }
 
   configurations.all {
-    // TODO fix dokka
-    //    tasks.dokkaHtml.configure {
-    //      outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
-    //    }
+    resolutionStrategy {
+      eachDependency {
+        when (requested.group) {
+          "org.jacoco" -> useVersion("0.8.7")
+        }
+      }
+    }
   }
+
+  tasks.dokkaHtml.configure { outputDirectory.set(file("${project.rootProject.projectDir}/docs")) }
 }
