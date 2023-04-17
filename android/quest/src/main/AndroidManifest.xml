@@ -37,7 +37,9 @@
         <activity android:name=".ui.main.AppMainActivity" />
         <activity android:name=".ui.patient.remove.HivPatientQuestionnaireActivity"
             android:theme="@style/AppTheme"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:clearTaskOnLaunch="true"  />
         <!--        <activity-->
         <!--            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"-->
         <!--            android:exported="false"-->
