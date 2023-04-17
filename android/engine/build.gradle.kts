@@ -1,107 +1,103 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'kotlin-parcelize'
-    id 'org.jetbrains.kotlin.plugin.serialization'
-    id 'de.mannodermaus.android-junit5'
-    id 'jacoco'
-    id 'dagger.hilt.android.plugin'
-    id 'androidx.navigation.safeargs'
+    id ("com.android.library")
+    id ("kotlin-android")
+    id ("kotlin-kapt")
+    id ("kotlin-parcelize")
+    id ("org.jetbrains.kotlin.plugin.serialization")
+    id ("de.mannodermaus.android-junit5")
+    id ("jacoco")
+    id ("dagger.hilt.android.plugin")
+    id ("androidx.navigation.safeargs")
 }
 
-apply from: '../jacoco.gradle'
+apply(from = "../jacoco.gradle")
 
 android {
 
-    compileSdkVersion 33
-
-    dataBinding {
-        enabled true
-    }
+    compileSdk = 33
 
     defaultConfig {
-        minSdkVersion 26
-        targetSdkVersion 33
-        testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
-        consumerProguardFiles "consumer-rules.pro"
+        minSdk = 26
+        targetSdk = 33
+        testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
-        debug {
-            testCoverageEnabled true
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      getByName("debug") {
+        isTestCoverageEnabled = true
+      }
+
+      getByName("release") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
-        coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=all-compatibility']
+        freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
     }
     buildFeatures {
-        compose true
-        viewBinding true
+        compose = true
+        viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.3.0'
+        kotlinCompilerExtensionVersion = "1.3.0"
     }
 
     packagingOptions {
-        exclude 'license.html'
-        exclude 'readme.html'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/license.txt'
-        exclude 'META-INF/license.html'
-        exclude 'META-INF/LICENSE.md'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/NOTICE.md'
-        exclude 'META-INF/notice.txt'
-        exclude 'META-INF/ASL2.0'
-        exclude 'META-INF/ASL-2.0.txt'
-        exclude 'META-INF/LGPL-3.0.txt'
-        exclude 'META-INF/sun-jaxb.episode'
-        exclude("META-INF/*.kotlin_module")
-        exclude("META-INF/INDEX.LIST")
+       excludes.add("license.html")
+       excludes.add("readme.html")
+       excludes.add("META-INF/DEPENDENCIES")
+       excludes.add("META-INF/LICENSE")
+       excludes.add("META-INF/LICENSE.txt")
+       excludes.add("META-INF/license.txt")
+       excludes.add("META-INF/license.html")
+       excludes.add("META-INF/LICENSE.md")
+       excludes.add("META-INF/NOTICE")
+       excludes.add("META-INF/NOTICE.txt")
+       excludes.add("META-INF/NOTICE.md")
+       excludes.add("META-INF/notice.txt")
+       excludes.add("META-INF/ASL2.0")
+       excludes.add("META-INF/ASL-2.0.txt")
+       excludes.add("META-INF/LGPL-3.0.txt")
+       excludes.add("META-INF/sun-jaxb.episode")
+       excludes.add("META-INF/*.kotlin_module")
+       excludes.add("META-INF/INDEX.LIST")
     }
 
     testOptions {
-        animationsDisabled true
+        animationsDisabled = true
 
         unitTests {
-            includeAndroidResources = true
-            returnDefaultValues = true
-            all {
-                minHeapSize = "4608m"
-                maxHeapSize = "4608m"
-            }
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+
         }
     }
 }
 
-// Test Logging
-tasks.withType(Test) {
-    testLogging {
-        events "failed"
-    }
+tasks.withType<Test>() {
+  testLogging {
+    events = setOf(TestLogEvent.SKIPPED)
+  }
+  jvmArgs("-Xms4608m -Xmx4608m -ea -noverify")
 }
 
 // CQL
 configurations {
-    all*.exclude group: 'org.eclipse.persistence'
-    all*.exclude group: 'javax.activation', module: 'activation'
-    all*.exclude group: 'javax', module: 'javaee-api'
-    all*.exclude group: 'xml-apis'
-    all*.exclude group: 'xpp3'
+    all { exclude(group = "org.eclipse.persistence") }
+   all { exclude(group = "javax.activation", module ="activation")}
+   all { exclude(group = "javax", module ="javaee-api")}
+   all { exclude(group = "xml-apis")}
+   all { exclude(group = "xpp3") }
 }
 
 dependencies {
@@ -128,20 +124,20 @@ dependencies {
     implementation(libs.hilt.work)
     implementation(libs.slf4j.nop)
     implementation(libs.cqf.cql.evaluator) {
-        exclude group: 'com.github.ben-manes.caffeine'
-        exclude group: 'ca.uhn.hapi.fhir'
+       exclude(group ="com.github.ben-manes.caffeine")
+       exclude(group ="ca.uhn.hapi.fhir")
     }
     implementation(libs.cql.evaluator.builder) {
-        exclude group: 'com.github.ben-manes.caffeine'
-        exclude group: 'ca.uhn.hapi.fhir'
+       exclude(group ="com.github.ben-manes.caffeine")
+       exclude(group ="ca.uhn.hapi.fhir")
     }
     implementation(libs.cql.evaluator.plandefinition) {
-        exclude group: 'com.github.ben-manes.caffeine'
-        exclude group: 'ca.uhn.hapi.fhir'
+       exclude(group ="com.github.ben-manes.caffeine")
+       exclude(group ="ca.uhn.hapi.fhir")
     }
     implementation(libs.cql.evaluator.dagger) {
-        exclude group: 'com.github.ben-manes.caffeine'
-        exclude group: 'ca.uhn.hapi.fhir'
+       exclude(group ="com.github.ben-manes.caffeine")
+       exclude(group ="ca.uhn.hapi.fhir")
     }
 
     //Shared dependencies
@@ -185,34 +181,34 @@ dependencies {
     api(libs.okhttp)
     api(libs.okhttp.logging.interceptor)
     api(libs.easy.rules.jexl) {
-        exclude group: 'commons-logging', module: 'commons-logging'
+       exclude(group ="commons-logging", module ="commons-logging")
     }
     api(libs.data.capture) {
-        transitive = true
-        exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'com.google.android.fhir', module: 'engine'
+        isTransitive= true
+       exclude(group ="ca.uhn.hapi.fhir")
+       exclude(group ="com.google.android.fhir", module ="engine")
     }
     api(libs.workflow) {
-        transitive = true
-        exclude group: 'xerces'
-        exclude group: 'com.github.java-json-tools'
-        exclude group: 'org.codehaus.woodstox'
-        exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'com.google.android.fhir', module: 'common'
-        exclude group: 'com.google.android.fhir', module: 'engine'
-        exclude group: 'com.github.ben-manes.caffeine'
+        isTransitive= true
+       exclude(group ="xerces")
+       exclude(group ="com.github.java-json-tools")
+       exclude(group ="org.codehaus.woodstox")
+       exclude(group ="ca.uhn.hapi.fhir")
+       exclude(group ="com.google.android.fhir", module ="common")
+       exclude(group ="com.google.android.fhir", module ="engine")
+       exclude(group ="com.github.ben-manes.caffeine")
     }
     api(libs.contrib.barcode) {
-        transitive = true
-        exclude group: 'org.smartregister', module: 'data-capture'
-        exclude group: 'ca.uhn.hapi.fhir'
-        exclude group: 'com.google.android.fhir', module: 'common'
-        exclude group: 'com.google.android.fhir', module: 'engine'
+        isTransitive= true
+       exclude(group ="org.smartregister", module ="data-capture")
+       exclude(group ="ca.uhn.hapi.fhir")
+       exclude(group ="com.google.android.fhir", module ="common")
+       exclude(group ="com.google.android.fhir", module ="engine")
     }
     api(libs.fhir.engine) {
-        transitive = true
-        exclude group: 'com.google.android.fhir', module: 'common'
-        exclude group: 'com.github.ben-manes.caffeine'
+        isTransitive= true
+       exclude(group ="com.google.android.fhir", module ="common")
+       exclude(group ="com.github.ben-manes.caffeine")
     }
 
     //Annotation processors
