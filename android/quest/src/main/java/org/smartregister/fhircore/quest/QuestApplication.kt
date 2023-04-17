@@ -19,7 +19,9 @@ package org.smartregister.fhircore.quest
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.os.Looper
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -34,6 +36,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirXFhirQuer
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -73,6 +76,10 @@ class QuestApplication :
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+    }
+
+    if (BuildConfig.DEBUG.not()) {
+      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
     }
 
     registerActivityLifecycleCallbacks(
@@ -139,4 +146,19 @@ class QuestApplication :
       .setMinimumLoggingLevel(android.util.Log.INFO)
       .setWorkerFactory(workerFactory)
       .build()
+
+  private val globalExceptionHandler =
+    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
+
+  private fun handleUncaughtException(e: Throwable) {
+    showToast(this.getString(R.string.error_occurred))
+    Timber.e(e)
+
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      val intent = Intent(applicationContext, AppSettingActivity::class.java)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      startActivity(intent)
+    }
+  }
 }

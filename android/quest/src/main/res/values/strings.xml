@@ -108,4 +108,6 @@
 
     <string name="search_progress_message">Search in progress. Please wait…</string>
 
+    <string name="error_occurred" translatable="false">Something went wrong...</string>
+
 </resources>
