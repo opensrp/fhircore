@@ -39,11 +39,18 @@ subprojects {
   configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     val lintVersion = "0.41.0"
     val lintOptions = mapOf("indent_size" to "2", "continuation_indent_size" to "2")
+
     kotlin {
       target("**/*.kt")
       ktlint(lintVersion).userData(lintOptions)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
+    }
+
+    kotlinGradle {
+      target("*.gradle.kts")
+      ktlint(lintVersion).userData(lintOptions)
+      ktfmt().googleStyle()
     }
 
     format("xml") {

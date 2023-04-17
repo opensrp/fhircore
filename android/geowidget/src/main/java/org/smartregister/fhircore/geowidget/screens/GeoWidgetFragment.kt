@@ -169,15 +169,13 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
   fun setFeatureClickListener() {
     kujakuMapView.setOnFeatureClickListener(
       { featuresList ->
-        featuresList
-          .firstOrNull { it.hasProperty("family-id") }
-          ?.let {
-            it.getStringProperty("family-id")?.also { familyId ->
-              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
-              )
-            }
+        featuresList.firstOrNull { it.hasProperty("family-id") }?.let {
+          it.getStringProperty("family-id")?.also { familyId ->
+            geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+              GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+            )
           }
+        }
       },
       "quest-data-points"
     )
