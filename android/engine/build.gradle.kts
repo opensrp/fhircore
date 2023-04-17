@@ -82,6 +82,8 @@ android {
 
         }
     }
+
+  testCoverage { jacocoVersion = "0.8.7" }
 }
 
 tasks.withType<Test>() {
