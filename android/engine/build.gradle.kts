@@ -93,7 +93,7 @@ tasks.withType<Test>() {
   jvmArgs("-Xms4608m -Xmx4608m -ea -noverify")
 }
 
-// CQL
+
 configurations {
     all { exclude(group = "org.eclipse.persistence") }
    all { exclude(group = "javax.activation", module ="activation")}

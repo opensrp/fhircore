@@ -61,8 +61,9 @@ subprojects {
   }
 
   configurations.all {
-    tasks.dokkaHtml.configure {
-      outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
-    }
+    //TODO fix dokka
+//    tasks.dokkaHtml.configure {
+//      outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
+//    }
   }
 }
