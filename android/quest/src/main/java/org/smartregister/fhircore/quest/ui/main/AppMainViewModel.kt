@@ -79,7 +79,6 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -337,7 +336,7 @@ constructor(
     }
   }
 
-  fun dataRefreshLivedataPostValue(refresh:Boolean) {
+  fun dataRefreshLivedataPostValue(refresh: Boolean) {
     dataRefreshLivedata.postValue(refresh)
   }
 

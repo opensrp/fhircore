@@ -254,7 +254,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     handleRefreshLiveData()
   }
 
-  fun handleRefreshLiveData(){
+  fun handleRefreshLiveData() {
     appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner) {
       if (it == true) {
         with(registerFragmentArgs) {

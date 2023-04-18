@@ -184,7 +184,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val appMainViewModel = mockk<AppMainViewModel>()
     val questionnaireSubmissionLiveData = mockk<MutableLiveData<QuestionnaireSubmission?>>()
     every { questionnaireSubmissionLiveData.postValue(any()) } just runs
-    every { appMainViewModel.questionnaireSubmissionLiveData } returns questionnaireSubmissionLiveData
+    every { appMainViewModel.questionnaireSubmissionLiveData } returns
+      questionnaireSubmissionLiveData
     every { appMainViewModel.dataRefreshLivedataPostValue(any()) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
 
@@ -200,7 +201,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId", refreshContent = true)
+            QuestionnaireConfig(
+              taskId = "Task/12345",
+              id = "questionnaireId",
+              refreshContent = true
+            )
           )
         }
       )
