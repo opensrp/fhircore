@@ -238,6 +238,7 @@ private fun BigServiceButton(
   resourceData: ResourceData
 ) {
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+  val backgroundColor = buttonProperties.interpolateBackgroundColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
   val buttonEnabled =
@@ -265,7 +266,9 @@ private fun BigServiceButton(
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+          if (backgroundColor != Color.Unspecified) {
+            backgroundColor
+          } else if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
@@ -327,7 +330,7 @@ private fun ServiceCardServiceOverduePreview() {
               serviceButton =
                 ButtonProperties(
                   visible = "true",
-                  status = ServiceStatus.OVERDUE.name,
+                  status = ServiceStatus.IN_PROGRESS.name,
                   text = "1",
                   buttonType = ButtonType.BIG
                 )

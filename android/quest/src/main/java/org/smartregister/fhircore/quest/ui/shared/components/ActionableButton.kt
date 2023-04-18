@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -70,6 +71,8 @@ fun ActionableButton(
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
     val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
+    val backgroundColor =
+      buttonProperties.interpolateBackgroundColor(resourceData.computedValuesMap)
     val buttonEnabled =
       buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
     val clickable = buttonProperties.clickable(resourceData)
@@ -85,7 +88,10 @@ fun ActionableButton(
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
+          if (backgroundColor != Color.Unspecified) {
+            buttonProperties
+            backgroundColor
+          } else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
@@ -177,6 +183,13 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
     ServiceStatus.valueOf(interpolated)
   else ServiceStatus.UPCOMING
 }
+@Composable
+fun ButtonProperties.interpolateBackgroundColor(computedValuesMap: Map<String, Any>): Color {
+  val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
+  return if (!interpolated.isNullOrEmpty()) {
+    return interpolated.parseColor()
+  } else Color.Unspecified
+}
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
@@ -187,7 +200,7 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
-        buttonType = ButtonType.TINY
+        buttonType = ButtonType.TINY,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
