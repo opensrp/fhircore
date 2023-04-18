@@ -336,10 +336,6 @@ constructor(
     }
   }
 
-  fun dataRefreshLivedataPostValue(refresh: Boolean) {
-    dataRefreshLivedata.postValue(refresh)
-  }
-
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "MMM d, hh:mm aa"

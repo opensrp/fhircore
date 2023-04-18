@@ -186,7 +186,9 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     every { questionnaireSubmissionLiveData.postValue(any()) } just runs
     every { appMainViewModel.questionnaireSubmissionLiveData } returns
       questionnaireSubmissionLiveData
-    every { appMainViewModel.dataRefreshLivedataPostValue(any()) } just runs
+    val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
+    every { refreshLiveDataMock.postValue(true) } just runs
+    every { appMainViewModel.dataRefreshLivedata } returns refreshLiveDataMock
     every { appMainActivity.appMainViewModel } returns appMainViewModel
 
     appMainActivity.onSubmitQuestionnaire(
@@ -211,7 +213,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    verify { appMainViewModel.dataRefreshLivedataPostValue(true) }
+    verify { refreshLiveDataMock.postValue(true) }
   }
 
   @Test
