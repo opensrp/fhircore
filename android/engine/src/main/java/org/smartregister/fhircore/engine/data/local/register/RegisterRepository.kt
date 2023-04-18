@@ -302,6 +302,10 @@ constructor(
         if (resourceType == ResourceType.Patient || resourceType == ResourceType.Group) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+        // Filter active Groups
+        if (resourceType == ResourceType.Group) {
+          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
+        }
         applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }
 
