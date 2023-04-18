@@ -83,7 +83,6 @@ subprojects {
 
   tasks.dokkaHtml.configure { outputDirectory.set(file("${project.rootProject.projectDir}/docs")) }
 
-
   tasks.withType<Test> {
     configure<JacocoTaskExtension> {
       isIncludeNoLocationClasses = true

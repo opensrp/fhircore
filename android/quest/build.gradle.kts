@@ -268,6 +268,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.cql.measure.evaluator)
+
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
