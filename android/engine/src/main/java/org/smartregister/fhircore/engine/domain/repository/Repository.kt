@@ -76,25 +76,4 @@ interface Repository {
     paramsList: Array<ActionParameter>?,
     afterFetch: suspend () -> Unit
   )
-
-  /**
-   * This function returns data used on the profile for the given [resourceId]. Profile
-   * configuration is identified by the [profileId] and contains the queries for filtering the
-   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
-   * configurations identified by the [profileId] are used.
-   */
-  /*suspend fun loadProfileData2(
-    profileId: String,
-    resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>? = emptyArray()
-  ): RepositoryResourceData?
-
-  suspend fun loadOtherProfileData(
-    profileId: String,
-    resourceId: String,
-    fhirResourceConfig: FhirResourceConfig?,
-    baseResource: Resource,
-    resourceData2: ResourceData
-  )*/
 }

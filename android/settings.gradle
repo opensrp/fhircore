@@ -2,6 +2,3 @@ rootProject.name = "fhircore-android"
 include ':engine'
 include ':quest'
 include ':geowidget'
-
-include ':p2p-lib'
-project(":p2p-lib").projectDir = new File("../../p2p/p2p-lib/")
