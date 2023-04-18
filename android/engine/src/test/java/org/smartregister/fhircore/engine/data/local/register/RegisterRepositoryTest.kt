@@ -264,6 +264,18 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun countRegisterDataReturnsCorrectCountForGroups() {
+    coEvery { fhirEngine.count(Search(type = ResourceType.Group)) } returns 10
+
+    runBlocking {
+      val recordsCount = registerRepository.countRegisterData("householdRegister")
+
+      Assert.assertEquals(10, recordsCount)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadRegisterDataWithParamsReturnsFilteredResources() = runTest {
     val group =
       Group().apply {
