@@ -88,10 +88,10 @@ fun ActionableButton(
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-          if (backgroundColor != Color.Unspecified) {
-            buttonProperties
-            backgroundColor
-          } else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
+            if (backgroundColor != Color.Unspecified) {
+              buttonProperties
+              backgroundColor
+            } else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
@@ -183,6 +183,7 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
     ServiceStatus.valueOf(interpolated)
   else ServiceStatus.UPCOMING
 }
+
 @Composable
 fun ButtonProperties.interpolateBackgroundColor(computedValuesMap: Map<String, Any>): Color {
   val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
