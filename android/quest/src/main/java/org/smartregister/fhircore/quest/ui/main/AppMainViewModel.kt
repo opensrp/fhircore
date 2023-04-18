@@ -230,7 +230,6 @@ constructor(
   ) {
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
-      Timber.e("launchFamilyRegistrationWithLocationId launch form")
       if (context is QuestionnaireHandler)
         context.launchQuestionnaire<Any>(
           context = context,
@@ -336,6 +335,10 @@ constructor(
         fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
       }
     }
+  }
+
+  fun dataRefreshLivedataPostValue(refresh:Boolean) {
+    dataRefreshLivedata.postValue(refresh)
   }
 
   companion object {

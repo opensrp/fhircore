@@ -146,7 +146,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         )
       }
       if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        appMainViewModel.dataRefreshLivedata.postValue(true)
+        appMainViewModel.dataRefreshLivedataPostValue(true)
       }
     }
   }

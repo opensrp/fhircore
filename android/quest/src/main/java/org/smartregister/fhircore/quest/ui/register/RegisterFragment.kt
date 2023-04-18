@@ -251,7 +251,10 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+    handleRefreshLiveData()
+  }
 
+  fun handleRefreshLiveData(){
     appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner) {
       if (it == true) {
         with(registerFragmentArgs) {
@@ -263,7 +266,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           )
         }
         // reset value
-        appMainViewModel.dataRefreshLivedata.value = false
+        appMainViewModel.dataRefreshLivedataPostValue(false)
       }
     }
   }
