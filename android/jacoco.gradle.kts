@@ -2,7 +2,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 val module = if (project.name == "quest") "Quest" else ""
 
-tasks.create(name = "jacocoTestReport", type = JacocoReport::class) {
+tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
   dependsOn(
     setOf(
       "test${module}DebugUnitTest", // Generates unit test coverage report

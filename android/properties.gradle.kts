@@ -1,14 +1,16 @@
 import java.util.Properties
+import java.io.FileInputStream
+import java.io.InputStreamReader
 
 fun Project.readProperties(file: String): Properties {
   val properties = Properties()
   val localProperties = File(file)
   if (localProperties.isFile) {
-    java.io.InputStreamReader(java.io.FileInputStream(localProperties), Charsets.UTF_8).use { reader
+    InputStreamReader(FileInputStream(localProperties), Charsets.UTF_8).use { reader
       ->
       properties.load(reader)
     }
-  } else println("FILE_NOT_FOUND_EXEPTION: File $file not found")
+  } else println("FILE_NOT_FOUND_EXCEPTION: File $file not found")
 
   return properties
 }
