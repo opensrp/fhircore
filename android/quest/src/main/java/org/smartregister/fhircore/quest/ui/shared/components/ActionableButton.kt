@@ -89,7 +89,6 @@ fun ActionableButton(
         ButtonDefaults.buttonColors(
           backgroundColor =
             if (backgroundColor != Color.Unspecified) {
-              buttonProperties
               backgroundColor
             } else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
           contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
