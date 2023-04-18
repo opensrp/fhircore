@@ -78,7 +78,6 @@ constructor(
 
     val jsonArray = JSONArray()
     records.forEach {
-
       if (recordIdsSet.contains(it.logicalId)) {
         Timber.i("Skipping a record that was sent previously with ID ${it.logicalId}")
         return@forEach

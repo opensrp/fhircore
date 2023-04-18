@@ -16,7 +16,8 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.hl7.fhir.r4.model.Resource
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -51,27 +52,29 @@ interface Repository {
    * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
    * configurations identified by the [profileId] are used.
    */
-  suspend fun loadProfileData(
+  suspend fun loadProfileBaseResource(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>?
   ): RepositoryResourceData?
 
-
+  // TODO: Update this documentation
   /**
    * This function returns data used on the profile for the given [resourceId]. Profile
    * configuration is identified by the [profileId] and contains the queries for filtering the
    * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
    * configurations identified by the [profileId] are used.
    */
-  suspend fun loadOtherProfileData(
-    baseResource: Resource,
+  suspend fun loadProfileRelatedAndSecondaryResources(
+    queryResult: RepositoryResourceData.QueryResult.Search,
+    listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
+    resourceData: ResourceData,
     profileId: String,
     resourceId: String,
-    fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>? = emptyArray(),
-    relatedResourceData: ObservedRepositoryResourceData
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsList: Array<ActionParameter>?,
+    afterFetch: suspend () -> Unit
   )
 
   /**

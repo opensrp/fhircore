@@ -39,6 +39,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -339,7 +340,8 @@ private fun ServiceCardServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -393,7 +395,8 @@ private fun ServiceCardServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -447,7 +450,8 @@ private fun ServiceCardServiceUpcomingPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -482,7 +486,8 @@ private fun ServiceCardServiceFamilyMemberPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -535,7 +540,8 @@ private fun ServiceCardServiceCompletedPreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -583,7 +589,8 @@ private fun ServiceCardANCServiceDuePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
@@ -639,7 +646,8 @@ private fun ServiceCardANCServiceOverduePreview() {
   Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     ViewRenderer(
       viewProperties = viewProperties,
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }

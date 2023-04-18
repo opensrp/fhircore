@@ -112,7 +112,9 @@ class ProfileViewModelTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
-    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
+    coEvery {
+      registerRepository.loadProfileBaseResource(any(), any(), paramsList = emptyArray())
+    } returns
       RepositoryResourceData(
         queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
       )

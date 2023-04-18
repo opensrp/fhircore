@@ -184,7 +184,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
     runBlocking {
       val profileData =
-        registerRepository.loadProfileData(
+        registerRepository.loadProfileBaseResource(
           profileId = "patientProfile",
           resourceId = "12345",
           paramsList = emptyArray()
@@ -240,7 +240,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     runBlocking {
       val profileData =
-        registerRepository.loadProfileData(
+        registerRepository.loadProfileBaseResource(
           profileId = "patientProfile",
           resourceId = "12345",
           paramsList = emptyArray()
@@ -397,7 +397,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     runBlocking {
       val profileData =
-        registerRepository.loadProfileData(
+        registerRepository.loadProfileBaseResource(
           profileId = "patientProfile",
           resourceId = "12345",
           paramsList = emptyArray()

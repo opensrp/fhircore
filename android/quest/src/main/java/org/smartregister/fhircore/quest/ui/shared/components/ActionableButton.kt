@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -178,6 +180,7 @@ fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): Ser
   else ServiceStatus.UPCOMING
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun ActionableButtonPreview() {
@@ -189,11 +192,13 @@ fun ActionableButtonPreview() {
         text = "ANC Visit",
         buttonType = ButtonType.TINY
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun DisabledActionableButtonPreview() {
@@ -207,12 +212,14 @@ fun DisabledActionableButtonPreview() {
           enabled = "true",
           buttonType = ButtonType.BIG
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SmallActionableButtonPreview() {
@@ -226,7 +233,8 @@ fun SmallActionableButtonPreview() {
           fillMaxWidth = true,
           buttonType = ButtonType.TINY
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
     ActionableButton(
@@ -238,7 +246,8 @@ fun SmallActionableButtonPreview() {
           fillMaxWidth = true,
           buttonType = ButtonType.TINY
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }

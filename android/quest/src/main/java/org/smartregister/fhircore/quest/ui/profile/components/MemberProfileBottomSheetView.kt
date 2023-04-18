@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -129,6 +131,8 @@ fun MemberProfileBottomSheetView(
   }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewPreview() {
@@ -139,10 +143,12 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf())
+    ResourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf())
   )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun MemberProfileBottomSheetViewWithFormDataPreview() {
@@ -158,6 +164,7 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf())
+    ResourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf())
   )
 }

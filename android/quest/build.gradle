@@ -24,7 +24,7 @@ android {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
-        versionCode 1
+        versionCode 4
         versionName "0.2.1"
         multiDexEnabled true
 

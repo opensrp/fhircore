@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import java.util.LinkedList
@@ -38,8 +37,8 @@ import org.hl7.fhir.r4.model.ResourceType
 data class ResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
-  val computedValuesMap: MutableMap<String, Any>,
-  val listResourceDataMap: MutableMap<String, SnapshotStateList<ResourceData>>,
+  val computedValuesMap: SnapshotStateMap<String, Any>,
+  val listResourceDataMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   val baseResource: Resource? = null
 )
 
@@ -48,10 +47,18 @@ data class ProfileResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
   val computedValuesMap: SnapshotStateMap<String, Any>,
-  val listResourceDataMap: MutableMap<String, SnapshotStateList<ResourceData>>,
+  val listResourceDataMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   val baseResource: Resource? = null
 )
 
+fun ProfileResourceData.toResourceData(): ResourceData =
+  ResourceData(
+    baseResourceId = baseResourceId,
+    baseResourceType = baseResourceType,
+    computedValuesMap = computedValuesMap,
+    listResourceDataMap = listResourceDataMap,
+    baseResource = baseResource
+  )
 /**
  * @property resource A valid FHIR resource
  * @property relatedResources Nested list of [RelatedResourceData]

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,6 +87,7 @@ fun CardView(
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CardViewWithoutPaddingPreview() {
@@ -108,12 +111,14 @@ private fun CardViewWithoutPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CardViewWithPaddingPreview() {
@@ -150,12 +155,14 @@ private fun CardViewWithPaddingPreview() {
               padding = 16
             )
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CardViewWithoutPaddingAndHeaderPreview() {
@@ -172,7 +179,8 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               )
             ),
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = rememberNavController()
     )
   }

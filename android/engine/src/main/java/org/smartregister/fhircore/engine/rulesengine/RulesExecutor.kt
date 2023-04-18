@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.logicalId
@@ -52,72 +53,59 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         baseResource = baseResource,
         relatedResourcesMap = relatedResourcesMap
       )
+
+    val computedValuesStateMap =
+      mutableStateMapOf<String, Any>().apply {
+        putAll(computedValuesMap)
+        params?.run { this@apply.putAll(this) }
+      }
+
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
       baseResourceType = baseResource.resourceType,
-      computedValuesMap =
-        if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap(),
+      computedValuesMap = computedValuesStateMap,
+      listResourceDataMap = mutableStateMapOf(),
       baseResource = baseResource
     )
   }
-
-  suspend fun processResourceData2(
-    baseResource: Resource,
-    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
-    ruleConfigs: List<RuleConfig>,
-    ruleConfigsKey: String,
-    params: Map<String, String>?
-  ): ResourceData {
-    val relatedResourcesMap = relatedRepositoryResourceData.createRelatedResourcesMap()
-    val computedValuesMap =
-      computeRules(
-        ruleConfigs = ruleConfigs,
-        ruleConfigsKey = ruleConfigsKey,
-        baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
-      )
-    return ResourceData(
-      baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
-      baseResourceType = baseResource.resourceType,
-      computedValuesMap =
-      if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap()
-      mutableMapOf(),
-      baseResource = baseResource
-    )
-  }
-
   /**
    * This function pre-computes all the Rules for [ViewType]'s of List including list nested in the
    * views. The LIST view computed values includes the parent's.
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
-    listResourceData: MutableList<ResourceData>,
+    // TODO: REmove this
+    // listResourceData: MutableList<ResourceData>,
     listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>,
-  ): List<ResourceData> {
+  ) {
     val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
-    return listProperties.resources.flatMap { listResource ->
+    listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
-          relatedResourcesMap =
-            relatedResourcesMap.mapValues { entry ->
-              entry.value.map { (it as RepositoryResourceData.QueryResult.Search).resource }
-            },
-          listProperties.id,
-          listResourceData,
-          listResourceDataMapState,
+          relatedResourcesMap = // mutableMapOf()
+          relatedResourcesMap
+              .mapValues { entry ->
+                entry
+                  .value
+                  .map { (it as RepositoryResourceData.QueryResult.Search).resource }
+                  .toMutableList()
+              }
+              .toMutableMap(),
+          itemId = listProperties.id,
+          // listResourceData = listResourceData,
+          listResourceDataMapState = listResourceDataMapState,
           ruleConfigs = listProperties.registerCard.rules,
-          relatedResourcesMap = relatedResourcesMap,
-          ruleConfigsKey = listProperties.registerCard::class.java.canonicalName,
+          // relatedResourcesMap = relatedResourcesMap,
+          // ruleConfigsKey = listProperties.registerCard::class.java.canonicalName,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
         )
     }
   }
 
-  private suspend fun computeRules(
+  suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
     relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>>
@@ -131,7 +119,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   private suspend fun List<Resource>.mapToResourceData(
     itemId: String,
-    listResourceData: MutableList<ResourceData>,
+    // listResourceData: MutableList<ResourceData>,
     listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
@@ -162,17 +150,23 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         )
 
       // LIST view should reuse the previously computed values
+      val computedValuesStateMap =
+        mutableStateMapOf<String, Any>().apply {
+          putAll(computedValuesMap)
+          putAll(listComputedValuesMap)
+        }
+
       val res =
         ResourceData(
           baseResourceId = resource.logicalId.extractLogicalIdUuid(),
           baseResourceType = resource.resourceType,
-          computedValuesMap = computedValuesMap.plus(listComputedValuesMap).toMutableMap(),
-          mutableMapOf(),
+          computedValuesMap = computedValuesStateMap,
+          mutableStateMapOf(),
           baseResource = resource
         )
 
+      // Update the View
       if (listResourceDataMapState.containsKey(itemId)) {
-
         val resourceDataListFromMap = listResourceDataMapState[itemId]
         var found = false
 
@@ -184,18 +178,17 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         }
 
         if (!found) {
-          listResourceDataMapState[itemId]?.add(res)
+          // listResourceDataMapState[itemId]?.add(res)
+          resourceDataListFromMap?.add(res)
           // listResourceData.add(res)
         }
       } else {
 
-        listResourceData.add(res)
-        val myList = mutableStateListOf<ResourceData>().apply { addAll(listResourceData) }
+        // listResourceData.add(res)
+        val myList = mutableStateListOf<ResourceData>().apply { add(res) }
         Timber.e("Size of list is ${myList.size}")
         listResourceDataMapState[itemId] = myList
       }
-
-      res
     }
 
   /**
@@ -253,7 +246,7 @@ fun LinkedList<RepositoryResourceData>.createQueryResultMap():
   queue.addAll(this)
 
   while (queue.isNotEmpty()) {
-    val relatedResourceData = this.removeFirst()
+    val relatedResourceData = queue.removeFirst()
     when (relatedResourceData.queryResult) {
       is RepositoryResourceData.QueryResult.Count ->
         relatedResourcesMap.putQueryResult(
@@ -266,7 +259,7 @@ fun LinkedList<RepositoryResourceData>.createQueryResultMap():
               ?: relatedResourceData.queryResult.resource.resourceType.name,
           queryResult = relatedResourceData.queryResult
         )
-        this.addAll(relatedResourceData.queryResult.relatedResources)
+        queue.addAll(relatedResourceData.queryResult.relatedResources)
       }
     }
   }

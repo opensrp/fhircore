@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -48,6 +50,7 @@ import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -58,7 +61,6 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
 class RegisterRepository
@@ -144,7 +146,9 @@ constructor(
     resourceConfig: ResourceConfig,
     baseResourceType: ResourceType,
     baseResource: Resource,
-    fhirPathExpression: String?
+    fhirPathExpression: String?,
+    queryResult: RepositoryResourceData.QueryResult.Search? = null,
+    afterFetch: (suspend () -> Unit)? = null
   ): LinkedList<RepositoryResourceData> {
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
@@ -190,7 +194,7 @@ constructor(
       fhirPathDataExtractor
         .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
-        .pmap {
+        .map {
           try {
             fhirEngine.get(
               resourceConfig.resource.resourceClassType().newInstance().resourceType,
@@ -214,6 +218,93 @@ constructor(
         }
     }
     return relatedResourcesData
+  }
+
+  private suspend fun searchRelatedResourcesAndProcess(
+    resourceConfig: ResourceConfig,
+    baseResourceType: ResourceType,
+    baseResource: Resource,
+    fhirPathExpression: String?,
+    queryResult: RepositoryResourceData.QueryResult.Search,
+    afterFetch: (suspend () -> Unit)
+  ) {
+
+    val relatedResourceClass = resourceConfig.resource.resourceClassType()
+    val relatedResourceType = relatedResourceClass.newInstance().resourceType
+    if (fhirPathExpression.isNullOrEmpty()) {
+      val search =
+        Search(type = relatedResourceType).apply {
+          filterByResourceTypeId(
+            ReferenceClientParam(resourceConfig.searchParameter),
+            baseResourceType,
+            baseResource.logicalId
+          )
+          resourceConfig.dataQueries?.forEach { filterBy(it) }
+          applyNestedSearchFilters(resourceConfig.nestedSearchResources)
+        }
+      if (resourceConfig.resultAsCount) {
+        val count = fhirEngine.count(search)
+
+        val repositoryResourceData =
+          RepositoryResourceData(
+            id = resourceConfig.id ?: relatedResourceType.name,
+            queryResult =
+              RepositoryResourceData.QueryResult.Count(
+                resourceType = relatedResourceType,
+                relatedResourceCount =
+                  RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
+              )
+          )
+
+        queryResult.relatedResources.addLast(repositoryResourceData)
+        afterFetch()
+      } else {
+        val relatedResourceSearch = search.apply { sort(resourceConfig.sortConfigs) }
+        fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+          val repositoryResourceData =
+            RepositoryResourceData(
+              id = resourceConfig.id ?: resource.resourceType.name,
+              queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
+            )
+
+          queryResult.relatedResources.addLast(repositoryResourceData)
+          afterFetch()
+        }
+
+        postProcessRelatedResourcesData(
+          resourceConfig.relatedResources,
+          queryResult.relatedResources
+        )
+        afterFetch()
+      }
+    } else {
+      fhirPathDataExtractor
+        .extractData(baseResource, fhirPathExpression)
+        .takeWhile { it is Reference }
+        .forEach {
+          try {
+            val resource =
+              fhirEngine.get(
+                resourceConfig.resource.resourceClassType().newInstance().resourceType,
+                (it as Reference).extractId()
+              )
+            val repositoryResourceData =
+              RepositoryResourceData(
+                id = resourceConfig.id ?: resource.resourceType.name,
+                queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
+              )
+
+            queryResult.relatedResources.addLast(repositoryResourceData)
+            afterFetch()
+          } catch (exception: ResourceNotFoundException) {
+            Timber.e(exception)
+            null
+          }
+        }
+
+      postProcessRelatedResourcesData(resourceConfig.relatedResources, queryResult.relatedResources)
+      afterFetch()
+    }
   }
 
   private suspend fun postProcessRelatedResourcesData(
@@ -314,7 +405,7 @@ constructor(
     return fhirEngine.count(search)
   }
 
-  override suspend fun loadProfileData(
+  override suspend fun loadProfileBaseResource(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
@@ -336,10 +427,8 @@ constructor(
       )
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
-    val relatedResourcesConfig = resourceConfig.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
-    val secondaryResourceConfig = profileConfiguration.secondaryResources
 
     val baseResource: Resource =
       withContext(dispatcherProvider.io()) {
@@ -347,24 +436,6 @@ constructor(
       }
 
     val relatedResources = LinkedList<RepositoryResourceData>()
-
-    relatedResourcesConfig.forEach { config: ResourceConfig ->
-      val resources =
-        withContext(dispatcherProvider.io()) {
-          searchRelatedResources(
-            resourceConfig = config,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            fhirPathExpression = config.fhirPathExpression
-          )
-        }
-      relatedResources.addAll(resources)
-    }
-
-    if (!secondaryResourceConfig.isNullOrEmpty()) {
-      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
-    }
-
     return RepositoryResourceData(
       id = baseResourceConfig.id ?: baseResourceType.name,
       queryResult =
@@ -373,6 +444,56 @@ constructor(
           relatedResources = relatedResources
         )
     )
+  }
+
+  override suspend fun loadProfileRelatedAndSecondaryResources(
+    queryResult: RepositoryResourceData.QueryResult.Search,
+    listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
+    resourceData: ResourceData,
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsList: Array<ActionParameter>?,
+    afterFetch: suspend () -> Unit
+  ) {
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.filter {
+          (it.paramType == ActionParameterType.PARAMDATA ||
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
+        }
+        ?.associate { it.key to it.value }
+        ?: emptyMap()
+    val profileConfiguration =
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        ConfigType.Profile,
+        profileId,
+        paramsMap
+      )
+    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val baseResourceConfig = resourceConfig.baseResource
+    val relatedResourcesConfig = resourceConfig.relatedResources
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+    val baseResourceType = baseResourceClass.newInstance().resourceType
+    val secondaryResourceConfig = profileConfiguration.secondaryResources
+
+    relatedResourcesConfig.forEach { config: ResourceConfig ->
+      withContext(dispatcherProvider.io()) {
+        searchRelatedResourcesAndProcess(
+          resourceConfig = config,
+          baseResourceType = baseResourceType,
+          baseResource = resourceData.baseResource!!,
+          fhirPathExpression = config.fhirPathExpression,
+          queryResult,
+          afterFetch
+        )
+      }
+    }
+
+    if (!secondaryResourceConfig.isNullOrEmpty()) {
+      queryResult.relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
+      afterFetch()
+    }
   }
 
   private suspend fun retrieveSecondaryResources(

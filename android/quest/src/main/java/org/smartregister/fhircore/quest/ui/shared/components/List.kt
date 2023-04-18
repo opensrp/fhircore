@@ -30,6 +30,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -188,16 +189,16 @@ private fun ListWithHorizontalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = mutableMapOf(),
+          computedValuesMap = mutableStateMapOf(),
           listResourceDataMap =
-          mutableMapOf(
+            mutableStateMapOf(
               "listId" to
                 mutableStateListOf(
                   ResourceData(
                     baseResourceId = "carePlan1",
                     baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = mutableMapOf(),
-                    listResourceDataMap = mutableMapOf()
+                    computedValuesMap = mutableStateMapOf(),
+                    listResourceDataMap = mutableStateMapOf()
                   )
                 )
             )
@@ -252,16 +253,16 @@ private fun ListWithVerticalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = mutableMapOf(),
+          computedValuesMap = mutableStateMapOf(),
           listResourceDataMap =
-          mutableMapOf(
+            mutableStateMapOf(
               "listId" to
                 mutableStateListOf(
                   ResourceData(
                     baseResourceId = "carePlan1",
                     baseResourceType = ResourceType.CarePlan,
-                    computedValuesMap = mutableMapOf(),
-                    listResourceDataMap = mutableMapOf()
+                    computedValuesMap = mutableStateMapOf(),
+                    listResourceDataMap = mutableStateMapOf()
                   )
                 )
             )

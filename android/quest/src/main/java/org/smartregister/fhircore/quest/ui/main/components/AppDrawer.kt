@@ -348,13 +348,11 @@ private fun MenuActionButton(
     }
     Row(
       modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable {
-          navigationConfiguration.onp2pReset?.invoke()
-        }
-        .padding(16.dp)
-        .testTag(MENU_BUTTON_TEST_TAG),
+        modifier
+          .fillMaxWidth()
+          .clickable { navigationConfiguration.onp2pReset?.invoke() }
+          .padding(16.dp)
+          .testTag(MENU_BUTTON_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically
     ) {
       Box(

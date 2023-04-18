@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import java.util.LinkedList
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 
 /**

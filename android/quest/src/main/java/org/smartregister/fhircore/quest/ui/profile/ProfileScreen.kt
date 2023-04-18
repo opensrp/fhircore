@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -44,9 +45,8 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,7 +55,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
@@ -80,24 +79,23 @@ const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
 const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
-  profileUiState: MutableState<ProfileUiState>,
-  resourceData: MutableLiveData<ResourceData?>,
+  profileUiState: ProfileUiState,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
   onEvent: (ProfileEvent) -> Unit
 ) {
   val scaffoldState = rememberScaffoldState()
   val lazyListState = rememberLazyListState()
-  val resourceData2 by resourceData.observeAsState()
-  /*val resourceData by remember {
-    mutableStateOf(profileUiState.value.value.resourceData!!.computedValuesMap)
-  }*/
 
   LaunchedEffect(Unit) {
-    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.value.resourceData, navController)
+    // TODO: Figure this out
+    profileUiState.resourceData?.run {
+      snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
+    }
   }
 
   Timber.e("Recomposing the profile screen")
@@ -105,32 +103,32 @@ fun ProfileScreen(
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
-      if (profileUiState.value.profileConfiguration?.topAppBar == null) {
+      if (profileUiState.profileConfiguration?.topAppBar == null) {
         SimpleTopAppBar(
           modifier = modifier,
           navController = navController,
           elevation = 4,
-          profileUiState = profileUiState.value,
+          profileUiState = profileUiState,
           lazyListState = lazyListState,
           onEvent = onEvent
         )
       } else {
         CustomProfileTopAppBar(
           navController = navController,
-          profileUiState = profileUiState.value,
+          profileUiState = profileUiState,
           onEvent = onEvent,
           lazyListState = lazyListState
         )
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.value.profileConfiguration?.fabActions
+      val fabActions = profileUiState.profileConfiguration?.fabActions
 
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
-          resourceData = profileUiState.value.resourceData,
+          resourceData = profileUiState.resourceData,
           navController = navController,
           lazyListState = lazyListState
         )
@@ -140,14 +138,14 @@ fun ProfileScreen(
     snackbarHost = { snackBarHostState ->
       SnackBarMessage(
         snackBarHostState = snackBarHostState,
-        backgroundColorHex = profileUiState.value.snackBarTheme.backgroundColor,
-        actionColorHex = profileUiState.value.snackBarTheme.actionTextColor,
-        contentColorHex = profileUiState.value.snackBarTheme.messageTextColor
+        backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
+        actionColorHex = profileUiState.snackBarTheme.actionTextColor,
+        contentColorHex = profileUiState.snackBarTheme.messageTextColor
       )
     },
   ) { innerPadding ->
     Box(modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding)) {
-      if (profileUiState.value.showDataLoadProgressIndicator) {
+      if (profileUiState.showDataLoadProgressIndicator) {
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),
           strokeWidth = 1.8.dp,
@@ -155,11 +153,11 @@ fun ProfileScreen(
         )
       }
       LazyColumn(state = lazyListState) {
-        item(key = profileUiState.value.resourceData?.baseResourceId) {
+        item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
-            viewProperties = profileUiState.value.profileConfiguration?.views ?: emptyList(),
-            resourceData = resourceData2
-              ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+            viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
+            resourceData = profileUiState.resourceData
+                ?: ResourceData("", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
             navController = navController
           )
         }
@@ -168,6 +166,7 @@ fun ProfileScreen(
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun CustomProfileTopAppBar(
   modifier: Modifier = Modifier,
@@ -193,7 +192,7 @@ fun CustomProfileTopAppBar(
         ViewRenderer(
           viewProperties = topBarConfig.content,
           resourceData = profileUiState.resourceData
-            ?: ResourceData("", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+              ?: ResourceData("", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
           navController = navController
         )
       }

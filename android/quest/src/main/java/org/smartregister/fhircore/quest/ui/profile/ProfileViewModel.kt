@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -56,6 +58,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.createQueryResultMap
 import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -90,7 +93,8 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
-  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
+  private val listResourceDataMapState =
+    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -99,10 +103,18 @@ constructor(
     paramsList: Array<ActionParameter>? = emptyArray()
   ) {
     if (resourceId.isNotEmpty()) {
-      val repoResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+
+      // Load the base resource and show the generated data
+
+      val repoResourceData =
+        registerRepository.loadProfileBaseResource(
+          profileId,
+          resourceId,
+          fhirResourceConfig,
+          paramsList
+        )
       val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
       val resourceData =
         rulesExecutor
@@ -122,16 +134,46 @@ constructor(
           showDataLoadProgressIndicator = false
         )
 
-      profileConfigs.views.retrieveListProperties().forEach {
-        val listResourceData =
+      /*
+      TODO: Fix this assumption that this is running in the bg thread and the update above
+       can be posted asynchronously
+       */
+
+      // Load the related resources
+      registerRepository.loadProfileRelatedAndSecondaryResources(
+        queryResult,
+        listResourceDataMapState,
+        resourceData,
+        profileId,
+        resourceId,
+        fhirResourceConfig,
+        paramsList
+      ) {
+        profileConfigs.views.retrieveListProperties().forEach {
+          if (!listResourceDataMapState.containsKey(it.id)) {
+            listResourceDataMapState[it.id] = mutableStateListOf()
+          }
+
           rulesExecutor.processListResourceData(
             listProperties = it,
+            // listResourceData = mutableListOf(),
+            listResourceDataMapState = listResourceDataMapState,
             relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )
-        listResourceDataMapState[it.id] = listResourceData
+        }
       }
+
+      // Recompute the demographic data
+      val latestComputedValues =
+        rulesExecutor.computeRules(
+          ruleConfigs = profileConfigs.rules,
+          baseResource = queryResult.resource,
+          relatedResourcesMap = queryResult.relatedResources.createQueryResultMap()
+        )
+
+      resourceData.computedValuesMap.putAll(latestComputedValues)
     }
   }
 

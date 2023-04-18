@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -33,8 +33,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import timber.log.Timber
 import org.smartregister.fhircore.quest.util.extensions.isVisible
+import timber.log.Timber
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -92,7 +92,8 @@ private fun PreviewWeightedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }
@@ -147,7 +148,8 @@ private fun PreviewWrappedViewsInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }
@@ -184,7 +186,8 @@ private fun PreviewSameSizedViewInRow() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }
@@ -302,7 +305,8 @@ private fun PreviewCardViewWithRows() {
             )
         )
       ),
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }

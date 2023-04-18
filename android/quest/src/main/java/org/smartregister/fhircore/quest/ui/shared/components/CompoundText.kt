@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -201,6 +203,7 @@ private fun CompoundTextPart(
   )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextNoSecondaryTextPreview() {
@@ -213,7 +216,8 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryTextColor = "#000000",
           primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = navController
     )
     CompoundText(
@@ -222,12 +226,14 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = navController
     )
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
@@ -236,7 +242,8 @@ private fun CompoundTextWithSecondaryTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = navController
     )
     SpacerView(spacerProperties = SpacerProperties(viewType = ViewType.SPACER, width = 8f))
@@ -250,7 +257,8 @@ private fun CompoundTextWithSecondaryTextPreview() {
           separator = ".",
           secondaryTextBackgroundColor = "#FFA500"
         ),
-      resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+      resourceData =
+        ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
       navController = navController
     )
   }

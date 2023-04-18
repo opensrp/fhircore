@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -77,6 +79,7 @@ private fun PersonalDataItem(
   }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun PersonalDataViewPreview() {
@@ -115,7 +118,8 @@ fun PersonalDataViewPreview() {
 
   PersonalDataView(
     personalDataCardProperties = personalDataCardProperties,
-    resourceData = ResourceData("id", ResourceType.Patient, mutableMapOf(), mutableMapOf()),
+    resourceData =
+      ResourceData("id", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
     navController = rememberNavController()
   )
 }
