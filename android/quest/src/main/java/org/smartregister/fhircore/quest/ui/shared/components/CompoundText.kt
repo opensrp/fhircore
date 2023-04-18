@@ -84,6 +84,16 @@ fun CompoundText(
       compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
     val interpolatedSecondaryText =
       compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
+    val interpolatedPrimaryTextColor =
+      compoundTextProperties.primaryTextColor?.interpolate(resourceData.computedValuesMap)
+    val interpolatedPrimaryTextBackgroundColor =
+      compoundTextProperties.primaryTextBackgroundColor?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSecondaryTextColor =
+      compoundTextProperties.secondaryTextColor?.interpolate(resourceData.computedValuesMap)
+    val interpolatedSecondaryTextBackgroundColor =
+      compoundTextProperties.secondaryTextBackgroundColor?.interpolate(
+        resourceData.computedValuesMap
+      )
     val interpolatedSeparator =
       compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
 
@@ -94,8 +104,8 @@ fun CompoundText(
         text = interpolatedPrimaryText,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = compoundTextProperties.primaryTextColor,
-        backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
+        textColor = interpolatedPrimaryTextColor,
+        backgroundColor = interpolatedPrimaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.primaryTextFontWeight,
@@ -124,8 +134,8 @@ fun CompoundText(
         text = interpolatedSecondaryText,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = compoundTextProperties.secondaryTextColor,
-        backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
+        textColor = interpolatedSecondaryTextColor,
+        backgroundColor = interpolatedSecondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.secondaryTextFontWeight,
@@ -243,11 +253,11 @@ private fun CompoundTextWithSecondaryTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
-          primaryText = "Last visited",
+          primaryText = "Stock status",
           primaryTextColor = "#5A5A5A",
-          secondaryText = "Yesterday",
-          secondaryTextColor = "#FFFFFF",
-          separator = ".",
+          secondaryText = "Overdue",
+          secondaryTextColor = "#000000",
+          separator = ":",
           secondaryTextBackgroundColor = "#FFA500"
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
