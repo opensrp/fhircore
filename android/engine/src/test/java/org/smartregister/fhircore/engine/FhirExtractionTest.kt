@@ -86,6 +86,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -1056,9 +1057,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("register"))
     val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient.apply {
-      birthDate = Date()
-    }
+    val patient = planDefinitionResources.patient.apply { birthDate = Date() }
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
@@ -1067,7 +1066,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         patient,
         Bundle().apply {
           addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-          addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
+          addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
         }
       )!!
       .also { println(it.encodeResourceToString()) }
@@ -1088,14 +1089,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             it as Task
           }
           .also { tasks ->
-            Bundle().apply {
-              tasks.forEach {
-                addEntry().resource = it
-              }
-            }.let {
+            Bundle().apply { tasks.forEach { addEntry().resource = it } }.let {
               println(it.encodeResourceToString())
             }
-            assertTrue(tasks.all { if(it.executionPeriod.start.daysPassed() >= 0) it.status == TaskStatus.READY else it.status == TaskStatus.REQUESTED })
+            assertTrue(
+              tasks.all {
+                if (it.executionPeriod.start.daysPassed() >= 0) it.status == TaskStatus.READY
+                else it.status == TaskStatus.REQUESTED
+              }
+            )
             assertTrue(
               tasks.all {
                 it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
@@ -1157,60 +1159,59 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("followup"), true)
     val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient.apply {
-      birthDate = Date()
-    }
+    val patient = planDefinitionResources.patient.apply { birthDate = Date() }
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      planDefinition,
-      patient,
-      Bundle().apply {
-        addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-        addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
-      }
-    )
+        planDefinition,
+        patient,
+        Bundle().apply {
+          addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+        }
+      )
       .also {
         assertNull(it)
-       // assertEquals(2, resourcesSlot.size)
+        // assertEquals(2, resourcesSlot.size)
         resourcesSlot
           .map {
             println(it.encodeResourceToString())
             it
           }
           .also { tasks ->
-            Bundle().apply {
-              tasks.forEach {
-                addEntry().resource = it
-              }
-            }.let {
+            Bundle().apply { tasks.forEach { addEntry().resource = it } }.let {
               println(it.encodeResourceToString())
             }
-//            assertTrue(tasks.all { if(it.executionPeriod.start.daysPassed() >= 0) it.status == TaskStatus.READY else it.status == TaskStatus.REQUESTED })
-//            assertTrue(
-//              tasks.all {
-//                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
-//              }
-//            )
-//            assertTrue(
-//              tasks.all {
-//                it.code.codingFirstRep.display ==
-//                        "Administration of vaccine to produce active immunity (procedure)" &&
-//                        it.code.codingFirstRep.code == "33879002"
-//              }
-//            )
-//            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
-//            assertTrue(
-//              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
-//            )
-//            assertTrue(
-//              tasks.all { it.basedOnFirstRep.hasReference() }
-//            )
+            //            assertTrue(tasks.all { if(it.executionPeriod.start.daysPassed() >= 0)
+            // it.status == TaskStatus.READY else it.status == TaskStatus.REQUESTED })
+            //            assertTrue(
+            //              tasks.all {
+            //                it.reasonReference.reference ==
+            // "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+            //              }
+            //            )
+            //            assertTrue(
+            //              tasks.all {
+            //                it.code.codingFirstRep.display ==
+            //                        "Administration of vaccine to produce active immunity
+            // (procedure)" &&
+            //                        it.code.codingFirstRep.code == "33879002"
+            //              }
+            //            )
+            //            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true)
+            // })
+            //            assertTrue(
+            //              tasks.all { it.`for`.reference ==
+            // questionnaireResponses.first().subject.reference }
+            //            )
+            //            assertTrue(
+            //              tasks.all { it.basedOnFirstRep.hasReference() }
+            //            )
           }
-          .also { tasks ->
-
-          }
+          .also { tasks -> }
       }
   }
 
@@ -1708,15 +1709,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
 
     val structureMaps =
-      questionnaireResponseTags.mapNotNull {
-        runCatching { "plans/$planName/structure-map-$it.txt".readFile() }.onFailure { println("ERROR: "+it.message) }
-          .getOrNull()?.let {
-            structureMapUtilities.parse(
-              it,
-              "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
-            )
-          }
-      }
+      questionnaireResponseTags
+        .mapNotNull {
+          runCatching { "plans/$planName/structure-map-$it.txt".readFile() }
+            .onFailure { println("ERROR: " + it.message) }
+            .getOrNull()
+            ?.let {
+              structureMapUtilities.parse(
+                it,
+                "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
+              )
+            }
+        }
         .onEach { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
@@ -1727,12 +1731,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns mutableListOf<CarePlan>().apply { if (careplanExists) add(CarePlan().apply {
-      activityFirstRep.addProgress()
-    }) }
-    structureMaps.forEach {
-      coEvery { fhirEngine.get<StructureMap>(it.logicalId) } returns it
-    }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
+      mutableListOf<CarePlan>().apply {
+        if (careplanExists) add(CarePlan().apply { activityFirstRep.addProgress() })
+      }
+    structureMaps.forEach { coEvery { fhirEngine.get<StructureMap>(it.logicalId) } returns it }
 
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMapReferral
