@@ -1,121 +1,197 @@
-map "http://hl7.org/fhir/StructureMap/131373" = 'ChildRoutineCarePlan'
+map "http://hl7.org/fhir/StructureMap/8545bfca-fa7e-4a64-a69c-af6827a2eaa3" = "HIV Pre-Screening Task"
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
-uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
-uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 
-group ChildRoutineCarePlan(source src : Parameters, target tgt: CarePlan) {
-    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
-            evaluate(src, $this.parameter.where(name='definition').resource) as definition
-            then ExtractCarePlan(subject, definition, tgt), ExtractActivityDetail(subject, definition, tgt) "r_careplan";
+group HIVPreScreening(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src.item as hivStatus where(linkId = 'e74c1a4a-6d3e-47ab-803f-5fb13c9e99dc' and answer.value.exists() and (answer.value.code = 'positive')) then {
+        src -> evaluate(src, $this.subject) as refPatient then ExtractCreateHIVCondition(src, bundle, refPatient) "r_bundle_entries";
+    } "rule_hiv_status_check";
+    src -> evaluate(src, $this.subject) as refPatient then ExtractEncounter(src, bundle) "r_obs_entry";
 }
 
-group ExtractCarePlan(source subject: Patient, source definition: ActivityDefinition, target careplan : CarePlan) {
-    subject.birthDate as birthdate then {
-        subject -> careplan.id = uuid() ,
-               careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-               careplan.status = 'active',
-               careplan.intent = 'plan',
-               careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id),
-               careplan.created = evaluate(subject, now()),
-               careplan.author = evaluate(subject, $this.generalPractitioner.first()),
-               careplan.period = create('Period') as period then ExtractPeriod_now_5y(birthdate, period) "r_cp_data";
-    } "r_cp";
+group ExtractCreateHIVCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	src -> cnd.id = uuid() "r_cnd_id";
+		src -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+    	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	src -> cnd.subject = refPatient "r_cnd_sub";
+    	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+    	src -> cnd.code = create("CodeableConcept") as ccHiv then {
+            src -> ccHiv.coding = c("http://snomed.info/sct", "165816005", "Human immunodeficiency virus positive") "r_cnd_code_coding";
+            src -> ccHiv.text = "HIV Condition" "r_cnd_code_text";
+        } "r_cnd_code";
+    } "r_cnd";
 }
 
-group ExtractActivityDetail(source subject : Patient,
-    source definition: ActivityDefinition, target careplan : CarePlan){
-    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
-        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
-            subject -> det.kind = 'Task',
-                   det.status = 'in-progress',
-                   det.description = evaluate(definition, $this.title),
-                   det.performer = evaluate(subject, $this.generalPractitioner.first()),
-                   det.code = create('CodeableConcept') as concept then ExtractTimingCode(subject, concept) "r_act_det_data";
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle){
+    src ->bundle.entry as entry,
+        entry.resource = create("Encounter") as encounter then {
+            src->encounter.id = uuid(),
+                encounter.status = "finished",
+                encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
+                encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "497","Home Visits- HIV Pre Screening") "r_enc_data";
+            src ->encounter.subject = create("Reference") as ref then {
+                src ->ref.reference = evaluate(src, "Patient/"+ $this.item.where(linkId="patient-id").answer.value) "r_enc_subject_ref";
+            }  "r_enc_subject";
+            src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
 
-            subject where(subject.birthDate > (today() - 60 'month')) -> det.scheduled = evaluate(definition, $this.timing) as timing,
-                   evaluate(timing, $this.repeat) as repeat then {
-
-                subject -> evaluate(subject, $this.birthDate) as birthdate,
-                       evaluate(careplan, $this.period) as range then
-                       ExtractTasks(birthdate, range, subject, careplan, activity, timing) "r_tasks";
-
-                //TODO use better strategy
-                subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
-
-            } "r_tim_repeat";
-        } "r_act_det";
-
-    } "r_cp_acti";
+        } "r_encounter";
 }
 
-group ExtractTasks(
-    source offset: DateType,
-    source range: Period,
-    source subject : Patient,
-    target careplan: CarePlan,
-    target activity : CarePlan_Activity,
-    target timing: Timing){
-
-    // skip task creation and move to next until offset/next due month is future
-    offset where(offset < today()) -> evaluate(offset, $this + 1 'month') as newoffset then
-                                      ExtractTasks(newoffset, range, subject, careplan, activity, timing) "r_task_repeat";
-
-    offset where(offset >= today() and offset < range.end) -> evaluate(offset, $this.value.substring(0,7) + '-01') as startStr,
-                                        create('date') as start, start.value = startStr,
-                                        create('Period') as period,
-                                        careplan.contained = create('Task') as task then {
-        subject then ExtractPeriod_1m(start, period) "r_task_period_extr";
-
-        subject -> task.id = uuid(),
-               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-               task.status = 'requested',
-               task.intent = 'plan',
-               task.executionPeriod = period,
-               task.priority = 'routine',
-               task.description = 'Child Routine  visit Task',
-               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id),
-               task.basedOn = reference(careplan),
-               task.authoredOn = evaluate(subject, now()),
-               task.requester = evaluate(subject, $this.generalPractitioner.first()),
-               task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
-
-        // use different forms for 1 year and under 1 year
-        subject where(offset <= (subject.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
-               ref.reference = 'Questionnaire/105056' "r_task_reason_ref_under1";
-
-        subject where(offset > (subject.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
-               ref.reference = 'Questionnaire/105057' "r_task_reason_ref_above1";
-
-        subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
-        subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
-
-        subject -> evaluate(period, $this.end) as newoffset then ExtractTasks(newoffset, range, subject, careplan, activity, timing) "r_task_repeat";
-    } "r_cp_acti_outcome";
+group ExtractObservations(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src then
+    ExtractChildTestedForHiv(src, bundle, encounter),
+    ExtractTestResultsKnown(src, bundle, encounter),
+    ExtractNewExposure(src, bundle, encounter),
+    ExtractConductHIVScreening(src, bundle, encounter),
+    ExtractChildEnrolledToART(src, bundle, encounter),
+    ExtractAdherenceCounsellingOffered(src, bundle, encounter),
+    ExtractChildReferredToHealthFacility(src, bundle, encounter)
+    "r_enc_obs";
 }
 
-group ExtractTimingCode(source subject : Patient, target concept: CodeableConcept){
-    subject -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation", "MO") as coding then {
-        subject -> coding.display = 'MO' "r_cp_cod_disp";
-    } "r_cp_cc_cod";
-    subject -> concept.text = 'MO' "r_cp_cc_txt";
+group ExtractChildTestedForHiv(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="8265f18e-4f2c-4322-b0c8-7b9afe84baa2") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "365866002","Finding of HIV status"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
 }
 
-group ExtractPeriod_now_5y(source birthdate : DateType, target period: Period){
-    birthdate -> evaluate(birthdate, now()) as start,
-                 evaluate(birthdate, $this + 60 'month') as end then
-                 ExtractPeriod(start, end, period) "r_period";
+group ExtractTestResultsKnown(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="e74c1a4a-6d3e-47ab-803f-5fb13c9e99dc") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "278977008","Human immunodeficiency virus status"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
 }
 
-group ExtractPeriod_1m(source offset : DateType, target period: Period){
-    offset -> offset as start,
-              evaluate(offset, $this + 1 'month') as end then
-              ExtractPeriod(start, end, period) "r_period";
+group ExtractNewExposure(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d2b2fd19-3273-4f2a-8169-145f9ecddd49") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "365866002","Finding of human immunodeficiency virus"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
 }
 
-group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
-    start -> period.start = create('dateTime') as dt,
-             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
 
-    end -> period.end = create('dateTime') as dt,
-           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
+group ExtractConductHIVScreening(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d0a8b78d-baf9-4304-9f21-18b514fe8ade") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "171121004","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildEnrolledToART(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="c7db2997-d3c7-45d7-85af-a358ef1455f1") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "713540004","ART"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAdherenceCounsellingOffered(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="58ae3d52-290f-4f83-8d27-11f11b40eced") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "313077009 ","Human immunodeficiency virus counseling"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildReferredToHealthFacility(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="76bb2dba-3fae-472f-b210-1f6a668cf8e4") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "3457005","Patient referral"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
 }

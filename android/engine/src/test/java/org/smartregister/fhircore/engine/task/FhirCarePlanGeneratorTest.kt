@@ -27,20 +27,7 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.slot
-import java.time.Instant
-import java.time.LocalDate
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
+import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -49,35 +36,13 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.hl7.fhir.r4.model.BaseDateTimeType
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CanonicalType
-import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.*
 import org.hl7.fhir.r4.model.CarePlan.CarePlanActivityComponent
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Expression
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Period
-import org.hl7.fhir.r4.model.PlanDefinition
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.StructureMap
-import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -86,21 +51,12 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.REFERENCE
-import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.formatDate
-import org.smartregister.fhircore.engine.util.extension.makeItReadable
-import org.smartregister.fhircore.engine.util.extension.plusDays
-import org.smartregister.fhircore.engine.util.extension.plusMonths
-import org.smartregister.fhircore.engine.util.extension.plusYears
-import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
-import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.extension.*
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import java.time.Instant
+import java.time.LocalDate
+import java.util.*
+import javax.inject.Inject
 
 @HiltAndroidTest
 class FhirCarePlanGeneratorTest : RobolectricTest() {
@@ -406,7 +362,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val structureMapScript = "plans/child-routine-visit/structure-map.txt".readFile()
     val structureMap =
-      structureMapUtilities.parse(structureMapScript, "ChildRoutineCarePlan").also {
+      structureMapUtilities.parse(structureMapScript, "HIVPreScreening").also {
         // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
         //  so use only months and that would have the unit replaced with 'months'
         println(it.encodeResourceToString().replace("''", "'month'"))
@@ -798,7 +754,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val structureMapScript = "plans/structure-map-referral.txt".readFile()
     val structureMap =
-      structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
+      structureMapUtilities.parse(structureMapScript, "eCHISHIVPlanDefReferralClosureTask").also {
         println(it.encodeResourceToString())
       }
 
@@ -806,8 +762,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
+    coEvery { fhirEngine.get<StructureMap>("dbd5ebd6-3df6-4f2a-879c-d9c95f9d05ef") } returns
       structureMap
+    coEvery { fhirEngine.get<StructureMap>("bed1dba2-633c-41a3-8dcb-cc7195e310dc") } returns
+            structureMap
+    coEvery { fhirEngine.get<StructureMap>("add7f7e1-4cb6-4e09-8edc-ccdb86d2330c") } returns
+            structureMap
+    coEvery { fhirEngine.get<StructureMap>("9d4009c0-7c6c-4061-8d1a-01dc9a55c505") } returns
+            structureMap
+    coEvery { fhirEngine.get<StructureMap>("46c82c1d-6dbd-4d7c-a05a-c5bafdd48432") } returns
+            structureMap
+    coEvery { fhirEngine.get<StructureMap>("f083b8e8-4abc-4872-b0a2-460aa21d310e") } returns
+            structureMap
+
+
 
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 

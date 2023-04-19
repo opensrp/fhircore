@@ -244,7 +244,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
+    val map = scu.parse(patientRegistrationStructureMap, "eCHISHIVPlanDefScreeningTask")
 
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
