@@ -1,4 +1,4 @@
-map "https://fhir.labs.smartregister.org/fhir/StructureMap/8bfafa04-cbc4-4a53-a1f0-ba0906595b4d" = "Diabetes Compass Diabetes Screening"
+map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-diabetes-screening" = "Diabetes Compass Diabetes Screening"
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -12,7 +12,7 @@ group DiabetesScreening(source src: QuestionnaireResponse, target bundle: Bundle
         ExtractEncounter(src, bundle) "r_bundle_data";
 }
 
-group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle){
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle) {
     src ->bundle.entry as entry,
     entry.resource = create("Encounter") as encounter then {
         src->encounter.id = uuid(),
@@ -30,7 +30,7 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
     } "r_encounter";
 }
 
-group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src then
     ExtractAge(src, bundle, encounter),
     ExtractGender(src, bundle, encounter),
@@ -45,7 +45,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bun
     "r_enc_obs";
 }
 
-group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-2") then {
         page.item as item where(linkId = "age-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -69,7 +69,7 @@ group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, targ
     } "r_obs_age_pg";
 }
 
-group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-3") then {
         page.item as item where(linkId = "gender-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -93,8 +93,7 @@ group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, t
     } "r_obs_gender_pg";
 }
 
-
-group ExtractDietaryIntake(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractDietaryIntake(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-4") then {
         page.item as item where(linkId = "diet-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -118,7 +117,7 @@ group ExtractDietaryIntake(source src : QuestionnaireResponse, target bundle: Bu
     } "r_obs_diet_pg";
 }
 
-group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-5") then {
         page.item as item where(linkId = "family-history-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -131,12 +130,12 @@ group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bu
                     src->obs.code = create("CodeableConcept") as concept then {
                     src->evaluate(item, $this.answer.value.code) as famHistoryCode then {
                             src where(famHistoryCode = "1st") then {
-                                src->concept.coding = c("http://snomed.info/sct","416855002") as coding then  {
+                                src->concept.coding = c("http://snomed.info/sct","416855002") as coding then {
                                     src->coding.display = "Family history of diabetes mellitus in first degree relative" "r_obs_code_display";
                                 } "r_obs_cc_coding";
                             } "r_obs_code_first";
                             src where(famHistoryCode = "2nd") then {
-                                src->concept.coding = c("http://snomed.info/sct","430679000") as coding then  {
+                                src->concept.coding = c("http://snomed.info/sct","430679000") as coding then {
                                     src->coding.display = "Family history of diabetes mellitus type 2" "r_obs_code_display";
                                 } "r_obs_cc_coding";
                             } "r_obs_code_second";
@@ -162,7 +161,7 @@ group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bu
     } "r_obs_fam_history_pg";
 }
 
-group ExtractPhysicalActivity(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractPhysicalActivity(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-6") then {
         page.item as item where(linkId = "physical-activity-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -186,7 +185,7 @@ group ExtractPhysicalActivity(source src : QuestionnaireResponse, target bundle:
     } "r_obs_physical_activity_pg";
 }
 
-group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-7") then {
         page.item as item where(linkId = "waist-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -210,7 +209,7 @@ group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, ta
     } "r_obs_waist_pg";
 }
 
-group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-7") then {
         page.item as item where(linkId = "weight-bmi" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -231,7 +230,7 @@ group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, t
     } "r_obs_weight_pg";
 }
 
-group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-7") then {
         page.item as item where(linkId = "height-bmi" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -252,7 +251,7 @@ group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, t
     } "r_obs_height_pg";
 }
 
-group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-7") then {
         page.item as item where(linkId = "bmi" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -273,7 +272,7 @@ group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, targ
     } "r_obs_bmi_pg";
 }
 
-group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-8") then {
         page.item as item where(linkId = "score-calculations" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
@@ -293,13 +292,13 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
                         src->riskPrediction.qualitativeRisk = create("CodeableConcept") as concept then {
                                 src->evaluate(item, $this.answer.value) as riskScore then {
                                     src where(riskScore < 16) then {
-                                        src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","low") as coding then  {
+                                        src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","low") as coding then {
                                             src->coding.display = "Low likelihood" "r_rsk_code_display";
                                         } "r_rsk_cc_coding";
                                         src->concept.text = "Low" "r_rsk_code_qualitative";
                                     } "r_rsk_code_low";
                                     src where(riskScore >= 16) then {
-                                        src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","high") as coding then  {
+                                        src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","high") as coding then {
                                             src->coding.display = "High likelihood" "r_rsk_code_display";
                                         } "r_rsk_cc_coding";
                                         src->concept.text = "High" "r_rsk_code_qualitative";
