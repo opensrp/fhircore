@@ -47,11 +47,8 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
-import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
-import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -69,16 +66,15 @@ fun ActionableButton(
   navController: NavController
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
-    val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
+    val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
-    val backgroundColor =
-      buttonProperties.interpolateBackgroundColor(resourceData.computedValuesMap)
-    val buttonEnabled =
-      buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
+    val status = interpolatedButtonProperties.status
+    val backgroundColor = interpolatedButtonProperties.backgroundColor
+    val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable(resourceData)
     OutlinedButton(
       onClick = {
-        if (buttonEnabled && (status == ServiceStatus.DUE || clickable)) {
+        if (interpolatedButtonProperties.enabled.toBoolean() && (status == ServiceStatus.DUE.name || clickable)) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData
@@ -88,10 +84,10 @@ fun ActionableButton(
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-            if (backgroundColor != Color.Unspecified) {
-              backgroundColor
-            } else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
-          contentColor = buttonProperties.statusColor(resourceData.computedValuesMap),
+            if (backgroundColor.parseColor() != Color.Unspecified) {
+              backgroundColor.parseColor()
+            } else statusColor.copy(alpha = 0.1f),
+          contentColor = statusColor,
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
         ),
@@ -101,35 +97,35 @@ fun ActionableButton(
           .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
-      enabled = buttonEnabled,
+      enabled = interpolatedButtonProperties.enabled.toBoolean(),
       border =
         BorderStroke(
           width = 0.5.dp,
-          color = buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f)
+          color = statusColor.copy(alpha = 0.1f)
         ),
       elevation = null
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
       Icon(
         imageVector =
-          if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
+          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
         tint =
-          if (buttonEnabled)
-            when (status) {
-              ServiceStatus.COMPLETED -> SuccessColor
-              else -> statusColor
-            }
-          else DefaultColor,
+        if (isButtonEnabled)
+          when (status) {
+            ServiceStatus.COMPLETED.name -> SuccessColor
+            else -> statusColor
+          }
+        else DefaultColor,
         modifier = Modifier.size(16.dp)
       )
       Text(
-        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
+        text = interpolatedButtonProperties.text ?: "",
         fontWeight = FontWeight.Medium,
         color =
-          if (buttonEnabled)
+          if (isButtonEnabled)
             when (status) {
-              ServiceStatus.COMPLETED -> DefaultColor.copy(0.9f)
+              ServiceStatus.COMPLETED.name -> DefaultColor.copy(0.9f)
               else -> statusColor
             }
           else DefaultColor.copy(0.9f),
@@ -138,10 +134,10 @@ fun ActionableButton(
         maxLines = 1,
         modifier =
           Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-            .conditional(status == ServiceStatus.COMPLETED, { weight(1f) }),
+            .conditional(status == ServiceStatus.COMPLETED.name, { weight(1f) }),
         fontSize = buttonProperties.fontSize.sp
       )
-      if (status == ServiceStatus.COMPLETED) {
+      if (status == ServiceStatus.COMPLETED.name) {
         Icon(
           imageVector = Icons.Filled.ArrowDropDown,
           contentDescription = null,
@@ -153,44 +149,6 @@ fun ActionableButton(
   }
 }
 
-/**
- * This function determines the status color to display depending on the value of the service status
- *
- * @property computedValuesMap Contains data extracted from the resources to be used on the UI
- */
-@Composable
-fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
-  val interpolated = this.status.interpolate(computedValuesMap)
-  val status =
-    if (ServiceStatus.values().map { it.name }.contains(interpolated))
-      ServiceStatus.valueOf(interpolated)
-    else ServiceStatus.UPCOMING
-
-  return when (status) {
-    ServiceStatus.DUE -> InfoColor
-    ServiceStatus.OVERDUE -> DangerColor
-    ServiceStatus.UPCOMING -> DefaultColor
-    ServiceStatus.COMPLETED -> DefaultColor
-    ServiceStatus.IN_PROGRESS -> WarningColor
-  }
-}
-
-@Composable
-fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
-  val interpolated = this.status.interpolate(computedValuesMap)
-  return if (ServiceStatus.values().map { it.name }.contains(interpolated))
-    ServiceStatus.valueOf(interpolated)
-  else ServiceStatus.UPCOMING
-}
-
-@Composable
-fun ButtonProperties.interpolateBackgroundColor(computedValuesMap: Map<String, Any>): Color {
-  val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
-  return if (!interpolated.isNullOrEmpty()) {
-    return interpolated.parseColor()
-  } else Color.Unspecified
-}
-
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun ActionableButtonPreview() {
@@ -200,7 +158,7 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
-        buttonType = ButtonType.TINY,
+        buttonType = ButtonType.TINY
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController()
