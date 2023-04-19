@@ -98,6 +98,8 @@ constructor(
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
+  val dataRefreshLivedata: MutableLiveData<Boolean?> = MutableLiveData()
+
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -177,12 +179,13 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow ->
+      is AppMainEvent.TriggerWorkflow -> {
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
+      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(

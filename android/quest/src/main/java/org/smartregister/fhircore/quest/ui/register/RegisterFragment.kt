@@ -69,7 +69,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
@@ -84,7 +84,12 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(registerId, screenTitle, params)
+        registerViewModel.retrieveRegisterUiState(
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params,
+          clearCache = false
+        )
       }
     }
     return ComposeView(requireContext()).apply {
@@ -234,13 +239,36 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       registerViewModel.run {
         // Clear pages cache to load new data
         pagesDataCache.clear()
-        retrieveRegisterUiState(registerId, screenTitle, params)
+        retrieveRegisterUiState(
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params,
+          clearCache = false
+        )
       }
     }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+    handleRefreshLiveData()
+  }
+
+  fun handleRefreshLiveData() {
+    appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner) {
+      if (it == true) {
+        with(registerFragmentArgs) {
+          registerViewModel.retrieveRegisterUiState(
+            registerId = registerId,
+            screenTitle = screenTitle,
+            params = params,
+            clearCache = true
+          )
+        }
+        // reset value
+        appMainViewModel.dataRefreshLivedata.value = false
+      }
+    }
   }
 
   /**
