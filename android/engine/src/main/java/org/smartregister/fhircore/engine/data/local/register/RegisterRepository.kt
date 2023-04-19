@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigService.Companion.ACTIVE_SEARCH_PARAM
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -253,6 +254,12 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+
+        // For Group return only active
+        if (resourceType == ResourceType.Group) {
+          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
+        }
+
         applyNestedSearchFilters(nestedSearchResources)
         sort(sortConfigs)
         if (currentPage != null && pageSize != null) {
@@ -300,6 +307,10 @@ constructor(
         // For patient return only active members count
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
+        }
+        // Filter active Groups
+        if (resourceType == ResourceType.Group) {
+          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
         }
         applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }

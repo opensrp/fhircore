@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -422,11 +423,17 @@ constructor(
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
     editQuestionnaireResourceParams?.forEach { param ->
-      val resourceType =
-        param.value.substringBefore("/").resourceClassType().newInstance().resourceType
-      val resource =
-        defaultRepository.loadResource(param.value.extractLogicalIdUuid(), resourceType)
-      resource.let { defaultRepository.addOrUpdate(resource = it) }
+      try {
+        val resource =
+          param.value.let {
+            val resourceType =
+              it.substringBefore("/").resourceClassType().newInstance().resourceType
+            defaultRepository.loadResource(it.extractLogicalIdUuid(), resourceType)
+          }
+        resource.let { defaultRepository.addOrUpdate(resource = it) }
+      } catch (e: ResourceNotFoundException) {
+        Timber.e(e)
+      }
     }
   }
 

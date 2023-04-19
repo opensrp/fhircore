@@ -108,7 +108,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
     val questionnaireActivity = this@QuestionnaireActivity
-    questionnaireViewModel.removeOperation.observe(questionnaireActivity) { if (it) finish() }
+    questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
+      if (it) {
+        setResult(
+          Activity.RESULT_OK,
+          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig) }
+        )
+        finish()
+      }
+    }
 
     val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 

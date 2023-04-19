@@ -68,10 +68,10 @@ class FhirEngineModule {
                 headersToIgnore = listOf(AUTHORIZATION, COOKIE)
               )
             ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }
-        )
+        ),
+        customSearchParameters = configService.provideCustomSearchParameters()
       )
     )
-
     return FhirEngineProvider.getInstance(context)
   }
 
