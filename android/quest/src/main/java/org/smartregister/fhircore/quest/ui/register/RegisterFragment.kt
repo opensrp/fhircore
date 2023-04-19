@@ -69,7 +69,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
-  private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
