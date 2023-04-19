@@ -102,7 +102,8 @@ class RegisterViewModelTest : RobolectricTest() {
     registerViewModel.retrieveRegisterUiState(
       registerId = registerId,
       screenTitle = screenTitle,
-      params = null
+      params = null,
+      clearCache = false
     )
     val registerUiState = registerViewModel.registerUiState.value
     Assert.assertNotNull(registerUiState)
