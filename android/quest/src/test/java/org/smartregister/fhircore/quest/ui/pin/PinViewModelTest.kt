@@ -62,6 +62,8 @@ class PinViewModelTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
+    val expectedMessage = "VHT will use this PIN to login"
+    Assert.assertNotNull(expectedMessage, pinUiState.message)
     Assert.assertEquals("1245", pinUiState.currentUserPin)
     Assert.assertTrue(pinUiState.setupPin)
   }
