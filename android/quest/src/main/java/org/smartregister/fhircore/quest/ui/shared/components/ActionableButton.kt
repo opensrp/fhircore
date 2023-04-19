@@ -74,7 +74,9 @@ fun ActionableButton(
     val clickable = buttonProperties.clickable(resourceData)
     OutlinedButton(
       onClick = {
-        if (interpolatedButtonProperties.enabled.toBoolean() && (status == ServiceStatus.DUE.name || clickable)) {
+        if (interpolatedButtonProperties.enabled.toBoolean() &&
+            (status == ServiceStatus.DUE.name || clickable)
+        ) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData
@@ -98,11 +100,7 @@ fun ActionableButton(
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = interpolatedButtonProperties.enabled.toBoolean(),
-      border =
-        BorderStroke(
-          width = 0.5.dp,
-          color = statusColor.copy(alpha = 0.1f)
-        ),
+      border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
@@ -111,12 +109,12 @@ fun ActionableButton(
           if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
         tint =
-        if (isButtonEnabled)
-          when (status) {
-            ServiceStatus.COMPLETED.name -> SuccessColor
-            else -> statusColor
-          }
-        else DefaultColor,
+          if (isButtonEnabled)
+            when (status) {
+              ServiceStatus.COMPLETED.name -> SuccessColor
+              else -> statusColor
+            }
+          else DefaultColor,
         modifier = Modifier.size(16.dp)
       )
       Text(

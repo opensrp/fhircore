@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
-
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -27,7 +26,6 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
-
 
 @Serializable
 data class ButtonProperties(
@@ -50,7 +48,8 @@ data class ButtonProperties(
   val buttonType: ButtonType = ButtonType.MEDIUM,
 ) : ViewProperties() {
   /**
-   * This function determines the status color to display depending on the value of the service status
+   * This function determines the status color to display depending on the value of the service
+   * status
    *
    * @property computedValuesMap Contains data extracted from the resources to be used on the UI
    */
@@ -71,14 +70,12 @@ data class ButtonProperties(
       text = text?.interpolate(computedValuesMap)
     )
 
-
   private fun interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
     val interpolated = this.status.interpolate(computedValuesMap)
     return if (ServiceStatus.values().map { it.name }.contains(interpolated))
       ServiceStatus.valueOf(interpolated)
     else ServiceStatus.UPCOMING
   }
-
 
   private fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>): String {
     val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
