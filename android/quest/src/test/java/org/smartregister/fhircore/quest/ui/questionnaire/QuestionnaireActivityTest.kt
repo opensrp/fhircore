@@ -44,6 +44,7 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
@@ -751,6 +752,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireFragment.setFragmentResult(QuestionnaireFragment.SUBMIT_REQUEST_KEY, Bundle.EMPTY)
 
     verify { questionnaireActivity.finish() }
+  }
+
+  @Test
+  fun testRemoveOperationWithValueOfTrueFinishesActivity() {
+    questionnaireActivity.questionnaireViewModel.removeOperation.postValue(true)
+    assertTrue { questionnaireActivity.isFinishing }
   }
 
   override fun getActivity(): Activity {

@@ -46,10 +46,10 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class StructureMapUtilitiesTest : RobolectricTest() {
 
   @Test
-  fun `perform immunization extraction`() {
-    val immunizationQuestionnaireResponseString: String =
-      "content/anc/bmi/questionnaire-response-standard.json".readFile()
-    val immunizationStructureMap = "geowidget.map".readFile()
+  fun `perform family extraction`() {
+    val registrationQuestionnaireResponseString: String =
+      "content/general/family/questionnaire-response-standard.json".readFile()
+    val registrationStructureMap = "content/general/family/family-registration.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -59,23 +59,26 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val transformSupportServices = TransformSupportServices(contextR4)
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(immunizationStructureMap, "eCBIS Family Registration")
+    val map = scu.parse(registrationStructureMap, "eCBIS Family Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
-    System.out.println(mapString)
+    println(mapString)
 
     val targetResource = Bundle()
 
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        immunizationQuestionnaireResponseString
+        registrationQuestionnaireResponseString
       )
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
-    System.out.println(iParser.encodeResourceToString(targetResource))
+    println(iParser.encodeResourceToString(targetResource))
+    Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Encounter", targetResource.entry[1].resource.resourceType.toString())
   }
 
   @Test
@@ -512,7 +515,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     System.out.println(iParser.encodeResourceToString(targetResource))
 
     // for some weird reason, the `entry` has 8 resources instead of 7. The 1st resource is blank.
-    Assert.assertTrue(targetResource.entry.size == 8)
+    Assert.assertTrue(targetResource.entry.size == 9)
     Assert.assertTrue(targetResource.entry[2].resource is Observation)
 
     val observation = targetResource.entry[7].resource as Observation
