@@ -69,7 +69,7 @@ class PinViewModelTest : RobolectricTest() {
           message = "VHT will use this PIN to login",
           appName = "demo",
           setupPin = true,
-          pinLength = 0,
+          pinLength = 4, // set pinLength to a value greater than 0
           showLogo = false
         )
       )
@@ -81,6 +81,7 @@ class PinViewModelTest : RobolectricTest() {
     Assert.assertEquals("1245", pinLoginState.value.currentUserPin)
     Assert.assertTrue(pinLoginState.value.setupPin)
   }
+
 
   @Test
   fun testOnPinVerified() {
