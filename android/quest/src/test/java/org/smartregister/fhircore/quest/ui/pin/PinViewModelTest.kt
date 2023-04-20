@@ -82,7 +82,6 @@ class PinViewModelTest : RobolectricTest() {
     Assert.assertTrue(pinLoginState.value.setupPin)
   }
 
-
   @Test
   fun testOnPinVerified() {
     pinViewModel.onPinVerified(true)
