@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -36,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -95,7 +98,7 @@ class RulesExecutorTest : RobolectricTest() {
 
       Assert.assertEquals(patientId, resourceData.baseResourceId)
       Assert.assertEquals(ResourceType.Patient, resourceData.baseResourceType)
-      Assert.assertNull(resourceData.listResourceDataMap)
+      Assert.assertEquals(0, resourceData.listResourceDataMap.size)
       Assert.assertEquals(1, resourceData.computedValuesMap.size)
     }
   }
@@ -109,15 +112,17 @@ class RulesExecutorTest : RobolectricTest() {
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
-        )
+    val listItemData = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-      Assert.assertEquals(0, resourceData.size)
+    runBlocking(Dispatchers.Default) {
+      rulesExecutor.processListResourceData(
+        listProperties,
+        listItemData,
+        relatedRepositoryResourceData,
+        computedValuesMap
+      )
+
+      Assert.assertEquals(0, listItemData.size)
     }
   }
 
@@ -139,15 +144,19 @@ class RulesExecutorTest : RobolectricTest() {
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
+    val listItemData = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
     relatedRepositoryResourceData.add(repositoryResourceData)
 
     runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
-        )
+      rulesExecutor.processListResourceData(
+        listProperties,
+        listItemData,
+        relatedRepositoryResourceData,
+        computedValuesMap
+      )
+
+      val resourceData = listItemData["listId"]!!
 
       Assert.assertEquals(1, resourceData.size)
       Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
@@ -178,15 +187,19 @@ class RulesExecutorTest : RobolectricTest() {
       LinkedList<RepositoryResourceData>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
+    val listItemData = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
     relatedRepositoryResourceData.add(repositoryResourceData)
 
     runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
-        )
+      rulesExecutor.processListResourceData(
+        listProperties,
+        listItemData,
+        relatedRepositoryResourceData,
+        computedValuesMap
+      )
+
+      val resourceData = listItemData["listId"]!!
 
       Assert.assertEquals(resourceData.size, 1)
       Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
