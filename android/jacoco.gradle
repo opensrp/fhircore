@@ -36,7 +36,6 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/org/smartregister/fhircore/engine/configuration/profile/*',
             '**/org/smartregister/fhircore/engine/configuration/register/*',
             '**/org/smartregister/fhircore/engine/configuration/report/measure/*',
-            '**/org/smartregister/fhircore/engine/configuration/view/ButtonProperties*.*',
             '**/org/smartregister/fhircore/engine/configuration/view/CardViewProperties*.*',
             '**/org/smartregister/fhircore/engine/configuration/view/ColumnProperties*.*',
             '**/org/smartregister/fhircore/engine/configuration/view/CompoundTextProperties*.*',
