@@ -62,11 +62,12 @@ class PinViewModelTest : RobolectricTest() {
   fun testSetPinUiState() {
     val context = ApplicationProvider.getApplicationContext<Application>()
     val applicationConfiguration = mockk<ApplicationConfiguration>()
+    val expectedMessage = "VHT will use this PIN to login"
     val pinLoginState: MutableState<PinUiState> =
       mutableStateOf(
         PinUiState(
           currentUserPin = "1245",
-          message = "VHT will use this PIN to login",
+          message = expectedMessage,
           appName = "demo",
           setupPin = true,
           pinLength = 4, // set pinLength to a value greater than 0
@@ -76,7 +77,6 @@ class PinViewModelTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionPin() } returns "1245"
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.pinUiState.value = pinLoginState.value
-    val expectedMessage = "VHT will use this PIN to login"
     Assert.assertEquals(expectedMessage, pinLoginState.value.message)
     Assert.assertEquals("1245", pinLoginState.value.currentUserPin)
     Assert.assertTrue(pinLoginState.value.setupPin)
