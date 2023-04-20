@@ -164,7 +164,7 @@ constructor(
                   it.trigger == ActionTrigger.ON_CLICK
               }
               ?.questionnaire
-              .let { questionnaireConfig ->
+              ?.let { questionnaireConfig ->
                 if (questionnaireConfig == null) {
                   emitSnackBarState(
                     SnackBarMessageConfig(

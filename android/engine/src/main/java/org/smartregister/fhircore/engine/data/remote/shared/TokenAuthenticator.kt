@@ -63,6 +63,7 @@ constructor(
 
   private val jwtParser = Jwts.parser()
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
+  private var isLoginPageRendered = false
 
   override fun getAccessToken(): String {
     val account = findAccount()
@@ -92,6 +93,8 @@ constructor(
             // TODO: Should we cancel the sync job to avoid retries when offline?
           }
         }
+      } else {
+        isLoginPageRendered = false
       }
       accessToken
     } else ""
@@ -111,8 +114,9 @@ constructor(
         // Deletes session PIN to allow reset
         secureSharedPreference.deleteSessionPin()
 
-        if (launchIntent != null) {
+        if (launchIntent != null && !isLoginPageRendered) {
           context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+          isLoginPageRendered = true
         }
       }
     }
