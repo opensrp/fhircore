@@ -69,6 +69,7 @@ class FhirExtractionTest : RobolectricTest() {
   lateinit var structureMapUtilities: StructureMapUtilities
   private val defaultRepository: DefaultRepository = mockk()
   private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   @Before
   fun setup() {
     hiltRule.inject()
@@ -78,6 +79,7 @@ class FhirExtractionTest : RobolectricTest() {
     every { defaultRepository.fhirEngine } returns fhirEngine
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
   }
+
   @Test
   @ExperimentalCoroutinesApi
   fun `extract should generate immunization and encounter`() = runTest {
@@ -123,6 +125,7 @@ class FhirExtractionTest : RobolectricTest() {
       assertEquals(rota1.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
     }
   }
+
   data class ExtractionResources(
     val questionnaire: Questionnaire,
     val patient: Patient,
@@ -130,6 +133,7 @@ class FhirExtractionTest : RobolectricTest() {
     val structureMap: StructureMap,
     val resourcesSlot: MutableList<Resource>
   )
+
   fun loadExtractionResources(name: String): ExtractionResources {
     val questionnaire =
       "extractions/$name/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
