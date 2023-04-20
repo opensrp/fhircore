@@ -19,9 +19,7 @@ package org.smartregister.fhircore.engine.ui.components.register
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,6 +48,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val LOADER_DIALOG_PROGRESS_BAR_TAG = "loaderDialogProgressBarTag"
 const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
+const val LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG = "loaderDialogSyncProgressStateTextTag"
 
 @Composable
 fun LoaderDialog(
@@ -95,12 +94,14 @@ fun LoaderDialog(
               )
 
               if (syncProgressStateText.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                   color = Color.White,
                   style = MaterialTheme.typography.subtitle1,
                   text = syncProgressStateText,
-                  modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG),
+                  modifier =
+                    modifier
+                      .testTag(LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG)
+                      .padding(top = 4.dp),
                 )
               }
             }

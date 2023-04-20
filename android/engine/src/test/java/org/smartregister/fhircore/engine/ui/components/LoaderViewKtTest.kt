@@ -22,12 +22,14 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.register.LOADER_DIALOG_PROGRESS_BAR_TAG
 import org.smartregister.fhircore.engine.ui.components.register.LOADER_DIALOG_PROGRESS_MSG_TAG
+import org.smartregister.fhircore.engine.ui.components.register.LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 
 class LoaderViewKtTest : RobolectricTest() {
@@ -48,5 +50,24 @@ class LoaderViewKtTest : RobolectricTest() {
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing)
       )
+  }
+
+  @Test
+  fun testLoaderDialogViewDefaultDoesNotShowSyncProgressStateText() {
+    composeRule.setContent { LoaderDialog() }
+
+    composeRule.onNodeWithTag(LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG).assertDoesNotExist()
+  }
+
+  @Test
+  fun testLoaderDialogViewShowsProgressStateTextWhenSyncProgressStateFlowValueNotBlank() {
+    val progressStateText = "28% downloaded"
+    composeRule.setContent {
+      LoaderDialog(syncProgressStateFlow = MutableStateFlow(progressStateText))
+    }
+    composeRule
+      .onNodeWithTag(LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG)
+      .assertIsDisplayed()
+      .assertTextEquals(progressStateText)
   }
 }
