@@ -38,14 +38,17 @@ interface QuestionnaireHandler {
         actionParams: List<ActionParameter> = emptyList()
     ) {
         if (questionnaireConfig != null)
-            Timber.tag(tag = "Questionnaire ID").d(questionnaireConfig.id)
-        startForResult.launch(
-            Intent(context, QuestionnaireActivity::class.java).putExtras(
-                QuestionnaireActivity.intentArgs(
-                    questionnaireConfig = questionnaireConfig, actionParams = actionParams
-                )
-            ).putExtras(intentBundle)
-        )
+        //Timber.tag(tag = "Questionnaire ID").d(questionnaireConfig.id)
+            startForResult.launch(
+                Intent(context, QuestionnaireActivity::class.java)
+                    .putExtras(
+                        QuestionnaireActivity.intentArgs(
+                            questionnaireConfig = questionnaireConfig,
+                            actionParams = actionParams
+                        )
+                    )
+                    .putExtras(intentBundle)
+            )
     }
 
     fun onSubmitQuestionnaire(activityResult: ActivityResult)
