@@ -5,16 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.3] - 2023-xx-xx
+## [0.2.4] - 2023-xx-xx
 ### Added
-- Allow completion of Overdue Tasks
+-  
 
 ### Fixed
-- Invalidation/refresh cache after form completion
-- Logout while offline causes flicker(multiple render) of Login Page
+- 
 
 ### Changed
 - 
+
+## [0.2.3] - 2023-04-20
+### Added
+- Allow completion of Overdue Tasks
+- Invalidation/refresh cache after form completion
+- Button background color app configurability  
+
+### Fixed
+- Logout while offline causes flicker(multiple render) of Login Page
+- Fix to allow user to complete overdue task
+- Hotfix to allow launching of overflow menu items (Questionnaire/Profile) 
 
 ## [0.2.2] - 2023-04-17
 ### Added
