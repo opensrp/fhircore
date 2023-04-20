@@ -165,16 +165,7 @@ constructor(
               }
               ?.questionnaire
               ?.let { questionnaireConfig ->
-                if (questionnaireConfig == null) {
-                  emitSnackBarState(
-                    SnackBarMessageConfig(
-                      context.getString(R.string.error_msg_questionnaire_config_is_not_found)
-                    )
-                  )
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
-                    .d(context.getString(R.string.error_msg_questionnaire_config_is_not_found))
-                  return@launch
-                } else {
+                run {
                   questionnaireConfig.interpolate(
                     event.resourceData?.computedValuesMap ?: emptyMap()
                   )
