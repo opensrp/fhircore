@@ -25,28 +25,28 @@ import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import timber.log.Timber
 
 interface QuestionnaireHandler {
 
-  val startForResult: ActivityResultLauncher<Intent>
+    val startForResult: ActivityResultLauncher<Intent>
 
-  fun <T> launchQuestionnaire(
-    context: Context,
-    intentBundle: Bundle = bundleOf(),
-    questionnaireConfig: QuestionnaireConfig? = null,
-    actionParams: List<ActionParameter> = emptyList()
-  ) {
-    startForResult.launch(
-      Intent(context, QuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            questionnaireConfig = questionnaireConfig,
-            actionParams = actionParams
-          )
+    fun <T> launchQuestionnaire(
+        context: Context,
+        intentBundle: Bundle = bundleOf(),
+        questionnaireConfig: QuestionnaireConfig? = null,
+        actionParams: List<ActionParameter> = emptyList()
+    ) {
+        if (questionnaireConfig != null)
+            Timber.tag(tag = "Questionnaire ID").d(questionnaireConfig.id)
+        startForResult.launch(
+            Intent(context, QuestionnaireActivity::class.java).putExtras(
+                QuestionnaireActivity.intentArgs(
+                    questionnaireConfig = questionnaireConfig, actionParams = actionParams
+                )
+            ).putExtras(intentBundle)
         )
-        .putExtras(intentBundle)
-    )
-  }
+    }
 
-  fun onSubmitQuestionnaire(activityResult: ActivityResult)
+    fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }
