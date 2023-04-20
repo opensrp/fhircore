@@ -36,7 +36,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import timber.log.Timber
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
@@ -70,12 +69,11 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   }
   /**
    * This function pre-computes all the Rules for [ViewType]'s of List including list nested in the
-   * views. The LIST view computed values includes the parent's.
+   * views. The LIST view computed values includes the parent's. These values are computed and
+   * loaded into the [listResourceDataMapState] under the viewId as the key
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
-    // TODO: REmove this
-    // listResourceData: MutableList<ResourceData>,
     listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
     computedValuesMap: Map<String, Any>,
@@ -84,8 +82,8 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
-          relatedResourcesMap = // mutableMapOf()
-          relatedResourcesMap
+          relatedResourcesMap =
+            relatedResourcesMap
               .mapValues { entry ->
                 entry
                   .value
@@ -94,11 +92,8 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
               }
               .toMutableMap(),
           itemId = listProperties.id,
-          // listResourceData = listResourceData,
           listResourceDataMapState = listResourceDataMapState,
           ruleConfigs = listProperties.registerCard.rules,
-          // relatedResourcesMap = relatedResourcesMap,
-          // ruleConfigsKey = listProperties.registerCard::class.java.canonicalName,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
         )
@@ -119,7 +114,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   private suspend fun List<Resource>.mapToResourceData(
     itemId: String,
-    // listResourceData: MutableList<ResourceData>,
     listResourceDataMapState: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
     relatedResourcesMap: MutableMap<String, MutableList<Resource>>,
     ruleConfigs: List<RuleConfig>,
@@ -166,30 +160,26 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         )
 
       // Update the View
-      if (listResourceDataMapState.containsKey(itemId)) {
-        val resourceDataListFromMap = listResourceDataMapState[itemId]
-        var found = false
-
-        resourceDataListFromMap?.forEach {
-          if (it.baseResourceId.equals(res.baseResourceId)) {
-            found = true
-            return@forEach
-          }
-        }
-
-        if (!found) {
-          // listResourceDataMapState[itemId]?.add(res)
-          resourceDataListFromMap?.add(res)
-          // listResourceData.add(res)
-        }
-      } else {
-
-        // listResourceData.add(res)
-        val myList = mutableStateListOf<ResourceData>().apply { add(res) }
-        Timber.e("Size of list is ${myList.size}")
-        listResourceDataMapState[itemId] = myList
-      }
+      listResourceDataMapState.addResource(itemId, res)
     }
+
+  private fun SnapshotStateMap<String, SnapshotStateList<ResourceData>>.addResource(
+    itemId: String,
+    res: ResourceData
+  ) {
+    if (containsKey(itemId)) {
+      val resourceDataListFromMap = get(itemId)
+      resourceDataListFromMap?.forEach {
+        if (it.baseResourceId == res.baseResourceId) {
+          return
+        }
+      }
+      resourceDataListFromMap?.add(res)
+    } else {
+      val myList = mutableStateListOf<ResourceData>().apply { add(res) }
+      set(itemId, myList)
+    }
+  }
 
   /**
    * This function returns a list of filtered resources. The required list is obtained from

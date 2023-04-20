@@ -65,7 +65,6 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  // TODO: THIS NEEDS TO CHANGE
   val currentListResourceData = resourceData.listResourceDataMap[viewProperties.id]
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {

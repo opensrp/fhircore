@@ -106,8 +106,7 @@ constructor(
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
 
-      // Load the base resource and show the generated data
-
+      // Load the base resource and show the generated rul
       val repoResourceData =
         registerRepository.loadProfileBaseResource(
           profileId,
@@ -139,7 +138,7 @@ constructor(
        can be posted asynchronously
        */
 
-      // Load the related resources
+      // Load the related resources and generate rules
       registerRepository.loadProfileRelatedAndSecondaryResources(
         queryResult,
         listResourceDataMapState,
@@ -149,14 +148,13 @@ constructor(
         fhirResourceConfig,
         paramsList
       ) {
-        profileConfigs.views.retrieveListProperties().forEach {
-          if (!listResourceDataMapState.containsKey(it.id)) {
-            listResourceDataMapState[it.id] = mutableStateListOf()
+        profileConfigs.views.retrieveListProperties().forEach { listProperties ->
+          if (!listResourceDataMapState.containsKey(listProperties.id)) {
+            listResourceDataMapState[listProperties.id] = mutableStateListOf()
           }
 
           rulesExecutor.processListResourceData(
-            listProperties = it,
-            // listResourceData = mutableListOf(),
+            listProperties = listProperties,
             listResourceDataMapState = listResourceDataMapState,
             relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
             computedValuesMap =
@@ -165,7 +163,8 @@ constructor(
         }
       }
 
-      // Recompute the demographic data
+      // Recompute the demographic data in case the related resource is used on the demographic data
+      // UI
       val latestComputedValues =
         rulesExecutor.computeRules(
           ruleConfigs = profileConfigs.rules,

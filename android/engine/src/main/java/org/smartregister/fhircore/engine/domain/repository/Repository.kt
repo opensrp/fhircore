@@ -47,7 +47,9 @@ interface Repository {
   ): Long
 
   /**
-   * This function returns data used on the profile for the given [resourceId]. Profile
+   * This function returns baseResource used on the profile for the given [resourceId]. It returns
+   * this inside a container that is used to populate the remaining resources used in the profile.
+   * The remaining resources are loaded in [loadProfileRelatedAndSecondaryResources] Profile
    * configuration is identified by the [profileId] and contains the queries for filtering the
    * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
    * configurations identified by the [profileId] are used.
@@ -59,12 +61,12 @@ interface Repository {
     paramsList: Array<ActionParameter>?
   ): RepositoryResourceData?
 
-  // TODO: Update this documentation
   /**
-   * This function returns data used on the profile for the given [resourceId]. Profile
-   * configuration is identified by the [profileId] and contains the queries for filtering the
-   * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
-   * configurations identified by the [profileId] are used.
+   * This function loads the related resources and secondary resources into the [queryResult]. This
+   * function calls the [afterFetch] function after every resource is loaded. The [afterFetch]
+   * function should perform any processing that needs to be done on the newly loaded resources. The
+   * function also updates the [listResourceDataMapState] with the [ResourceData] for a specific
+   * view where the viewId is used as the map key
    */
   suspend fun loadProfileRelatedAndSecondaryResources(
     queryResult: RepositoryResourceData.QueryResult.Search,

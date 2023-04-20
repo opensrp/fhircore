@@ -72,7 +72,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
-import timber.log.Timber
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -92,13 +91,8 @@ fun ProfileScreen(
   val lazyListState = rememberLazyListState()
 
   LaunchedEffect(Unit) {
-    // TODO: Figure this out
-    profileUiState.resourceData?.run {
-      snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
-    }
+    snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
-
-  Timber.e("Recomposing the profile screen")
 
   Scaffold(
     scaffoldState = scaffoldState,
@@ -157,7 +151,7 @@ fun ProfileScreen(
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
             resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
+                ?: ResourceData("", ResourceType.Patient, mutableStateMapOf()),
             navController = navController
           )
         }
@@ -192,7 +186,7 @@ fun CustomProfileTopAppBar(
         ViewRenderer(
           viewProperties = topBarConfig.content,
           resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, mutableStateMapOf(), mutableStateMapOf()),
+              ?: ResourceData("", ResourceType.Patient, mutableStateMapOf()),
           navController = navController
         )
       }

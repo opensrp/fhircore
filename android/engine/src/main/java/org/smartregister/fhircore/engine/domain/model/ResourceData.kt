@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 
@@ -28,7 +28,9 @@ import org.hl7.fhir.r4.model.ResourceType
  * @property baseResourceId is the unique identifier for the main resource in the register
  * @property baseResourceType is the [ResourceType] for the main resource
  * @property computedValuesMap contains data extracted from the resources to be used on the UI
- * @property listResourceDataMap a map containing the pre-computed values for LIST views used
+ * @property listResourceDataMap a map containing the pre-computed values for LIST views used. These
+ * values are being observed in the view and compose should re-render
+ * @property baseResource the baseResource identified by [baseResourceId]
  *
  * For example. For every Patient resource we return also their Immunization and Observation
  * resources but precompute the values needed by firing the configured rules.
@@ -38,34 +40,7 @@ data class ResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
   val computedValuesMap: SnapshotStateMap<String, Any>,
-  val listResourceDataMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
+  val listResourceDataMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>> =
+    mutableStateMapOf(),
   val baseResource: Resource? = null
-)
-
-@Stable
-data class ProfileResourceData(
-  val baseResourceId: String,
-  val baseResourceType: ResourceType,
-  val computedValuesMap: SnapshotStateMap<String, Any>,
-  val listResourceDataMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
-  val baseResource: Resource? = null
-)
-
-fun ProfileResourceData.toResourceData(): ResourceData =
-  ResourceData(
-    baseResourceId = baseResourceId,
-    baseResourceType = baseResourceType,
-    computedValuesMap = computedValuesMap,
-    listResourceDataMap = listResourceDataMap,
-    baseResource = baseResource
-  )
-/**
- * @property resource A valid FHIR resource
- * @property relatedResources Nested list of [RelatedResourceData]
- */
-@Stable
-data class RelatedResourceData(
-  val resource: Resource,
-  val relatedResources: LinkedList<RelatedResourceData> = LinkedList(),
-  val resourceConfigId: String? = null
 )

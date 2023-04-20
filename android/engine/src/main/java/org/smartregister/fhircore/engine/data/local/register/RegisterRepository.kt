@@ -231,6 +231,7 @@ constructor(
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
+
     if (fhirPathExpression.isNullOrEmpty()) {
       val search =
         Search(type = relatedResourceType).apply {
@@ -242,6 +243,7 @@ constructor(
           resourceConfig.dataQueries?.forEach { filterBy(it) }
           applyNestedSearchFilters(resourceConfig.nestedSearchResources)
         }
+
       if (resourceConfig.resultAsCount) {
         val count = fhirEngine.count(search)
 

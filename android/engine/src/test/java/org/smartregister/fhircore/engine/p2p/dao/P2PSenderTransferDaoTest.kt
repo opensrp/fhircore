@@ -95,7 +95,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     coEvery {
       p2PSenderTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
-        batchSize = 5,
+        batchSize = 25,
         offset = 0,
         Patient::class.java
       )
