@@ -5,15 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.2] - 2023-xx-xx
+## [0.2.3] - 2023-xx-xx
 ### Added
+- Allow completion of Overdue Tasks
+
+### Fixed
+- Invalidation/refresh cache after form completion
+- Logout while offline causes flicker(multiple render) of Login Page
+
+### Changed
+- 
+
+## [0.2.2] - 2023-04-17
+### Added
+- Filter out inactive families using custom search parameters
+- Adds support for text-overflow configurability
+- Adds Interpolation for planDefinitions property on QuesitonnaireConfig 
 
 ### Fixed
 - Order the Registers after every form interaction tied to it
-- Refactor register search to use SDK Search API to perform database query
-- Filter out inactive families using custom search parameters
+- Fixed index already exists exception 
+- Minor bug fixes for care plan generation
+- Fixes app crash when resourceType is not found
 
 ### Changed
+- Refactor register search to use SDK Search API to perform database query
 
 ## [0.2.1] - 2023-03-27
 ### Added
