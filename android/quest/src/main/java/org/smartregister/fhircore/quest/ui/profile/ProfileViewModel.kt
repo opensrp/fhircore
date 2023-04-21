@@ -106,7 +106,7 @@ constructor(
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
 
-      // Load the base resource and show the generated rul
+      // Load the base resource and show the generated rule
       val repoResourceData =
         registerRepository.loadProfileBaseResource(
           profileId,
