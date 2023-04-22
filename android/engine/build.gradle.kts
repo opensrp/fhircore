@@ -238,8 +238,8 @@ dependencies {
 
   // Android test dependencies
   androidTestImplementation(libs.junit)
+  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.espresso.core)
   androidTestImplementation(libs.hilt.android.testing)
-  androidTestImplementation(libs.mockk.android)
 }

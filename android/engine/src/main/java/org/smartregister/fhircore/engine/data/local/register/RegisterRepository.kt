@@ -304,7 +304,7 @@ constructor(
         }
         // Filter active Groups
         if (resourceType == ResourceType.Group) {
-          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
+          filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
         applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }

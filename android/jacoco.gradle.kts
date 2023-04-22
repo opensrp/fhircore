@@ -34,35 +34,9 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       "**/*\$Result$*.*",
       // Data classes and enums without functions or methods
       "**/org/smartregister/fhircore/engine/auth/*",
-      "**/org/smartregister/fhircore/engine/configuration/ConfigType*.*",
-      "**/org/smartregister/fhircore/engine/configuration/app/*",
-      "**/org/smartregister/fhircore/engine/configuration/geowidget/*",
-      "**/org/smartregister/fhircore/engine/configuration/navigation/*",
-      "**/org/smartregister/fhircore/engine/configuration/profile/*",
-      "**/org/smartregister/fhircore/engine/configuration/register/*",
-      "**/org/smartregister/fhircore/engine/configuration/report/measure/*",
-      "**/org/smartregister/fhircore/engine/configuration/view/ButtonProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/CardViewProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/ColumnProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/CompoundTextProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/ListProperties&*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/PersonalDataProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/RowProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/ServiceCardProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/SpacerProperties*.*",
-      "**/org/smartregister/fhircore/engine/data/remote/model/response/*",
-      "**/org/smartregister/fhircore/engine/domain/model/CarePlanConfig*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/ExtractedResource*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/FhirResourceConfigs*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/OverflowMenuItemConfig*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/RepositoryResourceData*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/RuleConfig*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/SearchFilters*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/ServiceMemberIcon*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/ServiceStatus*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/SnackBarMessageConfig*.*",
-      "**/org/smartregister/fhircore/engine/domain/model/TopBarConfig*.*",
-      "**/org/smartregister/fhircore/engine/data/remote/model/response/*",
+      "**/org/smartregister/fhircore/engine/configuration/*",
+      "**/org/smartregister/fhircore/engine/data/remote/model/*",
+      "**/org/smartregister/fhircore/engine/domain/model/*",
       "**/org/smartregister/fhircore/geowidget/model/*",
       // DI (Dagger and Hilt)
       "**/*_MembersInjector.class",
@@ -86,12 +60,12 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
 
   val moduleVariant = if (project.name == "quest") "questDebug" else "debug"
   val javaDebugTree =
-    fileTree(baseDir = "$project.buildDir/intermediates/javac/${moduleVariant}/classes/")
+    fileTree(baseDir = "${project.buildDir}/intermediates/javac/${moduleVariant}/classes/")
       .exclude(excludes)
   val kotlinDebugTree =
     fileTree(baseDir = "${project.buildDir}/tmp/kotlin-classes/${moduleVariant}").exclude(excludes)
-  val mainSrc = "$project.projectDir/src/main/java"
-  val kotlinSrc = "$project.projectDir/src/main/kotlin"
+  val mainSrc = "${project.projectDir}/src/main/java"
+  val kotlinSrc = "${project.projectDir}/src/main/kotlin"
 
   sourceDirectories.setFrom(files(listOf(mainSrc, kotlinSrc)))
   classDirectories.setFrom(files(listOf(javaDebugTree, kotlinDebugTree)))

@@ -1231,7 +1231,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_birth'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '0_d' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1351,7 +1351,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '6_wk' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1471,7 +1471,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '10_wk' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1591,7 +1591,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '14_wk' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1711,7 +1711,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_months'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '9_mo' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1831,7 +1831,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_15_months'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '15_mo' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -1951,7 +1951,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_years'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '108_mo' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -2071,7 +2071,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '114_wk' and Task.executionPeriod.start > today() - 7 days"
                 }
               ],
               "emptyList": {
@@ -2850,6 +2850,31 @@
               "value": "@{sayanaPressStockOutFlagId}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "title": "Record All",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "239954",
+            "resourceIdentifier": "@{patientId}",
+            "title": "Record All",
+            "params": [
+              {
+                "paramType": "UPDATE_DATE_ON_EDIT",
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}"
+              }
+            ],
+            "refreshContent": true
+          }
         }
       ]
     },
