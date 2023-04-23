@@ -85,15 +85,18 @@ android {
 
 tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.SKIPPED) }
-  jvmArgs("-Xms4608m -Xmx4608m -ea -noverify")
+  minHeapSize = "4608m"
+  maxHeapSize = "4608m"
 }
 
 configurations {
-  all { exclude(group = "org.eclipse.persistence") }
-  all { exclude(group = "javax.activation", module = "activation") }
-  all { exclude(group = "javax", module = "javaee-api") }
-  all { exclude(group = "xml-apis") }
-  all { exclude(group = "xpp3") }
+  all {
+    exclude(group = "org.eclipse.persistence")
+    exclude(group = "javax.activation", module = "activation")
+    exclude(group = "javax", module = "javaee-api")
+    exclude(group = "xml-apis")
+    exclude(group = "xpp3")
+  }
 }
 
 dependencies {

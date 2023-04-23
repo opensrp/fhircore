@@ -249,11 +249,17 @@ androidComponents {
   }
 }
 
-tasks.withType<Test> { testLogging { events = setOf(TestLogEvent.SKIPPED) } }
+tasks.withType<Test> {
+  testLogging { events = setOf(TestLogEvent.SKIPPED) }
+  minHeapSize = "4608m"
+  maxHeapSize = "4608m"
+}
 
 configurations {
-  all { exclude(group = "commons-logging") }
-  all { exclude(group = "xpp3") }
+  all {
+    exclude(group = "commons-logging")
+    exclude(group = "xpp3")
+  }
 }
 
 dependencies {

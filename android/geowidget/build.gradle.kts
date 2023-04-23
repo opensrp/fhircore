@@ -96,7 +96,8 @@ android {
 
 tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.SKIPPED) }
-  jvmArgs("-Xms4608m -Xmx4608m -ea -noverify")
+  minHeapSize = "4608m"
+  maxHeapSize = "4608m"
 }
 
 configurations { all { exclude(group = "xpp3") } }
