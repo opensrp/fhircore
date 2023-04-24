@@ -56,9 +56,7 @@ group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, targ
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_age";
@@ -80,9 +78,7 @@ group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, t
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_gender";
@@ -104,9 +100,7 @@ group ExtractDietaryIntake(source src : QuestionnaireResponse, target bundle: Bu
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "social-history"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_diet";
@@ -148,9 +142,7 @@ group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bu
                         }"r_obs_cc_code";
                         src->concept.text = evaluate(item, $this.answer.value.display) "r_obs_code_fam_history";
                     }"r_obs_code";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_fam_history";
@@ -172,9 +164,7 @@ group ExtractPhysicalActivity(source src : QuestionnaireResponse, target bundle:
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_physical_activity";
@@ -196,9 +186,7 @@ group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, ta
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
                         src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_waist";
@@ -220,9 +208,7 @@ group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, t
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
                 } "r_obs_weight_item";
@@ -241,9 +227,7 @@ group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, t
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
                 } "r_obs_height_item";
@@ -262,9 +246,7 @@ group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, targ
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src -> obs.subject = create("Reference") as ref then {
-                        src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                    src -> obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
                 } "r_obs_bmi_item";
@@ -281,9 +263,7 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
                         rsk.status = "preliminary",
                         rsk.code = cc("http://snomed.info/sct","772788006", "Assessment of risk of type 2 diabetes mellitus"),
                         rsk.encounter = reference(encounter),
-                        rsk.subject = create("Reference") as ref then {
-                        src -> ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_eval_subject";
-                    } "r_obs_subject";
+                        rsk.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> rsk.method = create("CodeableConcept") as codeableConcept then {
                         src -> codeableConcept.coding = c("http://smartregister.org", "draft-algorithm-risk-method", "Draft Algorithm Risk Calculation Method") "r_rsk_method_coding";
                     } "r_rsk_method";
