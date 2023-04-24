@@ -32,7 +32,6 @@ import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
-import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -128,10 +127,9 @@ constructor(
     page: Int = -1
   ): List<Pair<Patient, Iterable<Task>>> {
     filters as TracingRegisterFilter
-    var patients: List<Patient>
-    val searchSDKTime = measureTimeMillis {
-      patients =
-        fhirEngine.search {
+    val patients: List<Patient> =
+      fhirEngine
+        .search<Patient> {
           if (!loadAll) count = PaginationConstant.DEFAULT_PAGE_SIZE
 
           if (page >= 0) from = page * PaginationConstant.DEFAULT_PAGE_SIZE
@@ -163,12 +161,7 @@ constructor(
             filter(Patient.GENERAL_PRACTITIONER, { value = currentPractitioner!!.referenceValue() })
           }
         }
-    }
-    Timber.e("Searching patients SDK api => ${searchSDKTime}ms")
-
-    val filteringAgeTime = measureTimeMillis {
-      patients =
-        patients.filter {
+        .filter {
           if (filters.age != null) {
             val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
             when (filters.age) {
@@ -187,20 +180,16 @@ constructor(
             }
           } else true
         }
-    }
-    Timber.e("Filtering age => ${filteringAgeTime}ms")
 
-    val patientTaskPairs: List<Pair<Patient, Iterable<Task>>>
+    val patientrefs =
+      patients
+        .map<Patient, (ReferenceParamFilterCriterion.() -> Unit)> {
+          return@map { value = it.referenceValue() }
+        }
+        .toTypedArray()
 
-    val filteringTasksTime = measureTimeMillis {
-      val patientrefs =
-        patients
-          .map<Patient, (ReferenceParamFilterCriterion.() -> Unit)> {
-            return@map { value = it.referenceValue() }
-          }
-          .toTypedArray()
-
-      val tasks =
+    val tasks: List<Task> =
+      if (patientrefs.isNotEmpty()) {
         fhirEngine
           .search<Task> {
             validTasksFilters()
@@ -211,26 +200,21 @@ constructor(
               it.executionPeriod.hasStart() &&
               it.executionPeriod.start.before(Date())
           }
-      val filteredTasks =
-        filters.reasonCode?.let { reasonCode ->
-          tasks.filter { it.reasonCode.coding.any { coding -> coding.code == reasonCode } }
-        }
-          ?: tasks
-      val groupedTasks = filteredTasks.groupBy { it.`for`.reference }
+      } else emptyList()
 
-      patientTaskPairs =
-        patients
-          .filter {
-            val ref = it.asReference().reference
-            ref in groupedTasks && groupedTasks[ref] != null && groupedTasks[ref]!!.any()
-          }
-          .map { it to groupedTasks[it.asReference().reference]!! }
+    val filteredTasks =
+      filters.reasonCode?.let { reasonCode ->
+        tasks.filter { it.reasonCode.coding.any { coding -> coding.code == reasonCode } }
+      }
+        ?: tasks
+    val groupedTasks = filteredTasks.groupBy { it.`for`.reference }
 
-      Timber.e("Validated patients => ${patients.size}")
-    }
-    Timber.e("Filtering tasks => ${filteringTasksTime}ms")
-
-    return patientTaskPairs
+    return patients
+      .filter {
+        val ref = it.asReference().reference
+        ref in groupedTasks && groupedTasks[ref] != null && groupedTasks[ref]!!.any()
+      }
+      .map { it to groupedTasks[it.asReference().reference]!! }
   }
 
   override suspend fun loadRegisterFiltered(
@@ -239,22 +223,16 @@ constructor(
     appFeatureName: String?,
     filters: RegisterFilter
   ): List<RegisterData> {
-    val patientTasksPairs: List<Pair<Patient, Iterable<Task>>>
-    val searchTime = measureTimeMillis {
-      patientTasksPairs = searchRegister(filters, loadAll = true)
-    }
-    Timber.e("Loading ${patientTasksPairs.size} patients => ${searchTime}ms")
-
-    var tracingData: List<RegisterData.TracingRegisterData>
-    val transformTime = measureTimeMillis {
-      val patientSubjectRefFilterCriteria =
-        patientTasksPairs
-          .map { it.first }
-          .map<Patient, (ReferenceParamFilterCriterion.() -> Unit)> {
-            return@map { value = it.referenceValue() }
-          }
-          .toTypedArray()
-      val subjectListResourcesGroup =
+    val patientTasksPairs = searchRegister(filters, loadAll = true)
+    val patientSubjectRefFilterCriteria =
+      patientTasksPairs
+        .map { it.first }
+        .map<Patient, (ReferenceParamFilterCriterion.() -> Unit)> {
+          return@map { value = it.referenceValue() }
+        }
+        .toTypedArray()
+    val subjectListResourcesGroup: Map<String, ListResource> =
+      if (patientSubjectRefFilterCriteria.isNotEmpty())
         fhirEngine
           .search<ListResource> {
             filter(ListResource.SUBJECT, *patientSubjectRefFilterCriteria, operation = Operation.OR)
@@ -264,34 +242,23 @@ constructor(
           .filter { it.status == ListResource.ListStatus.CURRENT }
           .groupingBy { it.subject.reference }
           .reduce { _, accumulator, element -> maxOf(accumulator, element, compareBy { it.title }) }
+      else emptyMap()
 
-      tracingData =
-        patientTasksPairs.map { ptp ->
+    val tracingData: List<RegisterData.TracingRegisterData> =
+      patientTasksPairs
+        .map { ptp ->
           val (patient, tasks) = ptp
           val listResource = subjectListResourcesGroup[patient.referenceValue()]
           patient.toTracingRegisterData(tasks, listResource)
         }
-    }
-    Timber.e("Transform to registerData => ${transformTime}ms")
+        .filter { it.reasons.any() }
+        .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
 
-    val sortingTime = measureTimeMillis {
-      tracingData =
-        tracingData
-          .filter { it.reasons.any() }
-          .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
-    }
-    Timber.e("Sorting => ${sortingTime}ms")
-
-    val paginatingTime = measureTimeMillis {
-      if (!loadAll) {
-        val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-        val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
-        tracingData = tracingData.safeSubList(from..to)
-      }
-    }
-    Timber.e("Paginating => ${paginatingTime}ms")
-
-    return tracingData
+    return if (!loadAll) {
+      val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+      tracingData.safeSubList(from..to)
+    } else tracingData
   }
 
   override suspend fun loadRegisterData(
