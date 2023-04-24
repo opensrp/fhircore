@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -237,18 +238,19 @@ private fun BigServiceButton(
   navController: NavController,
   resourceData: ResourceData
 ) {
+  val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
+  val status = interpolatedButtonProperties.status
+  val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
+  val backgroundColor = interpolatedButtonProperties.backgroundColor
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
-  val buttonEnabled =
-    buttonProperties.enabled.interpolate(resourceData.computedValuesMap).toBoolean()
   val buttonClickable = buttonProperties.clickable(resourceData)
 
   Column(
     modifier =
       modifier
         .clickable {
-          if (buttonEnabled && (extractedStatus == ServiceStatus.DUE || buttonClickable)) {
+          if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
             buttonProperties.actions.handleClickEvent(
               navController = navController,
               resourceData = resourceData
@@ -260,30 +262,32 @@ private fun BigServiceButton(
         .padding(8.dp)
         .clip(RoundedCornerShape(4.dp))
         .border(
-          width = if (extractedStatus == ServiceStatus.DUE) 1.dp else 0.dp,
-          color = if (extractedStatus == ServiceStatus.DUE) contentColor else Color.Unspecified,
+          width = if (status == ServiceStatus.DUE.name) 1.dp else 0.dp,
+          color = if (status == ServiceStatus.DUE.name) contentColor else Color.Unspecified,
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+          if (backgroundColor != Color.Unspecified.toString()) {
+            backgroundColor.parseColor()
+          } else if (status == ServiceStatus.OVERDUE.name) contentColor else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (extractedStatus == ServiceStatus.COMPLETED)
+    if (status == ServiceStatus.COMPLETED.name)
       Icon(
         modifier = modifier.size(16.dp),
         imageVector = Icons.Filled.Check,
         contentDescription = null,
         tint =
-          when (extractedStatus) {
-            ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+          when (status) {
+            ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
             else -> statusColor.copy(alpha = 0.9f)
           }
       )
     Text(
-      text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
-      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
+      text = interpolatedButtonProperties.text ?: "",
+      color = if (status == ServiceStatus.OVERDUE.name) Color.White else contentColor,
       textAlign = TextAlign.Center,
       fontSize = buttonProperties.fontSize.sp,
       overflow = TextOverflow.Ellipsis
