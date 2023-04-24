@@ -84,7 +84,7 @@ android {
 }
 
 tasks.withType<Test> {
-  testLogging { events = setOf(TestLogEvent.SKIPPED) }
+  testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
 }
