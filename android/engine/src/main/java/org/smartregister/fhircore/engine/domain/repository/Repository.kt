@@ -54,7 +54,8 @@ interface Repository {
    * profile data. Data is loaded based on the [FhirResourceConfig]. When none is provided the
    * configurations identified by the [profileId] are used.
    *
-   * @param profileId the ID of the profile to retrieve configurations from if fhirResourceConfig is null.
+   * @param profileId the ID of the profile to retrieve configurations from if fhirResourceConfig is
+   * null.
    * @param resourceId the ID of the resource to get a baseResource for.
    * @param fhirResourceConfig optional config.
    * @param paramsList ActionParameters to customize functionality.
