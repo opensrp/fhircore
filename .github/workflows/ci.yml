@@ -165,6 +165,10 @@ jobs:
       matrix:
         api-level: [30]
     steps:
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
       - name: Checkout 🛎️
         uses: actions/checkout@v2
         with:
@@ -180,13 +184,13 @@ jobs:
         working-directory: android
 
       - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
  
       - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
+        run: ./gradlew :quest:spotlessCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache

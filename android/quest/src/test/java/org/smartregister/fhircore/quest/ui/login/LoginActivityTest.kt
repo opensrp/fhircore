@@ -69,6 +69,12 @@ class LoginActivityTest : RobolectricTest() {
     loginActivity = spyk(loginActivityController.create().resume().get())
   }
 
+
+  override fun tearDown() {
+    super.tearDown()
+    loginActivityController.destroy()
+  }
+
   @Test
   fun testLaunchDialPadShouldStartActionDialActivity() {
     loginActivity.loginViewModel.forgotPassword()
