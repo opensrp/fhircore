@@ -55,7 +55,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -261,24 +260,24 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events.filter { event -> event is AppEvent.RefreshCache }.collectLatest { handleRefreshLiveData() }
-
+        eventBus.events.filter { event -> event is AppEvent.RefreshCache }.collectLatest {
+          handleRefreshLiveData()
+        }
       }
-
     }
   }
 
   fun handleRefreshLiveData() {
-        with(registerFragmentArgs) {
-          registerViewModel.retrieveRegisterUiState(
-            registerId = registerId,
-            screenTitle = screenTitle,
-            params = params,
-            clearCache = true
-          )
-        }
-        // reset value
-        appMainViewModel.dataRefreshLivedata.value = false
+    with(registerFragmentArgs) {
+      registerViewModel.retrieveRegisterUiState(
+        registerId = registerId,
+        screenTitle = screenTitle,
+        params = params,
+        clearCache = true
+      )
+    }
+    // reset value
+    appMainViewModel.dataRefreshLivedata.value = false
   }
 
   /**
