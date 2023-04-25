@@ -125,7 +125,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.8" }
 
   lintOptions { isAbortOnError = false }
 

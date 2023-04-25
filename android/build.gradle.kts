@@ -14,7 +14,6 @@ buildscript {
     classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:5.11.0")
-    classpath("org.jacoco:org.jacoco.core:0.8.7")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     classpath("com.android.tools.build:gradle:7.1.3")
@@ -75,7 +74,7 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.7")
+          "org.jacoco" -> useVersion("0.8.8")
         }
       }
     }
