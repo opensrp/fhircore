@@ -24,6 +24,7 @@ import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
@@ -45,6 +46,8 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -60,6 +63,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var syncListenerManager: SyncListenerManager
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var eventBus: EventBus
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
@@ -146,7 +150,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         )
       }
       if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        appMainViewModel.dataRefreshLivedata.postValue(true)
+        Timber.e("Before triggering RefreshCache event +++++++")
+        lifecycleScope.launch {
+          Timber.e(" lifecycle scope calling event bus trigger RefreshCache event updated +++++++")
+          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
+          Timber.e(" After lifecycle scope calling event bus trigger RefreshCache event updated +++++++")
+        }
       }
     }
   }
