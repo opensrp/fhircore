@@ -36,6 +36,11 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+          
+      - name: Decode & Generate Keystore file
+        run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
+        env:
+          ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }} 
 
       - name: Decode & Generate local.properties file
         run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
