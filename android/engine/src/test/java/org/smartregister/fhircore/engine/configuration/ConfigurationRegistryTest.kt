@@ -28,8 +28,10 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
@@ -214,17 +216,23 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchNonWorkflowConfigResources() = runTest {
+    val dispatcher = StandardTestDispatcher(testScheduler)
     coEvery { configurationRegistry.repository.searchCompositionByIdentifier(testAppId) } returns
       Composition().apply {
         addSection().apply { this.focus = Reference().apply { reference = "Questionnaire/123" } }
       }
+    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns Bundle()
 
     configurationRegistry.appId = testAppId
-    configurationRegistry.fetchNonWorkflowConfigResources()
+    configurationRegistry.fetchNonWorkflowConfigResources(dispatcher)
 
     //    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
     advanceUntilIdle()
-    coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+    coVerify {
+      configurationRegistry.fhirResourceDataSource.loadData(
+        withArg { Assert.assertTrue(it.startsWith("Questionnaire", ignoreCase = true)) }
+      )
+    }
   }
 
   @Test

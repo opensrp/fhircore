@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -91,7 +92,7 @@ class PatientTaskRepositoryTest : RobolectricTest() {
         addressFirstRep.city = "Nairobi"
       }
 
-    coEvery { fhirEngine.search<Task>(any()) } returns tasks
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns patient
 
     runBlocking {

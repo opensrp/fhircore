@@ -61,6 +61,16 @@
     </style>
 
     <style name="AppTheme.HiddenSubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
-        <item name="android:visibility">gone</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginTop">@dimen/item_margin_vertical</item>
+        <item name="android:layout_marginBottom">@dimen/item_margin_vertical</item>
+        <item name="android:layout_marginLeft">@dimen/item_margin_horizontal</item>
+        <item name="android:layout_marginRight">@dimen/item_margin_horizontal</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">18sp</item>
     </style>
 </resources>

@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Resource
 @Singleton
 class FhirXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
-    return fhirEngine.search(xFhirQuery)
+    val newValue = xFhirQuery.split("/_history").first()
+    return fhirEngine.search(newValue)
   }
 }

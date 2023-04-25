@@ -27,6 +27,8 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.AppDataStore
 
 @HiltWorker
 class AppSyncWorker
@@ -35,11 +37,26 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncParametersManager: SyncParametersManager,
-  val engine: FhirEngine
+  val engine: FhirEngine,
+  val dataStore: AppDataStore
 ) : FhirSyncWorker(appContext, workerParams) {
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    ResourceParamsBasedDownloadWorkManager(syncParams = syncParametersManager.getSyncParams())
+    ResourceParamsBasedDownloadWorkManager(
+      syncParams = syncParametersManager.getSyncParams(),
+      context =
+        object : ResourceParamsBasedDownloadWorkManager.TimestampContext {
+          override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String =
+            dataStore.getLastUpdateTimestamp(resourceType) ?: ""
+
+          override suspend fun saveLastUpdatedTimestamp(
+            resourceType: ResourceType,
+            timestamp: String?
+          ) {
+            timestamp?.let { dataStore.saveLastUpdatedTimestamp(resourceType, timestamp) }
+          }
+        }
+    )
   override fun getFhirEngine(): FhirEngine = engine
 }

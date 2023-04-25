@@ -115,7 +115,7 @@ dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
-    implementation 'org.smartregister:fhir-common-utils:0.0.3-SNAPSHOT'
+    implementation 'org.smartregister:fhir-common-utils:0.0.6-SNAPSHOT'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation "androidx.cardview:cardview:1.0.0"
@@ -157,6 +157,9 @@ dependencies {
     api 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
 
+    // Jetpack - DataStore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+
     // P2P dependency
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
 
@@ -181,12 +184,12 @@ dependencies {
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview3-SNAPSHOT"){
+    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview4-SNAPSHOT"){
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-    api('org.smartregister:data-capture:0.1.0-beta06-preview4-SNAPSHOT') {
+    api('org.smartregister:data-capture:1.0.0-preview3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -200,7 +203,7 @@ dependencies {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview9-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta03-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

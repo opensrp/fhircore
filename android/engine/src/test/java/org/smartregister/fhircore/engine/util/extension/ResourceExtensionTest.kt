@@ -48,7 +48,6 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 
 class ResourceExtensionTest : RobolectricTest() {
 
@@ -564,6 +563,11 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Questionnaire#prepareQuestionsForReadingOrEditing should retain custom extension`() {
+    val barcodeExtensionUrl = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
+    val barcodeExtensionName = "barcode"
+    val photoCaptureExtensionUrl = "http://doc-of-photo-capture"
+    val photoCaptureExtensionName = "photo-capture"
+
     val questionnaire = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
     questionnaire.add(
       Questionnaire.QuestionnaireItemComponent().apply {
@@ -578,10 +582,8 @@ class ResourceExtensionTest : RobolectricTest() {
         readOnly = false
         addExtension(
           Extension().apply {
-            url = FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL
-            setValue(
-              StringType().apply { value = FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_NAME }
-            )
+            url = photoCaptureExtensionUrl
+            setValue(StringType().apply { value = photoCaptureExtensionName })
           }
         )
       }
@@ -593,8 +595,8 @@ class ResourceExtensionTest : RobolectricTest() {
         readOnly = false
         addExtension(
           Extension().apply {
-            url = FhirCoreQuestionnaireFragment.BARCODE_URL
-            setValue(StringType().apply { value = FhirCoreQuestionnaireFragment.BARCODE_NAME })
+            url = barcodeExtensionUrl
+            setValue(StringType().apply { value = barcodeExtensionName })
           }
         )
       }
@@ -602,11 +604,9 @@ class ResourceExtensionTest : RobolectricTest() {
 
     questionnaire.prepareQuestionsForReadingOrEditing("path", true)
 
-    Assert.assertTrue(
-      questionnaire[1].hasExtension(FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL)
-    )
+    Assert.assertTrue(questionnaire[1].hasExtension(photoCaptureExtensionUrl))
     Assert.assertTrue(questionnaire[1].readOnly)
-    Assert.assertTrue(questionnaire[2].hasExtension(FhirCoreQuestionnaireFragment.BARCODE_URL))
+    Assert.assertTrue(questionnaire[2].hasExtension(barcodeExtensionUrl))
     Assert.assertTrue(questionnaire[2].readOnly)
   }
 

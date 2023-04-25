@@ -54,6 +54,7 @@ import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.max
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -398,7 +399,9 @@ abstract class BaseRegisterActivity :
         this.registerViewModel.setRefreshRegisterData(true)
       }
       is SyncJobStatus.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        Timber.d(
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+        )
         registerActivityBinding.updateSyncStatus(state)
       }
     }

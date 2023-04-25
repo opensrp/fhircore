@@ -186,7 +186,7 @@ class HivRegisterDaoTest : RobolectricTest() {
 
     coEvery { fhirEngine.update(any()) } just runs
 
-    coEvery { fhirEngine.search<Resource>(any()) } answers
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
       {
         val search = firstArg<Search>()
         when (search.type) {

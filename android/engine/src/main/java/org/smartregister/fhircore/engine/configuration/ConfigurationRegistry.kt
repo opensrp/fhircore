@@ -20,6 +20,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -202,8 +203,8 @@ constructor(
    * section components are grouped by resource type ,ids concatenated (with comma separator), and a
    * search query path generated in the format 'Resource Type'?_id='comma separated list of ids'
    */
-  fun fetchNonWorkflowConfigResources() {
-    CoroutineScope(dispatcherProvider.io()).launch {
+  fun fetchNonWorkflowConfigResources(ioDispatcher: CoroutineDispatcher = dispatcherProvider.io()) {
+    CoroutineScope(ioDispatcher).launch {
       try {
         Timber.i("Fetching non-workflow resources for app $appId")
         repository

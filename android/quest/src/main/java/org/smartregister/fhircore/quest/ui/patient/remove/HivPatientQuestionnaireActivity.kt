@@ -18,8 +18,6 @@ package org.smartregister.fhircore.quest.ui.patient.remove
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import org.hl7.fhir.r4.model.Patient
@@ -35,16 +33,12 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
 
   private val viewModel by viewModels<HivPatientViewModel>()
 
-  private lateinit var btnRemove: Button
   private lateinit var profileId: String
   private lateinit var profileName: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     profileId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-    btnRemove = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
-    btnRemove.text = setRemoveButtonText()
 
     viewModel.apply {
       isRemoved.observe(this@HivPatientQuestionnaireActivity) { if (it) onRemove() }
@@ -70,10 +64,10 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
     profileName = profile.extractName()
   }
 
-  override fun onClick(view: View) {
-    if (view.id == org.smartregister.fhircore.engine.R.id.btn_save_client_info) {
-      handleQuestionnaireSubmit()
-    }
+  override fun submitButtonText(): String = setRemoveButtonText()
+
+  override fun onSubmitRequestResult() {
+    handleQuestionnaireSubmit()
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
