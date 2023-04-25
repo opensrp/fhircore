@@ -328,9 +328,7 @@ constructor(
       paramsList
         ?.filter {
           (it.paramType == ActionParameterType.PARAMDATA ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
-            it.value.isNotEmpty() &&
-            it.isFilterParam == true
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
         ?.associate { it.key to it.value }
         ?: emptyMap()

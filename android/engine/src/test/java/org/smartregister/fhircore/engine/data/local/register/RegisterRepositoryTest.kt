@@ -289,7 +289,6 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramsName",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing1",
-          isFilterParam = true,
           dataType = DataType.STRING,
           linkId = null
         ),
@@ -297,7 +296,6 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramName2",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing2",
-          isFilterParam = true,
           dataType = DataType.STRING,
           linkId = null
         ),
@@ -305,7 +303,6 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramName3",
           paramType = ActionParameterType.PREPOPULATE,
           value = "testing3",
-          isFilterParam = true,
           dataType = DataType.STRING,
           linkId = null
         ),
@@ -349,7 +346,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramName2",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing2",
-          dataType = DataType.INTEGER,
+          dataType = DataType.STRING,
           linkId = null
         ),
       )

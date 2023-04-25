@@ -74,6 +74,5 @@ data class ActionParameter(
   val paramType: ActionParameterType? = null,
   val dataType: Enumerations.DataType? = null,
   val value: String,
-  val linkId: String? = null,
-  val isFilterParam: Boolean? = false
+  val linkId: String? = null
 ) : Parcelable
