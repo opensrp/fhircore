@@ -150,11 +150,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         )
       }
       if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        Timber.e("Before triggering RefreshCache event +++++++")
         lifecycleScope.launch {
-          Timber.e(" lifecycle scope calling event bus trigger RefreshCache event updated +++++++")
           eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
-          Timber.e(" After lifecycle scope calling event bus trigger RefreshCache event updated +++++++")
         }
       }
     }

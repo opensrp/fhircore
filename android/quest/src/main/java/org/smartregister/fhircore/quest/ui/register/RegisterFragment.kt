@@ -260,8 +260,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
     viewLifecycleOwner.lifecycleScope.launch {
-      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        Timber.e("viewLifecycleOwner EventBus events are +++++++ ${eventBus.events.replayCache}")
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         eventBus.events.filter { event -> event is AppEvent.RefreshCache }.collectLatest { handleRefreshLiveData() }
 
       }
@@ -270,7 +269,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   }
 
   fun handleRefreshLiveData() {
-    Timber.e("handleRefreshLiveData Triggering +++++++")
         with(registerFragmentArgs) {
           registerViewModel.retrieveRegisterUiState(
             registerId = registerId,

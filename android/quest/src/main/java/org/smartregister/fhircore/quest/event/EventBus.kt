@@ -17,18 +17,16 @@
 package org.smartregister.fhircore.quest.event
 
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import timber.log.Timber
 
+@Singleton
 class EventBus @Inject constructor() {
   private val _events = MutableSharedFlow<AppEvent>(replay = 1)
   val events = _events.asSharedFlow()
 
   suspend fun triggerEvent(event: AppEvent) {
-    Timber.e("In trigger events before emit")
     _events.emit(event)
-    Timber.e("In trigger events. _events = $_events")
-    Timber.e("In trigger events. events = ${events.replayCache}")
   }
 }
