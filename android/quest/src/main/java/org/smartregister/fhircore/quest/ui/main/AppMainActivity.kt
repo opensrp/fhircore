@@ -171,12 +171,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     }
   }
 
-  fun setupTimeOutListener() {
+  private fun setupTimeOutListener() {
     if (application is QuestApplication) {
       (application as QuestApplication).onInActivityListener =
         object : OnInActivityListener {
           override fun onTimeout() {
-            appMainViewModel.onTimeOut()
+            appMainViewModel.onTimeOut(application)
           }
         }
     }

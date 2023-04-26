@@ -27,7 +27,6 @@ import okhttp3.Request
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 

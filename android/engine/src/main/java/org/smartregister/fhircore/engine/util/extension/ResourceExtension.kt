@@ -276,6 +276,18 @@ fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
   return list
 }
 
+/**
+ * A function that extracts only the UUID part of a resource logicalId.
+ *
+ * Examples:
+ *
+ * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
+ * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ *
+ * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ */
+fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
+
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
 }

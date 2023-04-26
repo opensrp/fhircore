@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.login
+package org.smartregister.fhircore.engine.data.remote.auth
 
-enum class LoginErrorState {
-  UNKNOWN_HOST,
-  INVALID_CREDENTIALS,
-  MULTI_USER_LOGIN_ATTEMPT,
-  ERROR_FETCHING_USER
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import retrofit2.Response
+import retrofit2.http.GET
+
+interface KeycloakService {
+  @GET("protocol/openid-connect/userinfo") suspend fun fetchUserInfo(): Response<UserInfo?>
 }

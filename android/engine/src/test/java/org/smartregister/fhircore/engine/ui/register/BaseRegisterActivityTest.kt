@@ -66,7 +66,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository

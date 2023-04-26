@@ -74,7 +74,7 @@ class AppSettingActivity : AppCompatActivity() {
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
                 if (!isLoggedIn) {
-                  accountAuthenticator.launchLoginScreen()
+                  appSettingViewModel.launchLoginScreen(this@AppSettingActivity)
                 } else {
                   loginService.loginActivity = this@AppSettingActivity
                   loginService.navigateToHome()
@@ -94,7 +94,7 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
-              accountAuthenticator.launchLoginScreen()
+              appSettingViewModel.launchLoginScreen(this@AppSettingActivity)
               finish()
             } else {
               launch(dispatcherProvider.main()) {

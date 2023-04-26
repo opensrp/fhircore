@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.login
+package org.smartregister.fhircore.engine.util
 
-enum class LoginErrorState {
-  UNKNOWN_HOST,
-  INVALID_CREDENTIALS,
-  MULTI_USER_LOGIN_ATTEMPT,
-  ERROR_FETCHING_USER
+enum class SharedPreferenceKey {
+  APP_ID,
+  LAST_SYNC_TIMESTAMP,
+  LANG,
+  PRACTITIONER_ID,
+  PRACTITIONER_DETAILS,
+  PRACTITIONER_LOCATION_HIERARCHIES,
+  THEME,
+  REMOTE_SYNC_RESOURCES,
+  OVERDUE_TASK_LAST_AUTHORED_ON_DATE,
+  LOGIN_CREDENTIAL_KEY,
+  LOGIN_PIN_KEY
 }

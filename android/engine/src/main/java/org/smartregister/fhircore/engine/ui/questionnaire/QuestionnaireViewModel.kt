@@ -42,7 +42,6 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -59,7 +58,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
@@ -77,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -111,9 +111,9 @@ constructor(
   }
 
   private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
+    sharedPreferencesHelper.read<PractitionerDetails>(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      decodeWithGson = true
     )
   }
 

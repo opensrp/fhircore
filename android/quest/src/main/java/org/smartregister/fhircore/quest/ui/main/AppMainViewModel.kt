@@ -16,21 +16,14 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.app.Activity
-import android.content.Intent
+import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
@@ -41,15 +34,24 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
 
 @HiltViewModel
 class AppMainViewModel
@@ -91,9 +93,9 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      AppMainEvent.Logout -> accountAuthenticator.logout()
+      is AppMainEvent.Logout -> accountAuthenticator.logout(event.context)
       is AppMainEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, event.language.tag)
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
           (this as Activity).refresh()
@@ -101,29 +103,24 @@ constructor(
       }
       is AppMainEvent.SyncData -> {
         appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = false)
-        accountAuthenticator.loadActiveAccount(
-          onActiveAuthTokenFound = {
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            run(resumeSync)
-          },
-          onValidTokenMissing = { onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth)) }
-        )
+        appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+        run(resumeSync)
       }
       is AppMainEvent.RefreshAuthToken -> {
         Timber.e("Refreshing token")
-        accountAuthenticator.refreshSessionAuthToken { accountBundleFuture ->
-          val bundle = accountBundleFuture.result
-          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
-            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
-              return@let
-            }
-            intent!!
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-            event.launchManualAuth(intent)
-          }
-        }
+//        accountAuthenticator.refreshSessionAuthToken { accountBundleFuture ->
+//          val bundle = accountBundleFuture.result
+//          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
+//            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+//              syncBroadcaster.runSync()
+//              return@let
+//            }
+//            intent!!
+//            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+//            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+//            event.launchManualAuth(intent)
+//          }
+//        }
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)
@@ -162,7 +159,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
       )
       .displayName
 
@@ -176,18 +173,19 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
-      LAST_SYNC_TIMESTAMP,
-      formatLastSyncTimestamp(timestamp),
-      async = true
+            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+            formatLastSyncTimestamp(timestamp)
     )
   }
 
-  fun onTimeOut() {
-    accountAuthenticator.invalidateAccount()
+  fun onTimeOut(context: Context) {
+    accountAuthenticator.invalidateSession {
+      context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
+    }
   }
 
   fun onTaskComplete(id: String?) {

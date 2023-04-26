@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.login
+package org.smartregister.fhircore.engine.util.extension
 
-enum class LoginErrorState {
-  UNKNOWN_HOST,
-  INVALID_CREDENTIALS,
-  MULTI_USER_LOGIN_ATTEMPT,
-  ERROR_FETCHING_USER
-}
+/**
+ * Get the practitioner endpoint url and append the keycloak-uuid. The original String is assumed to
+ * be a keycloak-uuid.
+ */
+// fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+fun String.practitionerEndpointUrl(): String = "Practitioner?identifier=$this"

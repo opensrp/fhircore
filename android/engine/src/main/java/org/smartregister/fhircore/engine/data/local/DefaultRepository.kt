@@ -171,6 +171,20 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
+  suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
+    return withContext(dispatcherProvider.io()) {
+      resource.onEach {
+        it.generateMissingId()
+        // TODO: Migrate to using this instead of save
+        //        if (addResourceTags) {
+        //          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+        //        }
+      }
+
+      fhirEngine.create(*resource)
+    }
+  }
+
   suspend fun delete(resource: Resource) {
     return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
   }

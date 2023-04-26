@@ -224,6 +224,7 @@ dependencies {
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+    api "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
     def okhttpVersion = '4.9.1'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"

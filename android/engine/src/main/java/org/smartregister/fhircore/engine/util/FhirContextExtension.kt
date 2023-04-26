@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.login
+package org.smartregister.fhircore.engine.util
 
-enum class LoginErrorState {
-  UNKNOWN_HOST,
-  INVALID_CREDENTIALS,
-  MULTI_USER_LOGIN_ATTEMPT,
-  ERROR_FETCHING_USER
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import org.smartregister.model.location.LocationHierarchy
+import org.smartregister.model.practitioner.FhirPractitionerDetails
+import org.smartregister.model.practitioner.PractitionerDetails
+
+fun FhirContext.getCustomJsonParser(): IParser {
+  return this.apply {
+      registerCustomTypes(
+        listOf(
+          PractitionerDetails::class.java,
+          FhirPractitionerDetails::class.java,
+          LocationHierarchy::class.java,
+        )
+      )
+    }
+    .newJsonParser()
 }

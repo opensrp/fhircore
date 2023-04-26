@@ -31,11 +31,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import javax.inject.Inject
-import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -43,10 +38,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
@@ -58,6 +52,12 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIn
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.model.practitioner.PractitionerDetails
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+import kotlin.math.ceil
 
 @HiltViewModel
 class MeasureReportViewModel
@@ -99,9 +99,9 @@ constructor(
     MutableStateFlow(emptyFlow())
 
   private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
+    sharedPreferencesHelper.read<PractitionerDetails>(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      decodeWithGson = true
     )
   }
 

@@ -29,6 +29,8 @@ import org.hl7.fhir.r4.model.DateType
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 
+fun today(): Date = DateTimeType.today().value
+
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
 }
