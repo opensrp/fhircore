@@ -187,14 +187,15 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   @OptIn(ExperimentalMaterialApi::class)
-  fun testRetrieveRegisterUiStateIsCalledWhenDataRefreshLivedataIsTrue() {
+  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
     val registerFragmentSpy = spyk(registerFragment)
     val registerViewModel = mockk<RegisterViewModel>()
     every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
     every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
 
-    registerFragmentSpy.appMainViewModel.dataRefreshLivedata.postValue(true)
-    every {
+    registerFragmentSpy.handleRefreshLiveData()
+
+    verify {
       registerViewModel.retrieveRegisterUiState(
         registerId = "householdRegister",
         screenTitle = "All HouseHolds",
