@@ -214,8 +214,12 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
+        exclude group: 'com.google.android.fhir', module: 'knowledge'
+        exclude group: 'org.smartregister', module: 'knowledger'
         exclude group: 'com.github.ben-manes.caffeine'
     }
+
+    api('org.smartregister:knowledger:0.1.0-alpha001-preview-SNAPSHOT')
 
     api('org.smartregister:contrib-barcode:0.1.0-beta3-preview5-SNAPSHOT') {
         transitive = true
