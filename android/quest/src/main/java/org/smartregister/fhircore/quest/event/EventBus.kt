@@ -26,7 +26,5 @@ class EventBus @Inject constructor() {
   private val _events = MutableSharedFlow<AppEvent>(replay = 1)
   val events = _events.asSharedFlow()
 
-  suspend fun triggerEvent(event: AppEvent) {
-    _events.emit(event)
-  }
+  suspend fun triggerEvent(event: AppEvent) = _events.emit(event)
 }

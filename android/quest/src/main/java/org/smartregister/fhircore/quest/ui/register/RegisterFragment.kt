@@ -276,8 +276,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         clearCache = true
       )
     }
-    // reset value
-    appMainViewModel.dataRefreshLivedata.value = false
   }
 
   /**
