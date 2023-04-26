@@ -35,13 +35,17 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val questFhirEngine: FhirEngine
+  val questFhirEngine: FhirEngine,
+  val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    ResourceParamsBasedDownloadWorkManager(syncParams = syncListenerManager.loadSyncParams())
+    ResourceParamsBasedDownloadWorkManager(
+      syncParams = syncListenerManager.loadSyncParams(),
+      context = appTimeStampContext
+    )
 
   override fun getFhirEngine(): FhirEngine = questFhirEngine
 }
