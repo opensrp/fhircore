@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.event
 
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+
 sealed class AppEvent {
   object Login : AppEvent()
   object Logout : AppEvent()
+  data class RefreshCache(val questionnaireConfig: QuestionnaireConfig) : AppEvent()
 }
