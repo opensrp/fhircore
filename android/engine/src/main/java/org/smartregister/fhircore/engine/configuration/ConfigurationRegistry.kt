@@ -78,8 +78,8 @@ constructor(
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
    * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
    * you are passing data across screens, then later using it in DataQueries and to retrieve
-   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm
-   * that the params used in the DataQuery are passed when retrieving the configurations.
+   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
+   * params used in the DataQuery are passed when retrieving the configurations.
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
