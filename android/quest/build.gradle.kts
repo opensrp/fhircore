@@ -19,6 +19,13 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
+  id("org.sonarqube") version "3.5.0.2730"
+}
+
+sonar {
+  properties {
+    property("sonar.projectKey", "fhircore")
+  }
 }
 
 android {
