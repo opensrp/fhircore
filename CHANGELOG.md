@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Invalidation/refresh cache after form completion
 - Logout while offline causes flicker(multiple render) of Login Page
+- Successful subsequent login even when PractitionerDetails is not saved 
 
 ### Changed
 - 
