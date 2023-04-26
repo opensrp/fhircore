@@ -71,13 +71,9 @@ import timber.log.Timber
 @ExperimentalMaterialApi
 @AndroidEntryPoint
 class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmission?> {
-
   @Inject lateinit var syncListenerManager: SyncListenerManager
-
   @Inject lateinit var eventBus: EventBus
-
   @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
-
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
   private val registerViewModel by viewModels<RegisterViewModel>()
