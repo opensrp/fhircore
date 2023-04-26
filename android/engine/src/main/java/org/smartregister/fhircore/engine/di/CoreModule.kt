@@ -60,18 +60,21 @@ class CoreModule {
   @Singleton
   @Provides
   fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
-          KnowledgeManager.create(context)
+    KnowledgeManager.create(context)
+
+  @Singleton @Provides fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
 
   @Singleton
   @Provides
-  fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
-
-  @Singleton
-  @Provides
-  fun provideFhirOperator(fhirEngine: FhirEngine, fhirContext: FhirContext, @ApplicationContext context: Context, knowledgeManager: KnowledgeManager): FhirOperator =
+  fun provideFhirOperator(
+    fhirEngine: FhirEngine,
+    fhirContext: FhirContext,
+    @ApplicationContext context: Context,
+    knowledgeManager: KnowledgeManager
+  ): FhirOperator =
     FhirOperatorBuilder(context)
-            .withFhirEngine(fhirEngine)
-            .withFhirContext(fhirContext)
-            .withIgManager(knowledgeManager)
-            .build()
+      .withFhirEngine(fhirEngine)
+      .withFhirContext(fhirContext)
+      .withIgManager(knowledgeManager)
+      .build()
 }
