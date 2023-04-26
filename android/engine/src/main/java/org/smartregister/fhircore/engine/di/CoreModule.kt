@@ -21,7 +21,9 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
+import com.google.android.fhir.workflow.FhirOperatorBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,6 +59,19 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
-    FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
+          KnowledgeManager.create(context)
+
+  @Singleton
+  @Provides
+  fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
+
+  @Singleton
+  @Provides
+  fun provideFhirOperator(fhirEngine: FhirEngine, fhirContext: FhirContext, @ApplicationContext context: Context, knowledgeManager: KnowledgeManager): FhirOperator =
+    FhirOperatorBuilder(context)
+            .withFhirEngine(fhirEngine)
+            .withFhirContext(fhirContext)
+            .withIgManager(knowledgeManager)
+            .build()
 }
