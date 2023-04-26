@@ -44,7 +44,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       "**/org/smartregister/fhircore/engine/configuration/view/CardViewProperties*.*",
       "**/org/smartregister/fhircore/engine/configuration/view/ColumnProperties*.*",
       "**/org/smartregister/fhircore/engine/configuration/view/CompoundTextProperties*.*",
-      "**/org/smartregister/fhircore/engine/configuration/view/ListProperties&*.*",
+      "**/org/smartregister/fhircore/engine/configuration/view/ListProperties*.*",
       "**/org/smartregister/fhircore/engine/configuration/view/PersonalDataProperties*.*",
       "**/org/smartregister/fhircore/engine/configuration/view/RowProperties*.*",
       "**/org/smartregister/fhircore/engine/configuration/view/ServiceCardProperties*.*",
