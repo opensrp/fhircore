@@ -92,11 +92,17 @@ group ExtractTask(
         } "r_cp_task";
 
         // partof
-         subject-> evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence-1).toString())) as preReqDosage then{// OPV 1
-                   subject -> task.partOf = create('Reference') as ref then {
-                              subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value = preReqDosage).last().id) "r_task_ref_id";
-                   } "r_task_part_of";
-        } "r_des";
+        subject -> evaluate(definition,$this.dosage.skip(version).first().select((sequence-1).toString())) as sequence then {
+        subject where(sequence.empty().not()) then{
+                     subject-> evaluate(definition,$this.product.text + ' ' +sequence) as preReqDosage then{
+                               subject -> task.partOf = create('Reference') as ref then {
+                                      subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value = preReqDosage).last().id) "r_task_ref_id";
+                               } "r_task_part_of";
+                    } "r_des";
+        }"r_conditional";
+
+        }"r_sequence";
+
     } "r_task";
 }
 
