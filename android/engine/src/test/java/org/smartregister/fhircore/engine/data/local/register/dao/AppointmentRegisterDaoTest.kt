@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -73,7 +74,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
       buildPatient("1", "doe", "john", 50)
 
-    coEvery { fhirEngine.search<Group>(any()) } returns emptyList()
+    coEvery { fhirEngine.search<Group>(any<Search>()) } returns emptyList()
 
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 

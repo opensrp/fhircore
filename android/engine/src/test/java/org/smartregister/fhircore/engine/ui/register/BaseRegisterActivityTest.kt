@@ -34,6 +34,7 @@ import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -395,8 +396,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSync_with_syncStatus_inProgress() {
+    val syncOp = SyncOperation.values().asSequence().shuffled().first()
+
     // Status Sync InProgress
-    testRegisterActivity.onSync(SyncJobStatus.InProgress(ResourceType.Patient))
+    testRegisterActivity.onSync(SyncJobStatus.InProgress(syncOperation = syncOp))
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(

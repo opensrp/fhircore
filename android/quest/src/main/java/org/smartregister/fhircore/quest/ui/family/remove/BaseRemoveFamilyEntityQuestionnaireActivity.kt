@@ -18,8 +18,6 @@ package org.smartregister.fhircore.quest.ui.family.remove
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -32,7 +30,6 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
 
   abstract val viewModel: BaseRemoveFamilyEntityViewModel<T>
 
-  private lateinit var btnRemove: Button
   private lateinit var profileId: String
   lateinit var profileName: String
   lateinit var familyId: String
@@ -41,8 +38,6 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
     super.onCreate(savedInstanceState)
     profileId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     familyId = intent.extras?.getString(NavigationArg.FAMILY_ID) ?: ""
-    btnRemove = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
-    btnRemove.text = setRemoveButtonText()
 
     viewModel.apply {
       isRemoved.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) onRemove() }
@@ -66,10 +61,10 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
 
   abstract fun onReceive(profile: T)
 
-  override fun onClick(view: View) {
-    if (view.id == org.smartregister.fhircore.engine.R.id.btn_save_client_info) {
-      handleQuestionnaireSubmit()
-    }
+  override fun submitButtonText(): String = setRemoveButtonText()
+
+  override fun onSubmitRequestResult() {
+    handleQuestionnaireSubmit()
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

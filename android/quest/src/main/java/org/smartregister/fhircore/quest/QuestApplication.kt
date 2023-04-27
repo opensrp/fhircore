@@ -33,9 +33,10 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirXFhirQueryResolver
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -45,7 +46,7 @@ class QuestApplication :
 
   @Inject lateinit var workerFactory: HiltWorkerFactory
 
-  @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
@@ -111,8 +112,10 @@ class QuestApplication :
     configuration =
       configuration
         ?: DataCaptureConfig(
-          attachmentResolver = referenceAttachmentResolver,
-          xFhirQueryResolver = xFhirQueryResolver
+          urlResolver = referenceUrlResolver,
+          xFhirQueryResolver = xFhirQueryResolver,
+          questionnaireItemViewHolderFactoryMatchersProviderFactory =
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
         )
     return configuration as DataCaptureConfig
   }

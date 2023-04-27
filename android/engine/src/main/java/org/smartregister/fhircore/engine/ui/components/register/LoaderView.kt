@@ -24,9 +24,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,18 +39,27 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val LOADER_DIALOG_PROGRESS_BAR_TAG = "loaderDialogProgressBarTag"
 const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
+const val LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG = "loaderDialogSyncProgressStateTextTag"
 
 @Composable
-fun LoaderDialog(modifier: Modifier = Modifier) {
+fun LoaderDialog(
+  modifier: Modifier = Modifier,
+  dialogMessage: String = stringResource(id = R.string.syncing),
+  syncProgressStateFlow: StateFlow<String> = MutableStateFlow("")
+) {
   val openDialog = remember { mutableStateOf(true) }
+  val syncProgressState = syncProgressStateFlow.collectAsState()
+  val syncProgressStateText by remember { syncProgressState }
+
   if (openDialog.value) {
     Dialog(
       onDismissRequest = { openDialog.value = true },
@@ -70,16 +82,28 @@ fun LoaderDialog(modifier: Modifier = Modifier) {
             ) {
               CircularProgressIndicator(
                 color = Color.White,
-                strokeWidth = 4.dp,
-                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(32.dp),
+                strokeWidth = 3.dp,
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(40.dp),
               )
+
               Text(
-                fontSize = 16.sp,
+                text = dialogMessage,
+                style = MaterialTheme.typography.h5,
                 color = Color.White,
-                text = stringResource(id = R.string.syncing),
-                modifier =
-                  modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(8.dp)
               )
+
+              if (syncProgressStateText.isNotBlank()) {
+                Text(
+                  color = Color.White,
+                  style = MaterialTheme.typography.subtitle1,
+                  text = syncProgressStateText,
+                  modifier =
+                    modifier
+                      .testTag(LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG)
+                      .padding(top = 4.dp),
+                )
+              }
             }
           }
         }
@@ -88,9 +112,23 @@ fun LoaderDialog(modifier: Modifier = Modifier) {
   }
 }
 
-@Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
+@Composable
+fun LoaderPreviewDownload() {
+  LoaderDialog(syncProgressStateFlow = MutableStateFlow("75% downloaded"))
+}
+
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+@Composable
+fun LoaderPreviewUpload() {
+  LoaderDialog(syncProgressStateFlow = MutableStateFlow("25% uploaded"))
+}
+
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+@Composable
 fun LoaderPreview() {
   LoaderDialog()
 }

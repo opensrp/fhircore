@@ -22,17 +22,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.whenResumed
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.isPaginated
+import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
@@ -52,6 +55,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl.DEFAULT_PROVIDER
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -84,7 +88,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected var clientIdentifier: String? = null
 
-  lateinit var fragment: FhirCoreQuestionnaireFragment
+  lateinit var fragment: QuestionnaireFragment
 
   private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -110,25 +114,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // some init operations running on a separate thread and causing a crash
     questionnaireViewModel.sharedPreferencesHelper
 
-    lifecycleScope.launch(dispatcherProvider.io()) {
-      loadQuestionnaireAndConfig(formName)
-
-      withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
-
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null || !this@QuestionnaireActivity::fragment.isInitialized) {
-        renderFragment()
+    lifecycleScope.launch {
+      withContext(dispatcherProvider.io()) {
+        loadQuestionnaireAndConfig(formName)
+        questionnaireViewModel.libraryEvaluator.initialize()
       }
 
       withContext(dispatcherProvider.main()) {
-        updateViews()
-        fragment.whenStarted { loadProgress.dismiss() }
-      }
-    }
+        // Only add the fragment once, when the activity is first created.
+        if (savedInstanceState == null || !this@QuestionnaireActivity::fragment.isInitialized) {
+          renderFragment()
+        }
 
-    questionnaireViewModel.saveButtonEnabledLiveData.observe(this) {
-      findViewById<Button>(R.id.btn_save_client_info).isEnabled = it
-      findViewById<View>(R.id.progress).visibility = if (it) View.VISIBLE else View.GONE
+        updateViews()
+        fragment.whenResumed { loadProgress.dismiss() }
+      }
     }
   }
 
@@ -138,18 +138,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setOnClickListener(this@QuestionnaireActivity)
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).apply {
-      setOnClickListener(this@QuestionnaireActivity)
-      if (questionnaireType.isReadOnly() || questionnaire.experimental) {
-        text = context.getString(R.string.done)
-      } else if (questionnaireType.isEditMode()) {
-        // setting the save button text from Questionnaire Config
-        text =
-          questionnaireConfig.saveButtonText
-            ?: getString(R.string.questionnaire_alert_submit_button_title)
-      }
-    }
-
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
       title = questionnaireConfig.title
@@ -157,41 +145,85 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
-    fragment =
-      FhirCoreQuestionnaireFragment().apply {
-        val questionnaireString = parser.encodeResourceToString(questionnaire)
+    val questionnaireString = parser.encodeResourceToString(questionnaire)
+    val questionnaireResponse: QuestionnaireResponse?
+    if (clientIdentifier != null) {
+      setBarcode(questionnaire, clientIdentifier!!, true)
+      questionnaireResponse =
+        questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+    } else {
+      questionnaireResponse =
+        intent
+          .getStringExtra(QUESTIONNAIRE_RESPONSE)
+          ?.decodeResourceFromString<QuestionnaireResponse>()
+          ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+      if (questionnaireType.isReadOnly()) requireNotNull(questionnaireResponse)
+    }
 
-        // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
-        // pass questionnaire and questionnaire-response to fragment
-        // 1- editmode -> assert and pass response from intent
-        // 2- readonly -> assert and pass response from intent
-        // 3- default -> process, populate and pass response/data from intent if exists
-        arguments =
-          bundleOf(
-            Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString),
-            Pair(QuestionnaireFragment.EXTRA_ENABLE_REVIEW_PAGE, questionnaire.isPaginated)
-          )
-            .apply {
-              var questionnaireResponse =
-                intent
-                  .getStringExtra(QUESTIONNAIRE_RESPONSE)
-                  ?.decodeResourceFromString<QuestionnaireResponse>()
-                  ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+    val questionnaireFragmentBuilder =
+      QuestionnaireFragment.builder()
+        .setQuestionnaire(questionnaireString)
+        .showReviewPageBeforeSubmit(questionnaire.isPaginated)
+        .setShowSubmitButton(true)
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
+        .setIsReadOnly(questionnaireType.isReadOnly())
+    questionnaireResponse?.let {
+      questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
+    }
+    intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
+      questionnaireFragmentBuilder.setQuestionnaireResourceContext(it)
+    }
 
-              if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
-
-              if (clientIdentifier != null) {
-                setBarcode(questionnaire, clientIdentifier!!, true)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
-                this.putString(
-                  QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                  questionnaireResponse.encodeResourceToString()
-                )
-              }
+    fragment = questionnaireFragmentBuilder.build()
+    supportFragmentManager.registerFragmentLifecycleCallbacks(
+      object : FragmentManager.FragmentLifecycleCallbacks() {
+        override fun onFragmentViewCreated(
+          fm: FragmentManager,
+          f: Fragment,
+          v: View,
+          savedInstanceState: Bundle?
+        ) {
+          super.onFragmentViewCreated(fm, f, v, savedInstanceState)
+          if (f is QuestionnaireFragment) {
+            v.findViewById<Button>(R.id.submit_questionnaire)?.apply {
+              layoutParams.width =
+                ViewGroup.LayoutParams
+                  .MATCH_PARENT // Override by Styles xml does not seem to work for this layout
+              // param
+              text = submitButtonText()
             }
-      }
-    supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+          }
+        }
+      },
+      false
+    )
+    supportFragmentManager.commit { replace(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+    supportFragmentManager.setFragmentResultListener(
+      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
+      this
+    ) { _, _ -> onSubmitRequestResult() }
+
+    supportFragmentManager.addFragmentOnAttachListener { _, frag ->
+      Timber.e(frag.tag?.uppercase())
+    }
+  }
+
+  open fun submitButtonText(): String {
+    return if (questionnaireType.isReadOnly() || questionnaire.experimental) {
+      getString(R.string.done)
+    } else if (questionnaireType.isEditMode()) {
+      // setting the save button text from Questionnaire Config
+      questionnaireConfig.saveButtonText
+        ?: getString(R.string.questionnaire_alert_submit_button_title)
+    } else getString(R.string.questionnaire_alert_submit_button_title)
+  }
+
+  open fun onSubmitRequestResult() {
+    if (questionnaireType.isReadOnly()) {
+      finish()
+    } else {
+      showFormSubmissionConfirmAlert()
+    }
   }
 
   suspend fun loadQuestionnaireAndConfig(formName: String) =
@@ -231,13 +263,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onClick(view: View) {
-    if (view.id == R.id.btn_save_client_info) {
-      if (questionnaireType.isReadOnly()) {
-        finish()
-      } else {
-        showFormSubmissionConfirmAlert()
-      }
-    } else if (view.id == R.id.btn_edit_qr) {
+    if (view.id == R.id.btn_edit_qr) {
       questionnaireType = QuestionnaireType.EDIT
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
@@ -431,10 +457,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
-
-    fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
-    fun Intent.populationResources() =
-      this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
+    const val QUESTIONNAIRE_LAUNCH_CONTEXT =
+      "org.smartregister.fhircore.engine.ui.questionnaire.launchContext"
 
     fun intentArgs(
       clientIdentifier: String? = null,
@@ -443,6 +467,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
+      launchContext: Resource? = null,
       populationResources: ArrayList<out Resource> = ArrayList()
     ) =
       bundleOf(
@@ -462,6 +487,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               QUESTIONNAIRE_POPULATION_RESOURCES,
               resourcesList.toCollection(ArrayList())
             )
+          }
+          launchContext?.let {
+            putString(QUESTIONNAIRE_LAUNCH_CONTEXT, it.encodeResourceToString())
           }
         }
   }

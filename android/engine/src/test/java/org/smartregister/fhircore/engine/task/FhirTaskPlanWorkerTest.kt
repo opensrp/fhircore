@@ -27,6 +27,7 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -89,7 +90,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
       )
 
-    coEvery { fhirEngine.search<Task>(any()) } returns tasks
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
     coEvery { fhirEngine.update(any()) } just runs
 
     val result = fhirTaskPlanWorker.doWork()
