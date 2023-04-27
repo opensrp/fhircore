@@ -206,7 +206,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
-    api('org.smartregister:workflow:0.1.0-alpha02-preview10-SNAPSHOT') {
+    api('org.smartregister:workflow:0.1.0-alpha02-preview9-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
