@@ -28,6 +28,7 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -63,6 +65,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+
+  @BindValue val eventBus: EventBus = mockk()
 
   lateinit var appMainActivity: AppMainActivity
 
@@ -188,7 +192,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       questionnaireSubmissionLiveData
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
-    every { appMainViewModel.dataRefreshLivedata } returns refreshLiveDataMock
     every { appMainActivity.appMainViewModel } returns appMainViewModel
 
     appMainActivity.onSubmitQuestionnaire(
@@ -213,7 +216,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    verify { refreshLiveDataMock.postValue(true) }
+    coVerify { eventBus.triggerEvent(any()) }
   }
 
   @Test

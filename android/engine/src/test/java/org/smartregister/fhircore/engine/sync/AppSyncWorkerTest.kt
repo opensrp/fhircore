@@ -37,12 +37,14 @@ class AppSyncWorkerTest : RobolectricTest() {
     val syncListenerManager = mockk<SyncListenerManager>()
     val fhirEngine = mockk<FhirEngine>()
     val taskExecutor = mockk<TaskExecutor>()
+    val timeContext = mockk<AppTimeStampContext>()
 
     every { taskExecutor.backgroundExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
     every { syncListenerManager.loadSyncParams() } returns syncParams
 
-    val appSyncWorker = AppSyncWorker(mockk(), workerParams, syncListenerManager, fhirEngine)
+    val appSyncWorker =
+      AppSyncWorker(mockk(), workerParams, syncListenerManager, fhirEngine, timeContext)
 
     appSyncWorker.getDownloadWorkManager()
     verify { syncListenerManager.loadSyncParams() }

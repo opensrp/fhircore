@@ -36,16 +36,17 @@ interface QuestionnaireHandler {
     questionnaireConfig: QuestionnaireConfig? = null,
     actionParams: List<ActionParameter> = emptyList()
   ) {
-    startForResult.launch(
-      Intent(context, QuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            questionnaireConfig = questionnaireConfig,
-            actionParams = actionParams
+    if (questionnaireConfig != null)
+      startForResult.launch(
+        Intent(context, QuestionnaireActivity::class.java)
+          .putExtras(
+            QuestionnaireActivity.intentArgs(
+              questionnaireConfig = questionnaireConfig,
+              actionParams = actionParams
+            )
           )
-        )
-        .putExtras(intentBundle)
-    )
+          .putExtras(intentBundle)
+      )
   }
 
   fun onSubmitQuestionnaire(activityResult: ActivityResult)
