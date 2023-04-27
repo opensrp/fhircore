@@ -224,11 +224,7 @@ constructor(
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
-          if (!bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group) &&
-              !bundleEntry.hasResource()
-          ) {
-            loadResourceFromQuestionnaireResponse(questionnaireResponse)
-          }
+          updateResourceLastUpdatedLinkedAsSubjects(questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -243,6 +239,7 @@ constructor(
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
         }
+        updateResourceLastUpdatedLinkedAsSubjects(questionnaireResponse)
 
         if (questionnaire.experimental) {
           Timber.w(
@@ -583,7 +580,7 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
-  private suspend fun loadResourceFromQuestionnaireResponse(
+  private suspend fun updateResourceLastUpdatedLinkedAsSubjects(
     questionnaireResponse: QuestionnaireResponse
   ) {
     if (questionnaireResponse.hasSubject() && questionnaireResponse.subject.hasReference()) {
@@ -596,17 +593,19 @@ constructor(
           .resourceClassType()
           .newInstance()
           .resourceType
-      defaultRepository.loadResource(resourceId, resourceType).let {
-        it.updateLastUpdated()
-        defaultRepository.addOrUpdate(true, it)
+      resourceType.let {
+        if (it.isIn(ResourceType.Patient, ResourceType.Group)) {
+          defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+            resource.updateLastUpdated()
+            defaultRepository.addOrUpdate(true, resource)
+          }
+        }
       }
     }
   }
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
-    private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
     private const val STRING_INTERPOLATION_PREFIX = "@{"
   }
 }
