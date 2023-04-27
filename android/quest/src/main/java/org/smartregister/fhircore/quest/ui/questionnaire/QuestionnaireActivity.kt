@@ -42,8 +42,6 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -136,9 +134,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
             finish()
           } else {
-            if (questionnaireConfig.taskId != null) {
-              setTaskId(thisQuestionnaire, questionnaireConfig.taskId!!)
-            }
             questionnaire = thisQuestionnaire
 
             // Only add the fragment once, when the activity is first created.
@@ -222,36 +217,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
 
     return questionnaireResponse?.encodeResourceToString()
-  }
-
-  private fun setTaskId(questionnaire: Questionnaire, taskId: String) {
-    questionnaire.apply {
-      val item =
-        Questionnaire.QuestionnaireItemComponent().apply {
-          text = "TaskId"
-          answerOption.addAll(
-            mutableListOf(
-              Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
-                value = StringType(taskId)
-              }
-            )
-          )
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(taskId))
-            )
-          linkId = "bb342c7f-39a1-4ff7-bc13-28efdc733333"
-          readOnly = true
-          type = Questionnaire.QuestionnaireItemType.STRING
-          addExtension(
-            Extension(
-              "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              BooleanType(true)
-            )
-          )
-        }
-      addItem(item)
-    }
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
