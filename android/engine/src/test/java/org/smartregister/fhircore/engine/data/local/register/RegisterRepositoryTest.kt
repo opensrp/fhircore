@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -31,6 +32,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -220,7 +222,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadProfileDataGivenSecondaryResourcesAreConfigured() {
+  fun loadProfileRelatedAndSecondaryResourcesGivenSecondaryResourcesAreConfigured() {
     val group =
       Group().apply {
         id = "1234567"
@@ -237,10 +239,15 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     runBlocking {
       val profileData =
-        registerRepository.loadProfileBaseResource(
+        registerRepository.loadProfileRelatedAndSecondaryResources(
           profileId = "patientProfile",
           resourceId = "12345",
-          paramsList = emptyArray()
+          paramsList = emptyArray(),
+          listResourceDataMapState = mutableStateMapOf(),
+          resourceData = mockk(),
+          queryResult = RepositoryResourceData.QueryResult.Search(mockk(), LinkedList()),
+          afterFetch = suspend {},
+          fhirResourceConfig = null
         )
       Assert.assertNotNull(profileData)
     }

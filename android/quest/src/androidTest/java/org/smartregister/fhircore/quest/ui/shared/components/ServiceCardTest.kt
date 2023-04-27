@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -35,7 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class ServiceCardTest {
 
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-  private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+  private val resourceData = ResourceData("id", ResourceType.Patient, mutableStateMapOf())
 
   @get:Rule val composeRule = createComposeRule()
 

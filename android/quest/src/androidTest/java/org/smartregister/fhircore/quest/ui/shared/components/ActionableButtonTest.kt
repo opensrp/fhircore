@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -76,7 +78,7 @@ class ActionableButtonTest {
 
   @Test
   fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusSetUsingComputedValues() {
-    setContent("@{ status }", computedValuesMap = mapOf("status" to "DUE"))
+    setContent("@{ status }", computedValuesMap = mutableStateMapOf("status" to "DUE"))
 
     composeRule
       .onNodeWithText("Button Text", useUnmergedTree = true)
@@ -99,7 +101,7 @@ class ActionableButtonTest {
   private fun setContent(
     serviceStatus: String,
     enabled: String = "true",
-    computedValuesMap: Map<String, Any> = emptyMap()
+    computedValuesMap: SnapshotStateMap<String, Any> = mutableStateMapOf()
   ) {
     composeRule.setContent {
       Column(modifier = Modifier.height(50.dp)) {

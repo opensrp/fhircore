@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
@@ -63,7 +64,7 @@ class ProfileScreenTest {
             ResourceData(
               baseResourceId = "patientId",
               baseResourceType = ResourceType.Patient,
-              computedValuesMap = emptyMap()
+              computedValuesMap = mutableStateMapOf()
             ),
           profileConfiguration =
             configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")

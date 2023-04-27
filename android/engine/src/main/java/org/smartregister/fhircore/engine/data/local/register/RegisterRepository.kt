@@ -147,8 +147,7 @@ constructor(
     baseResourceType: ResourceType,
     baseResource: Resource,
     fhirPathExpression: String?,
-    queryResult: RepositoryResourceData.QueryResult.Search? = null,
-    afterFetch: (suspend () -> Unit)? = null
+    queryResult: RepositoryResourceData.QueryResult.Search? = null
   ): LinkedList<RepositoryResourceData> {
 
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
