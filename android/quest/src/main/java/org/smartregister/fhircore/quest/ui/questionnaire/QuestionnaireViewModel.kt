@@ -224,7 +224,7 @@ constructor(
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
-          updateResourceLastUpdatedLinkedAsSubjects(questionnaireResponse)
+          updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -239,7 +239,7 @@ constructor(
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
         }
-        updateResourceLastUpdatedLinkedAsSubjects(questionnaireResponse)
+        updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
         if (questionnaire.experimental) {
           Timber.w(
@@ -580,7 +580,7 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
-  private suspend fun updateResourceLastUpdatedLinkedAsSubjects(
+  suspend fun updateResourceLastUpdatedLinkedAsSubject(
     questionnaireResponse: QuestionnaireResponse
   ) {
     if (questionnaireResponse.hasSubject() && questionnaireResponse.subject.hasReference()) {
