@@ -303,14 +303,14 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramName2",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing2",
-          dataType = DataType.INTEGER,
+          dataType = DataType.STRING,
           linkId = null
         ),
         ActionParameter(
           key = "paramName3",
           paramType = ActionParameterType.PREPOPULATE,
           value = "testing3",
-          dataType = DataType.INTEGER,
+          dataType = DataType.STRING,
           linkId = null
         ),
       )
@@ -353,7 +353,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           key = "paramName2",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing2",
-          dataType = DataType.INTEGER,
+          dataType = DataType.STRING,
           linkId = null
         ),
       )
