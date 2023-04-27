@@ -35,7 +35,7 @@ data class RepositoryResourceData(val id: String? = null, val queryResult: Query
   sealed class QueryResult {
     data class Search(
       val resource: Resource,
-      val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
+      val relatedResources: Map<String, LinkedList<QueryResult>> = mutableMapOf()
     ) : QueryResult()
     data class Count(
       val resourceType: ResourceType,

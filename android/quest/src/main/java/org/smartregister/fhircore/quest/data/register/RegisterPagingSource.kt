@@ -78,9 +78,9 @@ class RegisterPagingSource(
             repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
           rulesExecutor.processResourceData(
             baseResource = queryResult.resource,
-            relatedRepositoryResourceData = queryResult.relatedResources,
+            relatedResourcesMap = queryResult.relatedResources,
             ruleConfigs = ruleConfigs,
-            emptyMap()
+            params = emptyMap()
           )
         }
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)

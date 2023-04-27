@@ -27,7 +27,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -108,7 +107,7 @@ constructor(
         rulesExecutor
           .processResourceData(
             baseResource = queryResult.resource,
-            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+            relatedResourcesMap = queryResult.relatedResources,
             ruleConfigs = profileConfigs.rules,
             paramsMap
           )
@@ -126,7 +125,7 @@ constructor(
         val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
-            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+            relatedResourcesMap = queryResult.relatedResources,
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )

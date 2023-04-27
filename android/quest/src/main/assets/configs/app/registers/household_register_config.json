@@ -91,11 +91,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
           }
         ]
       }

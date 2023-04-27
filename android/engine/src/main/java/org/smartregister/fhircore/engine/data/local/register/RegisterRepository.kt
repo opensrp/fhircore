@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterConfigur
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
@@ -86,189 +85,162 @@ constructor(
     paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
-    val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
-    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-    val baseResourceType = baseResourceClass.newInstance().resourceType
-    val secondaryResourceConfig = registerConfiguration.secondaryResources
-    val secondaryResourceData = LinkedList<RepositoryResourceData>()
-
-    // retrieve secondary ResourceData if secondaryResources are configured
-    if (!secondaryResourceConfig.isNullOrEmpty()) {
-      secondaryResourceData.addAll(retrieveSecondaryResources(secondaryResourceConfig))
-    }
-
-    val baseResources: List<Resource> =
-      withContext(dispatcherProvider.io()) {
-        searchResource(
-          baseResourceClass = baseResourceClass,
-          nestedSearchResources = baseResourceConfig.nestedSearchResources,
-          dataQueries = baseResourceConfig.dataQueries,
-          sortConfigs = baseResourceConfig.sortConfigs,
-          currentPage = currentPage,
-          pageSize = registerConfiguration.pageSize
-        )
-      }
-
-    // Retrieve data for each of the configured related resources
-    // Also retrieve data for nested related resources for each of the related resource
-    return baseResources.map { baseResource: Resource ->
-      val currentRelatedResources = LinkedList<RepositoryResourceData>()
-
-      relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
-        val relatedResources =
-          withContext(dispatcherProvider.io()) {
-            searchRelatedResources(
-              resourceConfig = resourceConfig,
-              baseResourceType = baseResourceType,
-              baseResource = baseResource,
-              fhirPathExpression = resourceConfig.fhirPathExpression
-            )
-          }
-        currentRelatedResources.addAll(relatedResources)
-      }
-
-      // Include secondary resourceData in each row if secondaryResources are configured
-      RepositoryResourceData(
-        id = baseResourceConfig.id ?: baseResourceType.name,
-        queryResult =
-          RepositoryResourceData.QueryResult.Search(
-            resource = baseResource,
-            relatedResources = currentRelatedResources.apply { addAll(secondaryResourceData) }
-          )
-      )
-    }
+    return searchNestedResources(
+      fhirResourceConfig = registerConfiguration.fhirResource,
+      currentPage = currentPage,
+      pageSize = registerConfiguration.pageSize
+    )
   }
 
-  private suspend fun searchRelatedResources(
-    resourceConfig: ResourceConfig,
-    baseResourceType: ResourceType,
-    baseResource: Resource,
-    fhirPathExpression: String?
-  ): LinkedList<RepositoryResourceData> {
-
-    val relatedResourceClass = resourceConfig.resource.resourceClassType()
-    val relatedResourceType = relatedResourceClass.newInstance().resourceType
-    val relatedResourcesData = LinkedList<RepositoryResourceData>()
-    if (fhirPathExpression.isNullOrEmpty()) {
-      val search =
-        Search(type = relatedResourceType).apply {
-          filterByResourceTypeId(
-            ReferenceClientParam(resourceConfig.searchParameter),
-            baseResourceType,
-            baseResource.logicalId
-          )
-          resourceConfig.dataQueries?.forEach { filterBy(it) }
-          applyNestedSearchFilters(resourceConfig.nestedSearchResources)
-        }
-      if (resourceConfig.resultAsCount) {
-        val count = fhirEngine.count(search)
-        relatedResourcesData.addLast(
-          RepositoryResourceData(
-            id = resourceConfig.id ?: relatedResourceType.name,
-            queryResult =
-              RepositoryResourceData.QueryResult.Count(
-                resourceType = relatedResourceType,
-                relatedResourceCount =
-                  RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
-              )
-          )
-        )
-      } else {
-        val relatedResourceSearch = search.apply { sort(resourceConfig.sortConfigs) }
-        fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
-          relatedResourcesData.addLast(
-            RepositoryResourceData(
-              id = resourceConfig.id ?: resource.resourceType.name,
-              queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
-            )
-          )
-        }
-        postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
-      }
-    } else {
-      fhirPathDataExtractor
-        .extractData(baseResource, fhirPathExpression)
-        .takeWhile { it is Reference }
-        .pmap {
-          try {
-            fhirEngine.get(
-              resourceConfig.resource.resourceClassType().newInstance().resourceType,
-              (it as Reference).extractId()
-            )
-          } catch (exception: ResourceNotFoundException) {
-            Timber.e(exception)
-            null
-          }
-        }
-        .forEach { resource ->
-          resource?.let {
-            relatedResourcesData.addLast(
-              RepositoryResourceData(
-                id = resourceConfig.id ?: resource.resourceType.name,
-                queryResult = RepositoryResourceData.QueryResult.Search(resource = resource)
-              )
-            )
-          }
-          postProcessRelatedResourcesData(resourceConfig.relatedResources, relatedResourcesData)
-        }
-    }
-    return relatedResourcesData
-  }
-
-  private suspend fun postProcessRelatedResourcesData(
-    relatedResources: List<ResourceConfig>,
-    relatedResourcesData: LinkedList<RepositoryResourceData>
-  ) {
-
-    if (relatedResourcesData.isEmpty()) return
-
-    relatedResources.forEach {
-      val repositoryResourceData =
-        relatedResourcesData.last.queryResult as RepositoryResourceData.QueryResult.Search
-      val searchRelatedResources =
-        searchRelatedResources(
-          resourceConfig = it,
-          baseResourceType = repositoryResourceData.resource.resourceType,
-          baseResource = repositoryResourceData.resource,
-          fhirPathExpression = it.fhirPathExpression
-        )
-
-      repositoryResourceData.relatedResources.addAll(searchRelatedResources)
-    }
-  }
-
-  private suspend fun searchResource(
-    baseResourceClass: Class<out Resource>,
-    nestedSearchResources: List<NestedSearchConfig>?,
-    dataQueries: List<DataQuery>?,
-    sortConfigs: List<SortConfig>,
+  private suspend fun searchNestedResources(
+    fhirResourceConfig: FhirResourceConfig,
     currentPage: Int? = null,
     pageSize: Int? = null
-  ): List<Resource> {
-    val resourceType = baseResourceClass.newInstance().resourceType
+  ): List<RepositoryResourceData> {
+    val baseResourceConfig = fhirResourceConfig.baseResource
+    val relatedResourcesConfig = fhirResourceConfig.relatedResources
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+    val baseResourceType = baseResourceClass.newInstance().resourceType
+
     val search =
-      Search(type = resourceType).apply {
-        dataQueries?.forEach { filterBy(it) }
-        // For patient return only active members
-        if (resourceType == ResourceType.Patient) {
+      Search(type = baseResourceType).apply {
+        baseResourceConfig.dataQueries?.forEach { filterBy(it) }
+        applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
+        // Filter only active resources
+        if (baseResourceType in listOf(ResourceType.Patient, ResourceType.Group)) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
-
-        // For Group return only active
-        if (resourceType == ResourceType.Group) {
-          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
-        }
-
-        applyNestedSearchFilters(nestedSearchResources)
-        sort(sortConfigs)
+        sort(baseResourceConfig.sortConfigs)
         if (currentPage != null && pageSize != null) {
           count = pageSize
           from = currentPage * pageSize
         }
       }
-    return fhirEngine.search(search)
+
+    val baseFhirResources = fhirEngine.search<Resource>(search)
+
+    return baseFhirResources.map { baseFhirResource ->
+      RepositoryResourceData(
+        baseFhirResource.id,
+        // TODO add secondary resources as related resources
+        RepositoryResourceData.QueryResult.Search(
+          resource = baseFhirResource,
+          relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
+        )
+      )
+    }
   }
+
+  private suspend fun retrieveRelatedResources(
+    baseResource: Resource,
+    relatedResourcesConfigs: List<ResourceConfig>?
+  ): Map<String, LinkedList<RepositoryResourceData.QueryResult>> {
+    val finalResultMap = mutableMapOf<String, LinkedList<RepositoryResourceData.QueryResult>>()
+
+    val nonRevIncludedRelatedResourcesConfigs =
+      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
+
+    nonRevIncludedRelatedResourcesConfigs?.forEach { resourceConfig ->
+      val relatedResourceClass = resourceConfig.resource.resourceClassType()
+      val relatedResourceType = relatedResourceClass.newInstance().resourceType
+
+      // Retrieve non revInclude related resources. This will be replaced by _include API
+      if (!resourceConfig.fhirPathExpression.isNullOrEmpty()) {
+        val queryResultLinkedList = LinkedList<RepositoryResourceData.QueryResult>()
+        fhirPathDataExtractor
+          .extractData(baseResource, resourceConfig.fhirPathExpression)
+          .takeWhile { it is Reference }
+          .pmap {
+            try {
+              fhirEngine.get(
+                resourceConfig.resource.resourceClassType().newInstance().resourceType,
+                (it as Reference).extractId()
+              )
+            } catch (exception: ResourceNotFoundException) {
+              Timber.e(exception)
+              null
+            }
+          }
+          .forEach { thisResource ->
+            thisResource?.let {
+              queryResultLinkedList.addLast(
+                RepositoryResourceData.QueryResult.Search(
+                  resource = thisResource,
+                  relatedResources =
+                    retrieveRelatedResources(thisResource, resourceConfig.relatedResources)
+                )
+              )
+            }
+          }
+        finalResultMap[resourceConfig.id ?: resourceConfig.resource] = queryResultLinkedList
+      }
+
+      // Return counts for the related resources using the count API
+      if (resourceConfig.resultAsCount && !resourceConfig.searchParameter.isNullOrEmpty()) {
+        val search =
+          Search(type = relatedResourceType).apply {
+            filterByResourceTypeId(
+              ReferenceClientParam(resourceConfig.searchParameter),
+              baseResource.resourceType,
+              baseResource.logicalId
+            )
+            resourceConfig.dataQueries?.forEach { filterBy(it) }
+            applyNestedSearchFilters(resourceConfig.nestedSearchResources)
+          }
+        val count = fhirEngine.count(search)
+        finalResultMap[resourceConfig.id ?: resourceConfig.resource] =
+          LinkedList<RepositoryResourceData.QueryResult>().apply {
+            addLast(
+              RepositoryResourceData.QueryResult.Count(
+                resourceType = relatedResourceType,
+                relatedResourceCount =
+                  RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
+              )
+            )
+          }
+      }
+    }
+
+    // Use rev include API to get related resources
+    val revIncludeRelatedResourcesConfigsMap =
+      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)?.groupBy { it.resource }
+
+    if (!revIncludeRelatedResourcesConfigsMap.isNullOrEmpty()) {
+      val revIncludeSearch =
+        Search(baseResource.resourceType).apply {
+          filter(Resource.RES_ID, { value = of(baseResource.logicalId) })
+        }
+      revIncludeRelatedResourcesConfigsMap.values.asSequence().flatten().forEach { resourceConfig ->
+        val resourceType = resourceConfig.resource.resourceClassType().newInstance().resourceType
+        revIncludeSearch.apply {
+          revInclude(resourceType, ReferenceClientParam(resourceConfig.searchParameter))
+        }
+      }
+
+      val revIncludedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>> =
+        fhirEngine.search<Resource>(revIncludeSearch).groupBy { it.resourceType.name }.mapValues {
+          it.value.mapTo(LinkedList()) { resource ->
+            RepositoryResourceData.QueryResult.Search(
+              resource = resource,
+              relatedResources =
+                retrieveRelatedResources(resource, revIncludeRelatedResourcesConfigsMap[it.key])
+            )
+          }
+        }
+
+      finalResultMap.putAll(revIncludedResourcesMap)
+    }
+
+    return finalResultMap
+  }
+
+  private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(inverse: Boolean) =
+    if (inverse)
+      this.filter {
+        !it.fhirPathExpression.isNullOrEmpty() ||
+          (!it.searchParameter.isNullOrEmpty() && it.resultAsCount)
+      }
+    else this.filter { !it.searchParameter.isNullOrEmpty() && !it.resultAsCount }
 
   private fun Search.applyNestedSearchFilters(nestedSearchResources: List<NestedSearchConfig>?) {
     nestedSearchResources?.forEach {
@@ -332,97 +304,33 @@ constructor(
         }
         ?.associate { it.key to it.value }
         ?: emptyMap()
+
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-        ConfigType.Profile,
-        profileId,
-        paramsMap
+        configType = ConfigType.Profile,
+        configId = profileId,
+        paramsMap = paramsMap
       )
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
-    val relatedResourcesConfig = resourceConfig.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
-    val secondaryResourceConfig = profileConfiguration.secondaryResources
 
     val baseResource: Resource =
       withContext(dispatcherProvider.io()) {
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    val relatedResources = LinkedList<RepositoryResourceData>()
-
-    relatedResourcesConfig.forEach { config: ResourceConfig ->
-      val resources =
-        withContext(dispatcherProvider.io()) {
-          searchRelatedResources(
-            resourceConfig = config,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            fhirPathExpression = config.fhirPathExpression
-          )
-        }
-      relatedResources.addAll(resources)
-    }
-
-    if (!secondaryResourceConfig.isNullOrEmpty()) {
-      relatedResources.addAll(retrieveSecondaryResources(secondaryResourceConfig))
-    }
-
     return RepositoryResourceData(
       id = baseResourceConfig.id ?: baseResourceType.name,
       queryResult =
         RepositoryResourceData.QueryResult.Search(
           resource = baseResource,
-          relatedResources = relatedResources
+          // TODO Add secondary resources as related resources
+          relatedResources =
+            retrieveRelatedResources(baseResource, baseResourceConfig.relatedResources)
         )
     )
-  }
-
-  private suspend fun retrieveSecondaryResources(
-    resourceConfigList: List<FhirResourceConfig>
-  ): LinkedList<RepositoryResourceData> {
-    val repositoryResourceData = LinkedList<RepositoryResourceData>()
-
-    resourceConfigList.map { fhirResourceConfig: FhirResourceConfig ->
-      val baseResources: List<Resource> =
-        withContext(dispatcherProvider.io()) {
-          searchResource(
-            baseResourceClass = fhirResourceConfig.baseResource.resource.resourceClassType(),
-            dataQueries = fhirResourceConfig.baseResource.dataQueries,
-            sortConfigs = fhirResourceConfig.baseResource.sortConfigs,
-            nestedSearchResources = fhirResourceConfig.baseResource.nestedSearchResources,
-          )
-        }
-
-      baseResources.map { baseResource: Resource ->
-        val baseRelatedResourceList = LinkedList<RepositoryResourceData>()
-        fhirResourceConfig.relatedResources.forEach { resourceConfig: ResourceConfig ->
-          val currentRelatedResources =
-            withContext(dispatcherProvider.io()) {
-              searchRelatedResources(
-                resourceConfig = resourceConfig,
-                baseResourceType = baseResource.resourceType,
-                baseResource = baseResource,
-                fhirPathExpression = resourceConfig.fhirPathExpression
-              )
-            }
-          baseRelatedResourceList.addAll(currentRelatedResources)
-        }
-        repositoryResourceData.add(
-          RepositoryResourceData(
-            id = fhirResourceConfig.baseResource.id,
-            queryResult =
-              RepositoryResourceData.QueryResult.Search(
-                resource = baseResource,
-                relatedResources = baseRelatedResourceList
-              )
-          )
-        )
-      }
-    }
-
-    return repositoryResourceData
   }
 
   fun retrieveRegisterConfiguration(
