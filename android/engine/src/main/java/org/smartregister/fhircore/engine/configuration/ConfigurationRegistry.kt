@@ -76,7 +76,10 @@ constructor(
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
-   * can be directly converted to a FHIR resource or hard coded custom model.
+   * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
+   * you are passing data across screens, then later using it in DataQueries and to retrieve
+   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
+   * params used in the DataQuery are passed when retrieving the configurations.
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
@@ -85,7 +88,8 @@ constructor(
   ): T {
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    if (configCacheMap.contains(configKey)) return configCacheMap[configKey] as T
+    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true)
+      return configCacheMap[configKey] as T
     val decodedConfig =
       localizationHelper
         .parseTemplate(
