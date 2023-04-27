@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.quest.event
 
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-class EventBus {
-  private val _events = MutableSharedFlow<AppEvent>()
+@Singleton
+class EventBus @Inject constructor() {
+  private val _events = MutableSharedFlow<AppEvent>(replay = 1)
   val events = _events.asSharedFlow()
 
   suspend fun triggerEvent(event: AppEvent) = _events.emit(event)
