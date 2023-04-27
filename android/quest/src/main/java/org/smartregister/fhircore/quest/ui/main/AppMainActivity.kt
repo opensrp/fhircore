@@ -116,8 +116,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
-      // schedulePeriodicJobs()
-      workManager.cancelAllWork()
+      schedulePeriodicJobs()
     }
 
     runSync(syncBroadcaster)

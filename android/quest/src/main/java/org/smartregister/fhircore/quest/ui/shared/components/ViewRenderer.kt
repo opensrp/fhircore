@@ -34,7 +34,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.util.extensions.isVisible
-import timber.log.Timber
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -51,7 +50,6 @@ fun ViewRenderer(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  Timber.e("Regenerating the views")
   viewProperties.forEach { properties ->
     if (properties.isVisible(resourceData.computedValuesMap)) {
       GenerateView(
