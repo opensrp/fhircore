@@ -96,8 +96,6 @@ constructor(
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
-  val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
-
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(

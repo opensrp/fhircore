@@ -253,13 +253,35 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events.filter { event -> event is AppEvent.RefreshCache }.collectLatest {
-          handleRefreshLiveData()
+        eventBus.events.collectLatest { appEvent ->
+          when (appEvent) {
+            is AppEvent.OnSubmitQuestionnaire -> handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            is AppEvent.RefreshCache -> handleRefreshLiveData()
+          }
+
         }
       }
+    }
+  }
+
+  private suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    // Always refresh data when registration happens
+    registerViewModel.paginateRegisterData(
+      registerId = registerFragmentArgs.registerId,
+      loadAll = false,
+      clearCache = true
+    )
+    // Update side menu counts
+    appMainViewModel.retrieveAppMainUiState()
+
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      registerViewModel.emitSnackBarState(snackBarMessageConfig)
     }
   }
 
@@ -292,6 +314,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           loadAll = false,
           clearCache = true
         )
+        // Update side menu counts
         appMainViewModel.retrieveAppMainUiState()
 
         // Display SnackBar message
@@ -300,8 +323,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           registerViewModel.emitSnackBarState(snackBarMessageConfig)
         }
 
-        // Reset activity livedata
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
   }
