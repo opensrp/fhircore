@@ -161,6 +161,7 @@ constructor(
       // set managing entity for extracted related resource
       if (resource.resourceType == ResourceType.RelatedPerson) {
         this.managingEntity = resource.logicalId.asReference(ResourceType.RelatedPerson)
+        this.managingEntity.id = resource.logicalId
       }
       defaultRepository.addOrUpdate(resource = this)
     }
