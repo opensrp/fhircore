@@ -49,7 +49,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -257,16 +256,18 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         eventBus.events.collectLatest { appEvent ->
           when (appEvent) {
-            is AppEvent.OnSubmitQuestionnaire -> handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            is AppEvent.OnSubmitQuestionnaire ->
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             is AppEvent.RefreshCache -> handleRefreshLiveData()
           }
-
         }
       }
     }
   }
 
-  private suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+  private suspend fun handleQuestionnaireSubmission(
+    questionnaireSubmission: QuestionnaireSubmission
+  ) {
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
     // Always refresh data when registration happens
@@ -322,7 +323,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
           registerViewModel.emitSnackBarState(snackBarMessageConfig)
         }
-
       }
     }
   }

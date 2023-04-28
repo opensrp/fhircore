@@ -145,12 +145,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           QuestionnaireConfig?
 
       lifecycleScope.launch {
-      if (questionnaireConfig != null && questionnaireResponse != null) {
-          eventBus.triggerEvent(AppEvent.OnSubmitQuestionnaire(QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)))
+        if (questionnaireConfig != null && questionnaireResponse != null) {
+          eventBus.triggerEvent(
+            AppEvent.OnSubmitQuestionnaire(
+              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+            )
+          )
         }
         if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-            eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
-      }
+          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
+        }
       }
     }
   }

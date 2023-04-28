@@ -44,8 +44,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 @AndroidEntryPoint
 class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
 
-  @Inject
-  lateinit var eventBus: EventBus
+  @Inject lateinit var eventBus: EventBus
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
   val profileViewModel by viewModels<ProfileViewModel>()
   val appMainViewModel by activityViewModels<AppMainViewModel>()
@@ -80,7 +79,8 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         eventBus.events.collectLatest { appEvent ->
           when (appEvent) {
-            is AppEvent.OnSubmitQuestionnaire -> handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            is AppEvent.OnSubmitQuestionnaire ->
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             else -> {}
           }
         }
@@ -88,7 +88,9 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     }
   }
 
-  private suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+  private suspend fun handleQuestionnaireSubmission(
+    questionnaireSubmission: QuestionnaireSubmission
+  ) {
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
@@ -124,7 +126,6 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
           profileViewModel.emitSnackBarState(snackBarMessageConfig)
         }
-
       }
     }
   }
