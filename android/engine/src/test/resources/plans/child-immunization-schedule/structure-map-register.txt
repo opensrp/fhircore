@@ -105,7 +105,3 @@ group ExtractTask(
 
     } "r_task";
 }
-
-
-
-
