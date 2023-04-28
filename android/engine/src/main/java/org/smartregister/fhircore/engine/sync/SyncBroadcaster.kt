@@ -17,9 +17,13 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
+import androidx.lifecycle.asFlow
 import androidx.work.Constraints
 import androidx.work.NetworkType
+import androidx.work.WorkManager
+import androidx.work.hasKeyWithValueOfType
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
@@ -30,10 +34,16 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,6 +68,29 @@ constructor(
   @ApplicationContext val context: Context,
 ) {
 
+  /**
+   * Workaround to ensure terminal SyncJobStatus, i.e SyncJobStatus.Failed and
+   * SyncJobStatus.Finished, get emitted
+   *
+   * Gets the worker info for the [FhirSyncWorker], including outputData
+   */
+  @OptIn(FlowPreview::class)
+  inline fun <reified W : FhirSyncWorker> getWorkerInfo(): Flow<SyncJobStatus> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkLiveData(W::class.java.name)
+      .asFlow()
+      .flatMapConcat { it.asFlow() }
+      .flatMapConcat { workInfo ->
+        flowOf(workInfo.progress, workInfo.outputData)
+          .filter { it.keyValueMap.isNotEmpty() && it.hasKeyWithValueOfType<String>("StateType") }
+          .mapNotNull {
+            val state = it.getString("StateType")!!
+            val stateData = it.getString("State")
+            Sync.gson.fromJson(stateData, Class.forName(state)) as SyncJobStatus
+          }
+      }
+  }
+
   fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
     val coroutineScope = CoroutineScope(dispatcherProvider.main())
     Timber.i("Running one time sync...")
@@ -73,7 +106,8 @@ constructor(
     }
 
     coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
+      Sync.oneTimeSync<AppSyncWorker>(context)
+      getWorkerInfo<AppSyncWorker>().collect { syncSharedFlow.emit(it) }
     }
   }
 
