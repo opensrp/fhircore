@@ -119,14 +119,11 @@ constructor(
     val baseFhirResources = fhirEngine.search<Resource>(search)
 
     return baseFhirResources.map { baseFhirResource ->
-      RepositoryResourceData(
-        id = baseResourceConfig.id ?: baseResourceType.name,
-        // TODO add secondary resources as related resources
-        queryResult =
-          RepositoryResourceData.QueryResult.Search(
-            resource = baseFhirResource,
-            relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
-          )
+      // TODO add secondary resources as related resources
+      RepositoryResourceData.Search(
+        rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
+        resource = baseFhirResource,
+        relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
       )
     }
   }
@@ -134,11 +131,11 @@ constructor(
   private suspend fun retrieveRelatedResources(
     baseResource: Resource,
     relatedResourcesConfigs: List<ResourceConfig>?
-  ): Map<String, LinkedList<RepositoryResourceData.QueryResult>> {
+  ): Map<String, LinkedList<RepositoryResourceData>> {
 
     // The key for this map is the same as the one used by the Rules Fact map
     // Can be provided via ResourceConfig.id property otherwise defaults to the ResourceType
-    val finalResultMap = mutableMapOf<String, LinkedList<RepositoryResourceData.QueryResult>>()
+    val finalResultMap = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
 
     val nonRevIncludedRelatedResourcesConfigs =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
@@ -162,9 +159,9 @@ constructor(
           }
         val count = fhirEngine.count(search)
         finalResultMap[resourceConfig.id ?: resourceConfig.resource] =
-          LinkedList<RepositoryResourceData.QueryResult>().apply {
+          LinkedList<RepositoryResourceData>().apply {
             addLast(
-              RepositoryResourceData.QueryResult.Count(
+              RepositoryResourceData.Count(
                 resourceType = relatedResourceType,
                 relatedResourceCount =
                   RelatedResourceCount(parentResourceId = baseResource.logicalId, count = count)
@@ -181,10 +178,10 @@ constructor(
   private suspend fun searchWithForwardInclude(
     resourceConfig: ResourceConfig,
     baseResource: Resource,
-    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData.QueryResult>>
+    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData>>
   ) {
     if (!resourceConfig.fhirPathExpression.isNullOrEmpty()) {
-      val queryResultLinkedList = LinkedList<RepositoryResourceData.QueryResult>()
+      val queryResultLinkedList = LinkedList<RepositoryResourceData>()
       fhirPathDataExtractor
         .extractData(baseResource, resourceConfig.fhirPathExpression)
         .takeWhile { it is Reference }
@@ -202,7 +199,7 @@ constructor(
         .forEach { thisResource ->
           thisResource?.let {
             queryResultLinkedList.addLast(
-              RepositoryResourceData.QueryResult.Search(
+              RepositoryResourceData.Search(
                 resource = thisResource,
                 relatedResources =
                   retrieveRelatedResources(thisResource, resourceConfig.relatedResources)
@@ -217,7 +214,7 @@ constructor(
   private suspend fun searchWithRevInclude(
     relatedResourcesConfigs: List<ResourceConfig>?,
     baseResource: Resource,
-    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData.QueryResult>>
+    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData>>
   ) {
     // Get configurations of related resources to be reverse included
     val revIncludeRelatedResourcesConfigsMap =
@@ -242,8 +239,8 @@ constructor(
         val revIncludedResourcesMap =
           revIncludedResource
             .mapValues {
-              it.value.mapTo(LinkedList<RepositoryResourceData.QueryResult>()) { resource ->
-                RepositoryResourceData.QueryResult.Search(
+              it.value.mapTo(LinkedList<RepositoryResourceData>()) { resource ->
+                RepositoryResourceData.Search(
                   resource = resource,
                   relatedResources =
                     retrieveRelatedResources(
@@ -349,15 +346,11 @@ constructor(
         fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
       }
 
-    return RepositoryResourceData(
-      id = baseResourceConfig.id ?: baseResourceType.name,
-      queryResult =
-        RepositoryResourceData.QueryResult.Search(
-          resource = baseResource,
-          // TODO Add secondary resources as related resources
-          relatedResources =
-            retrieveRelatedResources(baseResource, baseResourceConfig.relatedResources)
-        )
+    return RepositoryResourceData.Search(
+      rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
+      resource = baseResource,
+      // TODO Add secondary resources as related resources
+      relatedResources = retrieveRelatedResources(baseResource, baseResourceConfig.relatedResources)
     )
   }
 

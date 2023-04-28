@@ -37,7 +37,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   suspend fun processResourceData(
     baseResource: Resource,
-    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>>,
+    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>,
     ruleConfigs: List<RuleConfig>,
     params: Map<String, String>?
   ): ResourceData {
@@ -61,7 +61,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
-    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>>,
+    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>,
     computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
     return listProperties.resources.flatMap { listResource ->
@@ -69,7 +69,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         .mapToResourceData(
           relatedResourcesMap =
             relatedResourcesMap.mapValues { entry ->
-              entry.value.map { (it as RepositoryResourceData.QueryResult.Search).resource }
+              entry.value.map { (it as RepositoryResourceData.Search).resource }
             },
           ruleConfigs = listProperties.registerCard.rules,
           listRelatedResources = listResource.relatedResources,
@@ -86,7 +86,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
-    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>>
+    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
@@ -120,9 +120,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
           baseResource = resource,
           relatedResourcesMap =
             listItemRelatedResources.mapValues { entry ->
-              entry.value.mapTo(LinkedList()) {
-                RepositoryResourceData.QueryResult.Search(resource = it)
-              }
+              entry.value.mapTo(LinkedList()) { RepositoryResourceData.Search(resource = it) }
             }
         )
 
@@ -140,14 +138,12 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    * extraction of the [ListResource] conditional FHIR path expression
    */
   private fun filteredListResources(
-    relatedResourceMap: Map<String, List<RepositoryResourceData.QueryResult>>,
+    relatedResourceMap: Map<String, List<RepositoryResourceData>>,
     listResource: ListResource
   ): List<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
     val newListRelatedResources =
-      relatedResourceMap[relatedResourceKey]?.map {
-        (it as RepositoryResourceData.QueryResult.Search).resource
-      }
+      relatedResourceMap[relatedResourceKey]?.map { (it as RepositoryResourceData.Search).resource }
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
     if (newListRelatedResources != null &&

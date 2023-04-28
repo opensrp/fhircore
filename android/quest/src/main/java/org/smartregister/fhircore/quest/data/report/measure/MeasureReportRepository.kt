@@ -51,7 +51,7 @@ class MeasureReportRepository(
         registerId = measureReportConfiguration.registerId
       )
       .map {
-        val queryResult = it.queryResult as RepositoryResourceData.QueryResult.Search
+        val queryResult = it as RepositoryResourceData.Search
         rulesExecutor.processResourceData(
           baseResource = queryResult.resource,
           relatedResourcesMap = queryResult.relatedResources,

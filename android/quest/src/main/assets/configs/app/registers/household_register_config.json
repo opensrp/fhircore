@@ -45,17 +45,8 @@
         "fhirPathExpression": "Group.member.entity",
         "relatedResources": [
           {
-            "id": "hivCondition",
+            "id": "patientConditions",
             "resource": "Condition",
-            "searchParameter": "subject"
-          },
-          {
-            "id": "ancCondition",
-            "resource": "Condition",
-            "searchParameter": "subject"
-          },
-          {
-            "resource": "CarePlan",
             "searchParameter": "subject"
           },
           {

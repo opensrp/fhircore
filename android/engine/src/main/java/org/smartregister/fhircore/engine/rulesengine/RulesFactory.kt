@@ -125,7 +125,7 @@ constructor(
   fun fireRules(
     rules: Rules,
     baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
+    relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap(),
   ): Map<String, Any> {
 
     // Initialize new facts and fire rules in background
@@ -141,8 +141,8 @@ constructor(
           val actualValue =
             it.value.map { queryResult ->
               when (queryResult) {
-                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
-                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+                is RepositoryResourceData.Count -> queryResult.relatedResourceCount
+                is RepositoryResourceData.Search -> queryResult.resource
               }
             }
           put(it.key, actualValue)

@@ -102,7 +102,7 @@ constructor(
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
+      val queryResult = repoResourceData as RepositoryResourceData.Search
       val resourceData =
         rulesExecutor
           .processResourceData(
