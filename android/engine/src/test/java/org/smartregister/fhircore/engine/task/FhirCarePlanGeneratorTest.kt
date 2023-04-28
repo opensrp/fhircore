@@ -1323,33 +1323,27 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
           .also { tasks ->
             assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
-            assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].display=="Dependent (qualifier value)"})
-            assertTrue(tasks.all {it.input.firstOrNull()?.type?.coding!![0].code=="371154000"})
+            assertTrue(
+              tasks.all {
+                it.input.firstOrNull()?.type?.coding!![0].display == "Dependent (qualifier value)"
+              }
+            )
+            assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" })
 
             assertTrue(
               tasks.all {
                 it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
               }
             )
-            val opv2 = tasks.firstOrNull {
-              it.input.lastOrNull()?.value.toString() == "OPV 2"
-            }
-            val opv1 = tasks.firstOrNull {
-              it.input.lastOrNull()?.value.toString() == "OPV 1"
-            }
-            val pcv3 = tasks.firstOrNull {
-              it.input.lastOrNull()?.value.toString() == "PCV 3"
-            }
-            val pcv2 = tasks.firstOrNull {
-              it.input.lastOrNull()?.value.toString() == "PCV 2"
-            }
-            val bcg = tasks.firstOrNull {
-              it.input.lastOrNull()?.value.toString() == "BCG "
-            }
+            val opv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 2" }
+            val opv1 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 1" }
+            val pcv3 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 3" }
+            val pcv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 2" }
+            val bcg =  tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
 
             assertTrue(opv2?.partOf?.firstOrNull()?.reference.toString() == opv1?.id)
             assertTrue(pcv3?.partOf?.firstOrNull()?.reference.toString() == pcv2?.id)
-            assertTrue(bcg?.partOf?.isEmpty()==true)
+            assertTrue(bcg?.partOf?.isEmpty() == true)
           }
       }
   }
