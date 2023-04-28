@@ -25,9 +25,11 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.Sentry
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import javax.inject.Inject
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
@@ -67,17 +69,27 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       Timber.e(e)
     }
 
-    initSentryMonitoring()
+    setUpSentry()
   }
 
-  private fun initSentryMonitoring() {
-    if (BuildConfig.SENTRY_DSN.isNotBlank()) {
-      SentryAndroid.init(this) { options: SentryAndroidOptions ->
+  @VisibleForTesting
+  fun setUpSentry(dsn: String = BuildConfig.SENTRY_DSN) {
+    if (dsn.isNotBlank()) {
+      initSentryMonitoring(dsn) { options: SentryAndroidOptions ->
         options.dsn = BuildConfig.SENTRY_DSN.trim { it <= ' ' }
         // To set a uniform sample rate
         options.tracesSampleRate = 1.0
       }
     }
+  }
+
+  @VisibleForTesting
+  fun initSentryMonitoring(
+    dsn: String,
+    configuration: Sentry.OptionsConfiguration<SentryAndroidOptions>
+  ) {
+    if (dsn.isBlank()) return
+    SentryAndroid.init(this, configuration)
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
