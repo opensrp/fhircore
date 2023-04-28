@@ -586,10 +586,8 @@ constructor(
     if (questionnaireResponse.hasSubject() && questionnaireResponse.subject.hasReference()) {
       val resourceId = questionnaireResponse.subject.reference.extractLogicalIdUuid()
       val resourceType =
-        questionnaireResponse
-          .subject
-          .extractType()
-          .toString()
+        questionnaireResponse.subject.extractType()!!
+          .name
           .resourceClassType()
           .newInstance()
           .resourceType
