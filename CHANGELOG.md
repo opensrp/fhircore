@@ -8,11 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.3] - 2023-xx-xx
 ### Added
 - Allow completion of Overdue Tasks
+- Allow ordering of registers by related resources last updated
 
 ### Fixed
 - Invalidation/refresh cache after form completion
 - Logout while offline causes flicker(multiple render) of Login Page
 - Successful subsequent login even when PractitionerDetails is not saved 
+- Account for dependencies when generating activity schedules
+- Add title to Profile pages
 
 ### Changed
 - 
