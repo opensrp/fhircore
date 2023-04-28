@@ -6,7 +6,7 @@ uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 group ImmunizationCarePlan(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
-            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.resource) as questionnaireResponse,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
             evaluate(src, $this.parameter.where(name='period').value) as period,
             evaluate(src, $this.parameter.where(name='version').value) as version
             then ExtractTask(period, version, subject, definition, tgt) "r_careplan";
@@ -36,6 +36,7 @@ group ExtractTask(
                task.owner = evaluate(subject, $this.generalPractitioner.first()),
                task.code = evaluate(definition, code),
                task.reasonCode = evaluate(definition, product) "r_task_data";
+
         // task groupIdentifier
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
                subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
@@ -43,6 +44,35 @@ group ExtractTask(
                subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
 
         } "rule_group_identifier";
+
+        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
+                subject -> task.restriction = create("Task_Restriction") as taskRestriction then {
+                            subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
+                                     subject ->evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.duration.toInteger())) as duration then{
+                                               subject -> taskRestrictionPeriod.start = create('dateTime') as dt, dt.value = evaluate(patientBirthDate, $this.value.substring(0,10) + 'T00:00:00.00Z'),
+                                                          taskRestrictionPeriod.end = create('dateTime') as dt, dt.value = evaluate(subject,(($this.birthDate + (((duration).toString()+' \'days\'')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "r_taskRestrictionPeriod";
+                                     } "r_duration";
+                                } "r_task_restriction_period";
+                        } "r_task_restriction";
+        } "r_birth_date";
+
+         //add task.input for task dependencies
+         subject -> task.input = create('Task_Input') as input then {
+                     subject -> input.type = create("CodeableConcept") as concept then {
+                             subject-> concept.coding = c("http://snomed.info/sct","371154000") as coding then {
+                                     subject -> coding.display = "Dependent (qualifier value)" "r_coding_display";
+                             } "r_task_concept_coding";
+                     } "r_codeable_concept";
+                     subject -> input.value = 28 "r_input_value";//TODO discuss implementation on how we can make this dynamic for each dosage
+         } "r_task_input";
+
+
+           subject -> task.input = create('Task_Input') as input then{
+                                        subject -> input.type = create("CodeableConcept") as concept "r_concept";
+                                        subject -> input.value = evaluate(definition,$this.product.text + ' ' +$this.dosage.skip(version).first().select((sequence).toString())) "r_input_value";
+           } "r_task_input";
+
+
         // form to be filled
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82' "r_task_reason_ref";
 
@@ -58,7 +88,20 @@ group ExtractTask(
         subject then {
                  subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
                             activity.outcomeReference = reference(task) "r_cp_task_ref";
-                 subject -> careplan.contained = task  "r_add_task";
+                 subject -> careplan.contained = task "r_add_task";
         } "r_cp_task";
+
+        // partof
+        subject -> evaluate(definition,$this.dosage.skip(version).first().select((sequence-1).toString())) as sequence then {
+        subject where(sequence.empty().not()) then{
+                     subject-> evaluate(definition,$this.product.text + ' ' +sequence) as preReqDosage then{
+                               subject -> task.partOf = create('Reference') as ref then {
+                                      subject -> ref.reference = evaluate(careplan,$this.contained.where(input.last().value = preReqDosage).last().id) "r_task_ref_id";
+                               } "r_task_part_of";
+                    } "r_des";
+        }"r_conditional";
+
+        }"r_sequence";
+
     } "r_task";
 }
