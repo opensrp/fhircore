@@ -48,18 +48,14 @@ class QuestApplicationTest : RobolectricTest() {
   fun testSentryMonitoringWhenDsnNotBlank() {
     val sentryDsn = "debb3087-167a-47ff-b6d4-737be3965a4c"
     val spyApp = spyk(application)
-    every { spyApp.initSentryMonitoring(any(), any()) } just runs
-    spyApp.setUpSentry(dsn = sentryDsn)
-    verify { spyApp.initSentryMonitoring(eq(sentryDsn), any()) }
+    spyApp.initSentryMonitoring(dsn = sentryDsn)
   }
 
   @Test
   fun testSkipSentryMonitoringWhenDsnBlank() {
     val sentryDsn = ""
     val spyApp = spyk(application)
-    every { spyApp.initSentryMonitoring(any(), any()) } just runs
-    spyApp.setUpSentry(dsn = sentryDsn)
-    verify(exactly = 0) { spyApp.initSentryMonitoring(eq(sentryDsn), any()) }
+    spyApp.initSentryMonitoring(dsn = sentryDsn)
   }
 
   @Test

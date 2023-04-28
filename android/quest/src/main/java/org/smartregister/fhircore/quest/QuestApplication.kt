@@ -40,13 +40,9 @@ import timber.log.Timber
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
-
   @Inject lateinit var workerFactory: HiltWorkerFactory
-
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
-
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
-
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -70,14 +66,14 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       Timber.e(e)
     }
 
-    setUpSentry()
+    initSentryMonitoring()
   }
 
   @VisibleForTesting
-  fun setUpSentry(dsn: String = BuildConfig.SENTRY_DSN) {
+  fun initSentryMonitoring(dsn: String = BuildConfig.SENTRY_DSN) {
     if (dsn.isNotBlank()) {
-      initSentryMonitoring(dsn) { options: SentryAndroidOptions ->
-        options.dsn = BuildConfig.SENTRY_DSN.trim { it <= ' ' }
+      val sentryConfiguration = { options: SentryAndroidOptions ->
+        options.dsn = dsn.trim { it <= ' ' }
         // To set a uniform sample rate
         options.tracesSampleRate = 1.0
         options.isEnableUserInteractionTracing = true
@@ -85,21 +81,13 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
         options.addIntegration(
           FragmentLifecycleIntegration(
             this,
-            enableFragmentLifecycleBreadcrumbs = true, // enabled by default
-            enableAutoFragmentLifecycleTracing = true // disabled by default
+            enableFragmentLifecycleBreadcrumbs = true,
+            enableAutoFragmentLifecycleTracing = true
           )
         )
       }
+      SentryAndroid.init(this, sentryConfiguration)
     }
-  }
-
-  @VisibleForTesting
-  fun initSentryMonitoring(
-    dsn: String,
-    configuration: Sentry.OptionsConfiguration<SentryAndroidOptions>
-  ) {
-    if (dsn.isBlank()) return
-    SentryAndroid.init(this, configuration)
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
