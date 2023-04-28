@@ -350,7 +350,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coEvery { fhirEngine.get<Patient>("54321") } returns patient
 
-    coEvery { fhirEngine.get<RelatedPerson>("33292") } returns relatedPerson
+    coEvery { fhirEngine.get<RelatedPerson>("12983") } returns relatedPerson
 
     coEvery { fhirEngine.create(any()) } returns listOf()
 
