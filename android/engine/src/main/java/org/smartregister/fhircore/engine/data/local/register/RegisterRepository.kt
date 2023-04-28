@@ -116,14 +116,18 @@ constructor(
         }
       }
 
-    val baseFhirResources = fhirEngine.search<Resource>(search)
+    val baseFhirResources =
+      withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
 
     return baseFhirResources.map { baseFhirResource ->
       // TODO add secondary resources as related resources
       RepositoryResourceData.Search(
         rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
         resource = baseFhirResource,
-        relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
+        relatedResources =
+          withContext(dispatcherProvider.io()) {
+            retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
+          }
       )
     }
   }
@@ -350,7 +354,10 @@ constructor(
       rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
       resource = baseResource,
       // TODO Add secondary resources as related resources
-      relatedResources = retrieveRelatedResources(baseResource, resourceConfig.relatedResources)
+      relatedResources =
+        withContext(dispatcherProvider.io()) {
+          retrieveRelatedResources(baseResource, resourceConfig.relatedResources)
+        }
     )
   }
 
