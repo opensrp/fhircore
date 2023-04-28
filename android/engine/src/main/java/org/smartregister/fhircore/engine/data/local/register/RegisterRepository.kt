@@ -85,14 +85,14 @@ constructor(
     paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    return searchNestedResources(
+    return searchResourcesRecursively(
       fhirResourceConfig = registerConfiguration.fhirResource,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize
     )
   }
 
-  private suspend fun searchNestedResources(
+  private suspend fun searchResourcesRecursively(
     fhirResourceConfig: FhirResourceConfig,
     currentPage: Int? = null,
     pageSize: Int? = null
@@ -121,12 +121,13 @@ constructor(
 
     return baseFhirResources.map { baseFhirResource ->
       RepositoryResourceData(
-        baseFhirResource.id,
+        id = baseResourceConfig.id ?: baseResourceType.name,
         // TODO add secondary resources as related resources
-        RepositoryResourceData.QueryResult.Search(
-          resource = baseFhirResource,
-          relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
-        )
+        queryResult =
+          RepositoryResourceData.QueryResult.Search(
+            resource = baseFhirResource,
+            relatedResources = retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
+          )
       )
     }
   }
@@ -141,42 +142,12 @@ constructor(
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
 
     nonRevIncludedRelatedResourcesConfigs?.forEach { resourceConfig ->
-      val relatedResourceClass = resourceConfig.resource.resourceClassType()
-      val relatedResourceType = relatedResourceClass.newInstance().resourceType
-
-      // Retrieve non revInclude related resources. This will be replaced by _include API
-      if (!resourceConfig.fhirPathExpression.isNullOrEmpty()) {
-        val queryResultLinkedList = LinkedList<RepositoryResourceData.QueryResult>()
-        fhirPathDataExtractor
-          .extractData(baseResource, resourceConfig.fhirPathExpression)
-          .takeWhile { it is Reference }
-          .pmap {
-            try {
-              fhirEngine.get(
-                resourceConfig.resource.resourceClassType().newInstance().resourceType,
-                (it as Reference).extractId()
-              )
-            } catch (exception: ResourceNotFoundException) {
-              Timber.e(exception)
-              null
-            }
-          }
-          .forEach { thisResource ->
-            thisResource?.let {
-              queryResultLinkedList.addLast(
-                RepositoryResourceData.QueryResult.Search(
-                  resource = thisResource,
-                  relatedResources =
-                    retrieveRelatedResources(thisResource, resourceConfig.relatedResources)
-                )
-              )
-            }
-          }
-        finalResultMap[resourceConfig.id ?: resourceConfig.resource] = queryResultLinkedList
-      }
+      searchWithForwardInclude(resourceConfig, baseResource, finalResultMap)
 
       // Return counts for the related resources using the count API
       if (resourceConfig.resultAsCount && !resourceConfig.searchParameter.isNullOrEmpty()) {
+        val relatedResourceClass = resourceConfig.resource.resourceClassType()
+        val relatedResourceType = relatedResourceClass.newInstance().resourceType
         val search =
           Search(type = relatedResourceType).apply {
             filterByResourceTypeId(
@@ -201,7 +172,52 @@ constructor(
       }
     }
 
-    // Use rev include API to get related resources
+    searchWithRevInclude(relatedResourcesConfigs, baseResource, finalResultMap)
+    return finalResultMap
+  }
+
+  private suspend fun searchWithForwardInclude(
+    resourceConfig: ResourceConfig,
+    baseResource: Resource,
+    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData.QueryResult>>
+  ) {
+    if (!resourceConfig.fhirPathExpression.isNullOrEmpty()) {
+      val queryResultLinkedList = LinkedList<RepositoryResourceData.QueryResult>()
+      fhirPathDataExtractor
+        .extractData(baseResource, resourceConfig.fhirPathExpression)
+        .takeWhile { it is Reference }
+        .pmap {
+          try {
+            fhirEngine.get(
+              resourceConfig.resource.resourceClassType().newInstance().resourceType,
+              (it as Reference).extractId()
+            )
+          } catch (exception: ResourceNotFoundException) {
+            Timber.e(exception)
+            null
+          }
+        }
+        .forEach { thisResource ->
+          thisResource?.let {
+            queryResultLinkedList.addLast(
+              RepositoryResourceData.QueryResult.Search(
+                resource = thisResource,
+                relatedResources =
+                  retrieveRelatedResources(thisResource, resourceConfig.relatedResources)
+              )
+            )
+          }
+        }
+      finalResultMap[resourceConfig.id ?: resourceConfig.resource] = queryResultLinkedList
+    }
+  }
+
+  private suspend fun searchWithRevInclude(
+    relatedResourcesConfigs: List<ResourceConfig>?,
+    baseResource: Resource,
+    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData.QueryResult>>
+  ) {
+    // Use rev include API to retrieve related resources
     val revIncludeRelatedResourcesConfigsMap =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)?.groupBy { it.resource }
 
@@ -217,21 +233,29 @@ constructor(
         }
       }
 
-      val revIncludedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>> =
-        fhirEngine.search<Resource>(revIncludeSearch).groupBy { it.resourceType.name }.mapValues {
-          it.value.mapTo(LinkedList()) { resource ->
-            RepositoryResourceData.QueryResult.Search(
-              resource = resource,
-              relatedResources =
-                retrieveRelatedResources(resource, revIncludeRelatedResourcesConfigsMap[it.key])
-            )
-          }
-        }
+      val revIncludeSearchResult: Map<Resource, Map<ResourceType, List<Resource>>> =
+        fhirEngine.searchWithRevInclude(revIncludeSearch)
 
-      finalResultMap.putAll(revIncludedResourcesMap)
+      revIncludeSearchResult.values.forEach { revIncludedResource ->
+        val revIncludedResourcesMap =
+          revIncludedResource
+            .mapValues {
+              it.value.mapTo(LinkedList<RepositoryResourceData.QueryResult>()) { resource ->
+                RepositoryResourceData.QueryResult.Search(
+                  resource = resource,
+                  relatedResources =
+                    retrieveRelatedResources(
+                      resource,
+                      revIncludeRelatedResourcesConfigsMap[it.key.name]
+                    )
+                )
+              }
+            }
+            .mapKeys { it.key.name }
+
+        finalResultMap.putAll(revIncludedResourcesMap)
+      }
     }
-
-    return finalResultMap
   }
 
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(inverse: Boolean) =

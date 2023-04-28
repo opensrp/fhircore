@@ -35,7 +35,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
-  // TODO handle nested Query results
   suspend fun processResourceData(
     baseResource: Resource,
     relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>>,
@@ -56,7 +55,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     )
   }
 
-  // TODO handle nested query result
   /**
    * This function pre-computes all the Rules for [ViewType]'s of List including list nested in the
    * views. The LIST view computed values includes the parent's.
@@ -80,17 +78,22 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     }
   }
 
+  /**
+   * This function computes rules based on the provided facts [baseResource] and the
+   * [relatedResourcesMap]. The function returns the outcome of the computation in a map; the name
+   * of the rule is used as the key.
+   */
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
     relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData.QueryResult>>
-  ): Map<String, Any> =
-    // Compute values via rules engine and return a map. Rule names MUST be unique
-    rulesFactory.fireRules(
+  ): Map<String, Any> {
+    return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
       baseResource = baseResource,
       relatedResourcesMap = relatedResourcesMap
     )
+  }
 
   private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: Map<String, List<Resource>>,
