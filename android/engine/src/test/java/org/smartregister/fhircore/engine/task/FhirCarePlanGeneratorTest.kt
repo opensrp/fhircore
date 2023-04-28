@@ -1339,11 +1339,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             val opv1 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 1" }
             val pcv3 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 3" }
             val pcv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 2" }
-            val bcg =  tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
+            val bcg = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
 
             assertTrue(opv2?.partOf?.firstOrNull()?.reference.toString() == opv1?.id)
             assertTrue(pcv3?.partOf?.firstOrNull()?.reference.toString() == pcv2?.id)
             assertTrue(bcg?.partOf?.isEmpty() == true)
+            val c = Calendar.getInstance()
+            c.time = opv1?.restriction?.period?.start!!
+            c.add(Calendar.YEAR, 5)
+            c.add(Calendar.DATE, -1)
+            assertTrue(opv1.restriction?.period?.end == c.time)
           }
       }
   }
