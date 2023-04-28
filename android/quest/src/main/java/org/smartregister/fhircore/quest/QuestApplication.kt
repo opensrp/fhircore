@@ -28,6 +28,7 @@ import dagger.hilt.android.HiltAndroidApp
 import io.sentry.Sentry
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
+import io.sentry.android.fragment.FragmentLifecycleIntegration
 import javax.inject.Inject
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
@@ -79,6 +80,15 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
         options.dsn = BuildConfig.SENTRY_DSN.trim { it <= ' ' }
         // To set a uniform sample rate
         options.tracesSampleRate = 1.0
+        options.isEnableUserInteractionTracing = true
+        options.isEnableUserInteractionBreadcrumbs = true
+        options.addIntegration(
+          FragmentLifecycleIntegration(
+            this,
+            enableFragmentLifecycleBreadcrumbs = true, // enabled by default
+            enableAutoFragmentLifecycleTracing = true // disabled by default
+          )
+        )
       }
     }
   }
