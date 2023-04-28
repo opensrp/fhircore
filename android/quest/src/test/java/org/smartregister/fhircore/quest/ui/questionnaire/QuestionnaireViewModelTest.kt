@@ -583,7 +583,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = samplePatient() }
-    coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns samplePatient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns samplePatient().apply { id = "2" }
     coEvery { defaultRepo.addOrUpdate(resource = any()) } just runs
 
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
@@ -597,7 +597,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
         addExtension().url = "sdc-questionnaire-itemExtractionContext"
       }
-
     questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
 
     questionnaireViewModel.extractAndSaveResources(
@@ -614,7 +613,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals("2", patientSlot.captured.id)
-
     unmockkObject(ResourceMapper)
   }
 
@@ -1074,38 +1072,56 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `extractAndSaveResources() should call runCqlFor when Questionnaire uses cqf-library extension`() {
+  fun `extractAndSaveResources() should call runCqlLibrary when Questionnaire uses cqf-library extension`() {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns
       samplePatientRegisterQuestionnaire
     coEvery { fhirEngine.get(ResourceType.Group, any()) } returns Group()
 
-    val questionnaire = Questionnaire()
-    questionnaire.extension.add(
-      Extension(
-        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-        Expression().apply {
-          language = "application/x-fhir-query"
-          expression = "Patient"
-        }
-      )
-    )
-    questionnaire.extension.add(
-      Extension(
-        "http://hl7.org/fhir/uv/sdc/StructureDefinition/cqf-library",
-        CanonicalType("Library/123")
-      )
-    )
-
-    questionnaire.addSubjectType("Patient")
+    val questionnaire =
+      Questionnaire().apply {
+        addSubjectType("Patient")
+        extension =
+          mutableListOf(
+            Extension(
+              "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              Expression().apply {
+                language = "application/x-fhir-query"
+                expression = "Patient"
+              }
+            ),
+            Extension(
+              "http://hl7.org/fhir/uv/sdc/StructureDefinition/cqf-library",
+              CanonicalType("Library/1234")
+            )
+          )
+      }
     val questionnaireResponse = QuestionnaireResponse()
 
-    coEvery { questionnaireViewModel.loadPatient(any()) } returns samplePatient()
+    val patient = samplePatient().apply { id = "2" }
+    coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns patient
+    coEvery { questionnaireViewModel.loadPatient(any()) } returns patient
     coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
     coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
-      Bundle().apply { addEntry().resource = samplePatient() }
+      Bundle().apply { addEntry().resource = patient }
 
-    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
-    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf()
+    coEvery {
+      libraryEvaluator.runCqlLibrary(
+        eq("1234"),
+        eq(patient),
+        eq(Bundle().apply { addEntry().resource = patient }),
+        eq(defaultRepo),
+        eq(false)
+      )
+    } returns listOf()
+
+    val slotQuestionnaire = slot<Questionnaire>()
+    val slotQuestionnaireResponse = slot<QuestionnaireResponse>()
+    coEvery {
+      questionnaireViewModel.saveQuestionnaireResponse(
+        capture(slotQuestionnaire),
+        capture(slotQuestionnaireResponse)
+      )
+    } just runs
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
@@ -1113,15 +1129,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
-    coEvery { fhirEngine.get(any(), any()) } returns Patient()
-    runBlocking { fhirEngine.get(ResourceType.Patient, "1234") }
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
-    coVerify(exactly = 1, timeout = 2000) {
-      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-    }
-    coVerify {
-      libraryEvaluator.runCqlLibrary("1234", patient = null, Bundle(), defaultRepo, false)
-    }
+    coVerify { fhirEngine.get(ResourceType.Patient, "2") }
+
+    assertEquals(questionnaire, slotQuestionnaire.captured)
+    assertEquals(questionnaireResponse, slotQuestionnaireResponse.captured)
   }
 
   @Test

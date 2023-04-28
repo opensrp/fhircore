@@ -593,12 +593,10 @@ constructor(
           .resourceClassType()
           .newInstance()
           .resourceType
-      resourceType.let {
-        if (it.isIn(ResourceType.Patient, ResourceType.Group)) {
-          defaultRepository.loadResource(resourceId, resourceType).let { resource ->
-            resource.updateLastUpdated()
-            defaultRepository.addOrUpdate(true, resource)
-          }
+      if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+        defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+          resource.updateLastUpdated()
+          defaultRepository.addOrUpdate(true, resource)
         }
       }
     }
