@@ -958,11 +958,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
     questionnaire.addSubjectType("Patient")
     val questionnaireResponse = QuestionnaireResponse()
-
-    coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
+    val bundle = Bundle().apply { id = "1234" }
+    runBlocking { questionnaireViewModel.saveBundleResources(bundle) }
+    coEvery { questionnaireViewModel.saveBundleResources(bundle) } just runs
+    runBlocking {
+      questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
+    }
     coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = samplePatient() }
-
+    runBlocking {
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
     coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
@@ -972,7 +978,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = questionnaireConfig
     )
 
-    coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
+    coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(bundle) }
     coVerify(exactly = 1, timeout = 2000) {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
