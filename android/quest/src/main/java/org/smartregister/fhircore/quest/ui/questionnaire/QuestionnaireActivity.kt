@@ -107,6 +107,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.isNullOrEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
+
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
       if (it) {
@@ -134,6 +135,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             finish()
           } else {
             questionnaire = thisQuestionnaire
+
             // Only add the fragment once, when the activity is first created.
             if (savedInstanceState == null) renderFragment()
 

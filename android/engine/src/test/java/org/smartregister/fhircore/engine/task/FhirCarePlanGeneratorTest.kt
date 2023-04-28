@@ -41,6 +41,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -75,9 +78,6 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -1062,7 +1062,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1144,9 +1148,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       runBlocking {
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val planDefinition = planDefinitionResources.planDefinition
     val patient = planDefinitionResources.patient
-    val data = Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+    val data =
+      Bundle()
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
 
     val dynamicValue = planDefinition.action.first().dynamicValue
     val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
@@ -1175,7 +1183,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1273,6 +1285,73 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate child immunization schedule with pre-req def and expiry timing`() =
+      runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(
+          carePlan,
+          planDefinition,
+          patient,
+          patient.birthDate,
+          patient.birthDate.plusDays(4017),
+          20
+        )
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
+            assertTrue(
+              tasks.all {
+                it.input.firstOrNull()?.type?.coding!![0].display == "Dependent (qualifier value)"
+              }
+            )
+            assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" })
+
+            assertTrue(
+              tasks.all {
+                it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
+              }
+            )
+            val opv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 2" }
+            val opv1 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 1" }
+            val pcv3 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 3" }
+            val pcv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 2" }
+            val bcg = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
+
+            assertTrue(opv2?.partOf?.firstOrNull()?.reference.toString() == opv1?.id)
+            assertTrue(pcv3?.partOf?.firstOrNull()?.reference.toString() == pcv2?.id)
+            assertTrue(bcg?.partOf?.isEmpty() == true)
+            val c = Calendar.getInstance()
+            c.time = opv1?.restriction?.period?.start!!
+            c.add(Calendar.YEAR, 5)
+            c.add(Calendar.DATE, -1)
+            assertTrue(opv1.restriction?.period?.end == c.time)
+          }
+      }
+  }
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate disease followup schedule`() = runTest {
