@@ -45,7 +45,6 @@
         "fhirPathExpression": "Group.member.entity",
         "relatedResources": [
           {
-            "id": "patientConditions",
             "resource": "Condition",
             "searchParameter": "subject"
           },

@@ -137,16 +137,7 @@ constructor(
         if (baseResource != null) {
           put(baseResource.resourceType.name, baseResource)
         }
-        relatedResourcesMap.forEach {
-          val actualValue =
-            it.value.map { queryResult ->
-              when (queryResult) {
-                is RepositoryResourceData.Count -> queryResult.relatedResourceCount
-                is RepositoryResourceData.Search -> queryResult.resource
-              }
-            }
-          put(it.key, actualValue)
-        }
+        populateRelatedResourcesRecursively(relatedResourcesMap)
       }
 
     if (BuildConfig.DEBUG) {
@@ -155,6 +146,26 @@ constructor(
     } else rulesEngine.fire(rules, facts)
 
     return facts.get(DATA) as Map<String, Any>
+  }
+
+  private fun Facts.populateRelatedResourcesRecursively(
+    relatedResourcesMap: Map<String, List<RepositoryResourceData>>?
+  ) {
+    relatedResourcesMap?.forEach {
+      val actualValue: List<Any> =
+        it.value.map { repositoryResourceData ->
+          when (repositoryResourceData) {
+            is RepositoryResourceData.Count -> repositoryResourceData.relatedResourceCount
+            is RepositoryResourceData.Search -> {
+              if (repositoryResourceData.relatedResources.isNotEmpty()) {
+                populateRelatedResourcesRecursively(repositoryResourceData.relatedResources)
+              }
+              repositoryResourceData.resource
+            }
+          }
+        }
+      put(it.key, actualValue)
+    }
   }
 
   suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
