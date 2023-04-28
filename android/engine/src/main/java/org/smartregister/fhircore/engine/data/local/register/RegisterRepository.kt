@@ -350,7 +350,7 @@ constructor(
       rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
       resource = baseResource,
       // TODO Add secondary resources as related resources
-      relatedResources = retrieveRelatedResources(baseResource, baseResourceConfig.relatedResources)
+      relatedResources = retrieveRelatedResources(baseResource, resourceConfig.relatedResources)
     )
   }
 
