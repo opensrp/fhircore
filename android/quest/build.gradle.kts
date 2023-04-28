@@ -22,11 +22,7 @@ plugins {
   id("org.sonarqube") version "3.5.0.2730"
 }
 
-sonar {
-  properties {
-    property("sonar.projectKey", "fhircore")
-  }
-}
+sonar { properties { property("sonar.projectKey", "fhircore") } }
 
 android {
   compileSdk = 33
