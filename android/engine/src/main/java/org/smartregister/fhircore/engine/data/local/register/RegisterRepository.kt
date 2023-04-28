@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.app.ConfigService.Companion.ACTIVE_SEARCH_PARAM
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -107,7 +106,7 @@ constructor(
         baseResourceConfig.dataQueries?.forEach { filterBy(it) }
         applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
         // Filter only active resources
-        if (baseResourceType in listOf(ResourceType.Patient, ResourceType.Group)) {
+        if (baseResourceType in filterActiveResources) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
         sort(baseResourceConfig.sortConfigs)
@@ -136,6 +135,9 @@ constructor(
     baseResource: Resource,
     relatedResourcesConfigs: List<ResourceConfig>?
   ): Map<String, LinkedList<RepositoryResourceData.QueryResult>> {
+
+    // The key for this map is the same as the one used by the Rules Fact map
+    // Can be provided via ResourceConfig.id property otherwise defaults to the ResourceType
     val finalResultMap = mutableMapOf<String, LinkedList<RepositoryResourceData.QueryResult>>()
 
     val nonRevIncludedRelatedResourcesConfigs =
@@ -217,7 +219,7 @@ constructor(
     baseResource: Resource,
     finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData.QueryResult>>
   ) {
-    // Use rev include API to retrieve related resources
+    // Get configurations of related resources to be reverse included
     val revIncludeRelatedResourcesConfigsMap =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)?.groupBy { it.resource }
 
@@ -226,7 +228,7 @@ constructor(
         Search(baseResource.resourceType).apply {
           filter(Resource.RES_ID, { value = of(baseResource.logicalId) })
         }
-      revIncludeRelatedResourcesConfigsMap.values.asSequence().flatten().forEach { resourceConfig ->
+      revIncludeRelatedResourcesConfigsMap.values.flatten().forEach { resourceConfig ->
         val resourceType = resourceConfig.resource.resourceClassType().newInstance().resourceType
         revIncludeSearch.apply {
           revInclude(resourceType, ReferenceClientParam(resourceConfig.searchParameter))
@@ -251,7 +253,12 @@ constructor(
                 )
               }
             }
-            .mapKeys { it.key.name }
+            .mapKeys {
+              // Use the unique resourceConfig.id otherwise default to resourceType
+              if (revIncludeRelatedResourcesConfigsMap.containsKey(it.key.name)) {
+                revIncludeRelatedResourcesConfigsMap[it.key.name]?.firstOrNull()?.id ?: it.key.name
+              } else it.key.name
+            }
 
         finalResultMap.putAll(revIncludedResourcesMap)
       }
@@ -300,13 +307,9 @@ constructor(
     val search =
       Search(resourceType).apply {
         baseResourceConfig.dataQueries?.forEach { filterBy(it) }
-        // For patient return only active members count
-        if (resourceType == ResourceType.Patient) {
+        // Filter only active resources
+        if (resourceType in filterActiveResources) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
-        }
-        // Filter active Groups
-        if (resourceType == ResourceType.Group) {
-          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
         }
         applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }
@@ -322,6 +325,7 @@ constructor(
   ): RepositoryResourceData {
     val paramsMap: Map<String, String> =
       paramsList
+        ?.asSequence()
         ?.filter {
           (it.paramType == ActionParameterType.PARAMDATA ||
             it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
@@ -364,6 +368,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   companion object {
+    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
     const val ACTIVE = "active"
   }
 }

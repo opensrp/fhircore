@@ -45,6 +45,12 @@
         "fhirPathExpression": "Group.member.entity",
         "relatedResources": [
           {
+            "id": "hivCondition",
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "id": "ancCondition",
             "resource": "Condition",
             "searchParameter": "subject"
           },
