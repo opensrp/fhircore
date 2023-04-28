@@ -101,7 +101,8 @@ fun ProfileScreen(
           elevation = 4,
           profileUiState = profileUiState,
           lazyListState = lazyListState,
-          onEvent = onEvent
+          onEvent = onEvent,
+          collapsible = false
         )
       } else {
         CustomProfileTopAppBar(
@@ -174,19 +175,54 @@ fun CustomProfileTopAppBar(
       elevation = 0,
       titleTextProperties = topBarConfig.title,
       profileUiState = profileUiState,
+      collapsible = topBarConfig.collapsible,
       onEvent = onEvent,
       lazyListState = lazyListState
     )
-    AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
-      Column(modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        ViewRenderer(
-          viewProperties = topBarConfig.content,
-          resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
-          navController = navController
+    if (topBarConfig.collapsible) {
+      AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
+        RenderSimpleAppTopBar(
+          modifier = modifier,
+          topBarConfig = topBarConfig,
+          profileUiState = profileUiState,
+          navController = navController,
+          titleContentPadding = 16
         )
       }
+    } else {
+      RenderSimpleAppTopBar(
+        modifier = modifier,
+        topBarConfig = topBarConfig,
+        profileUiState = profileUiState,
+        navController = navController,
+        titleContentPadding = 0
+      )
     }
+  }
+}
+
+@Composable
+private fun RenderSimpleAppTopBar(
+  modifier: Modifier,
+  topBarConfig: TopBarConfig,
+  profileUiState: ProfileUiState,
+  navController: NavController,
+  titleContentPadding: Int
+) {
+  Column(
+    modifier =
+      modifier.padding(
+        start = titleContentPadding.dp,
+        end = titleContentPadding.dp,
+        bottom = titleContentPadding.dp
+      )
+  ) {
+    ViewRenderer(
+      viewProperties = topBarConfig.content,
+      resourceData = profileUiState.resourceData
+          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      navController = navController
+    )
   }
 }
 
@@ -198,13 +234,22 @@ private fun SimpleTopAppBar(
   titleTextProperties: CompoundTextProperties? = null,
   profileUiState: ProfileUiState,
   lazyListState: LazyListState,
+  collapsible: Boolean,
   onEvent: (ProfileEvent) -> Unit
 ) {
   TopAppBar(
     modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
     title = {
       if (titleTextProperties != null && profileUiState.resourceData != null) {
-        AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+        if (collapsible) {
+          AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+            CompoundText(
+              compoundTextProperties = titleTextProperties,
+              resourceData = profileUiState.resourceData,
+              navController = navController
+            )
+          }
+        } else {
           CompoundText(
             compoundTextProperties = titleTextProperties,
             resourceData = profileUiState.resourceData,
