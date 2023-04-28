@@ -177,8 +177,8 @@ constructor(
     val group = fhirEngine.get<Group>(groupId)
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
-        if (group.managingEntity.id != null) {
-          fhirEngine.get<RelatedPerson>(group.managingEntity.id)
+        if (group.managingEntity.reference != null) {
+          fhirEngine.get<RelatedPerson>(group.managingEntity.reference.extractLogicalIdUuid())
         } else {
           RelatedPerson().apply { id = UUID.randomUUID().toString() }
         }
@@ -189,7 +189,6 @@ constructor(
       addOrUpdate(resource = relatedPerson)
 
       group.managingEntity = relatedPerson.asReference()
-      group.managingEntity.id = relatedPerson.id
       fhirEngine.update(group)
     }
   }
