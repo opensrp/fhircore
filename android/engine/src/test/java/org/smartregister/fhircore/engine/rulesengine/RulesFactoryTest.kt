@@ -103,7 +103,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -184,7 +184,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesIgnoresBaseResourceWhenNull() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",

@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -98,14 +99,14 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     runBlocking {
       val listResourceData = registerRepository.loadRegisterData(1, "patientRegister")
-      val queryResult = listResourceData.first().queryResult
+      val queryResult = listResourceData.first()
 
-      Assert.assertTrue(queryResult is RepositoryResourceData.QueryResult.Search)
+      Assert.assertTrue(queryResult is RepositoryResourceData.Search)
       Assert.assertEquals(1, listResourceData.size)
 
       Assert.assertEquals(
         ResourceType.Patient,
-        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+        (queryResult as RepositoryResourceData.Search).resource.resourceType
       )
     }
 
@@ -147,13 +148,13 @@ class RegisterRepositoryTest : RobolectricTest() {
     runBlocking {
       configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
       val listResourceData = registerRepository.loadRegisterData(1, "householdRegister")
-      val queryResult = listResourceData.first().queryResult
+      val queryResult = listResourceData.first()
 
       Assert.assertEquals(1, listResourceData.size)
 
       Assert.assertEquals(
         ResourceType.Group,
-        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+        (queryResult as RepositoryResourceData.Search).resource.resourceType
       )
     }
 
@@ -187,7 +188,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertNotNull(profileData)
       Assert.assertEquals(
         ResourceType.Patient,
-        (profileData.queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
+        (profileData as RepositoryResourceData.Search).resource.resourceType
       )
     }
   }
@@ -352,7 +353,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       )
     paramsList
       .asSequence()
-      .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+      .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
       .associate { it.key to it.value }
     val paramsMap = emptyMap<String, String>()
     coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
@@ -367,47 +368,51 @@ class RegisterRepositoryTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun loadProfileDataSqlContainsFilterForActiveGroups() {
-    val group =
-      Group().apply {
-        id = "1234567"
-        name = "Paracetamol"
-        active = true
-      }
+    runTest {
+      val group =
+        Group().apply {
+          id = "1234567"
+          name = "Paracetamol"
+          active = true
+        }
 
-    val expectedSql =
-      "SELECT a.serializedResource\n" +
-        "FROM ResourceEntity a\n" +
-        "WHERE a.resourceType = ?\n" +
-        "AND a.resourceUuid IN (\n" +
-        "SELECT resourceUuid FROM TokenIndexEntity\n" +
-        "WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)\n" +
-        ")\n" +
-        "AND a.resourceUuid IN (\n" +
-        "SELECT resourceUuid FROM TokenIndexEntity\n" +
-        "WHERE resourceType = ? AND index_name = ? AND index_value = ?\n" +
-        ")"
+      val expectedSql =
+        "SELECT a.serializedResource\n" +
+          "FROM ResourceEntity a\n" +
+          "WHERE a.resourceType = ?\n" +
+          "AND a.resourceUuid IN (\n" +
+          "SELECT resourceUuid FROM TokenIndexEntity\n" +
+          "WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)\n" +
+          ")\n" +
+          "AND a.resourceUuid IN (\n" +
+          "SELECT resourceUuid FROM TokenIndexEntity\n" +
+          "WHERE resourceType = ? AND index_name = ? AND index_value = ?\n" +
+          ")"
 
-    val expectedArgs =
-      listOf(
-        "Group",
-        "Group",
-        "code",
-        "386452003",
-        "http://snomed.info/sct",
-        "Group",
-        "active",
-        "true"
-      )
+      val expectedArgs =
+        listOf(
+          "Group",
+          "Group",
+          "code",
+          "386452003",
+          "http://snomed.info/sct",
+          "Group",
+          "active",
+          "true"
+        )
 
-    val groupSlot = slot<Search>()
-    coEvery { fhirEngine.search<Group>(capture(groupSlot)) } returns listOf(group)
+      val groupSlot = slot<Search>()
+      coEvery { fhirEngine.search<Group>(capture(groupSlot)) } returns listOf(group)
 
-    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(Search(ResourceType.Patient, null, null))
+      } returns mutableMapOf(patient to emptyMap())
 
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
+      coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
 
-    runBlocking {
+      coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
+        listOf(Observation())
+
       val profileData =
         registerRepository.loadProfileData(
           profileId = "patientProfile",
@@ -415,9 +420,9 @@ class RegisterRepositoryTest : RobolectricTest() {
           paramsList = emptyArray()
         )
       Assert.assertNotNull(profileData)
-    }
 
-    Assert.assertEquals(expectedSql, groupSlot.captured.getQuery().query)
-    Assert.assertEquals(expectedArgs, groupSlot.captured.getQuery().args)
+      Assert.assertEquals(expectedSql, groupSlot.captured.getQuery().query)
+      Assert.assertEquals(expectedArgs, groupSlot.captured.getQuery().args)
+    }
   }
 }
