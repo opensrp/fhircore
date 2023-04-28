@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.task
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -245,7 +246,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskNoEncounter() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
     coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
@@ -260,7 +261,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskWithEncounter() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
     coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
@@ -275,7 +276,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testCompleteTaskWithEncounter_TaskStatusFromCode() = runTest {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
-    coEvery { fhirEngine.search<CarePlan>(any()) } answers { listOf() }
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } answers { listOf() }
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
     coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 
@@ -302,7 +303,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
     coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
-    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(carePlan)
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns listOf(carePlan)
     coEvery { fhirEngine.get<Task>("12345") } returns Task().apply { id = "12345" }
     coEvery { fhirEngine.delete(ResourceType.Task, "12345") } answers {}
 

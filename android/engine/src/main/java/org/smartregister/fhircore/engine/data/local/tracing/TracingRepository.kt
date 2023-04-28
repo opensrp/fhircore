@@ -27,6 +27,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -209,84 +210,102 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
     )
   }
 
-  suspend fun getTracingAttempt(patient: Patient): TracingAttempt {
-    var currentAttempt: TracingAttempt? = null
-    val list =
-      fhirEngine.search<ListResource> {
+  suspend fun getPatientListResource(patient: Patient): ListResource? {
+    return fhirEngine
+      .search<ListResource> {
         filter(ListResource.SUBJECT, { value = patient.referenceValue() })
         filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
-        sort(ListResource.DATE, Order.ASCENDING)
+        sort(ListResource.TITLE, Order.DESCENDING)
         count = 1
         from = 0
       }
-    val first = list.firstOrNull()
-    currentAttempt =
-      if (first != null) {
-        toTracingAttempt(first)
-      } else {
-        TracingAttempt(
-          historyId = null,
-          lastAttempt = null,
-          numberOfAttempts = 0,
-          outcome = "",
-          reasons = listOf()
-        )
-      }
+      .firstOrNull()
+  }
 
-    return currentAttempt
+  suspend fun getTracingAttempt(patient: Patient): TracingAttempt {
+    val list = getPatientListResource(patient)
+    return list?.let { toTracingAttempt(it) }
+      ?: TracingAttempt(
+        historyId = null,
+        lastAttempt = null,
+        numberOfAttempts = 0,
+        outcome = "",
+        reasons = listOf()
+      )
+  }
+
+  suspend fun getTracingAttempt(list: ListResource?): TracingAttempt {
+    return list?.let { toTracingAttempt(it) }
+      ?: TracingAttempt(
+        historyId = null,
+        lastAttempt = null,
+        numberOfAttempts = 0,
+        outcome = "",
+        reasons = listOf()
+      )
   }
 
   private suspend fun toTracingAttempt(list: ListResource): TracingAttempt {
-    val encounters = mutableListOf<Encounter>()
     var lastAttempt: Encounter? = null
-    var outcome = ""
-    list.entry.forEach { entry ->
-      try {
-        val ref = entry.item
-        val el = ref.reference.split("/")
-        if (el[0] == ResourceType.Encounter.toString()) {
-          val resource = fhirEngine.get(ResourceType.fromCode(el[0]), el[1])
-          if (resource is Encounter) {
-
-            if (lastAttempt == null) {
-              lastAttempt = resource
-            } else if (lastAttempt?.period?.start != null) {
-              if (resource.period.start.after(lastAttempt?.period?.start)) {
-                lastAttempt = resource
-              }
-            }
-            encounters.add(resource)
+    list
+      .entry
+      .map { it.item }
+      .filter { it.referenceElement.resourceType == ResourceType.Encounter.name }
+      .forEach { ref ->
+        val resourceId = IdType(ref.reference).idPart
+        kotlin
+          .runCatching { fhirEngine.get<Encounter>(resourceId) }
+          .onSuccess { enc ->
+            lastAttempt = maxOf(lastAttempt, enc, nullsFirst(compareBy { it.period?.start?.time }))
           }
-        }
-      } catch (e: Exception) {
-        e.printStackTrace()
+          .onFailure { it.printStackTrace() }
       }
-    }
-    if (lastAttempt != null) {
-      val obs =
+
+    val obs =
+      lastAttempt?.let {
         fhirEngine.search<Observation> {
-          filter(Observation.ENCOUNTER, { value = lastAttempt?.referenceValue() })
+          filter(Observation.ENCOUNTER, { value = it.referenceValue() })
           filter(
             Observation.CODE,
             {
               value =
-                of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-conducted", "")))
+                of(
+                  CodeableConcept(
+                    Coding().apply {
+                      system = "https://d-tree.org"
+                      code = "tracing-outcome-conducted"
+                    }
+                  )
+                )
             },
             {
               value =
-                of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-unconducted", "")))
+                of(
+                  CodeableConcept(
+                    Coding().apply {
+                      system = "https://d-tree.org"
+                      code = "tracing-outcome-unconducted"
+                    }
+                  )
+                )
             },
             operation = Operation.OR
           )
-        }
-      obs.firstOrNull()?.let {
-        if (it.hasValueCodeableConcept()) {
-          outcome = it.valueCodeableConcept.text
+          count = 1
         }
       }
-    }
+
+    val outcome =
+      obs?.firstOrNull { it.hasValueCodeableConcept() }?.valueCodeableConcept?.text ?: ""
+
+    val attempts =
+      list.orderedBy.coding.filter { coding -> coding.code.all { it.isDigit() } }.maxOfOrNull {
+        it.code.toInt()
+      }
+        ?: list.title.substringAfterLast("_").toIntOrNull() ?: 0
+
     return TracingAttempt(
-      numberOfAttempts = encounters.size,
+      numberOfAttempts = attempts,
       lastAttempt = lastAttempt?.period?.start,
       outcome = outcome,
       reasons = listOf(),

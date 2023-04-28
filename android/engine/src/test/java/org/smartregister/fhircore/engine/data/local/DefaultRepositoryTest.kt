@@ -20,6 +20,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -149,14 +150,14 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `loadQuestionnaireResponse() should call FhirEngine#load`() {
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns listOf()
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns listOf()
 
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
 
-    coVerify { fhirEngine.search<QuestionnaireResponse>(any()) }
+    coVerify { fhirEngine.search<QuestionnaireResponse>(any<Search>()) }
   }
 
   @Test
@@ -200,7 +201,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun testSearchCompositionByIdentifier() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<Composition>(any()) } returns
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
       listOf(Composition().apply { id = "123" })
 
     val defaultRepository =
@@ -208,7 +209,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val result = defaultRepository.searchCompositionByIdentifier("appId")
 
-    coVerify { fhirEngine.search<Composition>(any()) }
+    coVerify { fhirEngine.search<Composition>(any<Search>()) }
 
     Assert.assertEquals("123", result!!.logicalId)
   }

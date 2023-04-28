@@ -109,6 +109,8 @@
 
     <string name="search_progress_message">Search in progress. Please wait…</string>
 
+    <string name="error_occurred" translatable="false">Something went wrong...</string>
+
     <string name="patient_details">Patient details</string>
     <string name="name">Name</string>
     <string name="tracing_visit_due">Tracing Visit Due</string>

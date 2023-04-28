@@ -21,10 +21,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -124,14 +122,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any()) } returns
       QuestionnaireResponse()
 
-    questionnaireFragment = spyk<QuestionnaireFragment>()
-
     val questionnaireString = parser.encodeResourceToString(Questionnaire())
 
-    questionnaireFragment.apply {
-      arguments =
-        bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-    }
+    questionnaireFragment =
+      spyk(QuestionnaireFragment.builder().setQuestionnaire(questionnaireString).build())
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
@@ -222,14 +216,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
       }
 
-    val questionnaireFragment = spyk<QuestionnaireFragment>()
-
     val questionnaireString = parser.encodeResourceToString(Questionnaire())
 
-    questionnaireFragment.apply {
-      arguments =
-        bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-    }
+    val questionnaireFragment =
+      spyk(QuestionnaireFragment.builder().setQuestionnaire(questionnaireString).build())
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
@@ -240,10 +230,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
 
-    Assert.assertEquals(
-      "Done",
-      questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).text
-    )
+    Assert.assertEquals("Done", questionnaireActivity.submitButtonText())
   }
 
   @Test
@@ -366,7 +353,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Questionnaire().apply { experimental = false }
     )
 
-    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+    questionnaireActivity.onSubmitRequestResult()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
@@ -385,7 +372,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Questionnaire().apply { experimental = true }
     )
 
-    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+    questionnaireActivity.onSubmitRequestResult()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
