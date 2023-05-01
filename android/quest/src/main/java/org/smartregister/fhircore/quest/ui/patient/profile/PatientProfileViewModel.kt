@@ -449,5 +449,8 @@ constructor(
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
     const val PATIENT_CHANGE_STATUS = "patient-change-status"
     const val PATIENT_TRANSFER_OUT = "patient-transfer-out"
+    const val WELCOME_SERVICE_BACK_TO_CARE = "art-client-welcome-service-back-to-care"
+    const val WELCOME_SERVICE_HVL = "art-client-welcome-service-high-or-detectable-viral-load"
+    const val WELCOME_SERVICE_NEWLY_DIAGNOSED = "art-client-welcome-service-newly-diagnosed"
   }
 }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile.components
 
+import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -45,8 +47,9 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 fun PersonalData(
   patientProfileViewData: ProfileViewData.PatientProfileViewData,
   modifier: Modifier = Modifier,
+  color: androidx.compose.ui.graphics.Color = MaterialTheme.colors.background
 ) {
-  Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
+  Card(elevation = 3.dp, modifier = modifier.fillMaxWidth(), backgroundColor = color) {
     Column(modifier = modifier.padding(16.dp)) {
       Text(
         text = patientProfileViewData.name,
