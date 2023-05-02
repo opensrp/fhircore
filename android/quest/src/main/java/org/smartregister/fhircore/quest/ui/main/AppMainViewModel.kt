@@ -98,8 +98,6 @@ constructor(
 
   val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
-  val dataRefreshLivedata: MutableLiveData<Boolean?> = MutableLiveData()
-
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
