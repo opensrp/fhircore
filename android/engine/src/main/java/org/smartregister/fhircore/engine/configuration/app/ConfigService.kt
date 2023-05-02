@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
 import timber.log.Timber
 
 /** An interface that provides the application configurations. */
@@ -42,7 +43,7 @@ interface ConfigService {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
         FhirTaskPlanWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.REPLACE,
+        ExistingPeriodicWorkPolicy.UPDATE,
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
   }
@@ -58,7 +59,7 @@ interface ConfigService {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
         MissedFHIRAppointmentsWorker.NAME,
-        ExistingPeriodicWorkPolicy.REPLACE,
+        ExistingPeriodicWorkPolicy.UPDATE,
         workRequest
       )
   }
@@ -70,7 +71,19 @@ interface ConfigService {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
         ProposedWelcomeServiceAppointmentsWorker.NAME,
-        ExistingPeriodicWorkPolicy.REPLACE,
+        ExistingPeriodicWorkPolicy.UPDATE,
+        workRequest
+      )
+  }
+
+  fun scheduleWelcomeServiceToCarePlanForMissedAppointments(context: Context) {
+    val workRequest =
+      PeriodicWorkRequestBuilder<WelcomeServiceBackToCarePlanWorker>(1, TimeUnit.DAYS).build()
+
+    WorkManager.getInstance(context)
+      .enqueueUniquePeriodicWork(
+        WelcomeServiceBackToCarePlanWorker.NAME,
+        ExistingPeriodicWorkPolicy.UPDATE,
         workRequest
       )
   }

@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
@@ -198,7 +199,10 @@ constructor(
           .filter {
             it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
               it.executionPeriod.hasStart() &&
-              it.executionPeriod.start.before(Date())
+              it.executionPeriod
+                .start
+                .before(Date())
+                .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
           }
       } else emptyList()
 
@@ -407,7 +411,10 @@ constructor(
     return patientTasks.filter {
       it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
         it.executionPeriod.hasStart() &&
-        it.executionPeriod.start.before(Date())
+        it.executionPeriod
+          .start
+          .before(Date())
+          .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
     }
   }
 

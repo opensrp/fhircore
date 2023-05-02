@@ -280,9 +280,7 @@ constructor(
   }
 
   internal suspend fun Patient.activeCarePlans() =
-    patientCarePlan(this.logicalId).filter { carePlan ->
-      carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE)
-    }
+    patientCarePlan(this.logicalId).filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
 
   internal suspend fun patientCarePlan(patientId: String) =
     defaultRepository.searchResourceFor<CarePlan>(
