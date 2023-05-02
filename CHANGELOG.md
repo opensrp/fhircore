@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Allow completion of Overdue Tasks
 - Allow ordering of registers by related resources last updated
+- Refactor handling of questionnaire submission to use generic event bus
 
 ### Fixed
 - Invalidation/refresh cache after form completion
