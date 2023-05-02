@@ -75,8 +75,8 @@ group ExtractChildRegistrationTasks(source src : QuestionnaireResponse, target b
     src.item as item where(linkId = "a9e50fc1-8d74-42e2-8185-fae889afcb55" and answer.value.exists()) then {
 
         src -> evaluate(item, $this.answer.value) as maxTaskCount then {
-            src -> evaluate(item, $this.answer.value - $this.answer.value) as taskCount then
-                ExtractChildRegistrationTask(src, bundle, refPatient, maxTaskCount, taskCount) "rule-reg-child-task-ind";
+            src -> evaluate(item, $this.answer.value - $this.answer.value) as initialTaskCount then
+                ExtractChildRegistrationTask(src, bundle, refPatient, maxTaskCount, initialTaskCount) "rule-reg-child-task-ind-via-initial-0";
         } "max-task-count";
 
     } "child-count-for-recursive-call";

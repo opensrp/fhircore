@@ -22,7 +22,15 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Assert
@@ -457,7 +465,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertTrue(observation.code.text == "under-reporting")
   }
 
-
   @Test
   fun `perform extraction from  pregnancy outcome Questionnaire`() {
     val vitalSignQuestionnaireResponse =
@@ -490,5 +497,12 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     scu.transform(contextR4, baseElement, map, targetResource)
 
     System.out.println(iParser.encodeResourceToString(targetResource))
+
+    Assert.assertTrue(targetResource.entry.size > 10)
+    val taskList =
+      targetResource.entry.filter {
+        it.resource.resourceType != null && it.resource.resourceType == ResourceType.Task
+      }
+    Assert.assertTrue(taskList.size == 10)
   }
 }
