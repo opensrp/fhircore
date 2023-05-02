@@ -93,7 +93,6 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   ) {
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
     // Always refresh data when questionnaire is submitted
     with(profileFragmentArgs) {
       profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
