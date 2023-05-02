@@ -1,0 +1,253 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/f78e1da0-6c71-4190-a0b4-286aedb0ebe4" = "PregnancyOutcomeRegistration"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group PregnancyOutcomeRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src -> evaluate(src, $this.subject) as refPatient then
+        ExtractPNCResources(src, bundle, refPatient) "r_bundle_entries";
+}
+
+group ExtractPNCResources(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    	src.item as item_pnc_started where(linkId ='dd90825d-c161-480a-8f9f-ab2921155be2' and answer.value.code = 'live-birth') then {
+            src then ExtractPNCCondition(src, bundle, refPatient) "rule_pnc_condition";
+            src then UpdateANCCondition(src, bundle, refPatient) "rule_update_anc_condition";
+            src then ExtractChildRegistrationTasks(src, bundle, refPatient) "rule_child_registration";
+            src -> create('Reference') as refCommodity, create('integer') as previousBal then {
+                src then ExtractCommodityReference(src, refCommodity, previousBal) "r_populate_commodity_ref";
+                src then ExtractObservation(src, bundle, refCommodity, previousBal) "rule_comodity_observation";
+            } "r_commodity_ref";
+    	} "rule_live_birth_check";
+
+    	src.item as item_pnc_died where(linkId ='dd90825d-c161-480a-8f9f-ab2921155be2' and answer.value.code = 'dead') then {
+    	    src then UpdateANCConditionNewBornDied(src, bundle, refPatient) "rule_update_anc_condition_death_born";
+        } "rule_check_death_born";
+}
+
+/* Create the PNC Condition for the patients  */
+group ExtractPNCCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+        src -> cnd.id = uuid() "r_cnd_id";
+     	src -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+     	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+        src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+        src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis",
+        "Encounter Diagnosis") "r_cnd_category";
+        src -> cnd.subject = refPatient "r_cnd_sub";
+        src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+        src -> cnd.code = create("CodeableConcept") as ccPreg then {
+             src -> ccPreg.coding = c("http://snomed.info/sct", "133906008", "Postpartum care") "r_cnd_code_coding";
+             src -> ccPreg.text = "PNC" "r_cnd_code_text";
+        } "r_cnd_code";
+    } "r_cnd";
+}
+
+/* Update Existing ANC Condition for the patients  */
+group UpdateANCCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src.item as item where(linkId = "dd90825d-c161-480a-8f9f-ab2921155be2" and answer.value.exists()) then {
+          src->bundle.entry as entry,
+          entry.resource = create("Condition") as cnd then {
+              src->cnd.id = create("id") as cnd_id then {
+                  src->cnd_id.value = evaluate(item, $this.answer.value) "r_item_cnd_id_value";
+              } "r_item_cnd_id";
+              src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "resolved") "r_cnd_clinical_status";
+          } "r_cnd";
+      } "r_item";
+}
+
+/* Update Existing ANC Condition for the patients - Death New Born  */
+group UpdateANCConditionNewBornDied(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src.item as item where(linkId = "dd90825d-c161-480a-8f9f-ab2921155be2" and answer.value.exists()) then {
+          src->bundle.entry as entry,
+          entry.resource = create("Condition") as cnd then {
+              src->cnd.id = create("id") as cnd_id then {
+                  src->cnd_id.value = evaluate(item, $this.answer.value) "r_item_cnd_id_value";
+              } "r_item_cnd_id";
+              src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "inactive") "r_cnd_clinical_status";
+          } "r_cnd";
+      } "r_item";
+}
+
+/*Create the Tasks for child registrations*/
+group ExtractChildRegistrationTasks(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+
+    src.item as item where(linkId = "a9e50fc1-8d74-42e2-8185-fae889afcb55" and answer.value.exists()) then {
+
+        src -> evaluate(item, $this.answer.value) as maxTaskCount then {
+            src -> evaluate(item, $this.answer.value - $this.answer.value) as taskCount then
+                ExtractChildRegistrationTask(src, bundle, refPatient, maxTaskCount, taskCount) "rule-reg-child-task-ind";
+        } "max-task-count";
+
+    } "child-count-for-recursive-call";
+
+}
+
+/*Create the Individual Task for child registrations*/
+group ExtractChildRegistrationTask(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference, source maxTaskCount: Integer, source taskCount: Integer) {
+
+    src where(taskCount < maxTaskCount) -> (taskCount+1) as currentCount then {
+
+        // todo fix evaluate(expression for 2 days) as end, we(Ager-Abdul directly posted the working one on json)
+        src -> evaluate(src, today()) as start, evaluate(src, today() + '2 \'days\''.toQuantity()) as end, create('Period')
+            as period,bundle.entry as entry, entry.resource = create("Task") as pncTask then {
+
+                src then ExtractTaskPeriod(start, end, period) "rule_task_period";
+
+                src -> pncTask.id = uuid(),
+                    pncTask.identifier = create('Identifier') as identifier, identifier.value = uuid(), identifier.use = 'official',
+                    pncTask.status = 'ready',
+                    pncTask.intent = 'plan',
+                    pncTask.executionPeriod = period,
+                    pncTask.priority = 'routine',
+                    pncTask.description = 'New Born registration task',
+                    pncTask.for = refPatient,
+                    pncTask.authoredOn = evaluate(src, now()),
+                    pncTask.requester = evaluate(src, $this.generalPractitioner.first()),
+                    pncTask.owner = evaluate(src, $this.generalPractitioner.first()) "rule_task_data";
+
+                    // child registration form link // hh new member 7bf0bab5-cb90-4a42-ac9c-c26b6b588605
+                    src -> pncTask.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/7bf0bab5-cb90-4a42-ac9c-c26b6b588605' "r_task_reason_ref";
+            } "rule_create_task";
+
+        src then ExtractChildRegistrationTask(src, bundle, refPatient, maxTaskCount, currentCount) "rule-reg-child-task-inner-recursive";
+    } "rule-check-max-count-match";
+}
+
+group ExtractTaskPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refCommodity : Reference, source previousBal: Integer) {
+    src.item as item_given where(linkId='d26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code != 'none') then {
+        src.item as item_given_count where(linkId ='489de7ae-51cc-4f43-c761-12c8fb65266b' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "r_obs_id";
+                src -> obs.status = 'preliminary' "r_obs_status";
+                src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+                src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+                src -> obs.code = create('CodeableConcept') as code then {
+                    src -> code.coding = create('Coding') as coding then {
+                        src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                        src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                        src -> coding.display = 'consumption' "r_obs_c_coding_display";
+                    } "r_obs_c_coding";
+                    src -> code.text = 'consumption' "r_obs_c_text";
+                } "r_obs_code";
+                src -> obs.subject = refCommodity "r_obs_subject";
+                src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+                src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                src -> obs.value = create('Quantity') as qty then {
+                    src -> qty.value = evaluate(item_given_count, $this.answer.value),
+                        qty.unit = 'Pieces',
+                        qty.system = 'http://snomed.info/sct',
+                        qty.code = '767525000' "r_obs_qty";
+                } "r_obs_value";
+
+                src -> evaluate(item_given_count, $this.answer.value.toInteger()) as qtyDistributed then {
+                    src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal  then {
+                         //Adding the running total component
+                        src -> obs.component as component then ExtractRunningBalance(src, component, runningTotal) "r_obs_running_total_component";
+
+                        //create stockout flag if none exists and total balance is Zero or less
+                        src as stockOut where (runningTotal <= 0) then {
+                            //create male condom stockout flag
+                            src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
+                                src.item as noMaleCondomFlag where (linkId = '56577a66-15ae-4612-bee9-a2d4168082e8' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_male_condom_stockout_flag";
+                                } "r_no_male_condom_flag";
+                            } "r_check_male_condoms";
+                            //create female condom stockout flag
+                            src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
+                                src.item as noFemaleCondomFlag where (linkId = '30be53b9-6a9c-49fd-8ae7-6e8ff1da8830' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_female_condom_stockout_flag";
+                                } "r_no_female_condom_flag";
+                            } "r_check_male_comdoms";
+
+                        } "r_bal_is_zero";
+
+                    } "r_running_total_compute";
+                } "r_distributed_quantity";
+
+
+                //Update the current latest male condom observation if it exists
+                src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
+                    src.item as latestObservation where(linkId ='955c5b30-0f08-4720-8567-99ef58350615' and answer.value.exists()) then {
+                        src ->  evaluate(src, $this.item.where(linkId = '955c5b30-0f08-4720-8567-99ef58350615').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+                    } "r_check_latest_obs";
+                } "r_check_male_condoms";
+
+                //Update the current latest female condomobservation if it exists
+                src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
+                    src.item as latestObservation where(linkId ='3821961e-79db-4120-99db-079548307454' and answer.value.exists()) then {
+                        src ->  evaluate(src, $this.item.where(linkId = '3821961e-79db-4120-99db-079548307454').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+                    } "r_check_latest_obs";
+                } "r_check_female_condoms";
+
+
+            } "r_obs";
+        } "r_condom_given_count_check";
+    } "r_condom_given_check";
+}
+
+group ExtractCommodityReference(source src: QuestionnaireResponse, target ref: Reference, target previousBal: Integer) {
+    src -> previousBal.value = "0" "r_instantiate_bal";
+    src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
+        //commodity group reference
+        src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
+        //stock balance
+        src.item where(linkId = '25cc8d26-ac42-475f-be79-6f1d62a44881' and answer.value.exists()) then {
+            src -> previousBal.value = evaluate(src, $this.item.where(linkId = '25cc8d26-ac42-475f-be79-6f1d62a44881').answer.value.toString()) "r_male_condom_previous_bal";
+        } "r_check_male_condom_prev_bal";
+    } "r_male_condom_type_check";
+
+    src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
+        //commodity group reference
+        src -> ref.reference = 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc' "r_female_condom_ref";
+        //stock balance
+        src.item where(linkId = '48245462-0198-48ab-f5c4-ca4ca3da5403' and answer.value.exists()) then {
+            src -> previousBal.value = evaluate(src, $this.item.where(linkId = '48245462-0198-48ab-f5c4-ca4ca3da5403').answer.value.toString()) "r_female_condom_previous_bal";
+        } "r_check_female_condom_prev_bal";
+    } "r_female_condom_type_check";
+}
+
+group ExtractRunningBalance(source src: QuestionnaireResponse, target component: BackboneElement, source runningTotal : Integer){
+    src -> component.code = create('CodeableConcept') as runningTotalCC then {
+        src -> runningTotalCC.coding = create('Coding') as runningTotalCCCoding then {
+            src -> runningTotalCCCoding.system = 'http://snomed.info/sct' "r_obs_runing_total_cc_coding_system";
+            src -> runningTotalCCCoding.code = '255619001' "r_obs_runing_total_cc_coding_code";
+            src -> runningTotalCCCoding.display = 'Total' "r_obs_runing_total_cc_coding_display";
+        } "r_obs_running_total_cc_coding";
+        src -> runningTotalCC.text = 'Running total/Cumulative sum' "r_obs_runing_total_cc_text";
+    } "r_obs_running_total_code";
+
+    src -> component.value = create('Quantity') as runningTotalQuantity then {
+        src -> runningTotalQuantity.value = runningTotal "r_obs__running_total_qty";
+    } "r_obs_running_total_quantity";
+}
+
+group updateLatestObservation(source src: src, target bundle : Bundle, source latestObservationId : String){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = create('id') as id then {
+            src -> id.value = latestObservationId "r_update_obs_id_value";
+        } "r_update_obs_id";
+        src -> observation.status = 'final' "r_update_latest_obs_to_final";
+    } "r_update_latest_obs";
+}
+
+group createStockOutFlag(source src: src, target bundle : Bundle, source refCommodity: Reference){
+    src -> bundle.entry as entry, entry.resource = create('Flag') as flag then {
+        src -> flag.id = uuid() "r_flag_id";
+        src -> flag.status = 'active' "r_flag_status";
+        src -> flag.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_flag_category";
+        src -> flag.code = cc('http://snomed.info/sct','419182006', ' Supplies not available')  "r_flag_code";
+        src -> flag.subject = refCommodity "r_flag_subject";
+        src -> flag.period = create('Period') as period then {
+            src -> period.start = evaluate(src, now()) "r_flag_period_start";
+        } "r_flag_period";
+    } "r_flag";
+}

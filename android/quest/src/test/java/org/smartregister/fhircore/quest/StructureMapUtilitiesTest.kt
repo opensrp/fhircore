@@ -22,14 +22,7 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.*
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Assert
@@ -462,5 +455,40 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val observation = targetResource.entry[7].resource as Observation
     Assert.assertTrue(observation.code.text == "under-reporting")
+  }
+
+
+  @Test
+  fun `perform extraction from  pregnancy outcome Questionnaire`() {
+    val vitalSignQuestionnaireResponse =
+      "content/anc/preg-outcome/questionnaire-response.json".readFile()
+    val vitalSignStructureMap = "content/anc/preg-outcome/structure-map.txt".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(vitalSignStructureMap, "PregnancyOutcomeRegistration")
+
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, vitalSignQuestionnaireResponse)
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
   }
 }
