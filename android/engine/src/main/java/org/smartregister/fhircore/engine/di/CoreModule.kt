@@ -21,6 +21,7 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
@@ -54,6 +55,13 @@ class CoreModule {
   @Provides
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
+
+  @Singleton
+  @Provides
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
+    KnowledgeManager.create(context)
+
+  @Singleton @Provides fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
 
   @Singleton
   @Provides
