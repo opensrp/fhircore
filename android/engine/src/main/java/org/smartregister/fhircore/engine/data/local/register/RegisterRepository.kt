@@ -206,7 +206,10 @@ constructor(
               RepositoryResourceData.Search(
                 resource = thisResource,
                 relatedResources =
-                  retrieveRelatedResources(thisResource, resourceConfig.relatedResources)
+                  retrieveRelatedResources(
+                    baseResource = thisResource,
+                    relatedResourcesConfigs = resourceConfig.relatedResources
+                  )
               )
             )
           }
@@ -221,7 +224,7 @@ constructor(
     finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData>>
   ) {
     // Get configurations of related resources to be reverse included
-    val revIncludeRelatedResourcesConfigsMap =
+    val revIncludeRelatedResourcesConfigsMap: Map<String, List<ResourceConfig>>? =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)?.groupBy { it.resource }
 
     if (!revIncludeRelatedResourcesConfigsMap.isNullOrEmpty()) {
@@ -242,14 +245,16 @@ constructor(
       revIncludeSearchResult.values.forEach { revIncludedResource ->
         val revIncludedResourcesMap =
           revIncludedResource
-            .mapValues {
-              it.value.mapTo(LinkedList<RepositoryResourceData>()) { resource ->
+            .mapValues { entry ->
+              entry.value.mapTo(LinkedList<RepositoryResourceData>()) { resource ->
                 RepositoryResourceData.Search(
                   resource = resource,
                   relatedResources =
                     retrieveRelatedResources(
-                      resource,
-                      revIncludeRelatedResourcesConfigsMap[it.key.name]
+                      baseResource = resource,
+                      relatedResourcesConfigs =
+                        revIncludeRelatedResourcesConfigsMap[entry.key.name]
+                          .nestedRelatedResourceConfigs()
                     )
                 )
               }
@@ -265,6 +270,11 @@ constructor(
       }
     }
   }
+
+  private fun List<ResourceConfig>?.nestedRelatedResourceConfigs(): List<ResourceConfig>? =
+    this
+      ?.filter { thisResourceConfig -> thisResourceConfig.relatedResources.isNotEmpty() }
+      ?.flatMap { it.relatedResources }
 
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(inverse: Boolean) =
     if (inverse)
@@ -368,7 +378,8 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   companion object {
-    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
+    private val filterActiveResources = listOf(ResourceType.Patient)
+    //    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
     const val ACTIVE = "active"
   }
 }
