@@ -36,16 +36,20 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   suspend fun processResourceData(
+    baseResourceRulesId: String?,
     baseResource: Resource,
     relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>,
+    secondaryRepositoryResourceData: List<RepositoryResourceData>?,
     ruleConfigs: List<RuleConfig>,
     params: Map<String, String>?
   ): ResourceData {
     val computedValuesMap =
       computeRules(
         ruleConfigs = ruleConfigs,
+        baseResourceRulesId = baseResourceRulesId,
         baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
+        relatedResourcesMap = relatedResourcesMap,
+        secondaryRepositoryResourceData = secondaryRepositoryResourceData
       )
     return ResourceData(
       baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
@@ -85,13 +89,17 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    */
   private suspend fun computeRules(
     ruleConfigs: List<RuleConfig>,
+    baseResourceRulesId: String?,
     baseResource: Resource,
-    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>
+    relatedResourcesMap: Map<String, LinkedList<RepositoryResourceData>>,
+    secondaryRepositoryResourceData: List<RepositoryResourceData>?
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
+      baseResourceRulesId = baseResourceRulesId,
       baseResource = baseResource,
-      relatedResourcesMap = relatedResourcesMap
+      relatedResourcesMap = relatedResourcesMap,
+      secondaryRepositoryResourceData = secondaryRepositoryResourceData
     )
   }
 
@@ -117,11 +125,13 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
       val listComputedValuesMap =
         computeRules(
           ruleConfigs = ruleConfigs,
+          baseResourceRulesId = null,
           baseResource = resource,
           relatedResourcesMap =
             listItemRelatedResources.mapValues { entry ->
               entry.value.mapTo(LinkedList()) { RepositoryResourceData.Search(resource = it) }
-            }
+            },
+          secondaryRepositoryResourceData = null
         )
 
       // LIST view should reuse the previously computed values

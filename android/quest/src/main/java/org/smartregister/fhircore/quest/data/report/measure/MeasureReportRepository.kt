@@ -53,10 +53,12 @@ class MeasureReportRepository(
       .map {
         val queryResult = it as RepositoryResourceData.Search
         rulesExecutor.processResourceData(
+          baseResourceRulesId = queryResult.baseResourceRulesId,
           baseResource = queryResult.resource,
           relatedResourcesMap = queryResult.relatedResources,
+          secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
           ruleConfigs = registerConfiguration.registerCard.rules,
-          emptyMap()
+          params = emptyMap()
         )
       }
   }

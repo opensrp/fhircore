@@ -26,17 +26,21 @@ import org.hl7.fhir.r4.model.ResourceType
  * either return a count which is wrapped in the [RepositoryResourceData.Count] data class or return
  * a list of [Resource]'s (with optional nested [Resource]'s) wrapped in
  * [RepositoryResourceData.Search] data class. [RepositoryResourceData.Search] has an optional
- * property [RepositoryResourceData.Search.rulesFactsMapId] that can be used as the key in the rules
- * factory facts map (each fact is represented as a key-value pair). The key for the
+ * property [RepositoryResourceData.Search.baseResourceRulesId] that can be used as the key in the
+ * rules factory facts map (each fact is represented as a key-value pair). The key for the
  * [RepositoryResourceData.Search.relatedResources] will either be the configured unique id for
- * representing the resource(s) in Rules engine Facts map or the [ResourceType]
+ * representing the resource(s) in Rules engine Facts map or the [ResourceType].
+ * [RepositoryResourceData.Search.secondaryRepositoryResourceData] returns a list of independent
+ * resources (which may include nested resource(s)) that have NO relationship with the base
+ * [RepositoryResourceData.Search.resource].
  */
 @Stable
 sealed class RepositoryResourceData {
   data class Search(
-    val rulesFactsMapId: String? = null,
+    val baseResourceRulesId: String? = null,
     val resource: Resource,
-    val relatedResources: Map<String, LinkedList<RepositoryResourceData>> = mutableMapOf()
+    val relatedResources: Map<String, LinkedList<RepositoryResourceData>> = mutableMapOf(),
+    val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null
   ) : RepositoryResourceData()
   data class Count(val resourceType: ResourceType, val relatedResourceCount: RelatedResourceCount) :
     RepositoryResourceData()

@@ -106,10 +106,12 @@ constructor(
       val resourceData =
         rulesExecutor
           .processResourceData(
+            baseResourceRulesId = queryResult.baseResourceRulesId,
             baseResource = queryResult.resource,
             relatedResourcesMap = queryResult.relatedResources,
+            secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
             ruleConfigs = profileConfigs.rules,
-            paramsMap
+            params = paramsMap
           )
           .copy(listResourceDataMap = listResourceDataMapState)
 

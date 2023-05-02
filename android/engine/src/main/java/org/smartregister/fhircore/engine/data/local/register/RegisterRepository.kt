@@ -86,6 +86,7 @@ constructor(
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
       fhirResourceConfig = registerConfiguration.fhirResource,
+      registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize
     )
@@ -93,6 +94,7 @@ constructor(
 
   private suspend fun searchResourcesRecursively(
     fhirResourceConfig: FhirResourceConfig,
+    secondaryResourceConfigs: List<FhirResourceConfig>?,
     currentPage: Int? = null,
     pageSize: Int? = null
   ): List<RepositoryResourceData> {
@@ -122,14 +124,30 @@ constructor(
     return baseFhirResources.map { baseFhirResource ->
       // TODO add secondary resources as related resources
       RepositoryResourceData.Search(
-        rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
+        baseResourceRulesId = baseResourceConfig.id ?: baseResourceType.name,
         resource = baseFhirResource,
         relatedResources =
           withContext(dispatcherProvider.io()) {
             retrieveRelatedResources(baseFhirResource, relatedResourcesConfig)
+          },
+        secondaryRepositoryResourceData =
+          withContext(dispatcherProvider.io()) {
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData()
           }
       )
     }
+  }
+
+  private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData():
+    LinkedList<RepositoryResourceData> {
+    // Fetch secondary resource configs once. (These resources are not related to main resource)
+    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
+    this?.forEach {
+      secondaryRepositoryResourceDataLinkedList.addAll(
+        searchResourcesRecursively(fhirResourceConfig = it, secondaryResourceConfigs = null)
+      )
+    }
+    return secondaryRepositoryResourceDataLinkedList
   }
 
   private suspend fun retrieveRelatedResources(
@@ -361,12 +379,15 @@ constructor(
       }
 
     return RepositoryResourceData.Search(
-      rulesFactsMapId = baseResourceConfig.id ?: baseResourceType.name,
+      baseResourceRulesId = baseResourceConfig.id ?: baseResourceType.name,
       resource = baseResource,
-      // TODO Add secondary resources as related resources
       relatedResources =
         withContext(dispatcherProvider.io()) {
           retrieveRelatedResources(baseResource, resourceConfig.relatedResources)
+        },
+      secondaryRepositoryResourceData =
+        withContext(dispatcherProvider.io()) {
+          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData()
         }
     )
   }

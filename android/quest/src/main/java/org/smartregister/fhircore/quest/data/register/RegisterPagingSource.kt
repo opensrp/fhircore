@@ -76,8 +76,10 @@ class RegisterPagingSource(
         registerData.map { repoResourceData ->
           val queryResult = repoResourceData as RepositoryResourceData.Search
           rulesExecutor.processResourceData(
+            baseResourceRulesId = queryResult.baseResourceRulesId,
             baseResource = queryResult.resource,
             relatedResourcesMap = queryResult.relatedResources,
+            secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
             ruleConfigs = ruleConfigs,
             params = emptyMap()
           )

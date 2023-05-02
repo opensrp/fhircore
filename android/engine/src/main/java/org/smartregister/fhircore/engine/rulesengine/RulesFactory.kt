@@ -121,11 +121,12 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  @Suppress("UNCHECKED_CAST")
   fun fireRules(
     rules: Rules,
-    baseResource: Resource? = null,
+    baseResourceRulesId: String?,
+    baseResource: Resource?,
     relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap(),
+    secondaryRepositoryResourceData: List<RepositoryResourceData>?
   ): Map<String, Any> {
 
     // Initialize new facts and fire rules in background
@@ -135,9 +136,19 @@ constructor(
         put(DATA, mutableMapOf<String, Any>())
         put(SERVICE, rulesEngineService)
         if (baseResource != null) {
-          put(baseResource.resourceType.name, baseResource)
+          put(baseResourceRulesId ?: baseResource.resourceType.name, baseResource)
         }
         populateRelatedResourcesRecursively(relatedResourcesMap)
+
+        // Populate the facts map with secondary resource data
+        secondaryRepositoryResourceData?.forEach {
+          if (it is RepositoryResourceData.Search) {
+            put(it.baseResourceRulesId ?: it.resource.resourceType.name, it.resource)
+            if (it.relatedResources.isNotEmpty()) {
+              populateRelatedResourcesRecursively(it.relatedResources)
+            }
+          }
+        }
       }
 
     if (BuildConfig.DEBUG) {
