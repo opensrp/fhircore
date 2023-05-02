@@ -180,10 +180,13 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
+  readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly || item.readOnly
+      item.readOnly =
+        if (!readOnly && readOnlyLinkIds?.contains(item.linkId) == true) true
+        else (readOnly || item.readOnly)
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
