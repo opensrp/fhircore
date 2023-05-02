@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Successful subsequent login even when PractitionerDetails is not saved 
 - Account for dependencies when generating activity schedules
 - Add title to Profile pages
+- Catch exception when defaultRepository.loadResource tries to load a non-existent resource
 
 ### Changed
 - 
