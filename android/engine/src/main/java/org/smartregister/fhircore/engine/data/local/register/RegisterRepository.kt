@@ -378,8 +378,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   companion object {
-    private val filterActiveResources = listOf(ResourceType.Patient)
-    //    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
+    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
     const val ACTIVE = "active"
   }
 }
