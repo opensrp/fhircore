@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -59,7 +60,9 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -95,6 +98,7 @@ constructor(
       fhirEngine
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
+          filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
         }
         .firstOrNull()
         ?: CarePlan().apply {
@@ -141,14 +145,20 @@ constructor(
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
-              dynamicValue.expression.expression
+              dynamicValue
+                .expression
+                .expression
                 .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+                ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
+                  // TODO handle cases where we explicitly need to set previous value as null, when
+                  // passing null to Terser, it gives error NPE
+                  Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
                   TerserUtil.setFieldByFhirPath(
                     FhirContext.forR4Cached(),
                     dynamicValue.path.removePrefix("${definition.kind.display}."),
                     output,
-                    evaluatedValue.firstOrNull()
+                    evaluatedValue.first()
                   )
                 }
             else throw UnsupportedOperationException("${definition.kind} not supported")
@@ -186,24 +196,29 @@ constructor(
           .mapNotNull { getTask(it.extractId()) }
           .forEach {
             if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
-              cancelTask(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+              cancelTaskByTaskId(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
             }
           }
     }
   }
 
-  suspend fun transitionTaskTo(id: String, status: TaskStatus, reason: String? = null) {
+  suspend fun updateTaskDetailsByResourceId(
+    id: String,
+    status: TaskStatus,
+    reason: String? = null
+  ) {
     getTask(id)
       ?.apply {
         this.status = status
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
+      ?.updateDependentTaskDueDate(defaultRepository)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
-  suspend fun cancelTask(id: String, reason: String) {
-    transitionTaskTo(id, TaskStatus.CANCELLED, reason)
+  suspend fun cancelTaskByTaskId(id: String, reason: String) {
+    updateTaskDetailsByResourceId(id, TaskStatus.CANCELLED, reason)
   }
 
   suspend fun getTask(id: String) =
@@ -296,5 +311,65 @@ constructor(
     }
 
     return taskPeriods
+  }
+
+  /**
+   * Updates the due date of a dependent task based on the current status of the task. @param id The
+   * ID of the dependent task to update. @return The updated task object. This function is used to
+   * update the status of all CarePlans connected to a [QuestionnaireConfig]'s PlanDefinitions based
+   * on the [QuestionnaireConfig]'s CarePlanConfigs and their configs filtering information.
+   *
+   * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
+   * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
+   * CarePlanConfig does not reference a resource.
+   */
+  suspend fun conditionallyUpdateCarePlanStatus(
+    questionnaireConfig: QuestionnaireConfig,
+    subject: Resource
+  ) {
+    questionnaireConfig.planDefinitions?.forEach { planDefinition ->
+      val carePlans =
+        fhirEngine.search<CarePlan> {
+          filter(
+            CarePlan.INSTANTIATES_CANONICAL,
+            { value = "${PlanDefinition().fhirType()}/$planDefinition" }
+          )
+        }
+
+      if (carePlans.isEmpty()) return@forEach
+
+      questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
+        val base: Base =
+          if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
+              (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
+              isValidResourceType(carePlanConfig.fhirPathResource)
+          ) {
+            fhirEngine.get(
+              ResourceType.fromCode(carePlanConfig.fhirPathResource),
+              carePlanConfig.fhirPathResourceId
+            )
+          } else {
+            subject
+          }
+
+        if (fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)) {
+          carePlans.forEach { carePlan ->
+            carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+            fhirEngine.update(carePlan)
+
+            carePlan
+              .activity
+              .flatMap { it.outcomeReference }
+              .filter { it.reference.startsWith(ResourceType.Task.name) }
+              .mapNotNull { getTask(it.extractId()) }
+              .forEach { task ->
+                if (task.status != TaskStatus.COMPLETED) {
+                  cancelTaskByTaskId(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+                }
+              }
+          }
+        }
+      }
+    }
   }
 }

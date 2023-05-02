@@ -27,5 +27,6 @@ data class RegisterUiState(
   val registerId: String = "",
   val totalRecordsCount: Long = 0,
   val pagesCount: Int = 1,
-  val progressPercentage: Flow<Int> = flowOf(0)
+  val progressPercentage: Flow<Int> = flowOf(0),
+  val isSyncUpload: Flow<Boolean> = flowOf(false),
 )

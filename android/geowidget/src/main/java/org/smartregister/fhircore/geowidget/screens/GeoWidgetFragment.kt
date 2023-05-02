@@ -58,22 +58,13 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
-
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
-
   val geoWidgetActivityArgs by navArgs<GeoWidgetFragmentArgs>()
-
   val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
-
   lateinit var kujakuMapView: KujakuMapView
-
   var geoJsonSource: GeoJsonSource? = null
-
   var featureCollection: FeatureCollection? = null
-
-  var registerFamilyMode = false
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -215,9 +206,8 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
         points.add(geometry)
       }
     }
-      ?: return
 
-    if (featureCollection.features()!!.size == 0) {
+    if ((featureCollection.features()?.size ?: 0) == 0) {
       return
     }
 

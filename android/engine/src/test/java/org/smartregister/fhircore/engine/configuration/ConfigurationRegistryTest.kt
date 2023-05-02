@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
@@ -49,6 +50,8 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -152,6 +155,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, configId)
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
     Assert.assertEquals(appId, registerConfig.appId)
     Assert.assertEquals(id, registerConfig.id)
   }
@@ -205,11 +209,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Composition().apply {
         identifier = Identifier().apply { value = appId }
         section =
-          listOf(
-            Composition.SectionComponent().apply {
-              focus.reference = ResourceType.Questionnaire.name
-            }
-          )
+          listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
@@ -357,7 +357,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -368,7 +368,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -379,7 +379,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -404,14 +404,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testLoadConfigurationsNoLoadFromAssetsAppConfig() {
     val appId = "the app id"
-    val referenceId = "refernceId"
+    val referenceId = "referenceId"
     val composition =
       Composition().apply {
         section =
@@ -436,14 +436,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Binary().apply { content = ByteArray(0) }
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertFalse(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertFalse(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testLoadConfigurationsNoLoadFromAssetsIconConfig() {
     val appId = "the app id"
-    val referenceId = "refernceId"
+    val referenceId = "referenceId"
     val composition =
       Composition().apply {
         section =
@@ -468,6 +468,88 @@ class ConfigurationRegistryTest : RobolectricTest() {
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     coVerify(inverse = true) { fhirEngine.get(ResourceType.Binary, referenceId) }
-    Assert.assertTrue(configRegistry.configsJsonMap.isNullOrEmpty())
+    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testRetrieveConfigurationUpdatesTheConfigCacheMap() {
+    configRegistry.configsJsonMap[ConfigType.Application.name] =
+      """{"appId": "thisApp", "configType": "application"}"""
+
+    // First time reading the configCacheMap not yet populated
+    Assert.assertFalse(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    val applicationConfiguration =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        configType = ConfigType.Application
+      )
+
+    Assert.assertNotNull(applicationConfiguration)
+    Assert.assertEquals("thisApp", applicationConfiguration.appId)
+    Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
+    // Config cache map now contains application config
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+
+    val anotherApplicationConfig =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        configType = ConfigType.Application
+      )
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    Assert.assertNotNull(anotherApplicationConfig)
+    Assert.assertEquals("thisApp", anotherApplicationConfig.appId)
+    Assert.assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
+  }
+  @Test
+  fun testRetrieveConfigurationWithParamsCachesTheSecondTime() {
+    configRegistry.configsJsonMap[ConfigType.Application.name] =
+      """{"appId": "thisApp", "configType": "application"}"""
+    val paramsList =
+      arrayListOf(
+        ActionParameter(
+          key = "paramsName",
+          paramType = ActionParameterType.PARAMDATA,
+          value = "testing1",
+          dataType = Enumerations.DataType.STRING,
+          linkId = null
+        ),
+        ActionParameter(
+          key = "paramName2",
+          paramType = ActionParameterType.PARAMDATA,
+          value = "testing2",
+          dataType = Enumerations.DataType.STRING,
+          linkId = null
+        ),
+        ActionParameter(
+          key = "paramName3",
+          paramType = ActionParameterType.PREPOPULATE,
+          value = "testing3",
+          dataType = Enumerations.DataType.STRING,
+          linkId = null
+        ),
+      )
+    val paramsMap =
+      paramsList
+        .asSequence()
+        .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        .associate { it.key to it.value }
+
+    // First time reading the configCacheMap not yet populated
+    Assert.assertFalse(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    val applicationConfiguration =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        configType = ConfigType.Application,
+        paramsMap = paramsMap
+      )
+
+    Assert.assertNotNull(applicationConfiguration)
+    Assert.assertEquals("thisApp", applicationConfiguration.appId)
+    Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
+    // Config cache map now contains application config
+
+    val anotherApplicationConfig =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        configType = ConfigType.Application
+      )
+    Assert.assertNotNull(anotherApplicationConfig)
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
   }
 }

@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "measureReport",
   "id": "serviceDeliveryMeasureReport",
-  "registerId": "patientRegister",
+  "registerId": "inventoryRegister",
   "registerDate": "2020-10-27",
   "showFixedRangeSelection": true,
   "reports": [

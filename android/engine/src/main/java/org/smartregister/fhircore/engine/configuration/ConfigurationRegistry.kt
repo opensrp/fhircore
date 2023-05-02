@@ -70,14 +70,17 @@ constructor(
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
+  val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
-   * can be directly converted to a FHIR resource or hard coded custom model.
+   * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
+   * you are passing data across screens, then later using it in DataQueries and to retrieve
+   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
+   * params used in the DataQuery are passed when retrieving the configurations.
    */
-  // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
     configId: String? = null,
@@ -85,25 +88,26 @@ constructor(
   ): T {
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    return localizationHelper
-      .parseTemplate(
-        bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-        locale = Locale.getDefault(),
-        template = getConfigValueWithParam<T>(paramsMap, configKey, configsJsonMap)
-      )
-      .decodeJson(jsonInstance = json)
+    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true)
+      return configCacheMap[configKey] as T
+    val decodedConfig =
+      localizationHelper
+        .parseTemplate(
+          bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+          locale = Locale.getDefault(),
+          template = getConfigValueWithParam(paramsMap, configKey)
+        )
+        .decodeJson<T>(jsonInstance = json)
+    configCacheMap[configKey] = decodedConfig
+    return decodedConfig
   }
 
   /**
-   * Receives [paramsMap], [configKey] and [ConfigJsonMap] as inputs and interpolates the value if
-   * found and if [paramsMap] are not empty return the result return the value if key is found and
-   * [paramsMap] is empty
+   * This function interpolates the value for the given [configKey] by replacing the string
+   * placeholders e.g. {{ placeholder }} with value retrieved from the [paramsMap] using [configKey]
+   * as the key. If value is null the placeholder is returned
    */
-  inline fun <reified T : Configuration> getConfigValueWithParam(
-    paramsMap: Map<String, String>?,
-    configKey: String,
-    configsJsonMap: Map<String, String>
-  ) =
+  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
     configsJsonMap.getValue(configKey).let { jsonValue ->
       if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
     }
@@ -123,7 +127,7 @@ constructor(
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
     val resourceBundle =
-      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is now Camel Case
+      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is camelCase
     if (resourceBundle != null) {
       return PropertyResourceBundle(resourceBundle.byteInputStream())
     }
@@ -257,7 +261,7 @@ constructor(
       composition.retrieveCompositionSections().forEach {
         if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
           val configIdentifier = it.focus.identifier.value
-          val referenceResourceType = it.focus.reference.substringBeforeLast("/")
+          val referenceResourceType = it.focus.reference.substringBefore("/")
           if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
             val configBinary = fhirEngine.get<Binary>(it.focus.extractId())
             configsJsonMap[configIdentifier] = configBinary.content.decodeToString()

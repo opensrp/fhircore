@@ -19,42 +19,71 @@ package org.smartregister.fhircore.engine.configuration
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestionnaireConfigTest : RobolectricTest() {
+  @Test
+  fun testDefaultQuestionnaireConfig() {
+    val id = "123"
+    val questionnaireConfig = QuestionnaireConfig(id)
+    val interpolatedConfig = questionnaireConfig.interpolate(emptyMap())
+    interpolatedConfig.apply {
+      Assert.assertEquals(id, this.id)
+      Assert.assertEquals(null, taskId)
+      Assert.assertEquals(null, title)
+      Assert.assertEquals(null, resourceIdentifier)
+      Assert.assertEquals(null, groupResource)
+      Assert.assertEquals(null, confirmationDialog)
+      Assert.assertEquals(null, planDefinitions)
+    }
+  }
 
   @Test
   fun testVerifyInterpolationInQuestionnaireConfig() {
-
     val questionnaireConfig =
       QuestionnaireConfig(
         id = "@{id}",
         title = "@{title}",
+        setPractitionerDetails = false,
+        setOrganizationDetails = false,
+        setAppVersion = false,
+        type = QuestionnaireType.EDIT,
         resourceIdentifier = "@{resourceIdentifier}",
         confirmationDialog =
           ConfirmationDialog(
             title = "@{dialogTitle}",
             message = "@{dialogMessage}",
-            actionButtonText = "@{dialogActionButtonText}"
+            actionButtonText = "@{dialogActionButtonText}",
           ),
         groupResource =
           GroupResourceConfig(
             groupIdentifier = "@{groupIdentifier}",
             memberResourceType = "Condition",
+            removeMember = true,
+            removeGroup = true,
+            deactivateMembers = false
           ),
-        taskId = "@{taskId}"
+        taskId = "@{taskId}",
+        saveDraft = true,
+        carePlanConfigs = listOf(CarePlanConfig()),
+        planDefinitions = listOf("@{planDef1}")
       )
 
-    val map = mutableMapOf<String, String>()
-    map["id"] = "123"
-    map["title"] = "New Title"
-    map["taskId"] = "333"
-    map["resourceIdentifier"] = "999"
-    map["groupIdentifier"] = "777"
-    map["dialogTitle"] = "Alert"
-    map["dialogMessage"] = "Are you sure?"
-    map["dialogActionButtonText"] = "Yes"
+    val map =
+      mapOf(
+        "id" to "123",
+        "title" to "New Title",
+        "taskId" to "333",
+        "resourceIdentifier" to "999",
+        "groupIdentifier" to "777",
+        "dialogTitle" to "Alert",
+        "dialogMessage" to "Are you sure?",
+        "dialogActionButtonText" to "Yes",
+        "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026"
+      )
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
 
@@ -66,5 +95,44 @@ class QuestionnaireConfigTest : RobolectricTest() {
     Assert.assertEquals("Alert", interpolatedConfig.confirmationDialog?.title)
     Assert.assertEquals("Are you sure?", interpolatedConfig.confirmationDialog?.message)
     Assert.assertEquals("Yes", interpolatedConfig.confirmationDialog?.actionButtonText)
+    Assert.assertEquals(
+      "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
+      interpolatedConfig.planDefinitions?.firstOrNull()
+    )
+  }
+
+  @Test
+  fun testDefaultConfirmationDialog() {
+    ConfirmationDialog().apply {
+      Assert.assertEquals("", title)
+      Assert.assertEquals("", message)
+      Assert.assertEquals("", actionButtonText)
+    }
+  }
+
+  @Test
+  fun testSetConfirmationDialog() {
+    val title = "Alert"
+    val message = "Are you sure?"
+    val actionButtonText = "Yes"
+    ConfirmationDialog(title, message, actionButtonText).apply {
+      Assert.assertEquals(title, this.title)
+      Assert.assertEquals(message, this.message)
+      Assert.assertEquals(actionButtonText, this.actionButtonText)
+    }
+  }
+
+  @Test
+  fun testDefaultGroupResourceConfig() {
+    val groupIdentifier = "groupIdentifier"
+    val memberResourceType = "Condition"
+    val groupResourceConfig = GroupResourceConfig(groupIdentifier, memberResourceType)
+    groupResourceConfig.apply {
+      Assert.assertEquals(groupIdentifier, this.groupIdentifier)
+      Assert.assertEquals(memberResourceType, this.memberResourceType)
+      Assert.assertEquals(false, removeMember)
+      Assert.assertEquals(false, removeGroup)
+      Assert.assertEquals(true, deactivateMembers)
+    }
   }
 }

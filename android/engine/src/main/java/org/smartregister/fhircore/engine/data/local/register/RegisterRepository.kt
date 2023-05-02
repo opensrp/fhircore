@@ -25,23 +25,26 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.has
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigService.Companion.ACTIVE_SEARCH_PARAM
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
-import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -99,6 +102,7 @@ constructor(
       withContext(dispatcherProvider.io()) {
         searchResource(
           baseResourceClass = baseResourceClass,
+          nestedSearchResources = baseResourceConfig.nestedSearchResources,
           dataQueries = baseResourceConfig.dataQueries,
           sortConfigs = baseResourceConfig.sortConfigs,
           currentPage = currentPage,
@@ -155,6 +159,7 @@ constructor(
             baseResource.logicalId
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
+          applyNestedSearchFilters(resourceConfig.nestedSearchResources)
         }
       if (resourceConfig.resultAsCount) {
         val count = fhirEngine.count(search)
@@ -235,6 +240,7 @@ constructor(
 
   private suspend fun searchResource(
     baseResourceClass: Class<out Resource>,
+    nestedSearchResources: List<NestedSearchConfig>?,
     dataQueries: List<DataQuery>?,
     sortConfigs: List<SortConfig>,
     currentPage: Int? = null,
@@ -248,6 +254,13 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+
+        // For Group return only active
+        if (resourceType == ResourceType.Group) {
+          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
+        }
+
+        applyNestedSearchFilters(nestedSearchResources)
         sort(sortConfigs)
         if (currentPage != null && pageSize != null) {
           count = pageSize
@@ -255,6 +268,14 @@ constructor(
         }
       }
     return fhirEngine.search(search)
+  }
+
+  private fun Search.applyNestedSearchFilters(nestedSearchResources: List<NestedSearchConfig>?) {
+    nestedSearchResources?.forEach {
+      has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
+        it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery) }
+      }
+    }
   }
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
@@ -287,6 +308,11 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
+        // Filter active Groups
+        if (resourceType == ResourceType.Group) {
+          filter(TokenClientParam(ACTIVE_SEARCH_PARAM), { value = of(true) })
+        }
+        applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
       }
 
     return fhirEngine.count(search)
@@ -302,7 +328,7 @@ constructor(
       paramsList
         ?.filter {
           (it.paramType == ActionParameterType.PARAMDATA ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && !it.value.isNullOrEmpty()
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
         ?.associate { it.key to it.value }
         ?: emptyMap()
@@ -364,7 +390,8 @@ constructor(
           searchResource(
             baseResourceClass = fhirResourceConfig.baseResource.resource.resourceClassType(),
             dataQueries = fhirResourceConfig.baseResource.dataQueries,
-            sortConfigs = fhirResourceConfig.baseResource.sortConfigs
+            sortConfigs = fhirResourceConfig.baseResource.sortConfigs,
+            nestedSearchResources = fhirResourceConfig.baseResource.nestedSearchResources,
           )
         }
 

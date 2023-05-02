@@ -1,0 +1,44 @@
+# Converting CQL to a library
+
+This document discusses how to convert a CQL script to a FHIR library.
+
+## Android FHIR SDK CQL Builder
+
+SDK workflow testing module has [`com.google.android.fhir.workflow.testing.CqlBuilder`](https://github.com/google/android-fhir/blob/master/workflow-testing/src/main/java/com/google/android/fhir/workflow/testing/CqlBuilder.kt) which can do translation from a `CQL` to `Library` resource. This automatically does the `elm` conversion for you internally.
+
+An example usage can be seen in tests found [here](https://github.com/google/android-fhir/blob/master/workflow/src/test/java/com/google/android/fhir/workflow/FhirOperatorTest.kt#L150)
+
+```
+val library = CqlBuilder.compileAndBuild(cqlScriptInputStream)
+```
+
+## FHIR Core CQL Testing Module
+
+The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing) repository has a testing module which allows to not only get the complete Library resource to directly save to the server but also allows to test the output and make changes on the fly. Check the cucumber tests [Feature File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/resources/measure-report/household-members.feature), the [Test Code File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt#L28) and the [Convertor Util Method](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/fhircore-tests/src/androidTest/kotlin/com/fhircore/resources/testing/CqlUtils.kt)
+
+
+## FHIR Core Tooling Library
+
+FHIR Core tooling library can also be used to get a Library by running the command below. Details on the tool can be found [here](https://github.com/opensrp/fhircore-tooling#converting-library-cql-to-json).
+```
+fct convert -t cql -i /some/path/Patient-1.0.0.cql
+```
+
+
+
+## Unrecommended conversion methods
+
+These are other methods to convert a CQL script to elm+json.
+
+:::info
+The below approaches output a `json-elm` which then needs to be Base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
+:::
+
+### CQL to ELM REST Translator
+
+A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API.
+
+
+### CQL to ELM JAVA Translator
+
+Her is an [elm java app](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/READM.md) that can be used as an elm translator on related files and get an output. Instructions can be found [here](https://github.com/cqframework/cql-execution#to-execute-your-cql)

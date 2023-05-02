@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -38,7 +39,9 @@ data class QuestionnaireConfig(
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
   val saveDraft: Boolean = false,
-  val snackBarMessage: SnackBarMessageConfig? = null
+  val snackBarMessage: SnackBarMessageConfig? = null,
+  val carePlanConfigs: List<CarePlanConfig> = emptyList(),
+  val refreshContent: Boolean = false
 ) : java.io.Serializable
 
 @Serializable
@@ -73,5 +76,6 @@ fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
         title = confirmationDialog.title.interpolate(computedValuesMap),
         message = confirmationDialog.message.interpolate(computedValuesMap),
         actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
-      )
+      ),
+    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) }
   )

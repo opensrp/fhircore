@@ -9,10 +9,6 @@ comment:
   show_carryforward_flags: false
 coverage:
   precision: 1
-  range:
-  - 75.0
-  - 100.0
-  round: down
   status:
     changes: false
     patch:

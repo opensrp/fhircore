@@ -25,13 +25,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Enumerations
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.DataType
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
@@ -40,7 +40,9 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 @HiltAndroidTest
 class QuestionnaireHandlerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @get:Rule(order = 1)
+  val coroutineRule = CoroutineTestRule()
   // private val startForResult = mockk<ActivityResultLauncher<Intent>>()
   private val context =
     mockk<Context>(
@@ -48,8 +50,6 @@ class QuestionnaireHandlerTest : RobolectricTest() {
       relaxUnitFun = true,
       relaxed = true
     )
-  // private val questionnaireHandler = mockk<QuestionnaireHandler>(relaxUnitFun = true, relaxed =
-  // true)
 
   @Before
   fun setUp() {
@@ -64,7 +64,7 @@ class QuestionnaireHandlerTest : RobolectricTest() {
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
-          dataType = DataType.INTEGER,
+          dataType = Enumerations.DataType.INTEGER,
           key = "maleCondomPreviousBalance",
           value = "100"
         )

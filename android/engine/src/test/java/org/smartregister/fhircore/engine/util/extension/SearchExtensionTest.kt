@@ -17,8 +17,12 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.NumberClientParam
+import ca.uhn.fhir.rest.gclient.QuantityClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
+import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.gclient.UriClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import io.mockk.slot
@@ -51,52 +55,182 @@ class SearchExtensionTest {
   @Test
   fun testFilterStringExtensionForStringType() {
     val dataQuery =
-      """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"STRING","valueString":"Value"}""".decodeJson<
+      """{
+          "paramName":"type", 
+          "filterCriteria": [
+            {
+              "dataType": "STRING",
+              "value": "Value"
+            }
+          ]
+         }""".decodeJson<
         DataQuery>()
     val search = spyk(Search(ResourceType.Patient))
-    search.filterString(dataQuery)
+    search.filterBy(dataQuery)
     val stringClientParamSlot = slot<StringClientParam>()
-    verify { search.filter(capture(stringClientParamSlot), any()) }
-    Assert.assertEquals(dataQuery.key, stringClientParamSlot.captured.paramName)
+    verify {
+      search.filter(
+        stringParameter = capture(stringClientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, stringClientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterByDataTypeNumber() {
+    val dataQuery =
+      """{
+          "paramName":"type", 
+          "filterCriteria": [
+            {
+              "dataType": "INTEGER",
+              "value": 10
+            }
+          ]
+         }""".decodeJson<
+        DataQuery>()
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery)
+    val clientParamSlot = slot<NumberClientParam>()
+    verify {
+      search.filter(
+        numberParameter = capture(clientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterByDataTypeQuantity() {
+    val dataQuery =
+      """{
+          "paramName":"type", 
+          "filterCriteria": [
+            {
+              "dataType": "QUANTITY",
+              "value": 10
+            }
+          ]
+         }""".decodeJson<
+        DataQuery>()
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery)
+    val clientParamSlot = slot<QuantityClientParam>()
+    verify {
+      search.filter(
+        quantityParameter = capture(clientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterByDataTypeReference() {
+    val dataQuery =
+      """{
+          "paramName":"type", 
+          "filterCriteria": [
+            {
+              "dataType": "REFERENCE",
+              "value": "Patient/sample-logical-id"
+            }
+          ]
+         }""".decodeJson<
+        DataQuery>()
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery)
+    val clientParamSlot = slot<ReferenceClientParam>()
+    verify {
+      search.filter(
+        referenceParameter = capture(clientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterByDataTypeUri() {
+    val dataQuery =
+      """{
+          "paramName":"type", 
+          "filterCriteria": [
+            {
+              "dataType": "URI",
+              "value": "http://sample-dummy-uri.com"
+            }
+          ]
+         }""".decodeJson<
+        DataQuery>()
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery)
+    val clientParamSlot = slot<UriClientParam>()
+    verify {
+      search.filter(uriParam = capture(clientParamSlot), init = anyVararg(), operation = any())
+    }
+    Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
   }
 
   @Test
   fun testFilterStringExtensionForBooleanType() {
     val dataQuery =
-      """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"BOOLEAN","valueBoolean":"true"}""".decodeJson<
-        DataQuery>()
+      """{
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "code": "true"
+              }
+            }
+          ]
+        }"""
+        .trimMargin()
+        .decodeJson<DataQuery>()
     val search = spyk(Search(ResourceType.Patient))
-    search.filterString(dataQuery)
-    val stringClientParamSlot = slot<StringClientParam>()
-    verify { search.filter(capture(stringClientParamSlot), any()) }
-    Assert.assertEquals(dataQuery.key, stringClientParamSlot.captured.paramName)
-  }
-
-  @Test(expected = UnsupportedOperationException::class)
-  fun testUnknownTypeFilterThrowsException() {
-    val dataQuery =
-      """{"id":"householdQueryByType","filterType":"TOKEN","key":"type","valueType":"AGE","valueBoolean":"true"}""".decodeJson<
-        DataQuery>()
-    val search = spyk(Search(ResourceType.Patient))
-    search.filterString(dataQuery)
+    search.filterBy(dataQuery)
+    val stringClientParamSlot = slot<TokenClientParam>()
+    verify {
+      search.filter(
+        tokenParameter = capture(stringClientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, stringClientParamSlot.captured.paramName)
   }
 
   @Test
   fun testFilterForDateType() {
     val dataQuery =
       """{
-          "id": "childQueryByDate",
-          "filterType": "DATE",
-          "key": "birthdate",
-          "valueType": "DATE",
-          "valueDate": "2017-03-14",
-          "paramPrefix": "GREATERTHAN_OR_EQUALS"
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "valueDate": "2017-03-14",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
         }""".decodeJson<
         DataQuery>()
     val search = spyk(Search(ResourceType.Patient))
-    search.filterDate(dataQuery)
+    search.filterBy(dataQuery)
     val dateClientParamSlot = slot<DateClientParam>()
-    verify { search.filter(capture(dateClientParamSlot), any()) }
-    Assert.assertEquals(dataQuery.key, dateClientParamSlot.captured.paramName)
+    verify {
+      search.filter(
+        dateParameter = capture(dateClientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, dateClientParamSlot.captured.paramName)
   }
 }

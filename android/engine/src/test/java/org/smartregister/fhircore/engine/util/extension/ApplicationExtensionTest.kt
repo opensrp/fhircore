@@ -26,6 +26,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class ApplicationExtensionTest : RobolectricTest() {
@@ -58,5 +60,15 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     Assert.assertNull(patient)
+  }
+
+  @Test
+  fun `fetchLanguage should return default language when no language is set`() {
+    val languages = Faker.buildTestConfigurationRegistry().fetchLanguages()
+
+    Assert.assertEquals(
+      arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
+      languages
+    )
   }
 }

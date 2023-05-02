@@ -21,15 +21,19 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -46,8 +50,10 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -59,6 +65,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+
+  @BindValue val eventBus: EventBus = mockk()
 
   lateinit var appMainActivity: AppMainActivity
 
@@ -176,6 +184,42 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() {
+    val appMainViewModel = mockk<AppMainViewModel>()
+    val questionnaireSubmissionLiveData = mockk<MutableLiveData<QuestionnaireSubmission?>>()
+    every { questionnaireSubmissionLiveData.postValue(any()) } just runs
+    every { appMainViewModel.questionnaireSubmissionLiveData } returns
+      questionnaireSubmissionLiveData
+    val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
+    every { refreshLiveDataMock.postValue(true) } just runs
+    every { appMainActivity.appMainViewModel } returns appMainViewModel
+
+    appMainActivity.onSubmitQuestionnaire(
+      ActivityResult(
+        -1,
+        Intent().apply {
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+            }
+          )
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
+            QuestionnaireConfig(
+              taskId = "Task/12345",
+              id = "questionnaireId",
+              refreshContent = true
+            )
+          )
+        }
+      )
+    )
+
+    coVerify { eventBus.triggerEvent(any()) }
+  }
+
+  @Test
   fun testRunSyncWhenDeviceIsOnline() {
 
     mockkStatic(Context::isDeviceOnline)
@@ -215,5 +259,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     verify(exactly = 0) { syncBroadcaster.runSync(any()) }
     verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
+  }
+
+  @Test
+  fun testStartForResult() {
+    val event = appMainActivity.startForResult
+
+    Assert.assertNotNull(event)
   }
 }

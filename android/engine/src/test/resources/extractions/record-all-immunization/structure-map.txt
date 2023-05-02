@@ -1,0 +1,39 @@
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/followup-structuremap" = 'ImmunizationCarePlan'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ImmunizationCarePlan(source src : QuestionnaireResponse, target tgt: Bundle) {
+            src -> create('Encounter') as encounter
+            then ExtractEncounter(src, encounter, tgt),
+                 ExtractImmunization(src, encounter, tgt) "r_careplan";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
+        src -> encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "57", "Immunization") "rule_ee_4";
+
+        src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+}
+
+group ExtractImmunization(source src : QuestionnaireResponse, source encounter: Encounter, target bundle : Bundle) {
+    src.item as vaccinesItem where(linkId='vaccines codes group') then {
+        vaccinesItem.item as vaccine -> bundle.entry as entry, entry.resource = create('Immunization') as immunization,
+                     create('dateTime') as vaccineDate then {
+              src.item where(linkId = 'vaccines same date' and answer.value = true) -> vaccineDate.value = evaluate(src, item.where(linkId='vaccines date').answer.value.value) "r_vaccine_date_is_same";
+              src.item where(linkId = 'vaccines same date' and answer.value = false) ->
+                     vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
+              src -> immunization.id = uuid() ,
+                     immunization.recorded = evaluate(src, now()),
+                     immunization.status = "completed",
+                     immunization.occurrence = vaccineDate,
+                     immunization.patient = evaluate(src, subject),
+                     immunization.encounter = reference(encounter) "rule_ei_11";
+              src -> immunization.vaccineCode = create('CodeableConcept') as concept then {
+                src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
+                                concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
+              } "rule_ei_4";
+            } "rule_ei_13";
+    } "r2";
+}
