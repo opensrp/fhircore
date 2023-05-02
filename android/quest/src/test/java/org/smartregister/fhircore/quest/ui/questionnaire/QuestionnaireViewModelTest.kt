@@ -1674,18 +1674,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject.reference = "Patient/123467"
       }
     coEvery { defaultRepo.loadResource(any(), any()) } throws resourceNotFoundException
-    coEvery {
-      questionnaireViewModel.updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
-    } just runs
     runBlocking {
       questionnaireViewModel.updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
     }
-    coVerify {
-      questionnaireViewModel.updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
-    }
-    assertEquals(
-      "Resource not found with type Resource not found exception and id 1234!",
-      resourceNotFoundException.message
-    )
+    // if no exception is thrown that is sufficient to show the test passed
   }
 }
