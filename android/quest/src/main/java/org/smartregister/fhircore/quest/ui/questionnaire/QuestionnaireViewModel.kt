@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -71,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
@@ -216,7 +218,7 @@ constructor(
           if (questionnaireConfig.setAppVersion) {
             appendAppVersion(bundleEntry.resource)
           }
-
+          if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -227,6 +229,7 @@ constructor(
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
+          updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -241,6 +244,7 @@ constructor(
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
         }
+        updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
         if (questionnaire.experimental) {
           Timber.w(
@@ -581,11 +585,28 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
+  suspend fun updateResourceLastUpdatedLinkedAsSubject(
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    if (questionnaireResponse.hasSubject() && questionnaireResponse.subject.hasReference()) {
+      val resourceId = questionnaireResponse.subject.reference.extractLogicalIdUuid()
+      val resourceType =
+        questionnaireResponse.subject.extractType()!!
+          .name
+          .resourceClassType()
+          .newInstance()
+          .resourceType
+      if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+        defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+          resource.updateLastUpdated()
+          defaultRepository.addOrUpdate(true, resource)
+        }
+      }
+    }
+  }
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
-    private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
     private const val STRING_INTERPOLATION_PREFIX = "@{"
   }
 }
