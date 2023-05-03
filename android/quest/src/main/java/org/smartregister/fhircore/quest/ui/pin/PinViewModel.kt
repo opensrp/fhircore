@@ -85,7 +85,9 @@ constructor(
         currentUserPin = secureSharedPreference.retrieveSessionPin() ?: "",
         setupPin = setupPin,
         message =
-          if (setupPin) context.getString(R.string.set_pin_message)
+          if (setupPin)
+            applicationConfiguration.loginConfig.pinLoginMessage
+              ?: context.getString(R.string.set_pin_message)
           else context.getString(R.string.enter_pin_for_user, username),
         pinLength = applicationConfiguration.loginConfig.pinLength,
         showLogo = applicationConfiguration.showLogo
