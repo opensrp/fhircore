@@ -265,9 +265,8 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     }
   }
 
-  private suspend fun handleQuestionnaireSubmission(
-    questionnaireSubmission: QuestionnaireSubmission
-  ) {
+  @VisibleForTesting
+  suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
     // Always refresh data when registration happens
