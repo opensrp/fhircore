@@ -37,3 +37,42 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
             } "rule_ei_13";
     } "r2";
 }
+
+
+//Immunization Record Encounter Sample
+group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
+        src -> encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)"),
+
+        src -> encounter.subject = create('Reference') as reference then {
+                   src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
+                 } "rule_ee_6";
+        src -> encounter.period = create("Period") as period then{
+                period.start = now()
+                period.end = now()
+        }"r_period";
+
+        src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+
+}
+//Immunization Administration Encounter
+group ExtractAdministrationEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
+        src -> encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)"),
+
+        src -> encounter.subject = create('Reference') as reference then {
+                   src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
+                 } "rule_ee_6";
+        src -> encounter.period = create("Period") as period then{
+                period.end = now()
+        }"r_period";
+
+        src-> encounter.partOf = create('Reference') as ref then {
+              ref.reference = target.id()
+        }"r_partof";
+
+        src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+
+}
