@@ -131,7 +131,7 @@ class ProfileFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
+  fun testHandleQuestionnaireSubmissionCallsProfileViewModelRetrieveProfileUiStateAndEmitSnackBarState() {
     val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
     val questionnaireConfig =
       QuestionnaireConfig(id = "add-member", snackBarMessage = snackBarMessageConfig)
