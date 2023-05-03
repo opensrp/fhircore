@@ -103,7 +103,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -117,7 +117,9 @@ class RulesFactoryTest : RobolectricTest() {
       val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
+        baseResourceRulesId = null,
         baseResource = baseResource,
+        secondaryRepositoryResourceData = null,
         relatedResourcesMap = relatedResourcesMap
       )
 
@@ -157,7 +159,12 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
       val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, baseResource = baseResource)
+      rulesFactory.fireRules(
+        rules = rules,
+        baseResourceRulesId = null,
+        baseResource = baseResource,
+        secondaryRepositoryResourceData = null
+      )
 
       val factsSlot = slot<Facts>()
       val rulesSlot = slot<Rules>()
@@ -184,7 +191,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesIgnoresBaseResourceWhenNull() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -196,7 +203,13 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
       val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
+      rulesFactory.fireRules(
+        rules = rules,
+        baseResourceRulesId = null,
+        baseResource = null,
+        relatedResourcesMap = relatedResourcesMap,
+        secondaryRepositoryResourceData = null,
+      )
 
       val factsSlot = slot<Facts>()
       val rulesSlot = slot<Rules>()
