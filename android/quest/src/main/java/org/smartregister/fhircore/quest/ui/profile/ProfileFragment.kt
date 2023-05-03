@@ -20,24 +20,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
 
+  @Inject lateinit var eventBus: EventBus
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
   val profileViewModel by viewModels<ProfileViewModel>()
   val appMainViewModel by activityViewModels<AppMainViewModel>()
@@ -68,7 +76,33 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        eventBus.events.collectLatest { appEvent ->
+          when (appEvent) {
+            is AppEvent.OnSubmitQuestionnaire ->
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            else -> {}
+          }
+        }
+      }
+    }
+  }
+
+  @VisibleForTesting
+  suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    // Always refresh data when questionnaire is submitted
+    with(profileFragmentArgs) {
+      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+    }
+
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      profileViewModel.emitSnackBarState(snackBarMessageConfig)
+    }
   }
 
   /**
@@ -91,9 +125,6 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
         questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
           profileViewModel.emitSnackBarState(snackBarMessageConfig)
         }
-
-        // Reset activity livedata
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
   }
