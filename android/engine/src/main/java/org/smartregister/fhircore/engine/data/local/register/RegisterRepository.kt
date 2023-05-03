@@ -122,7 +122,6 @@ constructor(
       withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
 
     return baseFhirResources.map { baseFhirResource ->
-      // TODO add secondary resources as related resources
       RepositoryResourceData.Search(
         baseResourceRulesId = baseResourceConfig.id ?: baseResourceType.name,
         resource = baseFhirResource,
