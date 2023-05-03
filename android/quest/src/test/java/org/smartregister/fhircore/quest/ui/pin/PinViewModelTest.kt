@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.app.Application
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,7 +29,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -61,25 +59,35 @@ class PinViewModelTest : RobolectricTest() {
   @Test
   fun testSetPinUiState() {
     val context = ApplicationProvider.getApplicationContext<Application>()
-    val applicationConfiguration = mockk<ApplicationConfiguration>()
-    val expectedMessage = "VHT will use this PIN to login"
-    val pinLoginState: MutableState<PinUiState> =
-      mutableStateOf(
-        PinUiState(
-          currentUserPin = "1245",
-          message = expectedMessage,
-          appName = "demo",
-          setupPin = true,
-          pinLength = 4, // set pinLength to a value greater than 0
-          showLogo = false
-        )
-      )
     every { secureSharedPreference.retrieveSessionPin() } returns "1245"
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    pinViewModel.pinUiState.value = pinLoginState.value
-    Assert.assertEquals(expectedMessage, pinLoginState.value.message)
-    Assert.assertEquals("1245", pinLoginState.value.currentUserPin)
-    Assert.assertTrue(pinLoginState.value.setupPin)
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("1245", pinUiState.currentUserPin)
+    Assert.assertTrue(pinUiState.setupPin)
+  }
+
+  @Test
+  fun testSetPinUiStateDisplaysConfiguredPinLoginMessage() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    every { secureSharedPreference.retrieveSessionPin() } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns null
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true,\"pinLoginMessage\":\"Test Message\"}}"
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("Test Message", pinUiState.message)
+  }
+  @Test
+  fun testSetPinUiStateDisplaysDefaultMessageWhenPinLoginMessageIsNotDefined() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true}}"
+    every { secureSharedPreference.retrieveSessionPin() } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns null
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("CHA will use this PIN to login", pinUiState.message)
   }
 
   @Test
