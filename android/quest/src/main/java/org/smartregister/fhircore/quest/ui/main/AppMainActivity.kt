@@ -144,13 +144,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      if (questionnaireConfig != null && questionnaireResponse != null) {
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(
-          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-        )
-      }
-      if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        lifecycleScope.launch {
+      lifecycleScope.launch {
+        if (questionnaireConfig != null && questionnaireResponse != null) {
+          eventBus.triggerEvent(
+            AppEvent.OnSubmitQuestionnaire(
+              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+            )
+          )
+        }
+        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
           eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
         }
       }

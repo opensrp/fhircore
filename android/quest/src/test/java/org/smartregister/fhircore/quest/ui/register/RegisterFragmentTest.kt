@@ -68,13 +68,20 @@ import org.smartregister.fhircore.quest.util.extensions.interpolateActionParamsV
 class RegisterFragmentTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  private val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk(), mockk())
-
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragmentMock: RegisterFragment
-
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
+  @BindValue
+  val registerViewModel =
+    spyk(
+      RegisterViewModel(
+        mockk(),
+        configurationRegistry = configurationRegistry,
+        mockk(),
+        mockk(),
+        mockk()
+      )
+    )
   @Inject lateinit var eventBus: EventBus
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
@@ -222,5 +229,33 @@ class RegisterFragmentTest : RobolectricTest() {
     }
 
     coVerify { registerFragmentSpy.handleRefreshLiveData() }
+  }
+
+  @OptIn(ExperimentalMaterialApi::class)
+  @Test
+  fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
+    val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "add-member", snackBarMessage = snackBarMessageConfig)
+    val questionnaireResponse = QuestionnaireResponse().apply { id = "1234" }
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
+      )
+    val registerFragmentSpy = spyk(registerFragment)
+
+    coEvery { registerViewModel.emitSnackBarState(any()) } just runs
+
+    runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
+
+    coVerify {
+      registerViewModel.paginateRegisterData(
+        registerId = "householdRegister",
+        loadAll = false,
+        clearCache = true
+      )
+    }
+    coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 }
