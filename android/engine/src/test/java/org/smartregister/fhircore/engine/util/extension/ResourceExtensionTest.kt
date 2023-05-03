@@ -709,4 +709,40 @@ class ResourceExtensionTest : RobolectricTest() {
 
     Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
+
+  @Test
+  fun `prepareQuestionsForReadingOrEditing should set readOnly to true when passed`() {
+    val questionnaire = Questionnaire()
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
+    questionnaire.item.add(
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = "2"
+        type = Questionnaire.QuestionnaireItemType.GROUP
+      }
+    )
+
+    questionnaire.item.prepareQuestionsForReadingOrEditing("", true)
+
+    Assert.assertTrue(questionnaire.item[0].readOnly)
+    Assert.assertFalse(questionnaire.item[1].readOnly)
+  }
+
+  @Test
+  fun `prepareQuestionsForReadingOrEditing should set readOnly correctly when true not passed`() {
+    val questionnaire = Questionnaire()
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
+    questionnaire.item.add(
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = "2"
+        readOnly = true
+      }
+    )
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
+
+    questionnaire.item.prepareQuestionsForReadingOrEditing("", readOnlyLinkIds = listOf("3"))
+
+    Assert.assertFalse(questionnaire.item[0].readOnly)
+    Assert.assertTrue(questionnaire.item[1].readOnly)
+    Assert.assertTrue(questionnaire.item[2].readOnly)
+  }
 }
