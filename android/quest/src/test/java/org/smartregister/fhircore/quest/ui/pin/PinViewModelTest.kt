@@ -78,7 +78,7 @@ class PinViewModelTest : RobolectricTest() {
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals("Test Message", pinUiState.message)
   }
-  
+
   @Test
   fun testSetPinUiStateDisplaysDefaultMessageWhenPinLoginMessageIsNotDefined() {
     val context = ApplicationProvider.getApplicationContext<Application>()
