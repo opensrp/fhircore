@@ -529,10 +529,12 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Type#valueToString() should return string representation`() {
+    Assert.assertEquals("", null.valueToString())
     Assert.assertEquals("12345", StringType("12345").valueToString())
     Assert.assertEquals("true", BooleanType(true).valueToString())
     Assert.assertEquals(Date().makeItReadable(), DateTimeType(Date()).valueToString())
     Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
+    Assert.assertEquals("c", Coding().apply { code = "c" }.valueToString())
     Assert.assertEquals(
       "d",
       CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
@@ -555,6 +557,17 @@ class ResourceExtensionTest : RobolectricTest() {
         }
         .valueToString()
     )
+    Assert.assertEquals("Doe", HumanName().apply { family = "Doe" }.valueToString())
+    Assert.assertEquals(
+      "John Doe",
+      HumanName()
+        .apply {
+          given = listOf(StringType("John"))
+          family = "Doe"
+        }
+        .valueToString()
+    )
+    Assert.assertEquals("John", StringType("John").valueToString())
   }
 
   @Test
@@ -662,18 +675,13 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun testGenerateMissingItemsFromQuestionnaireShouldNotThrowException() {
-
     val patientRegistrationQuestionnaire =
       "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-
     val patientRegistrationQuestionnaireResponse =
       "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
     val questionnaire =
       iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-
     val questionnaireResponse =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
@@ -687,18 +695,13 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun testGenerateMissingItemsFromQuestionnaireResponseShouldNotThrowException() {
-
     val patientRegistrationQuestionnaire =
       "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-
     val patientRegistrationQuestionnaireResponse =
       "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
     val questionnaire =
       iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-
     val questionnaireResponse =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
@@ -720,7 +723,6 @@ class ResourceExtensionTest : RobolectricTest() {
         type = Questionnaire.QuestionnaireItemType.GROUP
       }
     )
-
     questionnaire.item.prepareQuestionsForReadingOrEditing("", true)
 
     Assert.assertTrue(questionnaire.item[0].readOnly)
@@ -738,7 +740,6 @@ class ResourceExtensionTest : RobolectricTest() {
       }
     )
     questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
-
     questionnaire.item.prepareQuestionsForReadingOrEditing("", readOnlyLinkIds = listOf("3"))
 
     Assert.assertFalse(questionnaire.item[0].readOnly)
