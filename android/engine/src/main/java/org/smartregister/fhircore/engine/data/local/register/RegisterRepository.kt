@@ -48,7 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -63,7 +63,7 @@ class RegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DefaultDispatcherProvider,
+  override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -210,8 +210,8 @@ constructor(
         .pmap {
           try {
             fhirEngine.get(
-              resourceConfig.resource.resourceClassType().newInstance().resourceType,
-              (it as Reference).extractId()
+              type = resourceConfig.resource.resourceClassType().newInstance().resourceType,
+              id = (it as Reference).extractId()
             )
           } catch (exception: ResourceNotFoundException) {
             Timber.e(exception)
@@ -362,12 +362,7 @@ constructor(
         ?.associate { it.key to it.value }
         ?: emptyMap()
 
-    val profileConfiguration =
-      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-        configType = ConfigType.Profile,
-        configId = profileId,
-        paramsMap = paramsMap
-      )
+    val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
@@ -391,6 +386,13 @@ constructor(
         }
     )
   }
+
+  fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =
+    configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+      configType = ConfigType.Profile,
+      configId = profileId,
+      paramsMap = paramsMap
+    )
 
   fun retrieveRegisterConfiguration(
     registerId: String,

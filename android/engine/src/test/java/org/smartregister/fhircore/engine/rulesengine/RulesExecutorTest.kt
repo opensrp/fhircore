@@ -86,8 +86,10 @@ class RulesExecutorTest : RobolectricTest() {
     runBlocking(Dispatchers.Default) {
       val resourceData =
         rulesExecutor.processResourceData(
+          baseResourceRulesId = null,
           baseResource = baseResource,
           relatedResourcesMap = relatedRepositoryResourceData,
+          secondaryRepositoryResourceData = null,
           ruleConfigs = ruleConfigs,
           params = emptyMap()
         )
