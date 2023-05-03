@@ -53,11 +53,7 @@ class RegisterPagingSourceTest : RobolectricTest() {
   @Test
   fun testLoadShouldReturnResults() {
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
-      listOf(
-        RepositoryResourceData(
-          queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
-        )
-      )
+      listOf(RepositoryResourceData.Search(resource = Faker.buildPatient()))
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null

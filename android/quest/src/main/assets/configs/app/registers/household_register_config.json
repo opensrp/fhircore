@@ -49,10 +49,6 @@
             "searchParameter": "subject"
           },
           {
-            "resource": "CarePlan",
-            "searchParameter": "subject"
-          },
-          {
             "id": "overdueTasks",
             "resource": "Task",
             "searchParameter": "subject",
@@ -91,11 +87,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
           }
         ]
       }
