@@ -591,11 +591,15 @@ constructor(
           .resourceClassType()
           .newInstance()
           .resourceType
-      if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-        defaultRepository.loadResource(resourceId, resourceType).let { resource ->
-          resource.updateLastUpdated()
-          defaultRepository.addOrUpdate(true, resource)
+      try {
+        if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+          defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+            resource.updateLastUpdated()
+            defaultRepository.addOrUpdate(true, resource)
+          }
         }
+      } catch (exception: ResourceNotFoundException) {
+        Timber.e(exception)
       }
     }
   }
