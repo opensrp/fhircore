@@ -95,9 +95,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData(
-        queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
-      )
+      RepositoryResourceData.Search(resource = Faker.buildPatient())
   }
 
   @Test

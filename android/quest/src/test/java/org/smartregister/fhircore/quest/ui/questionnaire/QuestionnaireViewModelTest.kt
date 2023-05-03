@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -76,11 +77,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.any
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -1661,5 +1662,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val formatter = SimpleDateFormat("dd MM yyyy HH:mm:ss")
     Assert.assertEquals(formatter.format(group.meta.lastUpdated), formatter.format(Date()))
     unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun `updateResourceLastUpdatedLinkedAsSubject() should catch ResourceNotFoundException`() {
+    val resourceNotFoundException =
+      ResourceNotFoundException(type = "Resource not found exception", id = "1234")
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "1234"
+        subject.reference = "Patient/123467"
+      }
+    coEvery { defaultRepo.loadResource(any(), any()) } throws resourceNotFoundException
+    runBlocking {
+      questionnaireViewModel.updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
+    }
+    // if no exception is thrown that is sufficient to show the test passed
   }
 }
