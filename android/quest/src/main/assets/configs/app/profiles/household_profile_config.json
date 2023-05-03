@@ -373,6 +373,7 @@
               {
                 "name": "showMemberTasks",
                 "condition": "true",
+                "priority": 2,
                 "actions": [
                   "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                 ]
