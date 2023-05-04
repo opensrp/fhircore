@@ -27,7 +27,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -103,14 +102,16 @@ constructor(
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val queryResult = repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
+      val queryResult = repoResourceData as RepositoryResourceData.Search
       val resourceData =
         rulesExecutor
           .processResourceData(
+            baseResourceRulesId = queryResult.baseResourceRulesId,
             baseResource = queryResult.resource,
-            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+            relatedResourcesMap = queryResult.relatedResources,
+            secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
             ruleConfigs = profileConfigs.rules,
-            paramsMap
+            params = paramsMap
           )
           .copy(listResourceDataMap = listResourceDataMapState)
 
@@ -126,7 +127,7 @@ constructor(
         val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
-            relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+            relatedResourcesMap = queryResult.relatedResources,
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )

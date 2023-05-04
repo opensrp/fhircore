@@ -968,11 +968,10 @@
             {
               "viewType": "LIST",
               "id": "readyTasksList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
                 }
