@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -55,6 +54,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
-import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -95,8 +94,6 @@ constructor(
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
-
-  val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -177,12 +174,13 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow ->
+      is AppMainEvent.TriggerWorkflow -> {
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
+      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
@@ -306,6 +304,12 @@ constructor(
         requiresNetwork = false
       )
 
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
+        requiresNetwork = false
+      )
+
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
       /* // Schedule job for generating measure report in the background
        MeasureReportWorker.scheduleMeasureReportWorker(workManager)
@@ -322,7 +326,7 @@ constructor(
           else -> Task.TaskStatus.COMPLETED
         }
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.transitionTaskTo(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
       }
     }
   }

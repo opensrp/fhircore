@@ -26,17 +26,19 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.TextOverFlow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 class CompoundTextTest {
 
-  @get:Rule val composeRule = createComposeRule()
-
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
+  private val resourceData = mockk<ResourceData>(relaxed = true, relaxUnitFun = true)
+
+  @get:Rule val composeTestRule = createComposeRule()
 
   @Test
   fun primaryTextIsRenderedCorrectly() {
-    composeRule.setContent {
+    composeTestRule.setContent {
       GenerateView(
         properties =
           CompoundTextProperties(
@@ -48,12 +50,12 @@ class CompoundTextTest {
         navController = navController
       )
     }
-    composeRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
   }
 
   @Test
   fun secondaryTextRenderedCorrectly() {
-    composeRule.setContent {
+    composeTestRule.setContent {
       GenerateView(
         properties =
           CompoundTextProperties(
@@ -68,6 +70,52 @@ class CompoundTextTest {
         navController = navController
       )
     }
-    composeRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
+  }
+
+  @Test
+  fun testWhenMaxLinesIsExceededThenTextIsEllipsized() {
+    val longText =
+      """
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
+            when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
+            It has survived not only five centuries, but also the leap into electronic typesetting, 
+            remaining essentially unchanged. 
+            It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, 
+            and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+      """.trimIndent()
+    val compoundTextProperties =
+      CompoundTextProperties(maxLines = 1, overflow = TextOverFlow.ELLIPSIS, primaryText = longText)
+    composeTestRule.setContent {
+      CompoundText(
+        compoundTextProperties = compoundTextProperties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+
+    composeTestRule.onNodeWithText(longText, useUnmergedTree = true).assertDoesNotExist()
+  }
+
+  @Test
+  fun testWhenMaxLinesIsNotExceededThenTextIsNotEllipsized() {
+    val shortText = """
+            Lorem Ipsum
+    """.trimIndent()
+    val compoundTextProperties =
+      CompoundTextProperties(
+        maxLines = 1,
+        overflow = TextOverFlow.ELLIPSIS,
+        primaryText = shortText
+      )
+    composeTestRule.setContent {
+      CompoundText(
+        compoundTextProperties = compoundTextProperties,
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeTestRule.onNodeWithText(shortText, useUnmergedTree = true).assertExists()
   }
 }

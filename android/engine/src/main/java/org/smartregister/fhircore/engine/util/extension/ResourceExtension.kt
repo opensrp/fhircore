@@ -21,10 +21,16 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
+import java.time.Duration
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -32,8 +38,10 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
@@ -44,6 +52,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
@@ -57,7 +66,7 @@ fun Base?.valueToString(): String {
     this == null -> return ""
     this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
-    this is Coding -> this.display ?: code
+    this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
@@ -72,16 +81,13 @@ fun Base?.valueToString(): String {
           )
           .plus(" (s)")
       }
-    this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
+    this is HumanName ->
+      this.given.firstOrNull().let {
+        (if (it != null) "${it.valueToString()} " else "").plus(this.family)
+      }
     else -> this.toString()
   }
 }
-
-fun Coding.asCodeableConcept() =
-  CodeableConcept().apply {
-    addCoding(this@asCodeableConcept)
-    text = this@asCodeableConcept.display
-  }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
@@ -177,10 +183,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
+  readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly || item.readOnly
+      item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
@@ -210,11 +217,6 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
     lastUpdated = Date()
     setVersionId(versionId.toString())
   }
-}
-
-fun QuestionnaireResponse.assertSubject() {
-  if (!this.hasSubject() || !this.subject.hasReference())
-    throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
 }
 
 fun QuestionnaireResponse.getEncounterId(): String? {
@@ -261,8 +263,6 @@ fun Resource.referenceParamForObservation(): ReferenceClientParam =
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
-
-fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {
@@ -315,3 +315,94 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
 }
+
+/**
+ * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
+ * tasks based on the date of a related immunization. The function takes a [defaultRepository]
+ * parameter that is an instance of [DefaultRepository]. It then loops through all the tasks that
+ * this task is a part of, loads the dependent tasks and their related immunization resources from
+ * the repository, and updates the start date of the dependent task if it's scheduled to start
+ * before the immunization date plus the required number of days.
+ *
+ * We may potentially extend this function to consider the attributes of resources other than
+ * immunizations.
+ *
+ * @param defaultRepository An instance of DefaultRepository
+ */
+suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
+  return apply {
+    if (hasPartOf()) {
+      partOf.forEach { task ->
+        val dependentTask =
+          defaultRepository.loadResource<Task>(task.reference.extractLogicalIdUuid())
+        if (dependentTask != null &&
+            dependentTask.hasOutput() &&
+            dependentTask.executionPeriod.hasStart() &&
+            dependentTask.hasInput() &&
+            (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming())
+        ) {
+          dependentTask.output?.forEach { dependentTaskOutputValue ->
+            if (dependentTaskOutputValue.hasValue()) {
+              val dependentTaskReference =
+                Reference(
+                  Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
+                      REFERENCE]
+                    ?.jsonPrimitive
+                    ?.content
+                )
+              val encounterResource =
+                defaultRepository.loadResource<Encounter>(
+                  dependentTaskReference.reference.extractLogicalIdUuid()
+                )
+              encounterResource?.partOf?.reference?.let { partOfReference ->
+                try {
+                  val immunizationResource =
+                    defaultRepository.loadResource<Immunization>(
+                      partOfReference.extractLogicalIdUuid()
+                    )
+                  immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
+                    ?.valueAsCalendar
+                    ?.let { immunizationDate ->
+                      val dependentTaskStartDate = dependentTask.executionPeriod.start
+                      dependentTask.input.forEach {
+                        val dependentTaskInputDate = it.value.toString().toInt()
+                        val difference =
+                          abs(
+                            Duration.between(
+                                immunizationDate.toInstant(),
+                                dependentTaskStartDate.toInstant()
+                              )
+                              .toDays()
+                          )
+                        if (difference < dependentTaskInputDate &&
+                            dependentTask.executionPeriod.hasStart()
+                        ) {
+                          dependentTask
+                            .apply {
+                              executionPeriod.start =
+                                Date.from(immunizationDate.toInstant())
+                                  .plusDays(dependentTaskInputDate)
+                            }
+                            .run {
+                              defaultRepository.addOrUpdate(
+                                addMandatoryTags = true,
+                                resource = dependentTask
+                              )
+                            }
+                        }
+                      }
+                    }
+                } catch (e: ClassCastException) {
+                  Timber.e(e)
+                  return@forEach
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+const val REFERENCE = "reference"

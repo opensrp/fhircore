@@ -18,50 +18,122 @@ package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
+import androidx.core.os.bundleOf
+import androidx.fragment.app.commitNow
+import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Robolectric
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.interpolateActionParamsValue
 
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  private val registerViewModel = RegisterViewModel(mockk(), mockk(), mockk(), mockk(), mockk())
+  @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragmentMock: RegisterFragment
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue
+  val registerViewModel =
+    spyk(
+      RegisterViewModel(
+        mockk(),
+        configurationRegistry = configurationRegistry,
+        mockk(),
+        mockk(),
+        mockk()
+      )
+    )
+  @Inject lateinit var eventBus: EventBus
 
   @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
+  @OptIn(ExperimentalMaterialApi::class) private lateinit var mainActivity: AppMainActivity
+  @OptIn(ExperimentalMaterialApi::class)
+  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
+  private lateinit var navController: TestNavHostController
 
   @OptIn(ExperimentalMaterialApi::class)
   @Before
   fun setUp() {
     hiltRule.inject()
-    registerFragment = mockk()
+    registerFragmentMock = mockk()
+
+    registerFragment =
+      RegisterFragment().apply {
+        arguments =
+          bundleOf(
+            Pair(NavigationArg.REGISTER_ID, "householdRegister"),
+            Pair(NavigationArg.SCREEN_TITLE, "All HouseHolds"),
+            Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, ToolBarHomeNavigation.NAVIGATE_BACK),
+            Pair(
+              NavigationArg.PARAMS,
+              interpolateActionParamsValue(
+                ActionConfig(trigger = ActionTrigger.ON_CLICK),
+                ResourceData(
+                  baseResourceId = "patient",
+                  baseResourceType = ResourceType.Patient,
+                  computedValuesMap = emptyMap()
+                )
+              )
+            )
+          )
+      }
+
+    activityController.create().resume()
+    mainActivity = activityController.get()
+    navController =
+      TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
+    Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
+    mainActivity.supportFragmentManager.run {
+      commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
+      executePendingTransactions()
+    }
   }
 
   @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testOnStopClearsSearchText() {
-    coEvery { registerFragment.onStop() } just runs
-    registerFragment.onStop()
-    verify { registerFragment.onStop() }
+    coEvery { registerFragmentMock.onStop() } just runs
+    registerFragmentMock.onStop()
+    verify { registerFragmentMock.onStop() }
     Assert.assertEquals(registerViewModel.searchText.value, "")
   }
 
@@ -69,9 +141,9 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   fun testOnSyncState() {
     val syncJobStatus = SyncJobStatus.Finished()
-    coEvery { registerFragment.onSync(syncJobStatus) } just runs
-    registerFragment.onSync(syncJobStatus = syncJobStatus)
-    verify { registerFragment.onSync(syncJobStatus) }
+    coEvery { registerFragmentMock.onSync(syncJobStatus) } just runs
+    registerFragmentMock.onSync(syncJobStatus = syncJobStatus)
+    verify { registerFragmentMock.onSync(syncJobStatus) }
   }
 
   @Test
@@ -92,10 +164,11 @@ class RegisterFragmentTest : RobolectricTest() {
         questionnaireResponse = questionnaireResponse
       )
     val registerViewModel = mockk<RegisterViewModel>()
-    coEvery { registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission) } just
-      runs
-    registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission)
-    verify { registerFragment.onChanged(questionnaireSubmission = questionnaireSubmission) }
+    coEvery {
+      registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
+    } just runs
+    registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
+    verify { registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission) }
     coroutineTestRule.launch {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     }
@@ -123,5 +196,66 @@ class RegisterFragmentTest : RobolectricTest() {
 
     coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30, false) }
     coVerify(exactly = 1) { registerFragment.emitPercentageProgress(85, true) }
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
+    val registerFragmentSpy = spyk(registerFragment)
+    val registerViewModel = mockk<RegisterViewModel>()
+    every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
+    every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
+
+    registerFragmentSpy.handleRefreshLiveData()
+
+    verify {
+      registerViewModel.retrieveRegisterUiState(
+        registerId = "householdRegister",
+        screenTitle = "All HouseHolds",
+        params = emptyArray(),
+        clearCache = true
+      )
+    }
+  }
+
+  @OptIn(ExperimentalMaterialApi::class)
+  @Test
+  fun testOnViewCreatedCallsHandleRefreshLiveData() {
+    val registerFragmentSpy = spyk(registerFragment)
+    registerFragmentSpy.onViewCreated(mockk(), mockk())
+
+    runBlocking {
+      eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
+    }
+
+    coVerify { registerFragmentSpy.handleRefreshLiveData() }
+  }
+
+  @OptIn(ExperimentalMaterialApi::class)
+  @Test
+  fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
+    val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "add-member", snackBarMessage = snackBarMessageConfig)
+    val questionnaireResponse = QuestionnaireResponse().apply { id = "1234" }
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
+      )
+    val registerFragmentSpy = spyk(registerFragment)
+
+    coEvery { registerViewModel.emitSnackBarState(any()) } just runs
+
+    runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
+
+    coVerify {
+      registerViewModel.paginateRegisterData(
+        registerId = "householdRegister",
+        loadAll = false,
+        clearCache = true
+      )
+    }
+    coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 }

@@ -30,14 +30,16 @@
         "resource": "Group",
         "dataQueries": [
           {
-            "id": "commoditiesQueryByCode",
-            "filterType": "TOKEN",
-            "key": "code",
-            "valueType": "CODEABLECONCEPT",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "386452003"
-            }
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODEABLECONCEPT",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
           }
         ]
       },
@@ -913,6 +915,7 @@
               "resources": [
                 {
                   "id": "tasks",
+                  "relatedResourceId": "Task",
                   "resourceType": "Task"
                 }
               ],
@@ -1726,7 +1729,8 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Update registration",
+            "refreshContent": true
           }
         }
       ]

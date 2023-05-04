@@ -8,6 +8,13 @@ plugins {
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs'
+    id "org.sonarqube" version "3.5.0.2730"
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "fhircore"
+    }
 }
 
 apply from: '../jacoco.gradle'
@@ -25,7 +32,7 @@ android {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "0.2.0"
+        versionName "0.2.3"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -185,6 +192,13 @@ android {
             dimension "apps"
             applicationIdSuffix ".zeir"
             versionNameSuffix "-zeir"
+        }
+
+        engage {
+            dimension "apps"
+            applicationIdSuffix ".engage"
+            versionNameSuffix "-engage"
+
         }
     }
     sourceSets {

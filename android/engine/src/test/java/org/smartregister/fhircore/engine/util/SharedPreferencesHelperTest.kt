@@ -112,4 +112,15 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     Assert.assertEquals(0, sharedPreferencesHelper.read("anyLongKey", 0))
     Assert.assertEquals(false, sharedPreferencesHelper.read("anyBooleanKey", false))
   }
+
+  @Test
+  fun testRemove() {
+    // removing a nonexistent key does not throw an exception
+    sharedPreferencesHelper.remove("anyBooleanKey")
+
+    sharedPreferencesHelper.write("anyBooleanKey", true)
+    Assert.assertTrue(sharedPreferencesHelper.read("anyBooleanKey", false))
+    sharedPreferencesHelper.remove("anyBooleanKey")
+    Assert.assertFalse(sharedPreferencesHelper.read("anyBooleanKey", false))
+  }
 }

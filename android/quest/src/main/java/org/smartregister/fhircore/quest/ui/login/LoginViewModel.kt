@@ -137,6 +137,7 @@ constructor(
                 savePractitionerDetails(bundle)
               } else {
                 Timber.e(bundleResult.exceptionOrNull())
+                Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
               }
             }
@@ -176,7 +177,12 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
   ) {
-    if (tokenAuthenticator.sessionActive()) {
+    val practitionerDetails =
+      sharedPreferences.read<PractitionerDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        decodeWithGson = true
+      )
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -212,6 +218,7 @@ constructor(
           onFetchPractitioner(Result.success(bundle))
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException))
+          Timber.e(httpException.response()?.errorBody()?.charStream()?.readText())
         }
       } else {
         onFetchPractitioner(

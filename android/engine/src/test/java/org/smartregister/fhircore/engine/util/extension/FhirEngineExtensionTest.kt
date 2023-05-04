@@ -72,7 +72,7 @@ class FhirEngineExtensionTest : RobolectricTest() {
     coVerify { fhirEngine.search<Task>(capture(searchQuerySlot)) }
 
     Assert.assertEquals(
-      "CREATE INDEX `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
+      "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
       searchQuerySlot.captured.query
     )
   }

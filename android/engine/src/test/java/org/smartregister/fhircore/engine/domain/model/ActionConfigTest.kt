@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -119,5 +120,56 @@ class ActionConfigTest : RobolectricTest() {
     Assert.assertEquals("Changing head", result?.dialogContentMessage)
     Assert.assertEquals("No members found", result?.noMembersErrorMessage)
     Assert.assertEquals("Head reassigned successfully", result?.managingEntityReassignedMessage)
+  }
+
+  @Test
+  fun testInterpolateManagingEntityNoChangeIfNoValuesArePassed() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display",
+        managingEntity =
+          ManagingEntityConfig(
+            dialogTitle = "@{dialogTitle}",
+            dialogWarningMessage = "@{dialogWarningMessage}",
+            dialogContentMessage = "@{dialogContentMessage}",
+            noMembersErrorMessage = "@{noMembersErrorMessage}",
+            managingEntityReassignedMessage = "@{managingEntityReassignedMessage}",
+          )
+      )
+    val oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
+  }
+
+  @Test
+  fun testInterpolateManagingEntityHandlesNulls() {
+    var actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display"
+      )
+    var oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
+
+    actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        questionnaire = QuestionnaireConfig(id = "444"),
+        display = "Display",
+        managingEntity = ManagingEntityConfig()
+      )
+    oldActionConfig = actionConfig.copy()
+    actionConfig.interpolateManagingEntity(emptyMap())
+
+    Assert.assertEquals(oldActionConfig, actionConfig)
   }
 }
