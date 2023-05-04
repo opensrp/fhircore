@@ -66,7 +66,7 @@ fun Base?.valueToString(): String {
     this == null -> return ""
     this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
-    this is Coding -> this.display ?: code
+    this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
@@ -81,7 +81,10 @@ fun Base?.valueToString(): String {
           )
           .plus(" (s)")
       }
-    this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
+    this is HumanName ->
+      this.given.firstOrNull().let {
+        (if (it != null) "${it.valueToString()} " else "").plus(this.family)
+      }
     else -> this.toString()
   }
 }
@@ -180,10 +183,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
+  readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly || item.readOnly
+      item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
