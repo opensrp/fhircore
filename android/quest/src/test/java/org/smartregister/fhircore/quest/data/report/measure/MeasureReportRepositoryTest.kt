@@ -149,10 +149,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     val resource = Faker.buildPatient()
     coEvery {
       registerRepository.loadRegisterData(0, measureReportConfiguration.registerId)
-    } returns
-      listOf(
-        RepositoryResourceData(queryResult = RepositoryResourceData.QueryResult.Search(resource))
-      )
+    } returns listOf(RepositoryResourceData.Search(resource = resource))
     runBlocking(Dispatchers.Default) {
       val data = measureReportRepository.retrievePatients(0)
       Assert.assertEquals(1, data.size)

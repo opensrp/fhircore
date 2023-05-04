@@ -62,6 +62,17 @@
       ]
     }
   ],
+  "topAppBar": {
+    "title": {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "@{patientName} profile",
+      "primaryTextColor": "#FFFFFF",
+      "fontSize": 16.0,
+      "maxLines": 1,
+      "primaryTextFontWeight": "BOLD"
+    },
+    "collapsible": false
+  },
   "rules": [
     {
       "name": "patientFirstName",
@@ -87,6 +98,7 @@
     {
       "name": "patientName",
       "condition": "true",
+      "priority": 2,
       "actions": [
         "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName'))"
       ]
@@ -956,11 +968,10 @@
             {
               "viewType": "LIST",
               "id": "readyTasksList",
-              "baseResource": "Task",
               "resources": [
                 {
                   "id": "availableTasks",
-                  "relatedResourceId": "task",
+                  "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
                   "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
                 }

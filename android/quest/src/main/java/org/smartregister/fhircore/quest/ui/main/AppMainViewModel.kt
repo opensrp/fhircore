@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -95,10 +94,6 @@ constructor(
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
-
-  val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
-
-  val dataRefreshLivedata: MutableLiveData<Boolean?> = MutableLiveData()
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
