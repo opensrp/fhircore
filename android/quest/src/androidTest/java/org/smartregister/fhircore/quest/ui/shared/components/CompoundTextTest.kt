@@ -44,7 +44,8 @@ class CompoundTextTest {
           CompoundTextProperties(
             primaryText = "Full Name, Age",
             primaryTextColor = "#000000",
-            primaryTextFontWeight = TextFontWeight.SEMI_BOLD
+            primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
+            padding = 16
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = navController
@@ -64,7 +65,8 @@ class CompoundTextTest {
             secondaryText = "Yesterday",
             secondaryTextColor = "#FFFFFF",
             separator = ".",
-            secondaryTextBackgroundColor = "#FFA500"
+            secondaryTextBackgroundColor = "#FFA500",
+            fontSize = 18.0f,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = navController
