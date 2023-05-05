@@ -63,6 +63,9 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.WelcomeServiceBackToCareColor
+import org.smartregister.fhircore.engine.ui.theme.WelcomeServiceHVLColor
+import org.smartregister.fhircore.engine.ui.theme.WelcomeServiceNewlyDiagnosed
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
@@ -86,6 +89,7 @@ fun PatientProfileScreen(
   val viewState = patientProfileViewModel.patientProfileUiState.value
   val taskId by appMainViewModel.taskId.collectAsState()
   val syncing by remember { patientProfileViewModel.isSyncing }
+  val tasksId = profileViewData.tasks.map { it.actionFormId }
 
   LaunchedEffect(taskId) {
     taskId?.let { patientProfileViewModel.fetchPatientProfileDataWithChildren() }
@@ -166,8 +170,17 @@ fun PatientProfileScreen(
               .verticalScroll(rememberScrollState())
               .background(PatientProfileSectionsBackgroundColor)
         ) {
+
           // Personal Data: e.g. sex, age, dob
-          PersonalData(profileViewData)
+          if (tasksId.contains(PatientProfileViewModel.WELCOME_SERVICE_NEWLY_DIAGNOSED)) {
+            PersonalData(profileViewData, color = WelcomeServiceNewlyDiagnosed)
+          } else if (tasksId.contains(PatientProfileViewModel.WELCOME_SERVICE_HVL)) {
+            PersonalData(profileViewData, color = WelcomeServiceHVLColor)
+          } else if (tasksId.contains(PatientProfileViewModel.WELCOME_SERVICE_BACK_TO_CARE)) {
+            PersonalData(profileViewData, color = WelcomeServiceBackToCareColor)
+          } else {
+            PersonalData(profileViewData)
+          }
 
           // Patient tasks: List of tasks for the patients
           if (profileViewData.tasks.isNotEmpty()) {
@@ -194,6 +207,7 @@ fun PatientProfileScreen(
               profileViewSection = PatientProfileViewSection.TASKS
             ) {
               profileViewData.tasks.forEach {
+                println(taskId)
                 ProfileActionableItem(
                   it,
                   onActionClick = { taskFormId, taskId ->
